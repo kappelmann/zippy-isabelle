@@ -1,0 +1,17 @@
+chapter "Constraint-Logic-Programming"
+
+session Constraint_Logic_Programming = "Pure" +
+  sessions
+    E_Unification
+    Logging
+    Term_Indexing
+  theories
+    Constraint_Logic_Programming
+
+session Constraint_Logic_Programming_Tests in "Tests" = "HOL" +
+  sessions
+    Constraint_Logic_Programming
+    SpecCheck
+  theories
+    Constraint_Logic_Programming_Tests
+

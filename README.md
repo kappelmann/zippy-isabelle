@@ -1,3 +1,5 @@
+# Higher-Order Logic Constraint Programming in Isabelle
+
 A constraint logic programming tactic for Isabelle.
 
 ## Build
@@ -5,5 +7,5 @@ A constraint logic programming tactic for Isabelle.
 Requirements:
 1. The Isabelle development version
 2. The AFP development version 
-3. This [Isabelle E-unification framework](https://github.com/kappelmann/e-unification-isabelle)
+3. The submodules of this repository
 
