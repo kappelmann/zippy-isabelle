@@ -1,0 +1,68 @@
+(* Generic Data that can hold any type of information. *)
+
+signature UNIVERSAL_DATA =
+sig
+
+type 'a var
+
+val put : 'a -> 'a var
+val get : 'a var -> 'a
+val map : 'a var -> ('a -> 'a) -> unit
+
+end
+
+structure Universal_Data : UNIVERSAL_DATA =
+struct
+
+structure Data = Generic_Data
+(
+  type T = Universal.universal Inttab.table
+  val empty = Inttab.empty
+  val extend = I
+  val merge = Inttab.merge (K true)
+)
+
+abstype 'a var = Var of serial * 'a Universal.tag
+with
+
+fun var () = Var (serial (), Universal.tag ())
+
+fun put data =
+  let val Var (i, tag) = var ()
+  in
+    Context.>> (Data.map (Inttab.update (i, Universal.tagInject tag data)));
+    Var (i, tag)
+  end
+
+fun get (Var (i, tag)) =
+  let val context = Context.the_generic_context ()
+  in
+    case Inttab.lookup (Data.get context) i of
+      SOME u => Universal.tagProject tag u
+    | NONE => raise Fail "Universal var not found"
+  end
+
+fun map (Var (i, tag)) f =
+  let
+    fun update context =
+      Data.map (Inttab.map_entry i (Universal.tagInject tag o f o Universal.tagProject tag)) context
+      handle Match => raise Fail "Universal var not found"
+  in Context.>> update end
+
+end
+
+fun declare_univ (name, range) source =
+  ML_Context.expression (Input.pos_of source)
+    (ML_Lex.read "val " @
+     ML_Lex.read_set_range range name @
+     ML_Lex.read " = Universal_Data.put (" @
+     ML_Lex.read_source source @
+     ML_Lex.read ")")
+  |> Context.theory_map
+
+val _ =
+  Outer_Syntax.command \<^command_keyword>\<open>declare_univ\<close> "declare universal generic data"
+    (Parse.range Parse.name -- (\<^keyword>\<open>=\<close> |-- Parse.ML_source) >>
+      (fn (x, y) => Toplevel.theory (declare_univ x y)))
+
+end

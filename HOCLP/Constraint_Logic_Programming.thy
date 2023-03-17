@@ -1,122 +1,119 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
-section \<open>Constraing Logic Programming\<close>
+section \<open>Higher-Order Constraint Logic Programming\<close>
 theory Constraint_Logic_Programming
   imports
     Logging.Logging
+    Logging.ML_Attributes
     Term_Indexing.Term_Indexing
+    Universal_Data.Universal_Data
+    SpecCheck.SpecCheck_Show
+    (*Main*)
 begin
 
 paragraph \<open>Summary\<close>
-text \<open>A constraint logic programming tactic.\<close>
+text \<open>A higher-order constraint logic programming tactic.\<close>
 
+ML_file\<open>util.ML\<close>
 ML_file\<open>clp.ML\<close>
 
 ML\<open>
+  structure Util = Constraint_Logic_Programming_Util
   structure CLPDT = Constraint_Logic_Programming(Discrimination_Tree)
 \<close>
-(* config[CLPDT.Logger.log_level=Root_Logger.ALL] *)
-config[eta_contract=false]
+declare[[ML_dattr "fn _ => Logger.set_log_level CLPDT.logger Logger.ALL"]]
+declare[[eta_contract=false]]
 
-theorem test: "\<lambda>x. f x \<equiv> (\<lambda>y. g ((\<lambda>z. z) y) c) (\<lambda>y. y d)"
+theorem test:
+  assumes "k \<equiv> k"
+  shows "\<lambda>x. f x \<equiv> (\<lambda>y. g ((\<lambda>z. z) y) c) (\<lambda>y. d y)"
   sorry
 
 ML\<open>
-  val a = CLPDT.CLP_Rules_Data.get (Context.the_generic_context ())
-\<close>
-
-(* setup\<open>CLPDT.add_clp_rule @{thm test} |> Context.theory_map\<close> *)
-ML\<open>
-  val mythm = @{thm test}
-  val myintattr = Attrib.setup_config_int @{binding "myint"} (K 0)
-\<close>
-
-ML\<open>
-  structure Tint = Theory_Data (
-    type T = int
-    val empty = 0
-    fun merge (i1, i2) = Integer.max i1 i2
-  )
-\<close>
-
-(* ML\<open>
-  val _ = Theory.setup (Tint.put 1)
-\<close>
-
-ML\<open>
-  val i = Tint.get @{theory}
-\<close> *)
-
-ML\<open>
-  val a = CLPDT.CLP_Rules_Data.get (Context.Proof @{context})
-  (* fun goal_of ctxt = *)
-    (* Proof.goal (Toplevel.proof_of (Toplevel.presentation_state ctxt)) |> #goal *)
-  fun pretty_thm context thm = Thm.pretty_thm (Context.proof_of context) thm |> Pretty.writeln
-  fun printmyint context = @{print} ("myint", Config.get (Context.proof_of context) myintattr)
-  fun printtint context = @{print} ("tint", Tint.get (Context.theory_of context))
-  fun puttint i context = Tint.put i (Context.theory_of context)
-    |> Context.Theory
-    |> tap printtint
-\<close>
-
-ML\<open>
-  fun attr (context, thm) = (@{print} "asm"; pretty_thm context thm;
-    printmyint context;
-    printtint context;
-    Thm.tag ("asm", "added") (puttint 1 context, thm))
-  fun s (context, ts) =
-    (attr, (context, [List.last ts]))
-    (* (@{print} (map Token.print ts); (attr, (context, [List.last ts]))) *)
-  val m = Attrib.setup @{binding clp_asm} s "CLP asm"
-  val _ = Theory.setup m
-\<close>
-
-ML\<open>
-  fun attr (context, thm) = (@{print} "concl"; pretty_thm context thm; printmyint context;
-    printtint context;
-    Thm.tag ("concl", "added") (context, thm))
-  fun s (context, ts) =
-    (attr, (context, [List.last ts]))
-    (* (@{print} (map Token.print ts); (attr, (context, [List.last ts]))) *)
-  val m = Attrib.setup @{binding clp_concl} s "CLP concl"
-  val _ = Theory.setup m
-\<close>
-
-ML\<open>
-  fun fattr source thm context =
+  fun update_clp_rule_code op_code clp_tacs =
     let
-      val _ = @{print} "toplevel lemma"
-      val _ = pretty_thm context thm
-      val _ = printmyint context
-      val _ = printtint context;
-      val rs = ML_Lex.read "("
-        @ (ML_Lex.read_source source)
-        @ ML_Lex.read ") (Context.the_generic_context ()) |> (Context.put_generic_context o SOME)"
-      val context' = ML_Context.expression (Input.pos_of source) rs context
+      val thm_name = Util.internal_code_name "thm"
+      val code = flat [
+          ML_Lex.read (Util.spaces ["fn", thm_name, "=> ("]),
+          op_code,
+          ML_Lex.read ") (",
+          CLPDT.clp_tactics_code clp_tacs,
+          ML_Lex.read (implode [", ", thm_name, ")"])
+        ]
+    in code end
+  fun run_update_clp_rule_code op_code context clp_tacs thm pos =
+    let
+      val update_code = update_clp_rule_code op_code clp_tacs
+      val context' = Util.put_univ_thm thm context
+        |> Util.run_get_data_update_context_code Util.get_univ_thm_code update_code pos
     in context' end
-  fun attr ((_, x) :: xs) = Thm.declaration_attribute (fattr x)
-  val p = Args.name --| Args.$$$ "=" -- Parse.embedded_input
-    |> Parse.and_list
-  val s = Scan.lift p
-    >> attr
-    (* >> (fn args => (@{print} args; attr args)) *)
-  val m = Attrib.setup @{binding clp} s "CLP rule"
-  val _ = Theory.setup m
+  fun add_clp_rule (clp_tacs, pos) thm context =
+    let
+      val num_clp_tacs = length clp_tacs
+      val nprems = Thm.nprems_of thm
+    in
+      if num_clp_tacs <> nprems
+      then error (implode [
+          "Number of passed CLP tactics (",
+          string_of_int num_clp_tacs,
+          ") not equal to number of theorem premises (",
+          string_of_int nprems,
+          ")"
+        ])
+      else
+        let val add_code = ML_Lex.read "CLPDT.add_clp_rule"
+        in run_update_clp_rule_code add_code context clp_tacs thm pos end
+    end
+  fun delete_clp_rule (clp_tacs, pos) thm context =
+    let
+      val num_clp_tacs = length clp_tacs
+      val nprems = Thm.nprems_of thm
+      val _ = if num_clp_tacs <> nprems
+        then @{log Logger.WARN Logger.root_logger} (Context.proof_of context) (fn _ => implode [
+            "Number of passed CLP tactics (",
+            string_of_int num_clp_tacs,
+            ") not equal to number of theorem premises (",
+            string_of_int nprems,
+            ")"
+          ])
+        else ()
+      val delete_code = ML_Lex.read "CLPDT.delete_clp_rule"
+      in run_update_clp_rule_code delete_code context clp_tacs thm pos end
+  val parse_ml_pos = Scan.repeat Parse.embedded_ml |> Util.parse_position
+  fun parse_attr update = parse_ml_pos >> (Thm.declaration_attribute o update)
+  val parse = Args.add |-- parse_attr add_clp_rule
+    || Args.del |-- parse_attr delete_clp_rule
+    || parse_attr add_clp_rule
+  val _ = Attrib.setup @{binding clp} (Scan.lift parse) "CLP rule" |> Theory.setup
 \<close>
 
-config[Thm.show_tags=true]
-declare[[show_hyps=true]]
+ML\<open>
+  val clptac = CLPDT.print_clp_tactic
+\<close>
 
-lemma abc [tagged "toplevel" "?", clp a="CLPDT.add_clp_rule mythm"]:
-  assumes [tagged "asm" "1", clp_asm 1]: "A \<equiv> B"
-  and [tagged "asm" "2", clp_asm 2]: "C \<equiv> D E"
-  shows [tagged "concl" "1", clp_concl 3]: "F \<equiv> L O"
-  and [tagged "concl" "2", clp_concl 4]: "H \<equiv> J I \<Longrightarrow> Z \<equiv> Y"
+lemma abc [clp add]:
+  shows "F \<equiv> L N"
   sorry
 
-print_theorems
+declare abc[clp del]
+
+lemma ab [clp add clptac clptac] :
+  assumes "A \<equiv> B"
+  and "C \<equiv> D E"
+  shows "F \<equiv> L N"
+  and "Z \<equiv> Y"
+  sorry
+
+declare ab[clp clptac clptac]
+
 ML\<open>
-  (* val a = CLPDT.CLP_Rules_Data.get (Context.Proof @{context}) *)
-  val b = Config.get @{context} myintattr
+  (* val context = CLPDT.add_print_clp_rule @{thm abc(1)} (Context.Proof @{context}) *)
+  (* val context = CLPDT.add_print_clp_rule @{thm abc(1)} (Context.Proof @{context}) *)
+  (* val context = CLPDT.remove_print_clp_rule @{thm abc(2)} (Context.Proof @{context}) *)
+  (* val context = CLPDT.add_print_clp_rule @{thm abc(1)} context *)
+  val context = (Context.Proof @{context})
+  val {rules = a} = CLPDT.CLP_Rules_Data.get context
+    |> CLPDT.dest_clp_rules
+  val b = Discrimination_Tree.content a |> map @{print}
 \<close>
 
 (*

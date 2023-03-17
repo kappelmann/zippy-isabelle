@@ -1,0 +1,34 @@
+theory Universal_Data
+imports Pure
+keywords "declare_univ" :: thy_decl % "ML"
+begin
+
+ML_file \<open>universal_data.ML\<close>
+
+declare_univ v1 = \<open>10\<close>
+ML \<open>
+  Universal_Data.get v1 (* looks good *)
+\<close>
+
+declare_univ v2 = \<open>"hello isabelle"\<close>
+ML \<open>
+  Universal_Data.get v2 (* looks good *)
+\<close>
+
+declare_univ v1 = \<open>7\<close>
+ML \<open>
+  Universal_Data.get v1
+   (* problem: value "10" is still stored behind the scenes but inaccessible from now on *)
+\<close>
+
+declare_univ v3 = \<open>fn x => x\<close>
+ML \<open>
+  Universal_Data.get v3 3
+  (* problem: polymorphic type variable is replaced by fixed type variable *)
+\<close>
+
+ML \<open>
+  val v4 : ('a -> 'a) Universal_Data.var = Universal_Data.put I (* hmm.... *)
+\<close>
+
+end

@@ -38,9 +38,9 @@ fun key_of_term t = add_key_of_terms (t, [])
 Each node contains a list of values, and arcs to children.
 The empty key addresses the entire tree.
 Lookup functions preserve order of values stored at same level.*)
-datatype 'a ti =
+datatype 'a term_index =
     Leaf of 'a list
-  | Tree of {comb: 'a ti, var: 'a ti, atoms: 'a ti Symtab.table}
+  | Tree of {comb: 'a term_index, var: 'a term_index, atoms: 'a term_index Symtab.table}
 
 val empty = Leaf []
 

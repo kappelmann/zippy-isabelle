@@ -5,6 +5,8 @@ session Constraint_Logic_Programming = "Pure" +
     E_Unification
     Logging
     Term_Indexing
+    Universal_Data
+    SpecCheck
   theories
     Constraint_Logic_Programming
 
