@@ -1,6 +1,0 @@
-[submodule "E_Unification"]
-	path = E_Unification
-	url = git@github.com:kappelmann/e-unification-isabelle.git
-[submodule "Logger"]
-	path = Logger
-	url = git@github.com:kappelmann/logger-isabelle.git

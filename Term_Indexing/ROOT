@@ -1,6 +1,0 @@
-chapter "Term-Indexing"
-
-session Term_Indexing = "Pure" +
-  theories
-    Term_Indexing
-

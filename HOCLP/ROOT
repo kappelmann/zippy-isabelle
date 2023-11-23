@@ -1,19 +1,14 @@
-chapter "Constraint-Logic-Programming"
-
-session Constraint_Logic_Programming = "Pure" +
+session HOCLP = "Pure" +
   sessions
-    E_Unification
-    Logging
-    Term_Indexing
-    Universal_Data
+    ML_Unification
     SpecCheck
   theories
-    Constraint_Logic_Programming
+    HOCLP
 
-session Constraint_Logic_Programming_Tests in "Tests" = "HOL" +
+session HOCLP_Tests in "Tests" = "HOL" +
   sessions
-    Constraint_Logic_Programming
+    HOCLP
     SpecCheck
   theories
-    Constraint_Logic_Programming_Tests
+    HOCLP_Tests
 

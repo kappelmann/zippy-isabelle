@@ -1,26 +1,66 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
-section \<open>Higher-Order Constraint Logic Programming\<close>
-theory Constraint_Logic_Programming
+section \<open>Higher-Order Constraint Logic Programming (HOCLP)\<close>
+theory HOCLP
   imports
-    Logging.Logging
-    Logging.ML_Attributes
-    Term_Indexing.Term_Indexing
-    Universal_Data.Universal_Data
+    ML_Unification.ML_Logger
+    ML_Unification.ML_Attributes
+    ML_Unification.Setup_Result_Commands
+    ML_Unification.ML_Term_Index
+    ML_Unification.ML_Functor_Instances
+    ML_Unification.ML_General_Utils
+    ML_Unification.ML_Priorities
+    (* Universal_Data.Universal_Data *)
     SpecCheck.SpecCheck_Show
-    (*Main*)
 begin
 
 paragraph \<open>Summary\<close>
 text \<open>A higher-order constraint logic programming tactic.\<close>
 
+setup_result hoclp_logger = \<open>Logger.new_logger Logger.root_logger "HOCLP"\<close>
+
+
 ML_file\<open>util.ML\<close>
-ML_file\<open>clp.ML\<close>
+ML_file\<open>exploration_tree.ML\<close>
+ML_file\<open>hoclp.ML\<close>
 
 ML\<open>
-  structure Util = Constraint_Logic_Programming_Util
-  structure CLPDT = Constraint_Logic_Programming(Discrimination_Tree)
+  structure Util = HOCLP_Util
+  @{functor_instance struct_name = HOCLPDT
+    and functor_name = HOCLP
+    and id = \<open>"dt"\<close>
+    and more_args = \<open>structure TI = Discrimination_Tree\<close>}
+  open HOCLPDT
 \<close>
-declare[[ML_dattr "fn _ => Logger.set_log_level CLPDT.logger Logger.ALL"]]
+
+ML\<open>
+  let
+    fun modify_prio t i = case t of
+      {content = Goal_Cluster {state,...}, children} =>
+      {content = Goal_Cluster {state = state, ptac_ret = (K (SOME (i, all_tac)))}, children = children}
+    val t = ET.Tree [
+      init_tree_node,
+      case modify_prio init_tree_node 1 of
+        {content = content,...} =>
+        {content = content, children = ET.App_Tree [
+          {content = Tac_App {mkres = 4}, children = ET.Tree [modify_prio init_tree_node 4]}
+        ]},
+      case modify_prio init_tree_node 2 of
+        {content = content,...} =>
+        {content = content, children = ET.App_Tree [
+          {content = Tac_App {mkres = 3}, children = ET.Tree [modify_prio init_tree_node 4]}
+        ]}
+    ]
+    (* val update = update (fn SOME (SOME {content,...}) => apply) (fn _ => fn res => res) *)
+  in case select_tree_zipper t of
+      SOME (z, SOME p) => ((z,p) |> apply_tree_zipper |> SOME)
+    | SOME (_, NONE) => NONE
+    | NONE => NONE
+  end
+\<close>
+
+method_setup hoclpdt = HOCLPDT.hoclp_method_parser "Higher-Order Constraint Logic Programming"
+
+declare[[ML_dattr "fn _ => Logger.set_log_levels hoclp_logger Logger.ALL"]]
 declare[[eta_contract=false]]
 
 theorem test:
@@ -29,90 +69,48 @@ theorem test:
   sorry
 
 ML\<open>
-  fun update_clp_rule_code op_code clp_tacs =
-    let
-      val thm_name = Util.internal_code_name "thm"
-      val code = flat [
-          ML_Lex.read (Util.spaces ["fn", thm_name, "=> ("]),
-          op_code,
-          ML_Lex.read ") (",
-          CLPDT.clp_tactics_code clp_tacs,
-          ML_Lex.read (implode [", ", thm_name, ")"])
-        ]
-    in code end
-  fun run_update_clp_rule_code op_code context clp_tacs thm pos =
-    let
-      val update_code = update_clp_rule_code op_code clp_tacs
-      val context' = Util.put_univ_thm thm context
-        |> Util.run_get_data_update_context_code Util.get_univ_thm_code update_code pos
-    in context' end
-  fun add_clp_rule (clp_tacs, pos) thm context =
-    let
-      val num_clp_tacs = length clp_tacs
-      val nprems = Thm.nprems_of thm
-    in
-      if num_clp_tacs <> nprems
-      then error (implode [
-          "Number of passed CLP tactics (",
-          string_of_int num_clp_tacs,
-          ") not equal to number of theorem premises (",
-          string_of_int nprems,
-          ")"
-        ])
-      else
-        let val add_code = ML_Lex.read "CLPDT.add_clp_rule"
-        in run_update_clp_rule_code add_code context clp_tacs thm pos end
-    end
-  fun delete_clp_rule (clp_tacs, pos) thm context =
-    let
-      val num_clp_tacs = length clp_tacs
-      val nprems = Thm.nprems_of thm
-      val _ = if num_clp_tacs <> nprems
-        then @{log Logger.WARN Logger.root_logger} (Context.proof_of context) (fn _ => implode [
-            "Number of passed CLP tactics (",
-            string_of_int num_clp_tacs,
-            ") not equal to number of theorem premises (",
-            string_of_int nprems,
-            ")"
-          ])
-        else ()
-      val delete_code = ML_Lex.read "CLPDT.delete_clp_rule"
-      in run_update_clp_rule_code delete_code context clp_tacs thm pos end
   val parse_ml_pos = Scan.repeat Parse.embedded_ml |> Util.parse_position
-  fun parse_attr update = parse_ml_pos >> (Thm.declaration_attribute o update)
-  val parse = Args.add |-- parse_attr add_clp_rule
-    || Args.del |-- parse_attr delete_clp_rule
-    || parse_attr add_clp_rule
-  val _ = Attrib.setup @{binding clp} (Scan.lift parse) "CLP rule" |> Theory.setup
+  fun parse_attr update = parse_ml_pos >> update
+  val parse = Args.add |-- parse_attr HOCLPDT.add_hoclp_rule_attr
+    || Args.del |-- parse_attr HOCLPDT.delete_hoclp_rule_attr
+    || parse_attr HOCLPDT.add_hoclp_rule_attr
+  val _ = Attrib.setup @{binding hoclp} (Scan.lift parse) "HOCLP rule" |> Theory.setup
 \<close>
 
 ML\<open>
-  val clptac = CLPDT.print_clp_tactic
+  val hoclptac = HOCLPDT.print_hoclp_tactic
 \<close>
 
-lemma abc [clp add]:
+lemma abc [hoclp add]:
   shows "F \<equiv> L N"
   sorry
 
-declare abc[clp del]
 
-lemma ab [clp add clptac clptac] :
+
+
+lemma "F \<equiv> L N"
+  apply hoclpdt
+  oops
+
+declare abc[hoclp del]
+
+lemma ab [hoclp add hoclptac hoclptac] :
   assumes "A \<equiv> B"
   and "C \<equiv> D E"
   shows "F \<equiv> L N"
   and "Z \<equiv> Y"
   sorry
 
-declare ab[clp clptac clptac]
+declare ab[hoclp hoclptac hoclptac]
 
 ML\<open>
-  (* val context = CLPDT.add_print_clp_rule @{thm abc(1)} (Context.Proof @{context}) *)
-  (* val context = CLPDT.add_print_clp_rule @{thm abc(1)} (Context.Proof @{context}) *)
-  (* val context = CLPDT.remove_print_clp_rule @{thm abc(2)} (Context.Proof @{context}) *)
-  (* val context = CLPDT.add_print_clp_rule @{thm abc(1)} context *)
+  (* val context = HOCLPDT.add_print_hoclp_rule @{thm abc(1)} (Context.Proof @{context}) *)
+  (* val context = HOCLPDT.add_print_hoclp_rule @{thm abc(1)} (Context.Proof @{context}) *)
+  (* val context = HOCLPDT.remove_print_hoclp_rule @{thm abc(2)} (Context.Proof @{context}) *)
+  (* val context = HOCLPDT.add_print_hoclp_rule @{thm abc(1)} context *)
   val context = (Context.Proof @{context})
-  val {rules = a} = CLPDT.CLP_Rules_Data.get context
-    |> CLPDT.dest_clp_rules
+  val {rules = a} = HOCLPDT.HOCLP_Rules_Data.get context
+    |> HOCLPDT.dest_hoclp_rules
   val b = Discrimination_Tree.content a |> map @{print}
 \<close>
 

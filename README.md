@@ -7,5 +7,4 @@ A constraint logic programming tactic for Isabelle.
 Requirements:
 1. The Isabelle development version
 2. The AFP development version 
-3. The submodules of this repository
 
