@@ -11,6 +11,7 @@ theory HOCLP
     ML_Unification.ML_Priorities
     (* Universal_Data.Universal_Data *)
     SpecCheck.SpecCheck_Show
+    ML_Zippers
 begin
 
 paragraph \<open>Summary\<close>
@@ -20,7 +21,12 @@ setup_result hoclp_logger = \<open>Logger.new_logger Logger.root_logger "HOCLP"\
 
 
 ML_file\<open>util.ML\<close>
-ML_file\<open>exploration_tree.ML\<close>
+
+ML_file\<open>container.ML\<close>
+ML_file\<open>node.ML\<close>
+ML_file\<open>alternating_linked_containers.ML\<close>
+ML_file\<open>alternating_linked_containers_zipper.ML\<close>
+(* ML_file\<open>state.ML\<close> *)
 ML_file\<open>hoclp.ML\<close>
 
 ML\<open>
@@ -32,33 +38,71 @@ ML\<open>
   open HOCLPDT
 \<close>
 
+ML_file\<open>hoclp_tactic.ML\<close>
+
+ML\<open>
+  val compose_move = Option.composePartial
+  val repeat_move = perhaps_loop
+  fun move_to_origin_base move_up1 move_up2 move_left =
+    apply2 repeat_move (move_left, compose_move (move_up2, move_up1))
+    |> compose_move
+  fun move_to_origin_path_tree_zipper path_zipper = move_to_origin_base
+    move_up_path_tree_zipper move_up_path_tac_tree_zipper move_left_path_tree_zipper path_zipper
+\<close>
+
+ML\<open>
+  fun make_result_tac_tree path_zipper res_children =
+    let
+      val mk_res = get_path_zipper_zipper path_zipper |> get_zipper_content |> get_node_content
+        |> get_tac_app_mkres
+      val res = apply_make_tac_app_result mk_res path_zipper res_children
+      val opt_res = move_up_path_tac_tree_zipper path_zipper
+        |> Option.mapPartial move_up_path_tree_zipper
+        |> Option.map (fn path_zipper => make_result_tac_tree path_zipper res)
+    in the_default res opt_res end
+  fun make_result_tree path_zipper =
+    let
+      val res = get_path_zipper_state path_zipper
+      val opt_res = move_up_path_tree_zipper path_zipper
+        |> Option.map (fn path_zipper => make_result_tac_tree path_zipper res)
+    in the_default res opt_res end
+\<close>
+
+declare[[ML_print_depth=2000]]
 ML\<open>
   let
+    val tac = resolve_tac @{context} @{thms reflexive} 1 |> HOCLP_Tactic.leaf_tac_from_tactical
+    val mk_tac_app_res = HOCLP_Tactic.mk_tac_app_res_from_tactical
     fun modify_prio t i = case t of
       {content = Goal_Cluster {state,...}, children} =>
-      {content = Goal_Cluster {state = state, ptac_ret = (K (SOME (i, all_tac)))}, children = children}
-    val t = ET.Tree [
-      init_tree_node,
-      case modify_prio init_tree_node 1 of
+      {content = Goal_Cluster {state = state, prio_tac_ret =
+        prio_tac_ret (K (SOME (prio_content i tac)))},
+        children = children}
+    val t : (prio_tac_ret, mr) tree = tree [
+      HOCLPDT.init_tree_node,
+      case modify_prio HOCLPDT.init_tree_node 1 of
         {content = content,...} =>
-        {content = content, children = ET.App_Tree [
-          {content = Tac_App {mkres = 4}, children = ET.Tree [modify_prio init_tree_node 4]}
+        {content = content, children = tac_tree [
+          {content = Tac_App {mkres = mk_tac_app_res}, children = ET.Tree [modify_prio HOCLPDT.init_tree_node 4]},
+          {content = Tac_App {mkres = mk_tac_app_res}, children = ET.Tree [modify_prio HOCLPDT.init_tree_node 10]}
         ]},
-      case modify_prio init_tree_node 2 of
+      case modify_prio HOCLPDT.init_tree_node 2 of
         {content = content,...} =>
-        {content = content, children = ET.App_Tree [
-          {content = Tac_App {mkres = 3}, children = ET.Tree [modify_prio init_tree_node 4]}
+        {content = content, children = tac_tree [
+          {content = Tac_App {mkres = mk_tac_app_res}, children = ET.Tree [modify_prio HOCLPDT.init_tree_node 4]}
         ]}
     ]
-    (* val update = update (fn SOME (SOME {content,...}) => apply) (fn _ => fn res => res) *)
-  in case select_tree_zipper t of
-      SOME (z, SOME p) => ((z,p) |> apply_tree_zipper |> SOME)
-    | SOME (_, NONE) => NONE
-    | NONE => NONE
+    val selection = select_tree_zipper t
+    val res = Option.mapPartial apply_tac selection
+  in
+    res |> the
+    |> move_down_path_tree_zipper |> the |> move_down_path_tac_tree_zipper |> the
+    (* |> get_path_zipper_zipper |> get_zipper_content |> get_node_content *)
+    |> make_result_tree
   end
 \<close>
 
-method_setup hoclpdt = HOCLPDT.hoclp_method_parser "Higher-Order Constraint Logic Programming"
+(* method_setup hoclpdt = HOCLPDT.hoclp_method_parser "Higher-Order Constraint Logic Programming"
 
 declare[[ML_dattr "fn _ => Logger.set_log_levels hoclp_logger Logger.ALL"]]
 declare[[eta_contract=false]]
@@ -112,7 +156,7 @@ ML\<open>
   val {rules = a} = HOCLPDT.HOCLP_Rules_Data.get context
     |> HOCLPDT.dest_hoclp_rules
   val b = Discrimination_Tree.content a |> map @{print}
-\<close>
+\<close> *)
 
 (*
 Meeting notes:

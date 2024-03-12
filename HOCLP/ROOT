@@ -1,7 +1,10 @@
 session HOCLP = "Pure" +
   sessions
     ML_Unification
+    ML_Typeclasses
     SpecCheck
+  directories
+    Zippers
   theories
     HOCLP
 
