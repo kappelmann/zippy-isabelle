@@ -5,5 +5,6 @@ theory ML_ITypeclasses_Base
 begin
 
 ML_file\<open>itypeclass_base.ML\<close>
+ML_file\<open>itypeclass_base_instance.ML\<close>
 
 end

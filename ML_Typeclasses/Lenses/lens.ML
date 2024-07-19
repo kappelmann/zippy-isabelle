@@ -9,7 +9,7 @@ sig
 
 structure C : CATEGORY_BASE
 
-(*abstract point datatype. The getter and modifier operations work in some
+(*abstract lens datatype. The getter and modifier operations work in some
 category. The type of the value pointed to might change, thereby changing
 the type of the outer structure.*)
 type ('t, 'o, 's, 'i) lens
@@ -26,10 +26,9 @@ sharing type cat = lens
 
 end
 
-functor Lens_Base(AA : ARROW_APPLY_BASE) : LENS_BASE =
+functor Lens_Base(AA : ARROW_APPLY) : LENS_BASE =
 struct
 
-structure AA = Arrow_Apply(AA)
 structure A = Arrow(AA)
 structure C = AA
 
@@ -58,6 +57,14 @@ fun comp l1 l2 =
     val m2 = modify l2
   in lens (A.comp g1 g2) (AA.uncurry (A.curry m2 o A.curry m1)) end
 
+fun comp_lazy l1 l2 =
+  let
+    val g1 = get o l1
+    val m1 = modify o l1
+    val g2 = get l2
+    val m2 = modify l2
+  in lens (A.comp_lazy g1 g2) (AA.uncurry (fn x => x |> A.curry m2 o A.curry (m1 ()))) end
+
 end
 
 signature LENS =
@@ -69,17 +76,30 @@ type ('t, 's, 'o) setter = (('o * 's), 't) C.cat
 
 val set : ('t, 'o, 's, 'i) lens -> ('t, 's, 'o) setter
 
+val lift_get : ('s, 'i) C.cat -> ('o, 'o, 's, 'i) lens
+val lift_modify : ('o, 't) C.cat -> ('t, 'o, 'i, 'i) lens
+
+val comp_get_modify : ('i, 'j) C.cat -> ('u, 'o) C.cat -> ('t, 'o, 's, 'i) cat ->
+  ('t, 'u, 's, 'j) cat
+
 end
 
-functor Lens(AA : ARROW_APPLY_BASE) : LENS =
+functor Lens(structure L : LENS_BASE; structure A : ARROW sharing type L.C.cat = A.cat) : LENS =
 struct
 
-structure L = Lens_Base(AA)
 open L
-structure A = Arrow(AA)
 
 type ('t, 's, 'o) setter = (('o * 's), 't) C.cat
 
-fun set p = C.comp (modify p) (A.first (A.arr A.K))
+fun set l = C.comp (modify l) (A.first (A.arr A.K))
+
+fun lift_get f =
+  L.lens (L.id () |> L.get |> L.C.comp f) (A.second f |> L.C.comp (L.modify (L.id ())))
+
+fun lift_modify f =
+  let val id = L.id ()
+  in L.lens (L.get id) (L.C.comp f (L.modify id)) end
+
+fun comp_get_modify get modify f = f |> comp (lift_get get) |> comp (lift_modify modify)
 
 end

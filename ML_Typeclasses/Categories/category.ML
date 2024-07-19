@@ -3,6 +3,10 @@
 
 Basic typeclasses related to category theory, inspired by the Haskell base package.
 *)
+infix 1 >>>
+infix 1 ***
+infix 1 &&&
+
 signature CATEGORY_BASE =
 sig
 
@@ -10,6 +14,7 @@ type ('a, 'b) cat
 (*unit argument to fight ML's value restriction*)
 val id : unit -> ('a, 'a) cat
 val comp : ('b, 'c) cat -> ('a, 'b) cat -> ('a, 'c) cat
+val comp_lazy : (unit -> ('b, 'c) cat) -> ('a, 'b) cat -> ('a, 'c) cat
 
 end
 
@@ -17,7 +22,8 @@ signature CATEGORY =
 sig
 
 include CATEGORY_BASE
-val >>> : ('a, 'b) cat -> ('b, 'c) cat -> ('a, 'c) cat
+val >>> : ('a, 'b) cat * ('b, 'c) cat -> ('a, 'c) cat
+val o : ('b, 'c) cat * ('a, 'b) cat -> ('a, 'c) cat
 
 end
 
@@ -25,7 +31,8 @@ functor Category(C : CATEGORY_BASE) : CATEGORY =
 struct
 
 open C
-fun >>> f g = comp g f
+fun f >>> g = comp g f
+fun f o g = comp f g
 
 end
 
@@ -34,7 +41,7 @@ sig
 
 include CATEGORY_BASE
 val arr : ('a -> 'b) -> ('a, 'b) cat
-val *** : ('a, 'b) cat -> ('c, 'd) cat -> (('a * 'c), ('b * 'd)) cat
+val *** : ('a, 'b) cat * ('c, 'd) cat -> (('a * 'c), ('b * 'd)) cat
 
 end
 
@@ -46,7 +53,7 @@ include ARROW_BASE
 val first : ('a, 'b) cat -> (('a * 'c), ('b * 'c)) cat
 val second : ('a, 'b) cat -> (('c * 'a), ('c * 'b)) cat
 
-val &&& : ('a, 'b) cat -> ('a, 'c) cat -> ('a, ('b * 'c)) cat
+val &&& : ('a, 'b) cat * ('a, 'c) cat -> ('a, ('b * 'c)) cat
 
 val K : 'a -> ('b, 'a) cat
 val curry : (('a * 'b), 'c) cat -> 'a -> ('b, 'c) cat
@@ -57,13 +64,13 @@ functor Arrow(A : ARROW_BASE) : ARROW =
 struct
 
 open A
-fun first f = *** f (id ())
-fun second f = *** (id ()) f
+fun first f = f *** id ()
+fun second f = id () *** f
 
-fun &&& f g = comp (A.*** f g) (arr (fn b => (b,b)))
+fun f &&& g = comp (f *** g) (arr (fn b => (b, b)))
 
 fun K x = arr (fn _ => x)
-fun curry m i = comp m (&&& (K i) (id ()))
+fun curry f i = comp f (K i &&& id ())
 
 end
 
@@ -104,5 +111,46 @@ sig
 
 include ARROW_ZERO_BASE
 val plus : ('a, 'b) cat -> ('a, 'b) cat -> ('a, 'b) cat
+
+end
+
+signature ARROW_OR_BASE =
+sig
+
+include ARROW_ZERO_BASE
+val or : ('a, 'b) cat -> ('a, 'b) cat -> ('a, 'b) cat
+
+end
+
+signature ARROW_EXCEPTION_BASE =
+sig
+
+include ARROW_BASE
+type exn
+
+val throw : (exn, 'a) cat
+val catch : ('a, 'b) cat -> ('a * exn, 'b) cat -> ('a, 'b) cat
+
+end
+
+signature ARROW_EXCEPTION =
+sig
+
+include ARROW_EXCEPTION_BASE
+
+val catch' : ('a, 'b) cat -> ('a, 'b) cat -> ('a, 'b) cat
+val try : ('a, 'a) cat -> ('a, 'a) cat
+val repeat : ('a, 'a) cat -> ('a, 'a) cat
+
+end
+
+functor Arrow_Exception(A : ARROW_EXCEPTION_BASE) : ARROW_EXCEPTION =
+struct
+
+open A
+
+fun catch' f g = catch f (comp g (arr fst))
+fun try f = catch' f (id ())
+fun repeat move = try (comp_lazy (fn _ => repeat move) move)
 
 end

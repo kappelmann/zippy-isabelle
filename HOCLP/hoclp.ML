@@ -26,7 +26,7 @@ structure Show = SpecCheck_Show
 structure MLCU = ML_Code_Util
 structure GU = General_Util
 
-val logger = Logger.setup_new_logger Logger.root_logger FIU.FIA.full_name
+val logger = Logger.setup_new_logger Logger.root FIU.FIA.full_name
 
 (* HOCLP tactics *)
 (* type binding = Binding.binding

@@ -6,53 +6,111 @@ Instances of indexed categories.
 signature IKLEISLI =
 sig
 
-structure IM : IMONAD_BASE
-type ('i, 'o, 'a, 'b) kleisli = 'a -> ('i, 'o, 'b) IM.t
+structure M : IMONAD_BASE
+type ('i, 'o, 'a, 'b) kleisli = 'a -> ('i, 'o, 'b) M.t
 
 end
 
-functor Kleisli_IKleisli(structure IK : IKLEISLI; structure T : GROUND_TYPE) : KLEISLI =
+functor IKleisli_Kleisli(K : KLEISLI) : IKLEISLI =
 struct
+structure M = IMonad_Monad(K.M)
+type ('i, 'o, 'a, 'b) kleisli = ('a, 'b) K.kleisli
+end
 
-structure M = Monad_IMonad(structure IM = IK.IM; structure T = T)
-type ('a, 'b) kleisli = (T.t, T.t, 'a, 'b) IK.kleisli
+functor Kleisli_IKleisli(structure K : IKLEISLI; structure T : GROUND_TYPE) : KLEISLI =
+struct
+structure M = Monad_IMonad(structure M = K.M; structure T = T)
+type ('a, 'b) kleisli = (T.t, T.t, 'a, 'b) K.kleisli
+end
 
+functor IKleisli(M : IMONAD_BASE) : IKLEISLI =
+struct
+structure M = M
+type ('i, 'o, 'a, 'b) kleisli = 'a -> ('i, 'o, 'b) M.t
 end
 
 (*Indexed Kleisli category*)
-functor IKleisli_IArrow_Apply(IM : IMONAD_BASE) : sig
+functor IKleisli_IArrow_Apply(M : IMONAD_BASE) :
+  sig
     include IKLEISLI
     include IARROW_APPLY_BASE
     where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) kleisli
   end =
 struct
 
-structure IM = IM
-type ('i, 'o, 'a, 'b) kleisli = 'a -> ('i, 'o, 'b) IM.t
+structure M = M
+structure K = IKleisli(M)
+open K
 
+structure M = IMonad(M) open M
 type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) kleisli
-fun id _ = IM.pure
-fun comp k1 k2 = (fn x => IM.bind (k2 x) (k1))
-fun arr f = (IM.pure o f)
-fun *** k1 k2 = (fn (x, y) => IM.bind (k1 x)
-  (fn x' => IM.bind (k2 y)
-  (fn y' => IM.pure (x', y'))))
+fun id _ = pure
+fun comp k1 k2 = (fn x => k2 x >>= k1)
+fun comp_lazy k1 k2 = comp (fn x => k1 () x) k2
+fun arr f = (pure o f)
+fun k1 *** k2 = (fn (x, y) => k1 x
+  >>= (fn x' => k2 y
+  >>= (fn y' => pure (x', y'))))
 fun app (f, x) = f x
 
 end
 
-functor IKleisli_IArrow_Plus(IMP : IMONAD_PLUS_BASE) : sig
+functor IKleisli_IArrow_Zero(MZ : IMONAD_ZERO_BASE) : sig
+    include IKLEISLI
+    include IARROW_ZERO_BASE
+    where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) kleisli
+  end =
+struct
+
+structure IKAA = IKleisli_IArrow_Apply(MZ)
+open IKAA
+
+fun zero _ _ = MZ.zero ()
+
+end
+
+functor IKleisli_IArrow_Plus(MP : IMONAD_PLUS_BASE) : sig
     include IKLEISLI
     include IARROW_PLUS_BASE
     where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) kleisli
   end =
 struct
 
-structure IKAA = IKleisli_IArrow_Apply(IMP)
-open IKAA
+structure KAZ = IKleisli_IArrow_Zero(MP)
+open KAZ
 
-fun zero _ _ = IMP.zero ()
-fun plus f g x = IMP.plus (f x) (g x)
+fun plus f g x = MP.plus_lazy (f x) (fn _ => g x)
 
 end
 
+functor IKleisli_IArrow_Or(MO : IMONAD_OR_BASE) : sig
+    include IKLEISLI
+    include IARROW_OR_BASE
+    where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) kleisli
+  end =
+struct
+
+structure KAZ = IKleisli_IArrow_Zero(MO)
+open KAZ
+
+fun or f g x = MO.or_lazy (f x) (fn _ => g x)
+
+end
+
+functor IKleisli_Arrow_Exception(ME : IMONAD_EXCEPTION_BASE) :
+sig
+    include IKLEISLI
+    include IARROW_EXCEPTION_BASE
+    where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) kleisli
+  end =
+struct
+
+structure KA = IKleisli_IArrow_Apply(ME)
+open KA
+
+type exn = ME.exn
+
+val throw = ME.throw
+fun catch f g x = ME.catch (f x) (g o pair x)
+
+end

@@ -10,8 +10,9 @@ struct
 type ('a, 'b) cat = 'a -> 'b
 fun id _ = I
 fun comp f g x = f (g x)
+fun comp_lazy f g x = f () (g x)
 val arr = I
-fun *** f g (x, y) = (f x, g y)
+fun (f *** g) (x, y) = (f x, g y)
 fun app (f, x) = f x
 
 end
@@ -38,15 +39,31 @@ struct
 
 structure K = Kleisli(M)
 open K
+structure M = Monad(M) open M
 
 type ('a, 'b) cat = ('a, 'b) kleisli
-fun id _ = M.pure
-fun comp k1 k2 = (fn x => M.bind (k2 x) k1)
-fun arr f = M.pure o f
-fun *** k1 k2 = (fn (x, y) => M.bind (k1 x)
-  (fn x' => M.bind (k2 y)
-  (fn y' => M.pure (x', y'))))
+fun id _ = pure
+fun comp k1 k2 x = k2 x >>= k1
+fun comp_lazy k1 k2 = comp (fn x => k1 () x) k2
+fun arr f = pure o f
+fun k1 *** k2 = (fn (x, y) => k1 x
+  >>= (fn x' => k2 y
+  >>= (fn y' => pure (x', y'))))
 fun app (f, x) = f x
+
+end
+
+functor Kleisli_Arrow_Zero(MZ : MONAD_ZERO_BASE) : sig
+    include KLEISLI
+    include ARROW_ZERO_BASE
+    where type ('a, 'b) cat = ('a, 'b) kleisli
+  end =
+struct
+
+structure KAA = Kleisli_Arrow_Apply(MZ)
+open KAA
+
+fun zero _ _ = MZ.zero ()
 
 end
 
@@ -57,10 +74,40 @@ functor Kleisli_Arrow_Plus(MP : MONAD_PLUS_BASE) : sig
   end =
 struct
 
-structure KAA = Kleisli_Arrow_Apply(MP)
-open KAA
+structure KAZ = Kleisli_Arrow_Zero(MP)
+open KAZ
 
-fun zero _ _ = MP.zero ()
-fun plus f g x = MP.plus (f x) (g x)
+fun plus f g x = MP.plus_lazy (f x) (fn _ => g x)
+
+end
+
+functor Kleisli_Arrow_Or(MO : MONAD_OR_BASE) : sig
+    include KLEISLI
+    include ARROW_OR_BASE
+    where type ('a, 'b) cat = ('a, 'b) kleisli
+  end =
+struct
+
+structure KAZ = Kleisli_Arrow_Zero(MO)
+open KAZ
+
+fun or f g x = MO.or_lazy (f x) (fn _ => g x)
+
+end
+
+functor Kleisli_Arrow_Exception(ME : MONAD_EXCEPTION_BASE) : sig
+    include KLEISLI
+    include ARROW_EXCEPTION_BASE
+    where type ('a, 'b) cat = ('a, 'b) kleisli
+  end =
+struct
+
+structure KA = Kleisli_Arrow_Apply(ME)
+open KA
+
+type exn = ME.exn
+
+val throw = ME.throw
+fun catch f g x = ME.catch (f x) (g o pair x)
 
 end

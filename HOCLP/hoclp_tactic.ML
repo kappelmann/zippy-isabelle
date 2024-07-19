@@ -4,7 +4,7 @@
 structure HOCLP_Tactic =
 struct
 
-val mk_tac_app_res_from_tactical = Make_Tac_App_Result (fn path_zipper => fn res_children =>
+val mk_tac_app_res_from_tactical = Make_Tac_App_Result(fn path_zipper => fn res_children =>
   let
     val (ET.Tree children) = get_path_zipper_zipper path_zipper |> get_zipper_content |> get_node_children
     val _ = @{print} children

@@ -4,7 +4,12 @@ session HOCLP = "Pure" +
     ML_Typeclasses
     SpecCheck
   directories
-    Zippers
+    "Enumerable"
+    "Moves"
+    "Zippers"
+    "Zippers/Alternating_Bi_Zippers"
+    "Zippers/Bi_Zippers"
+    "Zippers/Zippers"
   theories
     HOCLP
 

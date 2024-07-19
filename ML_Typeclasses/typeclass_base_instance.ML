@@ -1,4 +1,4 @@
-(*  Title: typeclass_base_instance.ML
+(*  Title:  typeclass_base_instance.ML
     Author: Kevin Kappelmann
 
 Instances of basic typeclasses.
@@ -9,7 +9,7 @@ struct
 type 'a t = 'a
 fun map f x = f x
 fun pure x = x
-fun <*> f x = f x
+fun f <*> x = f x
 fun bind x f = f x
 
 end
@@ -74,7 +74,6 @@ fun traverse f = T.traverse (fn sq => F.foldr (A.liftA2 Seq.cons o f) sq (A.pure
 
 end
 
-(*Note: this does not yield a monad unless the argument monad is commutative.*)
 functor Seq_Monad_Trans(M : MONAD_BASE) : MONAD_TRANS =
 struct
 
@@ -86,9 +85,13 @@ structure F = Seq_Functor_Trans(Identity_Monad)
 structure T = Seq_Traversable_Trans(Identity_Traversable(M))
 
 fun pure x = M.pure (Seq.single x)
-fun <*> f x = M.bind x (fn x => M.bind f (Seq.maps (fn f => F.map f x) #> M.pure))
 
-fun bind x f = M.bind x (fn x => M.bind (T.traverse f x) (Seq.flat #> M.pure))
+local structure M = Monad(M) open M
+in
+fun f <*> x = x >>= (fn x => f >>= (Seq.maps (fn f => F.map f x) #> M.pure))
+
+fun bind x f = x >>= (T.traverse f >=> (Seq.flat #> M.pure))
+end
 
 end
 
@@ -108,7 +111,7 @@ struct
 
 type 'a f = 'a list F.f
 
-fun fold_base step [] = I
+fun fold_base _ [] = I
   | fold_base step (x :: xs) = step (fold_base step xs) x
 
 fun foldl f = F.foldl (fold_base (fn frec => frec oo f))
@@ -131,8 +134,6 @@ fun traverse f = T.traverse (fn sq => F.foldr (A.liftA2 cons o f) sq (A.pure [])
 
 end
 
-(*Note: this does not yield a monad unless the argument monad is commutative;
-cf https://wiki.haskell.org/ListT_done_right*)
 functor List_Monad_Trans(M : MONAD_BASE) : MONAD_TRANS =
 struct
 
@@ -144,10 +145,13 @@ structure F = List_Functor_Trans(Identity_Monad)
 structure T = List_Traversable_Trans(Identity_Traversable(M))
 
 fun pure x = M.pure (single x)
-fun <*> f x = M.bind x (fn x => M.bind f (maps (fn f => F.map f x) #> M.pure))
 
-fun bind x f = M.bind x (fn x => M.bind (T.traverse f x) (flat #> M.pure))
+local structure M = Monad(M) open M
+in
+fun f <*> x = x >>= (fn x => f >>= (maps (fn f => F.map f x) #> M.pure))
 
+fun bind x f = x >>= (fn x => T.traverse f x >>= (flat #> M.pure))
+end
 end
 
 functor Option_Functor_Trans(F : FUNCTOR_BASE) : FUNCTOR_TRANS =
@@ -169,19 +173,32 @@ structure F = Option_Functor_Trans(M)
 open F
 
 fun pure x = M.pure (SOME x)
-fun <*> f x = M.bind f (fn NONE => M.pure NONE | SOME f => map f x)
+fun f <*> x = M.bind f (fn NONE => M.pure NONE | SOME f => map f x)
 fun bind x f = M.bind x (fn NONE => M.pure NONE | SOME x => f x)
 
 end
 
-functor Option_Monad_Plus(M : MONAD_BASE) : MONAD_PLUS_BASE =
+functor Option_Monad_Or_Trans(M : MONAD_BASE) : MONAD_OR_BASE =
 struct
 
 structure OM = Option_Monad_Trans(M)
 open OM
 
 fun zero _ = M.pure NONE
-fun plus x y = OM.M.bind x (fn NONE => y | x => M.pure x)
+fun or_lazy x fy = OM.M.bind x (fn NONE => fy () | _ => x)
+
+end
+
+functor Option_Monad_Exception_Trans_Exception(M : MONAD_EXCEPTION_BASE)
+  : MONAD_EXCEPTION_BASE where type exn = M.exn =
+struct
+
+structure OM = Option_Monad_Trans(M)
+type exn = M.exn
+
+fun throw e = e |> OM.lift o M.throw
+fun catch m f = M.catch m f
+open OM
 
 end
 
@@ -208,6 +225,45 @@ open F
 
 structure A = Applicative(T.A)
 fun traverse f = T.traverse (fn NONE => A.pure NONE | SOME x => A.map SOME (f x))
+
+end
+
+functor Monad_Exception_Monad_Or(M : MONAD_OR_BASE) : MONAD_EXCEPTION_BASE where type exn = unit =
+struct
+
+open M
+type exn = unit
+
+val throw = zero
+val catch = or_lazy
+
+end
+
+(* adapted from Haskell's free package https://hackage.haskell.org/package/free *)
+functor Free_Monad_Trans(structure F : FUNCTOR_BASE; structure M : MONAD_BASE) : MONAD_TRANS =
+struct
+
+structure M = M
+
+datatype ('a, 'b) freef = Pure of 'a | Free of 'b F.t
+datatype 'a freet = FreeT of ('a, 'a freet) freef M.t
+
+fun runFreeT (FreeT m) = m
+
+type 'a t = 'a freet
+
+fun lift x = FreeT (M.map Pure x)
+
+fun map f (FreeT m) =
+  let fun f' (Pure x) = Pure (f x)
+        | f' (Free xs) = Free (F.map (map f) xs)
+  in FreeT (M.map f' m) end
+
+fun pure a = FreeT (M.pure (Pure a))
+
+fun bind (FreeT m) f = FreeT (M.bind m (fn Pure a => runFreeT (f a)
+  | Free ms => M.pure (Free (F.map (fn m => bind m f) ms))))
+fun m1 <*> m2 = bind m1 (fn f => bind m2 (fn x => pure (f x)))
 
 end
 

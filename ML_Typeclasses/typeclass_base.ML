@@ -1,8 +1,12 @@
 (*  Title:  typeclass_base.ML
     Author: Kevin Kappelmann
 
-Basic typeclasses inspired by the Haskell Prelude.
+Basic typeclasses inspired by the Haskell Prelude, monad-transformers, and the mtl package.
 *)
+infix 1 <*>
+infix 1 >>=
+infix 1 >=>
+
 signature FUNCTOR_BASE =
 sig
   type 'a t
@@ -21,7 +25,7 @@ signature APPLICATIVE_BASE =
 sig
   include FUNCTOR_BASE
   val pure : 'a -> 'a t
-  val <*> : ('a -> 'b) t -> 'a t -> 'b t
+  val <*> : ('a -> 'b) t * 'a t -> 'b t
 end
 
 signature APPLICATIVE =
@@ -34,7 +38,7 @@ functor Applicative(A : APPLICATIVE_BASE) : APPLICATIVE =
 struct
 
 open A
-fun liftA2 f x = A.<*> (A.map f x)
+fun liftA2 f x = curry (op <*>) (A.map f x)
 
 end
 
@@ -55,16 +59,22 @@ end
 signature MONAD =
 sig
   include MONAD_BASE
+  val >>= : 'a t * ('a -> 'b t) -> 'b t
   val join : ('a t) t -> 'a t
-  val >=> : ('a -> 'b t) -> ('b -> 'c t) -> 'a -> 'c t
+  val >=> : ('a -> 'b t) * ('b -> 'c t) -> 'a -> 'c t
+  val flat1 : ('a -> 'b t) t -> 'a -> 'b t
+  val flat2 : ('a -> 'b -> 'c t) t -> 'a -> 'b -> 'c t
 end
 
 functor Monad(M : MONAD_BASE) : MONAD =
 struct
 
 open M
-fun join x = bind x I
-fun >=> fm gm x = bind (fm x) gm
+fun x >>= f = bind x f
+fun join x = x >>= I
+fun (fm >=> gm) x = fm x >>= gm
+fun flat1 fm x = fm >>= (fn f => f x)
+fun flat2 fm x = M.map (fn f => f x) fm |> flat1
 
 end
 
@@ -80,6 +90,7 @@ end
 signature ALTERNATIVE_BASE =
 sig
   include APPLICATIVE_BASE
+  (*laws: (empty, <|>) forms a monoid on 'a t*)
   val empty : unit -> 'a t
   val <|> : 'a t -> 'a t -> 'a t
 end
@@ -98,11 +109,56 @@ fun optional x = A.<|> (A.map SOME x) (A.pure NONE)
 
 end
 
-signature MONAD_PLUS_BASE =
+signature MONAD_ZERO_BASE =
 sig
   include MONAD_BASE
   val zero : unit -> 'a t
+end
+
+signature MONAD_PLUS_BASE =
+sig
+  include MONAD_ZERO_BASE
+  (*satisfies left distribution law: "plus x y >>= f = plus (x >>= f) (y >>= f)"*)
+  val plus_lazy : 'a t -> (unit -> 'a t) -> 'a t
+end
+
+signature MONAD_PLUS =
+sig
+  include MONAD_PLUS_BASE
   val plus : 'a t -> 'a t -> 'a t
+end
+
+functor Monad_Plus(M : MONAD_PLUS_BASE) : MONAD_PLUS =
+struct
+  open M
+  fun plus x y = M.plus_lazy x (K y)
+end
+
+signature MONAD_OR_BASE =
+sig
+  include MONAD_ZERO_BASE
+  (*satisfies left catch law: "or (pure x) y = pure x"*)
+  val or_lazy : 'a t -> (unit -> 'a t) -> 'a t
+end
+
+signature MONAD_OR =
+sig
+  include MONAD_OR_BASE
+  val or : 'a t -> 'a t -> 'a t
+end
+
+functor Monad_Or(M : MONAD_OR_BASE) : MONAD_OR =
+struct
+  open M
+  fun or x y = M.or_lazy x (K y)
+end
+
+signature MONAD_EXCEPTION_BASE =
+sig
+  include MONAD_BASE
+  type exn
+  val throw : exn -> 'a t
+  val catch : 'a t -> (exn -> 'a t) -> 'a t
 end
 
 signature FOLDABLE_BASE =
@@ -144,3 +200,4 @@ sig
   include TRAVERSABLE_BASE
   val lift : 'a T.t -> 'a t
 end
+
