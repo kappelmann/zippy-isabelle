@@ -11,11 +11,17 @@ functor Alternating_Bi_Zippers_Bi_Nodes_Base_Args_Simple_Zippers(
   ) :
   sig
     structure AC : ALTERNATING_BI_CONTAINERS
+    (* where type ('i, 'a, 'b) container1 = ('i, 'a, 'b) BZ1.container *)
+    (* where type ('i, 'a, 'b) container2 = ('i, 'a, 'b) BZ2.container *)
     include ALTERNATING_BI_ZIPPERS_BI_NODES_BASE_ARGS
     where type ('i, 'a, 'b) N1.content = ('i, 'a, ('i, 'b, 'a) AC.acontainer2) ncontent1
     where type ('i, 'a, 'b) N2.content = ('i, 'a, ('i, 'b, 'a) AC.acontainer1) ncontent2
-    (*('i, 'a, 'b) BZ1.container = ('i, ('i, 'a, 'b) N1.node) Z1.container*)
-    (*('i, 'a, 'b) BZ2.container = ('i, ('i, 'a, 'b) N1.node) Z2.container*)
+    (* where ('i, 'a, 'b) BZ1.zcontext = ('i, ('i, 'a, 'b) N1.node) Z1.zcontext *)
+    (* where ('i, 'a, 'b) BZ1.zipper = ('i, ('i, 'a, 'b) N1.node) Z1.zipper *)
+    (* where ('i, 'a, 'b) BZ1.container = ('i, ('i, 'a, 'b) N1.node) Z1.container *)
+    (* where ('i, 'a, 'b) BZ2.zcontext = ('i, ('i, 'a, 'b) N2.node) Z2.zcontext *)
+    (* where ('i, 'a, 'b) BZ2.zipper = ('i, ('i, 'a, 'b) N2.node) Z2.zipper *)
+    (* where ('i, 'a, 'b) BZ2.container = ('i, ('i, 'a, 'b) N1.node) Z2.container *)
     where type ('i, 'j, 'a) BZ1.K.M.t = ('i, 'j, 'a) Z1.K.M.t
     where type ('i, 'j, 'a) BZ2.K.M.t = ('i, 'j, 'a) Z2.K.M.t
   end

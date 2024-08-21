@@ -21,7 +21,17 @@ functor Alternating_Bi_Zippers_Bi_Nodes_Base_Args_Bi_Zippers(
     val content2 : ('i, 'a, 'b) ncontent2 ->
       ('i, ('i, 'b, ('i, 'a, 'b) AC.acontainer2) Z1.container) Z1.mt ->
       ('i, 'a, ('i, 'b, 'a) AC.acontainer1) Z2.content
-  ) : ALTERNATING_BI_ZIPPERS_BI_NODES_BASE_ARGS =
+  ) :
+    ALTERNATING_BI_ZIPPERS_BI_NODES_BASE_ARGS
+    where type ('i, 'a, 'b) BZ1.zcontext = ('i, 'a, ('i, 'b, 'a) AC.acontainer2) Z1.zcontext
+    where type ('i, 'a, 'b) BZ1.zipper = ('i, 'a, ('i, 'b, 'a) AC.acontainer2) Z1.zipper
+    where type ('i, 'a, 'b) BZ1.container = ('i, 'a, ('i, 'b, 'a) AC.acontainer2) Z1.container
+    where type ('i, 'a, 'b) BZ2.zcontext = ('i, 'a, ('i, 'b, 'a) AC.acontainer1) Z2.zcontext
+    where type ('i, 'a, 'b) BZ2.zipper = ('i, 'a, ('i, 'b, 'a) AC.acontainer1) Z2.zipper
+    where type ('i, 'a, 'b) BZ2.container = ('i, 'a, ('i, 'b, 'a) AC.acontainer1) Z2.container
+    where type ('i, 'a, 'b) N1.content = ('i, 'a, 'b) ncontent1
+    where type ('i, 'a, 'b) N2.content = ('i, 'a, 'b) ncontent2
+  =
 struct
     structure BZ1 = Instantiate_Bi_Zipper(
     structure Z = Z1

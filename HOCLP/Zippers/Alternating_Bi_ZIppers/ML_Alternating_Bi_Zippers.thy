@@ -7,6 +7,7 @@ begin
 
 ML_file\<open>alternating_bi_zippers.ML\<close>
 ML_file\<open>pair_alternating_bi_zippers.ML\<close>
+ML_file\<open>flip_alternating_bi_zippers.ML\<close>
 
 ML_file\<open>bi_node.ML\<close>
 ML_file\<open>modify_bi_node.ML\<close>

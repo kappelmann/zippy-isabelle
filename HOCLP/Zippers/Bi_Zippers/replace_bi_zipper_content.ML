@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/modify_bi_zipper.ML
+(*  Title:      HOCLP/replace_bi_zipper_content.ML
     Author:     Kevin Kappelmann
 *)
 functor Replace_Bi_Zipper_Base_Content(

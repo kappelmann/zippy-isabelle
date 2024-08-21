@@ -2,13 +2,15 @@
 section \<open>Higher-Order Constraint Logic Programming (HOCLP)\<close>
 theory HOCLP
   imports
-    ML_Unification.ML_Logger
     ML_Unification.ML_Attributes
-    ML_Unification.Setup_Result_Commands
-    ML_Unification.ML_Term_Index
     ML_Unification.ML_Functor_Instances
-    ML_Unification.ML_General_Utils
+    ML_Unification.ML_Logger
     ML_Unification.ML_Priorities
+    ML_Unification.ML_Tactic_Utils
+    ML_Unification.ML_Term_Utils
+    ML_Unification.ML_Term_Index
+    (* ML_Unification.ML_General_Utils *)
+    ML_Unification.Setup_Result_Commands
     (* Universal_Data.Universal_Data *)
     SpecCheck.SpecCheck_Show
     ML_Alternating_Bi_Zippers
@@ -20,68 +22,27 @@ text \<open>A higher-order constraint logic programming tactic.\<close>
 
 setup_result hoclp_logger = \<open>Logger.new_logger Logger.root "HOCLP"\<close>
 
-ML_file\<open>util.ML\<close>
-
-(* ML_file\<open>hoclp.ML\<close> *)
 ML\<open>
   structure MO = Option_Monad_Or_Trans(Identity_Monad)
   structure ME = Monad_Exception_Monad_Or(MO)
   structure MS = State_Trans(structure M = ME; structure SR = Pair_State_Result_Base)
-  structure MZ = IMonad_Zero_State_Trans(structure M = MO; structure S = MS)
   structure ME = IMonad_Exception_State_Trans(structure M = ME; structure S = MS)
-  structure M = struct open MS; structure IM = IMonad_State(MS); open IM;
-    open MZ; open ME; structure IM = IMonad(ME); open IM end
+  structure M = struct
+    open MS; structure IM = IMonad_State(MS); open IM;
+    open ME; structure IM = IMonad(ME); open IM
+  end
   structure MB = Move_Base(IKleisli(M))
 \<close>
 
 ML_file\<open>example_zippers.ML\<close>
 
 ML\<open>
-  local
-  structure Int_Bi_Enum = Bi_Enumerable_Enumerable(
-    type ('i, 'a, 'b) content = unit; structure E = Int_Enumerable(MB))
-  val init_data = 0
-  structure A = IArrow(IKleisli_IArrow_Apply(Int_Bi_Enum.First.K.M))
-  fun init_data_move x = A.K init_data x
-  structure Int_Bi_Zipper = Bi_Zipper_Bi_Enumerable(
-    structure L = Example_Zippers.List
-    structure E = Int_Bi_Enum
-    fun unzip xs = L.foldl K xs init_data
-    val init_data = init_data_move
-  )
-  in
-  structure IAZ = Alternating_Bi_Zippers_Bi_Nodes(
-    structure A = Alternating_Bi_Zippers_Bi_Nodes_Base_Args_Bi_Zippers(
-      structure Z1 = Int_Bi_Zipper
-      structure Z2 = Int_Bi_Zipper
-      type ('i, 'c, 'n) ncontent1 = ('i, 'c, 'n) Z1.content
-      type ('i, 'c, 'n) ncontent2 = ('i, 'c, 'n) Z2.content
-      structure AC = Alternating_Bi_Containers(
-        type ('i, 'c, 'n) container1 = ('i, 'c, 'n) Z1.container
-        type ('i, 'c, 'n) container2 = ('i, 'c, 'n) Z2.container
-      )
-      val ncontent1 = I
-      val ncontent2 = I
-      val next1 = init_data_move
-      val next2 = init_data_move
-      val content1 = K
-      val content2 = K
-    )
-    open A
-    structure ZD  = Zipper_Data
-    structure PM1 = M
-    structure PM2 = M
-  )
-  end
-\<close>
-
-ML\<open>
   structure AZ = Alternating_Bi_Zippers_Bi_Nodes(
     structure A = Alternating_Bi_Zippers_Bi_Nodes_Base_Args_Simple_Zippers(
       type ('i, 'c, 'n) ncontent1 = 'c
       type ('i, 'c, 'n) ncontent2 = 'c
-      structure Z1 = Example_Zippers.Rose_Zipper
-      structure Z2 = Example_Zippers.Rose_Zipper
+      structure Z1 = Example_Zippers.List_Zipper
+      structure Z2 = Example_Zippers.List_Zipper
     )
     open A
     structure ZD  = Zipper_Data
@@ -93,145 +54,97 @@ ML\<open>
 ML\<open>
   structure E1 = DFS_Postorder_Enumerable_Bi_Zipper(structure ME = M; structure Z = AZ.Z1)
   structure E2 = DFS_Postorder_Enumerable_Bi_Zipper(structure ME = M; structure Z = AZ.Z2)
-  structure T = Test(structure AZ = AZ; structure ME = M; structure E1 = E1; structure E2 = E2)
+  structure T1 = Test(structure AZ = AZ; structure ME = M; structure E1 = E1; structure E2 = E2)
+  structure T2 = Test(structure AZ = Flip_Alternating_Bi_Zippers(AZ); structure ME = M;
+    structure E1' = E1; structure E1 = E2; structure E2 = E1')
+\<close>
+
+lemma sillyrule: "PROP Q \<Longrightarrow> PROP P" sorry
+
+ML_file\<open>util.ML\<close>
+ML_file\<open>coroutine.ML\<close>
+
+ML_file\<open>mk_action.ML\<close>
+
+ML\<open>
+fun init_nodes content next =
+  let val node = AZ.N1.node content next
+  in Example_Zippers.List.cons node Example_Zippers.List.empty end
+fun init_nodes_no_next content = init_nodes content (M.throw ())
 \<close>
 
 ML\<open>
-  local open AZ Example_Zippers M in
-  fun mk_nodes _ =
+  structure Mk_Action = Mk_Action(
+    structure M = M
+    type ('i, 'a, 'b, 'ma) zipperma = ('i, ('a, 'ma) Content_Mk_Action.cma, 'b) AZ.Z2.zipper
+  )
+\<close>
+
+ML\<open>
+  local open M in
+  val tac = resolve0_tac [@{thm sillyrule}] |> SOMEGOAL
+  val coroutine = Mk_Action.Coroutine.coroutine (fn zipper =>
     let
-      val no_next = zero ()
-      val no_children = Rose []
-      val node0 = (N1.node 0 no_next, no_children)
-      val node2 = (N1.node 2 no_next, Rose [(N1.node 1 no_next, no_children)])
-      val node3 = (N1.node 3 no_next, Rose [node0, node2])
-      val node7 = (N2.node 7 (Rose [node3] |> pure), no_children)
-      val node4 = (N1.node 4 no_next, no_children)
-      val node5 = (N1.node 5 (Rose [node7] |> pure), Rose [node4])
-    in Rose [node5, node3] end
+      val prio = 0
+      val act = pure
+      val next = Mk_Action.Coroutine.coroutine (fn _ => throw ())
+    in ((prio, act), next) |> pure end)
   end
 \<close>
 
 ML\<open>
-  local
-    structure AZP = Pair_Alternating_Bi_Zippers(structure AZ1 = AZ; structure AZ2 = IAZ)
-    open AZP M
-  in
-  val test = (AZP.Z1.Init.move ((mk_nodes (), zero ()), (0, zero ()))
-    >>= AZP.Z1.Right.move
-    |> AZP.Z1.K.M.map (AZP.Z1.get_content))
-    ()
-  end
+  fun init_action_content _ =
+    (fn g => fn _ => (resolve0_tac [@{thm sillyrule}] |> SOMEGOAL) g |> M.pure)
+    |> HOCLP.with_parent_content
+    |> HOCLP.mk_action_content_seq Prio.MEDIUM
 \<close>
 
-ML_val\<open>
-  local
-    structure MU = Move_Util(M); open AZ M
-    fun content x = x |> (Z1.content () |> SLens.comp (N1.content ()) |> SLens.get)
-    fun next x = x |> (Z1.content () |> SLens.comp (N1.next ()) |> SLens.get)
-    fun f x acc =
-      let
-        val _ = @{print} (content x)
-        (* val _ = @{print} (next x) *)
-      in
-        get ()
-        >>= (fn state => put (state - 1))
-        >>= (fn _ =>
-        (if content x = 3 then MU.stop else MU.continue) (acc + 1)
-        |> pure)
-      end
-  in
-  (* val test = MU.AE.repeat ALNZ.Z2.Down.move  *)
-  val test = (
-    T.first1 (mk_nodes (), zero ())
-    (* >>= (fn res => put "hello" *)
-    (* >>= (fn _ => put 0 *)
-    (* >>= (fn _ => pure res))) *)
-    (* >>= T.next *)
-    (* |> map_state (K "hooo") *)
-    |> (fn x => MU.fold T.next f x 0)
-    ) 0
-    (* >>= AZ.Z1.Up.move *)
-    (* >>= AZ.Down1.move *)
-    (* >>= (fn zipper => (@{print} (AZ.Z2.get_content zipper); NONE)) *)
-  (* val x = (E1.Init.move (nodes, NONE)) *)
-    (* >>= ALNZ.Z1.Right.move *)
-    (* >>= ALNZ.Z1.Up.move *)
-    (* >>= ALNZ.Z1.Right.move *)
-    (* >>= E1.Next.move
-    >>= E1.Next.move
-    >>= E1.Next.move
-    >>= E1.Next.move *)
-    (* >>= ALNZ.Z1.Down.move *)
-    (* >>= ALNZ.Down1.move *)
-    (* >>= ALNZ.Z2.Right.move *)
-    (* >>= ALNZ.Up2.move *)
-    (* |> the |> ALNZ.Z1.get_content *)
-  end
-\<close>
-
-(* ML\<open>
-  structure Util = HOCLP_Util
-  @{functor_instance struct_name = HOCLPDT
-    and functor_name = HOCLP
-    and id = \<open>"dt"\<close>
-    and more_args = \<open>structure TI = Discrimination_Tree\<close>}
-  open HOCLPDT
-\<close> *)
-
-(* ML_file\<open>hoclp_tactic.ML\<close> *)
-
-(* ML\<open>
-  fun make_result_tac_tree path_zipper res_children =
-    let
-      val mk_res = get_path_zipper_zipper path_zipper |> get_zipper_content |> get_node_content
-        |> get_tac_app_mkres
-      val res = apply_make_tac_app_result mk_res path_zipper res_children
-      val opt_res = move_up_path_tac_tree_zipper path_zipper
-        |> Option.mapPartial move_up_path_tree_zipper
-        |> Option.map (fn path_zipper => make_result_tac_tree path_zipper res)
-    in the_default res opt_res end
-  fun make_result_tree path_zipper =
-    let
-      val res = get_path_zipper_state path_zipper
-      val opt_res = move_up_path_tree_zipper path_zipper
-        |> Option.map (fn path_zipper => make_result_tac_tree path_zipper res)
-    in the_default res opt_res end
-\<close>
-
-declare[[ML_print_depth=2000]]
 ML\<open>
-  let
-    val tac = resolve_tac @{context} @{thms reflexive} 1 |> HOCLP_Tactic.leaf_tac_from_tactical
-    val mk_tac_app_res = HOCLP_Tactic.mk_tac_app_res_from_tactical
-    fun modify_prio t i = case t of
-      {content = Goal_Cluster {state,...}, children} =>
-      {content = Goal_Cluster {state = state, prio_tac_ret =
-        prio_tac_ret (K (SOME (prio_content i tac)))},
-        children = children}
-    val t : (prio_tac_ret, mr) tree = tree [
-      HOCLPDT.init_tree_node,
-      case modify_prio HOCLPDT.init_tree_node 1 of
-        {content = content,...} =>
-        {content = content, children = tac_tree [
-          {content = Tac_App {mkres = mk_tac_app_res}, children = ET.Tree [modify_prio HOCLPDT.init_tree_node 4]},
-          {content = Tac_App {mkres = mk_tac_app_res}, children = ET.Tree [modify_prio HOCLPDT.init_tree_node 10]}
-        ]},
-      case modify_prio HOCLPDT.init_tree_node 2 of
-        {content = content,...} =>
-        {content = content, children = tac_tree [
-          {content = Tac_App {mkres = mk_tac_app_res}, children = ET.Tree [modify_prio HOCLPDT.init_tree_node 4]}
-        ]}
-    ]
-    val selection = select_tree_zipper t
-    val res = Option.mapPartial apply_tac selection
-  in
-    res |> the
-    |> move_down_path_tree_zipper |> the |> move_down_path_tac_tree_zipper |> the
-    (* |> get_path_zipper_zipper |> get_zipper_content |> get_node_content *)
-    |> make_result_tree
+  local structure MU = Move_Util(M) open HOCLP M MU.F in
+  val init_content = Goal.init @{cprop "PROP P"}
+  val init_parent = zero ()
+  val init_action_content = ZCA.mk_content "blub" (init_action_content ())
+  val init_nodes = init_nodes init_content (pure [AZ.N2.node init_action_content (zero ())])
+
+  fun combine f x y = ME.catch (x >>= (fn xin => ME.catch (y >>= f xin) (K x))) (K y)
+
+  fun update zipper acc = combine (pure oo max_ord ZCA.action_ord) acc (ZCA.get_action zipper)
+    |> MU.continue |> pure
+
+  fun run_action mact = catch
+    (mact >>= (fn (p, act) => (@{print} "action!"; act)))
+    (fn exn => (@{print} "no further action"; throw exn))
+
+  val test = AZ.Z1.Init.move (init_nodes, init_parent)
+    >>= AZ.Down1.move
+    |> funpow 2 (fn x => ME.map AZ.Z2.unzip x >>= T2.first1
+      |> (fn x => MU.fold T2.next update x (zero ())) >>= run_action)
+    >>= (AZ.Z2.unzip #> AZ.Z2.Init.move)
+    >>= AZ.Down2.move
+    |> (fn st => st @{context})
+    |> @{print}
   end
-\<close> *)
+\<close>
+
+
+ML_file\<open>hoclp_rule.ML\<close>
+
+ML\<open>
+  @{functor_instance struct_name = HOCLP_Rules_Test
+    and functor_name = HOCLP_Rules
+    and id = \<open>"test"\<close>
+    and more_args = \<open>
+      structure TI = Discrimination_Tree
+      type tac = unit
+      fun eq_tac _ = true
+      fun pretty_tac _ _ = Pretty.str "test"
+      \<close>}
+\<close>
+
+ML\<open>
+  HOCLP_Rules_Test.add_rule ([()],
+    @{thm sillyrule}) (Context.the_generic_context ())
+\<close>
 
 (* method_setup hoclpdt = HOCLPDT.hoclp_method_parser "Higher-Order Constraint Logic Programming"
 
@@ -335,7 +248,7 @@ Kevin's notes:
 14. Problem: how to stop applying rules recursively to meta-variables, e.g. app_type
   to `?X : ?TX`?
     Solutions:
-  a. priorities that are recalNulated whenever meta-variable is instantiated
+  a. priorities that are recalculated whenever meta-variable is instantiated
      problem: should be solved immediately if solvable by assumption
   b. create delay rules
   c. use matching instead of unification
@@ -345,11 +258,11 @@ argument
 
 
 - Abstract Logic Programming language: see miller overview paper;
-  based on sequent calNulus proof theory whose proofs correspond to search strategies
+  based on sequent calculus proof theory whose proofs correspond to search strategies
 - Tabling methods evaluate programs by maintaining tables of subgoals and their
   answers and by resolving repeated occurrences of subgoals against answers from the table.
 - subordination: check whether one can safely remove some assumptions
-- retrival: check for assumptions and goal or only check for goal and solve assumptions
+- retrieval: check for assumptions and goal or only check for goal and solve assumptions
 - visiting the same goal twice without an answer -> fail
 *)
 

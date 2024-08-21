@@ -18,7 +18,7 @@ functor Test(
 
   structure E2 : BI_ENUMERABLE
   where type ('i, 'a, 'b) init_data = ('i, 'a, 'b) AZ.Z2.container
-  where type ('i, 'a, 'b) data = ('i, 'a, 'b) AZ.Z2.data
+  where type ('i, 'a, 'b) data = ('i, 'a, 'b) AZ.Z2.zipper
   sharing type E2.K.M.t = E1.K.M.t
 
   structure ME : IMONAD_EXCEPTION_BASE

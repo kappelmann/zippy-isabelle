@@ -22,7 +22,9 @@ struct
     in rev rev_pref @ [get_content zipper] @ suff end
 end
 
-structure List_Zipper = Zipper(
+structure List_Zipper =
+struct
+structure Z = Zipper(
   structure Z = List_Zipper_Base
   fun init xs = List.dest xs |> M.map (fn (x, xs) => Z.zipper x ([], xs))
   fun up zipper =
@@ -34,11 +36,14 @@ structure List_Zipper = Zipper(
     let
       val c = Z.get_content zipper
       val (hs, ts) = Z.get_zcontext zipper
-    in List.dest ts |> ME.map (fn (t, ts) => Z.zipper t (c :: hs, ts)) end
-  fun left _ = MZ.zero ()
-  fun right _ = MZ.zero ()
+    in List.dest ts |> M.map (fn (t, ts) => Z.zipper t (c :: hs, ts)) end
+  fun left _ = ME.throw ()
+  fun right _ = ME.throw ()
   structure M = MB
 )
+open Z
+fun append content = map_zcontext (fn (hs, ts) => (hs, ts @ [content]))
+end
 
 datatype 'a rose = Rose of ('a * 'a rose) List.t
 

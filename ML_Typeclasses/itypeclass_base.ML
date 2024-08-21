@@ -30,6 +30,20 @@ open F
 type 'a t = (T.t, T.t, 'a) F.t
 end
 
+signature IFUNCTOR =
+sig
+  include IFUNCTOR_BASE
+  val <&> : ('i, 'o, 'a) t * ('a -> 'b) -> ('i, 'o, 'b) t
+end
+
+functor IFunctor(F : IFUNCTOR_BASE) : IFUNCTOR =
+struct
+
+open F
+fun x <&> f = map f x
+
+end
+
 signature IFUNCTOR_TRANS =
 sig
   (*the base functor to transform*)

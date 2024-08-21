@@ -8,6 +8,7 @@ sig
   sharing type ME.t = K.M.t
   structure C : ICATEGORY
   structure AE : IARROW_EXCEPTION
+  structure F : IFUNCTOR
 
   type 'a res
   val stop : 'a -> 'a res
@@ -28,6 +29,7 @@ structure M = IMonad(ME)
 structure AE = IArrow_Exception(IKleisli_Arrow_Exception(ME))
 structure C = ICategory(AE)
 structure A = IArrow(AE)
+structure F = IFunctor(M)
 
 datatype 'a res = Stop of 'a | Continue of 'a
 
@@ -40,7 +42,7 @@ local open M in
 fun fold move f m acc = m
   >>= (fn x => f x acc
   >>= (fn Stop acc => M.pure acc
-    | Continue acc => ME.catch (fold move f (move x) acc) (A.K acc)))
+    | Continue acc => AE.catch' (fold move f (move x)) (A.id ()) acc))
 end
 
 end

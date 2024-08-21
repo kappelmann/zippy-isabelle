@@ -10,7 +10,7 @@ ML_file\<open>bi_zipper_moves.ML\<close>
 ML_file\<open>pair_bi_zipper_moves.ML\<close>
 
 ML_file\<open>bi_zipper.ML\<close>
-ML_file\<open>modify_bi_zipper.ML\<close>
+ML_file\<open>replace_bi_zipper_content.ML\<close>
 ML_file\<open>extend_bi_zipper_context.ML\<close>
 ML_file\<open>pair_bi_zipper.ML\<close>
 

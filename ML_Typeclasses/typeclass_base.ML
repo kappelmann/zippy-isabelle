@@ -6,11 +6,26 @@ Basic typeclasses inspired by the Haskell Prelude, monad-transformers, and the m
 infix 1 <*>
 infix 1 >>=
 infix 1 >=>
+infix 1 <&>
 
 signature FUNCTOR_BASE =
 sig
   type 'a t
   val map : ('a -> 'b) -> 'a t -> 'b t
+end
+
+signature FUNCTOR =
+sig
+  include FUNCTOR_BASE
+  val <&> : 'a t * ('a -> 'b) -> 'b t
+end
+
+functor Functor(F : FUNCTOR_BASE) : FUNCTOR =
+struct
+
+open F
+fun x <&> f = map f x
+
 end
 
 signature FUNCTOR_TRANS =

@@ -15,37 +15,61 @@ sig
   sharing type N2.node = BZ2.content
 end
 
-functor Alternating_Bi_Zippers_Bi_Nodes(
-    include ALTERNATING_BI_ZIPPERS_BI_NODES_BASE_ARGS
+signature ALTERNATING_BI_ZIPPERS_BI_NODES =
+sig
+    structure A : ALTERNATING_BI_ZIPPERS_BI_NODES_BASE_ARGS
+    structure N1 : BI_NODE
+    where type ('i, 'a, 'b) content = ('i, 'a, 'b) A.N1.content
+    where type ('i, 'a, 'b) next = ('i, 'a, 'b) A.N1.next
+    where type ('i, 'a, 'b) node = ('i, 'a, 'b) A.N1.node
+    structure N2 : BI_NODE
+    where type ('i, 'a, 'b) content = ('i, 'a, 'b) A.N2.content
+    where type ('i, 'a, 'b) next = ('i, 'a, 'b) A.N2.next
+    where type ('i, 'a, 'b) node = ('i, 'a, 'b) A.N2.node
     structure ZD : ZIPPER_DATA
     structure PM1 : IMONAD_BASE
     structure PM2 : IMONAD_BASE
-  ) :
-  sig
     type ('i, 'a, 'b) zcontext1
     type ('i, 'a, 'b) zcontext2
     type ('i, 'a, 'b) parent1 = ('i, 'i, (('i, 'b, 'a) N2.content, ('i, 'b, 'a) zcontext2) ZD.zipper) PM1.t
     type ('i, 'a, 'b) parent2 = ('i, 'i, (('i, 'b, 'a) N1.content, ('i, 'b, 'a) zcontext1) ZD.zipper) PM2.t
-    structure N1 : BI_NODE
-    structure N2 : BI_NODE
+    val mk_zcontext1 : ('i, 'a, 'b) A.BZ1.zcontext -> ('i, 'a, 'b) parent1 -> ('i, 'a, 'b) zcontext1
+    val mk_zcontext2 : ('i, 'a, 'b) A.BZ2.zcontext -> ('i, 'a, 'b) parent2 -> ('i, 'a, 'b) zcontext2
+    val parent1 : unit -> (('i, 'a, 'b) zcontext1, ('i, 'a, 'b) parent1,
+      ('i, 'a, 'b) zcontext1, ('i, 'a, 'b) parent1) SLens.lens
+    val lzcontext1 : unit -> (('i, 'a, 'b) zcontext1, ('i, 'a, 'b) A.BZ1.zcontext,
+      ('i, 'a, 'b) zcontext1, ('i, 'a, 'b) A.BZ1.zcontext) SLens.lens
+    val parent2 : unit -> (('i, 'a, 'b) zcontext2, ('i, 'a, 'b) parent2,
+      ('i, 'a, 'b) zcontext2, ('i, 'a, 'b) parent2) SLens.lens
+    val lzcontext2 : unit -> (('i, 'a, 'b) zcontext2, ('i, 'a, 'b) A.BZ2.zcontext,
+      ('i, 'a, 'b) zcontext2, ('i, 'a, 'b) A.BZ2.zcontext) SLens.lens
+
     include ALTERNATING_BI_ZIPPERS
-    where type ('i, 'a, 'b) Z1.content = ('i, 'a, 'b) BZ1.content
+    where type ('i, 'a, 'b) Z1.content = ('i, 'a, 'b) A.BZ1.content
     where type ('i, 'a, 'b) Z1.zcontext = ('i, 'a, 'b) zcontext1
-    where type ('i, 'a, 'b) Z1.container = ('i, 'a, 'b) BZ1.container * ('i, 'a, 'b) parent1
-    where type ('i, 'j, 'a) Z1.K.M.t = ('i, 'j, 'a) BZ1.K.M.t
-    where type ('i, 'a, 'b) Z2.content = ('i, 'a, 'b) BZ2.content
+    where type ('i, 'a, 'b) Z1.container = ('i, 'a, 'b) A.BZ1.container * ('i, 'a, 'b) parent1
+    where type ('i, 'j, 'a) Z1.K.M.t = ('i, 'j, 'a) A.BZ1.K.M.t
+    where type ('i, 'a, 'b) Z2.content = ('i, 'a, 'b) A.BZ2.content
     where type ('i, 'a, 'b) Z2.zcontext = ('i, 'a, 'b) zcontext2
-    where type ('i, 'a, 'b) Z2.container = ('i, 'a, 'b) BZ2.container * ('i, 'a, 'b) parent2
-    where type ('i, 'j, 'a) Z2.K.M.t = ('i, 'j, 'a) BZ2.K.M.t
+    where type ('i, 'a, 'b) Z2.container = ('i, 'a, 'b) A.BZ2.container * ('i, 'a, 'b) parent2
+    where type ('i, 'j, 'a) Z2.K.M.t = ('i, 'j, 'a) A.BZ2.K.M.t
     where type ('i, 'j, 'a) Up1.K.M.t = ('i, 'j, 'a) PM1.t
     where type ('i, 'j, 'a) Up2.K.M.t = ('i, 'j, 'a) PM2.t
-    val mk_zcontext1 : ('i, 'a, 'b) BZ1.zcontext -> ('i, 'a, 'b) parent1 -> ('i, 'a, 'b) zcontext1
-    val mk_zcontext2 : ('i, 'a, 'b) BZ2.zcontext -> ('i, 'a, 'b) parent2 -> ('i, 'a, 'b) zcontext2
-  end =
+end
+
+functor Alternating_Bi_Zippers_Bi_Nodes(
+    structure A : ALTERNATING_BI_ZIPPERS_BI_NODES_BASE_ARGS
+    structure ZD : ZIPPER_DATA
+    structure PM1 : IMONAD_BASE
+    structure PM2 : IMONAD_BASE
+  ) : ALTERNATING_BI_ZIPPERS_BI_NODES =
 struct
 
-structure N1 = N1
-structure N2 = N2
+structure A = A
+open A
+structure ZD = ZD
+structure PM1 = PM1
+structure PM2 = PM2
 
 (*stores local zipper context and parent*)
 type ('lctxt, 'parent) lzcontext_parent = {
@@ -75,9 +99,21 @@ fun mk_zcontext2 lzcontext parent = ZContext2 (lzcontext_parent lzcontext parent
 
 fun get_zcontext1_lzcontext (ZContext1 {lzcontext, ...}) = lzcontext
 fun get_zcontext1_parent (ZContext1 {parent, ...}) = parent
+fun map_zcontext1_lzcontext f (ZContext1 {lzcontext, parent}) =
+  (ZContext1 {lzcontext = f lzcontext, parent = parent})
+fun map_zcontext1_parent f (ZContext1 {lzcontext, parent}) =
+  (ZContext1 {lzcontext = lzcontext, parent = f parent})
+fun lzcontext1 _ = SLens.lens get_zcontext1_lzcontext (uncurry map_zcontext1_lzcontext)
+fun parent1 _ = SLens.lens get_zcontext1_parent (uncurry map_zcontext1_parent)
 
 fun get_zcontext2_lzcontext (ZContext2 {lzcontext, ...}) = lzcontext
 fun get_zcontext2_parent (ZContext2 {parent, ...}) = parent
+fun map_zcontext2_lzcontext f (ZContext2 {lzcontext, parent}) =
+  (ZContext2 {lzcontext = f lzcontext, parent = parent})
+fun map_zcontext2_parent f (ZContext2 {lzcontext, parent}) =
+  (ZContext2 {lzcontext = lzcontext, parent = f parent})
+fun lzcontext2 _ = SLens.lens get_zcontext2_lzcontext (uncurry map_zcontext2_lzcontext)
+fun parent2 _ = SLens.lens get_zcontext2_parent (uncurry map_zcontext2_parent)
 
 structure Z1 = Extend_Bi_Zipper_Context(
   structure ZD = ZD
