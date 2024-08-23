@@ -12,14 +12,14 @@ functor Alternating_Bi_Zippers_Bi_Nodes_Base_Args_Bi_Zippers(
     val ncontent1 : ('i, 'a, ('i, 'b, 'a) AC.acontainer2) Z1.content -> ('i, 'a, 'b) ncontent1
     val ncontent2 : ('i, 'a, ('i, 'b, 'a) AC.acontainer1) Z2.content -> ('i, 'a, 'b) ncontent2
     val next1 : ('i, 'a, ('i, 'b, 'a) AC.acontainer2) Z1.content ->
-      ('i, ('i, 'b, ('i, 'a, 'b) AC.acontainer1) Z2.container) Z2.mt
+      ('i, 'i, unit, ('i, 'b, ('i, 'a, 'b) AC.acontainer1) Z2.container) Z2.C.cat
     val next2 : ('i, 'a, ('i, 'b, 'a) AC.acontainer1) Z2.content ->
-      ('i, ('i, 'b, ('i, 'a, 'b) AC.acontainer2) Z1.container) Z1.mt
+      ('i, 'i, unit, ('i, 'b, ('i, 'a, 'b) AC.acontainer2) Z1.container) Z1.C.cat
     val content1 : ('i, 'a, 'b) ncontent1 ->
-      ('i, ('i, 'b, ('i, 'a, 'b) AC.acontainer1) Z2.container) Z2.mt ->
+      ('i, 'i, unit, ('i, 'b, ('i, 'a, 'b) AC.acontainer1) Z2.container) Z2.C.cat ->
       ('i, 'a, ('i, 'b, 'a) AC.acontainer2) Z1.content
     val content2 : ('i, 'a, 'b) ncontent2 ->
-      ('i, ('i, 'b, ('i, 'a, 'b) AC.acontainer2) Z1.container) Z1.mt ->
+      ('i, 'i, unit, ('i, 'b, ('i, 'a, 'b) AC.acontainer2) Z1.container) Z1.C.cat ->
       ('i, 'a, ('i, 'b, 'a) AC.acontainer1) Z2.content
   ) :
     ALTERNATING_BI_ZIPPERS_BI_NODES_BASE_ARGS
@@ -45,11 +45,11 @@ struct
   )
   structure N1 = Bi_Node(
     type ('i, 'a, 'b) content = ('i, 'a, 'b) ncontent1
-    type ('i, 'a, 'b) next = ('i, ('i, 'b, 'a) BZ2.container) BZ2.Init.mt
+    type ('i, 'a, 'b) next = ('i, 'i, unit, ('i, 'b, 'a) BZ2.container) BZ2.Init.C.cat
   )
   structure N2 = Bi_Node(
     type ('i, 'a, 'b) content = ('i, 'a, 'b) ncontent2
-    type ('i, 'a, 'b) next = ('i, ('i, 'b, 'a) BZ1.container) BZ1.Init.mt
+    type ('i, 'a, 'b) next = ('i, 'i, unit, ('i, 'b, 'a) BZ1.container) BZ1.Init.C.cat
   )
 
   structure BZ1 = Replace_Bi_Zipper_Content(

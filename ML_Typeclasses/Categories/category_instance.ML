@@ -30,10 +30,13 @@ type ('a, 'b) kleisli = 'a -> 'b M.t
 end
 
 (*Kleisli category*)
-functor Kleisli_Arrow_Apply(M : MONAD_BASE) : sig
+functor Kleisli_Arrow_Apply_Choice(M : MONAD_BASE) :
+  sig
     include KLEISLI
     include ARROW_APPLY_BASE
     where type ('a, 'b) cat = ('a, 'b) kleisli
+    val cases : ('a, 'c) cat -> ('b, 'd) cat -> (('a, 'b) Either.either, ('c, 'd) Either.either) cat
+    val merge : ('a, 'c) cat -> ('b, 'c) cat -> (('a, 'b) Either.either, 'c) cat
   end =
 struct
 
@@ -50,6 +53,10 @@ fun k1 *** k2 = (fn (x, y) => k1 x
   >>= (fn x' => k2 y
   >>= (fn y' => pure (x', y'))))
 fun app (f, x) = f x
+fun cases f _ (Either.Left x) = M.map Either.Left (f x)
+  | cases _ g (Either.Right y) = M.map Either.Right (g y)
+fun merge f _ (Either.Left x) = f x
+  | merge _ g (Either.Right y) = g y
 
 end
 
@@ -60,7 +67,7 @@ functor Kleisli_Arrow_Zero(MZ : MONAD_ZERO_BASE) : sig
   end =
 struct
 
-structure KAA = Kleisli_Arrow_Apply(MZ)
+structure KAA = Kleisli_Arrow_Apply_Choice(MZ)
 open KAA
 
 fun zero _ _ = MZ.zero ()
@@ -102,7 +109,7 @@ functor Kleisli_Arrow_Exception(ME : MONAD_EXCEPTION_BASE) : sig
   end =
 struct
 
-structure KA = Kleisli_Arrow_Apply(ME)
+structure KA = Kleisli_Arrow_Apply_Choice(ME)
 open KA
 
 type exn = ME.exn
@@ -111,3 +118,4 @@ val throw = ME.throw
 fun catch f g x = ME.catch (f x) (g o pair x)
 
 end
+

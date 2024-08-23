@@ -9,12 +9,12 @@ sig
   structure Down1 : BI_MOVE
   where type ('i, 'a, 'b) from = ('i, 'a, 'b) Z1.zipper
   where type ('i, 'a, 'b) to = ('i, 'b, 'a) Z2.zipper
-  sharing type Down1.K.M.t = Z2.Init.K.M.t
+  sharing type Down1.C.cat = Z2.Init.C.cat
 
   structure Down2 : BI_MOVE
   where type ('i, 'a, 'b) from = ('i, 'a, 'b) Z2.zipper
   where type ('i, 'a, 'b) to = ('i, 'b, 'a) Z1.zipper
-  sharing type Down2.K.M.t = Z1.Init.K.M.t
+  sharing type Down2.C.cat = Z1.Init.C.cat
 
   structure Up1 : BI_MOVE
   where type ('i, 'a, 'b) from = ('i, 'a, 'b) Z1.zipper

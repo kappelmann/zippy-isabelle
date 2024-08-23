@@ -6,15 +6,15 @@ sig
   include MOVE_BASE
 
   structure Init : BI_MOVE
-  sharing type Init.K.M.t = K.M.t
+  sharing type Init.C.cat = C.cat
   structure Up : BI_MOVE
-  sharing type Up.K.M.t = K.M.t
+  sharing type Up.C.cat = C.cat
   structure Down : BI_MOVE
-  sharing type Down.K.M.t = K.M.t
+  sharing type Down.C.cat = C.cat
   structure Left : BI_MOVE
-  sharing type Left.K.M.t = K.M.t
+  sharing type Left.C.cat = C.cat
   structure Right : BI_MOVE
-  sharing type Right.K.M.t = K.M.t
+  sharing type Right.C.cat = C.cat
 end
 
 signature HOM_BI_ZIPPER_MOVES =
@@ -84,7 +84,7 @@ functor Instantiate_Bi_Zipper_Moves(
     where type ('i, 'a, 'b) Left.to = ('i, ('i, 'a, 'b) inst1, ('i, 'a, 'b) inst2) M.Left.to
     where type ('i, 'a, 'b) Right.from = ('i, ('i, 'a, 'b) inst1, ('i, 'a, 'b) inst2) M.Right.from
     where type ('i, 'a, 'b) Right.to = ('i, ('i, 'a, 'b) inst1, ('i, 'a, 'b) inst2) M.Right.to
-    where type ('i, 'j, 'a) K.M.t = ('i, 'j, 'a) M.Init.K.M.t
+    where type ('i, 'j, 'a, 'b) C.cat = ('i, 'j, 'a, 'b) M.Init.C.cat
   = M
 
 functor Instantiate_Hom_Bi_Zipper_Moves(
@@ -95,6 +95,6 @@ functor Instantiate_Hom_Bi_Zipper_Moves(
     HOM_BI_ZIPPER_MOVES
     where type ('i, 'a, 'b) init_from = ('i, ('i, 'a, 'b) inst1, ('i, 'a, 'b) inst2) M.init_from
     where type ('i, 'a, 'b) data = ('i, ('i, 'a, 'b) inst1, ('i, 'a, 'b) inst2) M.data
-    where type ('i, 'j, 'a) K.M.t = ('i, 'j, 'a) M.Init.K.M.t
+    where type ('i, 'j, 'a, 'b) C.cat = ('i, 'j, 'a, 'b) M.Init.C.cat
   = M
 

@@ -37,7 +37,7 @@ functor Content_Bi_Zipper(
     where type ('i, 'a, 'b) zcontext = unit
     where type ('i, 'a, 'b) zipper = ('i, 'a, 'b) M.data
     where type ('i, 'a, 'b) container = ('i, 'a, 'b) M.init_from
-    where type ('i, 'j, 'a) K.M.t = ('i, 'j, 'a) M.K.M.t
+    where type ('i, 'j, 'a, 'b) C.cat = ('i, 'j, 'a, 'b) M.C.cat
   =
 Bi_Zipper_Bi_Zipper_Moves(
   structure M = M

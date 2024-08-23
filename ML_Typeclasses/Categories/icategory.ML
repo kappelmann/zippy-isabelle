@@ -4,21 +4,63 @@
 Basic indexed typeclasses related to category theory,
 inspired by the Haskell Prelude and "Parameterised Notions of Computation" by Robert Atkey.
 *)
-signature ICATEGORY_BASE =
+signature ISEMI_CATEGORY_BASE =
 sig
 
 type ('i, 'o, 'a, 'b) cat
-(*unit argument to fight ML's value restriction*)
-val id : unit -> ('i, 'i, 'a, 'a) cat
 val comp : ('j, 'k, 'b, 'c) cat -> ('i, 'j, 'a, 'b) cat -> ('i, 'k, 'a, 'c) cat
 val comp_lazy : (unit -> ('j, 'k, 'b, 'c) cat) -> ('i, 'j, 'a, 'b) cat -> ('i, 'k, 'a, 'c) cat
+
+end
+
+functor ISemi_Category_Semi_Category(SC : SEMI_CATEGORY_BASE) : ISEMI_CATEGORY_BASE =
+struct
+open SC
+type ('i, 'j, 'a, 'b) cat = ('a, 'b) SC.cat
+end
+
+functor Semi_Category_ISemi_Category(
+    structure SC : ISEMI_CATEGORY_BASE;
+    structure T : GROUND_TYPE
+  ) : SEMI_CATEGORY_BASE =
+struct
+open SC
+type ('a, 'b) cat = (T.t, T.t, 'a, 'b) SC.cat
+end
+
+signature ISEMI_CATEGORY =
+sig
+
+include ISEMI_CATEGORY_BASE
+val >>> : ('i, 'j, 'a, 'b) cat * ('j, 'k, 'b, 'c) cat -> ('i, 'k, 'a, 'c) cat
+val o : ('j, 'k, 'b, 'c) cat * ('i, 'j, 'a, 'b) cat -> ('i, 'k, 'a, 'c) cat
+
+end
+
+functor ISemi_Category(C : ISEMI_CATEGORY_BASE) : ISEMI_CATEGORY =
+struct
+
+open C
+fun f >>> g = comp g f
+fun f o g = comp f g
+
+end
+
+signature ICATEGORY_BASE =
+sig
+
+include ISEMI_CATEGORY_BASE
+
+(*unit argument to fight ML's value restriction*)
+val id : unit -> ('i, 'i, 'a, 'a) cat
 
 end
 
 functor ICategory_Category(C : CATEGORY_BASE) : ICATEGORY_BASE =
 struct
 open C
-type ('i, 'j, 'a, 'b) cat = ('a, 'b) C.cat
+structure SC = ISemi_Category_Semi_Category(C)
+open SC
 end
 
 functor Category_ICategory(
@@ -27,25 +69,8 @@ functor Category_ICategory(
   ) : CATEGORY_BASE =
 struct
 open C
-type ('a, 'b) cat = (T.t, T.t, 'a, 'b) C.cat
-end
-
-signature ICATEGORY =
-sig
-
-include ICATEGORY_BASE
-val >>> : ('i, 'j, 'a, 'b) cat * ('j, 'k, 'b, 'c) cat -> ('i, 'k, 'a, 'c) cat
-val o : ('j, 'k, 'b, 'c) cat * ('i, 'j, 'a, 'b) cat -> ('i, 'k, 'a, 'c) cat
-
-end
-
-functor ICategory(C : ICATEGORY_BASE) : ICATEGORY =
-struct
-
-open C
-fun f >>> g = comp g f
-fun f o g = comp f g
-
+structure SC = Semi_Category_ISemi_Category(structure SC = C; structure T = T)
+open SC
 end
 
 signature IARROW_BASE =
@@ -253,6 +278,32 @@ open A
 
 fun catch' f g = catch f (comp g (arr fst))
 fun try f = catch' f (id ())
-fun repeat move = try (comp_lazy (fn _ => repeat move) move)
+fun repeat f = try (comp_lazy (fn _ => repeat f) f)
 
 end
+
+signature IARROW_CHOICE_BASE =
+sig
+
+include IARROW_BASE
+val cases : ('i, 'j, 'a, 'c) cat -> ('i, 'j, 'b, 'd) cat ->
+  ('i, 'j, ('a, 'b) Either.either, ('c, 'd) Either.either) cat
+val merge : ('i, 'j, 'a, 'c) cat -> ('i, 'j, 'b, 'c) cat -> ('i, 'j, ('a, 'b) Either.either, 'c) cat
+
+end
+
+functor IArrow_Choice_Arrow_Choice(AC : ARROW_CHOICE_BASE) : IARROW_CHOICE_BASE =
+struct
+open AC
+structure A = IArrow_Arrow(AC)
+open A
+end
+
+functor Arrow_Choice_IArrow_Choice(structure AC : IARROW_CHOICE_BASE; structure T : GROUND_TYPE)
+  : ARROW_CHOICE_BASE =
+struct
+open AC
+structure A = Arrow_IArrow(structure A = AC; structure T = T)
+open A
+end
+

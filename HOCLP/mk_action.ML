@@ -21,7 +21,7 @@ struct
 end
 
 functor Mk_Action(
-  structure M : IMONAD_BASE
+  structure A : IARROW_BASE
   type ('i, 'a, 'b, 'ma) zipperma
   (* structure AZ : ALTERNATING_BI_ZIPPERS_BI_NODES *)
   (* sharing type AZ.Z2.K.M.t = ME.t *)
@@ -29,21 +29,21 @@ functor Mk_Action(
 ) =
 struct
 
-structure MB = Move_Base(IKleisli(M))
-
-local type ('p, 'i, 'a, 'b, 'ma) to = 'p * ('i, ('i, 'a, 'b, 'ma) zipperma) MB.hom_move
+(* structure MB = Move_Base(A) *)
+local type ('p, 'i, 'a, 'b, 'ma) to =
+  'p * ('i, 'i, ('i, 'a, 'b, 'ma) zipperma, ('i, 'a, 'b, 'ma) zipperma) A.cat
 in
-datatype ('p, 'i, 'a, 'b) mk_action = Mk_Action of ('i,
+datatype ('p, 'i, 'a, 'b) mk_action = Mk_Action of ('i, 'i,
   ('i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) zipperma,
   ('p, 'i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) to)
-  MB.move
+  A.cat
 
 val mk_action = Mk_Action
 fun dest_mk_action (Mk_Action ma) = ma
 
 local type ('p, 'i, 'a, 'b) zipper = ('i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) zipperma
 in
-structure Coroutine = ICoroutine(IKleisli_IArrow_Apply(M))
+structure Coroutine = ICoroutine(A)
 type ('p, 'i, 'a, 'b) mk_actionc = ('i,
   ('p, 'i, 'a, 'b) zipper,
   ('p, 'i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) to)
@@ -53,24 +53,24 @@ end
 
 (* fun action_ord x = x |> HOCLP_Util.fst_ord Prio.ord *)
 
-local structure M = IMonad(M) open M
+local structure SC = ISemi_Category(A) open SC
 in
-
 (*invariant: append returns the zipper at the same position*)
 fun mk_action_mk_actionc zappend mk_new_content (mk_actionc  : ('p, 'i, 'a, 'b) mk_actionc) =
   let
     fun update_action prio action mk_actionc =
-      let fun append_child zipper =
-        let val content =
-          mk_new_content zipper prio (mk_action_mk_actionc zappend mk_new_content mk_actionc)
-        in zappend content zipper end
-      in append_child >=> action end
+      let val append_child =
+        A.arr (fn zipper =>
+          mk_action_mk_actionc zappend mk_new_content mk_actionc
+          |> mk_new_content zipper prio
+          |> rpair zipper)
+        >>> zappend
+      in append_child >>> action end
   in
     Coroutine.resume mk_actionc
-    >=> (fn ((prio, action), mk_actionc) => pure (prio, update_action prio action mk_actionc))
+    >>> A.arr (fn ((prio, action), mk_actionc) => (prio, update_action prio action mk_actionc))
     |> mk_action
   end
-
 end
 end
 

@@ -10,15 +10,15 @@ sig
   structure First : MOVE
   sharing type First.from = init_data
   sharing type First.to = data
-  sharing type First.K.M.t = K.M.t
+  sharing type First.C.cat = C.cat
 
   structure Next : HOM_MOVE
   sharing type Next.from = data
-  sharing type Next.K.M.t = K.M.t
+  sharing type Next.C.cat = C.cat
 
   structure Prev : HOM_MOVE
   sharing type Prev.from = data
-  sharing type Prev.K.M.t = K.M.t
+  sharing type Prev.C.cat = C.cat
 end
 
 functor Bi_Enumerable_Enumerable(
@@ -26,7 +26,7 @@ functor Bi_Enumerable_Enumerable(
     structure E : ENUMERABLE
   ) : BI_ENUMERABLE =
 struct
-structure M = Move_Base(E.K)
+structure M = Move_Base(E.C)
 open M
 
 structure Base = struct type ('i, 'a, 'b) content = ('i, 'a, 'b) content end
@@ -41,7 +41,7 @@ end
 
 functor Enumerable_Bi_Enumerable(E : BI_ENUMERABLE) : ENUMERABLE =
 struct
-structure M = Move_Base(E.K)
+structure M = Move_Base(E.C)
 open M
 structure First = Move_Bi_Move(E.First)
 structure Next = Hom_Move_Hom_Bi_Move(E.Next)
@@ -74,7 +74,7 @@ sig
   structure Last : MOVE
   sharing type Last.from = init_data
   sharing type Last.to = data
-  sharing type Last.K.M.t = K.M.t
+  sharing type Last.C.cat = C.cat
 end
 
 functor Last_Bi_Enumerable_Last_Enumerable(

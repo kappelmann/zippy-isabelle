@@ -11,21 +11,21 @@ ML\<open>
 signature GLIST =
 sig
 
-structure M : IMONAD_EXCEPTION_BASE
+structure A : IARROW_EXCEPTION_BASE
 
 type 'a t
 val empty : 'a t
 val cons : 'a -> 'a t -> 'a t
-val from_list : 'a t -> 'a t
+val from_list : 'a list -> 'a t
 
 val is_empty : 'a t -> bool
-val dest : 'a t -> ('i, 'i, 'a * 'a t) M.t
+val dest : ('i, 'i, 'a t, 'a * 'a t) A.cat
 val foldl : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 end
 
 functor GList(M : IMONAD_EXCEPTION_BASE where type exn = unit) : GLIST =
 struct
-  structure M = M
+  structure A = IKleisli_Arrow_Exception(M)
   type 'a t = 'a list
   val empty = []
   val is_empty = null

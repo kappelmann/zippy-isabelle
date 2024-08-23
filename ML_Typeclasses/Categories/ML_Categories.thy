@@ -2,6 +2,7 @@
 theory ML_Categories
   imports
     ML_Typeclasses_Base
+    ML_Unification.ML_General_Utils
 begin
 
 ML_file\<open>category.ML\<close>

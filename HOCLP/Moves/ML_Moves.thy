@@ -3,6 +3,7 @@ section \<open>Moves\<close>
 theory ML_Moves
   imports
     ML_Typeclasses.ML_ICategories
+    ML_Unification.ML_General_Utils
 begin
 
 ML_file\<open>move_base.ML\<close>

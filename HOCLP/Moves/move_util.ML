@@ -4,45 +4,28 @@
 signature MOVE_UTIL =
 sig
   include MOVE_BASE
-  structure ME : IMONAD_EXCEPTION_BASE
-  sharing type ME.t = K.M.t
-  structure C : ICATEGORY
   structure AE : IARROW_EXCEPTION
-  structure F : IFUNCTOR
-
-  type 'a res
-  val stop : 'a -> 'a res
-  val continue : 'a -> 'a res
-  val dest_res : 'a res -> 'a
-  val fold : ('a -> ('i, 'j, 'a) ME.t) -> ('a -> 'b -> ('j, 'i, 'b res) ME.t) ->
-    ('i, 'j, 'a) ME.t -> 'b -> ('i, 'i, 'b) ME.t
+  sharing type AE.cat = C.cat
+  structure AC : IARROW_CHOICE_BASE
+  sharing type AC.cat = C.cat
+  structure SC : ISEMI_CATEGORY
+  sharing type SC.cat = C.cat
+  structure AF : IARROW_FOLD
+  sharing type AF.AE.cat = C.cat
 end
 
-functor Move_Util(ME : IMONAD_EXCEPTION_BASE) : MOVE_UTIL =
+functor Move_Util(
+    structure AE : IARROW_EXCEPTION
+    structure AC : IARROW_CHOICE_BASE
+    sharing type AC.cat = AE.cat
+  ) : MOVE_UTIL =
 struct
 
-structure MB = Move_Base(IKleisli(ME))
+structure MB = Move_Base(AE)
 open MB
-
-structure ME = ME
-structure M = IMonad(ME)
-structure AE = IArrow_Exception(IKleisli_Arrow_Exception(ME))
-structure C = ICategory(AE)
-structure A = IArrow(AE)
-structure F = IFunctor(M)
-
-datatype 'a res = Stop of 'a | Continue of 'a
-
-val stop = Stop
-val continue = Continue
-fun dest_res (Stop x) = x
-  | dest_res (Continue x) = x
-
-local open M in
-fun fold move f m acc = m
-  >>= (fn x => f x acc
-  >>= (fn Stop acc => M.pure acc
-    | Continue acc => AE.catch' (fold move f (move x)) (A.id ()) acc))
-end
+structure AE = AE
+structure AC = AC
+structure SC = ISemi_Category(AE)
+structure AF = IArrow_Fold(structure AE = AE; structure AC = AC)
 
 end

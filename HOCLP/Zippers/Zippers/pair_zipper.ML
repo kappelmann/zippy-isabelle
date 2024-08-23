@@ -5,7 +5,7 @@ signature PAIR_ZIPPER =
 sig
   structure Z1 : ZIPPER
   structure Z2 : ZIPPER
-  sharing type Z1.K.M.t = Z2.K.M.t
+  sharing type Z1.C.cat = Z2.C.cat
 
   include ZIPPER
   where type ('i, 'a) content = ('i, 'a) Z1.content * ('i, 'a) Z2.content
@@ -33,10 +33,13 @@ open Z
 end
 
 functor Pair_Zipper(
+  structure A : IARROW_BASE
   structure Z1 : ZIPPER
+  sharing type Z1.C.cat = A.cat
   structure Z2 : ZIPPER
-  sharing type Z1.K.M.t = Z2.K.M.t
+  sharing type Z2.C.cat = Z1.C.cat
 ) = Pair_Zipper_Pair_Bi_Zipper(Pair_Bi_Zipper(
+  structure A = A
   structure Base = struct type ('i, 'a, 'b) content = 'a end
   structure Z1 = Bi_Zipper_Zipper(open Base; structure Z = Z1)
   structure Z2 = Bi_Zipper_Zipper(open Base; structure Z = Z2)

@@ -30,11 +30,14 @@ type ('i, 'o, 'a, 'b) kleisli = 'a -> ('i, 'o, 'b) M.t
 end
 
 (*Indexed Kleisli category*)
-functor IKleisli_IArrow_Apply(M : IMONAD_BASE) :
+functor IKleisli_IArrow_Apply_Choice(M : IMONAD_BASE) :
   sig
     include IKLEISLI
     include IARROW_APPLY_BASE
     where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) kleisli
+    val cases : ('i, 'j, 'a, 'c) cat -> ('i, 'j, 'b, 'd) cat ->
+      ('i, 'j, ('a, 'b) Either.either, ('c, 'd) Either.either) cat
+    val merge : ('i, 'j, 'a, 'c) cat -> ('i, 'j, 'b, 'c) cat -> ('i, 'j, ('a, 'b) Either.either, 'c) cat
   end =
 struct
 
@@ -52,6 +55,10 @@ fun k1 *** k2 = (fn (x, y) => k1 x
   >>= (fn x' => k2 y
   >>= (fn y' => pure (x', y'))))
 fun app (f, x) = f x
+fun cases f _ (Either.Left x) = M.map Either.Left (f x)
+  | cases _ g (Either.Right y) = M.map Either.Right (g y)
+fun merge f _ (Either.Left x) = f x
+  | merge _ g (Either.Right y) = g y
 
 end
 
@@ -62,7 +69,7 @@ functor IKleisli_IArrow_Zero(MZ : IMONAD_ZERO_BASE) : sig
   end =
 struct
 
-structure IKAA = IKleisli_IArrow_Apply(MZ)
+structure IKAA = IKleisli_IArrow_Apply_Choice(MZ)
 open IKAA
 
 fun zero _ _ = MZ.zero ()
@@ -105,7 +112,7 @@ sig
   end =
 struct
 
-structure KA = IKleisli_IArrow_Apply(ME)
+structure KA = IKleisli_IArrow_Apply_Choice(ME)
 open KA
 
 type exn = ME.exn

@@ -107,7 +107,7 @@ Zipper_Bi_Enumerable_Bi_Zipper_Bi_Enumerable(Bi_Zipper_Bi_Enumerable(
 
 functor Int_Zipper_Enumerable(ZM : ZIPPER_MOVE_BASE) : ZIPPER_ENUMERABLE = Zipper_Enumerable(
   structure ZM = ZM
-  structure A = Arrow(Kleisli_Arrow_Apply(ZM.K.M))
+  structure A = Arrow(Kleisli_Arrow_Apply_Choice(ZM.K.M))
   type 'a init_data = unit
   type 'a data = int
   val first = A.K 0

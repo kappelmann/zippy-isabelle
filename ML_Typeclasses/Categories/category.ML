@@ -7,32 +7,40 @@ infix 1 >>>
 infix 1 ***
 infix 1 &&&
 
-signature CATEGORY_BASE =
+signature SEMI_CATEGORY_BASE =
 sig
 
 type ('a, 'b) cat
-(*unit argument to fight ML's value restriction*)
-val id : unit -> ('a, 'a) cat
 val comp : ('b, 'c) cat -> ('a, 'b) cat -> ('a, 'c) cat
 val comp_lazy : (unit -> ('b, 'c) cat) -> ('a, 'b) cat -> ('a, 'c) cat
 
 end
 
-signature CATEGORY =
+signature SEMI_CATEGORY =
 sig
 
-include CATEGORY_BASE
+include SEMI_CATEGORY_BASE
 val >>> : ('a, 'b) cat * ('b, 'c) cat -> ('a, 'c) cat
 val o : ('b, 'c) cat * ('a, 'b) cat -> ('a, 'c) cat
 
 end
 
-functor Category(C : CATEGORY_BASE) : CATEGORY =
+functor Semi_Category(SC : SEMI_CATEGORY_BASE) : SEMI_CATEGORY =
 struct
 
-open C
+open SC
 fun f >>> g = comp g f
 fun f o g = comp f g
+
+end
+
+signature CATEGORY_BASE =
+sig
+
+include SEMI_CATEGORY_BASE
+
+(*unit argument to fight ML's value restriction*)
+val id : unit -> ('a, 'a) cat
 
 end
 
@@ -152,5 +160,14 @@ open A
 fun catch' f g = catch f (comp g (arr fst))
 fun try f = catch' f (id ())
 fun repeat move = try (comp_lazy (fn _ => repeat move) move)
+
+end
+
+signature ARROW_CHOICE_BASE =
+sig
+
+include ARROW_BASE
+val cases : ('a, 'c) cat -> ('b, 'd) cat -> (('a, 'b) Either.either, ('c, 'd) Either.either) cat
+val merge : ('a, 'c) cat -> ('b, 'c) cat -> (('a, 'b) Either.either, 'c) cat
 
 end

@@ -17,27 +17,30 @@ sig
   where type ('i, 'a, 'b) Left.to = ('i, 'a, 'b) M1.Left.to * ('i, 'a, 'b) M2.Left.to
   where type ('i, 'a, 'b) Right.from = ('i, 'a, 'b) M1.Right.from * ('i, 'a, 'b) M2.Right.from
   where type ('i, 'a, 'b) Right.to = ('i, 'a, 'b) M1.Right.to * ('i, 'a, 'b) M2.Right.to
-  sharing type M1.K.M.t = K.M.t
-  sharing type M2.K.M.t = K.M.t
+  sharing type M1.C.cat = C.cat
+  sharing type M2.C.cat = C.cat
 end
 
 functor Pair_Bi_Zipper_Moves(
+    structure A : IARROW_BASE
     structure M1 : BI_ZIPPER_MOVES
+    sharing type M1.C.cat = A.cat
     structure M2 : BI_ZIPPER_MOVES
-    sharing type M1.K.M.t = M2.K.M.t
+    sharing type M2.C.cat = M1.C.cat
   ) : PAIR_BI_ZIPPER_MOVES =
 struct
 
 structure M1 = M1
 structure M2 = M2
 
-structure M = Move_Base(M1.K)
+structure M = Move_Base(M1.C)
 open M
 
-structure Init = Pair_Bi_Move(structure M1 = M1.Init; structure M2 = M2.Init)
-structure Up = Pair_Bi_Move(structure M1 = M1.Up; structure M2 = M2.Up)
-structure Down = Pair_Bi_Move(structure M1 = M1.Down; structure M2 = M2.Down)
-structure Left = Pair_Bi_Move(structure M1 = M1.Left; structure M2 = M2.Left)
-structure Right = Pair_Bi_Move(structure M1 = M1.Right; structure M2 = M2.Right)
+structure Base = struct structure A = A end
+structure Init = Pair_Bi_Move(open Base; structure M1 = M1.Init; structure M2 = M2.Init)
+structure Up = Pair_Bi_Move(open Base; structure M1 = M1.Up; structure M2 = M2.Up)
+structure Down = Pair_Bi_Move(open Base; structure M1 = M1.Down; structure M2 = M2.Down)
+structure Left = Pair_Bi_Move(open Base; structure M1 = M1.Left; structure M2 = M2.Left)
+structure Right = Pair_Bi_Move(open Base; structure M1 = M1.Right; structure M2 = M2.Right)
 
 end

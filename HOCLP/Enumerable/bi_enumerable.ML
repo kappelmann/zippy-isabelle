@@ -10,15 +10,15 @@ sig
   structure First : BI_MOVE
   sharing type First.from = init_data
   sharing type First.to = data
-  sharing type First.K.M.t = K.M.t
+  sharing type First.C.cat = C.cat
 
   structure Next : HOM_BI_MOVE
   sharing type Next.from = data
-  sharing type Next.K.M.t = K.M.t
+  sharing type Next.C.cat = C.cat
 
   structure Prev : HOM_BI_MOVE
   sharing type Prev.from = data
-  sharing type Prev.K.M.t = K.M.t
+  sharing type Prev.C.cat = C.cat
 end
 
 functor Bi_Enumerable(
@@ -56,7 +56,7 @@ sig
   structure Last : BI_MOVE
   sharing type Last.from = init_data
   sharing type Last.to = data
-  sharing type Last.K.M.t = K.M.t
+  sharing type Last.C.cat = C.cat
 end
 
 functor Last_Bi_Enumerable(

@@ -9,7 +9,7 @@ sig
   include BI_ZIPPER
   where type ('i, 'a, 'b) container = ('i, 'a, 'b) Z.container * ('i, 'a, 'b) new_zcontext
   sharing type content = Z.content
-  sharing type K.M.t = Z.K.M.t
+  sharing type C.cat = Z.C.cat
 
   val mk_zcontext : ('i, 'a, 'b) Z.zcontext -> ('i, 'a, 'b) new_zcontext -> ('i, 'a, 'b) zcontext
   val get_old_zcontext : ('i, 'a, 'b) zcontext -> ('i, 'a, 'b) Z.zcontext
@@ -23,7 +23,9 @@ end
 
 functor Extend_Bi_Zipper_Context(
     structure ZD : ZIPPER_DATA
+    structure A : IARROW
     structure Z : BI_ZIPPER
+    sharing type Z.C.cat = A.cat
     type ('i, 'a, 'b) new_zcontext
     type ('i, 'a, 'b) zcontext
     val mk_zcontext : ('i, 'a, 'b) Z.zcontext -> ('i, 'a, 'b) new_zcontext -> ('i, 'a, 'b) zcontext
@@ -50,11 +52,15 @@ fun old_zipper_from_zipper zipper =
   let val {content, zcontext} = ZD.dest_zipper zipper
   in Z.zipper content (get_old_zcontext zcontext) end
 
-structure A = IKleisli_IArrow_Apply(Z.K.M)
 
-fun lift_move move zipper =
-  let val mk_zipper = ZD.get_zcontext zipper |> get_new_zcontext |> zipper_from_old_zipper
-  in old_zipper_from_zipper zipper |> A.comp (A.arr mk_zipper) move end
+local structure C = ISemi_Category(A) open C
+in
+fun lift_move move _ =
+  let val mk_zipper = ZD.get_zcontext #> get_new_zcontext #> zipper_from_old_zipper
+  in
+    A.&&& (A.arr mk_zipper, A.comp_lazy move (A.arr old_zipper_from_zipper))
+    >>> A.arr (fn (f, x) => f x)
+  end
 
 structure NZ = Bi_Zipper(
   structure Zin = Z
@@ -73,16 +79,17 @@ structure NZ = Bi_Zipper(
 
     type ('i, 'a, 'b) container = ('i, 'a, 'b) Z.container * ('i, 'a, 'b) new_zcontext
     structure SA = Arrow(SArrow_Apply)
-    fun unzip zipper = zipper
-      |> SA.&&& (old_zipper_from_zipper #> Z.unzip, ZD.get_zcontext #> get_new_zcontext)
+    fun unzip zipper =
+      SA.&&& (old_zipper_from_zipper #> Z.unzip, ZD.get_zcontext #> get_new_zcontext) zipper
   end
-  fun init (container, old_zipper) = container
-    |> A.comp (A.arr (zipper_from_old_zipper old_zipper)) Zin.Init.move
-  fun up zipper = lift_move Zin.Up.move zipper
-  fun down zipper = lift_move Zin.Down.move zipper
-  fun left zipper = lift_move Zin.Left.move zipper
-  fun right zipper = lift_move Zin.Right.move zipper
+  fun init _ = A.*** (Zin.Init.move (), A.arr zipper_from_old_zipper)
+    >>> A.arr (fn (x, f) => f x)
+  fun up _ = lift_move Zin.Up.move ()
+  fun down _ = lift_move Zin.Down.move ()
+  fun left _ = lift_move Zin.Left.move ()
+  fun right _ = lift_move Zin.Right.move ()
 )
+end
 open NZ
 
 end

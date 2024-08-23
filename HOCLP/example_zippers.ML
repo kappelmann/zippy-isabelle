@@ -1,57 +1,86 @@
-structure Example_Zippers =
-struct
-
-structure List = GList(M)
-
-structure List_Zipper_Base : ZIPPER_BASE =
-struct
-  structure ZD = Zipper_Data
-  type ('i, 'c) content = 'c
-  type ('i, 'c) zcontext = 'c List.t * 'c List.t
-  type ('i, 'c) zipper = (('i, 'c) content, ('i, 'c) zcontext) ZD.zipper
-  val zipper = ZD.zipper
-
-  val get_content = ZD.get_content
-  val get_zcontext = ZD.get_zcontext
-
-  val map_content = ZD.map_content
-  val map_zcontext = ZD.map_zcontext
-
-  type ('i, 'c) container = 'c List.t
-  fun unzip zipper = let val (rev_pref, suff) = get_zcontext zipper
-    in rev rev_pref @ [get_content zipper] @ suff end
+(* structure List = GList(M) *)
+signature LIST_ZIPPER_BASE =
+sig
+  structure L : GLIST
+  include ZIPPER_BASE
+  where type ('i, 'c) content = 'c
+  where type ('i, 'c) zcontext = 'c L.t * 'c L.t
+  where type ('i, 'c) container = 'c L.t
 end
 
-structure List_Zipper =
+functor List_Zipper_Base(L : GLIST where type 'a t = 'a list) : LIST_ZIPPER_BASE =
+struct
+structure L = L
+structure ZD = Zipper_Data
+type ('i, 'c) content = 'c
+type ('i, 'c) zcontext = 'c L.t * 'c L.t
+type ('i, 'c) zipper = (('i, 'c) content, ('i, 'c) zcontext) ZD.zipper
+val zipper = ZD.zipper
+
+val get_content = ZD.get_content
+val get_zcontext = ZD.get_zcontext
+
+val map_content = ZD.map_content
+val map_zcontext = ZD.map_zcontext
+
+type ('i, 'c) container = 'c L.t
+fun unzip zipper = let val (rev_pref, suff) = get_zcontext zipper
+  in rev rev_pref @ [get_content zipper] @ suff end
+end
+
+functor List_Zipper(
+    structure Z : LIST_ZIPPER_BASE
+    where type 'a L.t = 'a list
+    val mk_exn_horizontal : unit -> ('i, 'i, ('i, 'c) Z.zipper, Z.L.A.exn) Z.L.A.cat
+  ) =
 struct
 structure Z = Zipper(
-  structure Z = List_Zipper_Base
-  fun init xs = List.dest xs |> M.map (fn (x, xs) => Z.zipper x ([], xs))
-  fun up zipper =
+  structure Z = Z
+  structure L = Z.L
+  structure A = IArrow(L.A)
+  structure M = Move_Base(Z.L.A)
+  structure SC = ISemi_Category(A) open SC
+  fun init _ = L.dest >>> A.arr (fn (x, xs) => Z.zipper x (L.empty, xs))
+  fun dest_zipper zipper =
     let
       val c = Z.get_content zipper
       val (hs, ts) = Z.get_zcontext zipper
-    in List.dest hs |> M.map (fn (h, hs) => Z.zipper h (hs, c :: ts)) end
-  fun down zipper =
-    let
-      val c = Z.get_content zipper
-      val (hs, ts) = Z.get_zcontext zipper
-    in List.dest ts |> M.map (fn (t, ts) => Z.zipper t (c :: hs, ts)) end
-  fun left _ = ME.throw ()
-  fun right _ = ME.throw ()
-  structure M = MB
+    in (hs, (c, ts)) end
+  fun up _ = A.arr dest_zipper
+    >>> A.first L.dest
+    >>> A.arr (fn ((h, hs), (c, ts)) => Z.zipper h (hs, L.cons c ts))
+  fun down _ = A.arr dest_zipper
+    >>> A.second (A.second L.dest)
+    >>> A.arr (fn (hs, (c, (t, ts))) => Z.zipper t (L.cons c hs, ts))
+  fun left _ = mk_exn_horizontal () >>> L.A.throw
+  fun right _ = mk_exn_horizontal () >>> L.A.throw
 )
 open Z
-fun append content = map_zcontext (fn (hs, ts) => (hs, ts @ [content]))
+fun append content = map_zcontext (apsnd (fn ts => ts @ [content]))
 end
 
-datatype 'a rose = Rose of ('a * 'a rose) List.t
+signature ROSE_ZIPPER_BASE =
+sig
+  structure L : GLIST
+  type 'a rose
+  val dest_rose : 'a rose -> ('a * 'a rose) L.t
+  val rose : ('a * 'a rose) L.t -> 'a rose
+  include ZIPPER_BASE
+  where type ('i, 'c) content = 'c
+  where type ('i, 'c) zcontext = 'c rose * ((('c * 'c rose) L.t * ('c * 'c rose) L.t * 'c option) L.t)
+  where type ('i, 'c) container = 'c rose
+end
 
-structure Rose_Zipper_Base : ZIPPER_BASE =
+functor Rose_Zipper_Base(L : GLIST where type 'a t = 'a list) : ROSE_ZIPPER_BASE =
 struct
+  structure L = L
+  datatype 'a rose = Rose of ('a * 'a rose) L.t
+  fun dest_rose (Rose xs) = xs
+  fun rose xs = Rose xs
+
   structure ZD = Zipper_Data
   type ('i, 'c) content = 'c
-  type ('i, 'c) zcontext = 'c rose * ((('c * 'c rose) List.t * ('c * 'c rose) List.t * 'c option) List.t)
+  type ('i, 'c) zcontext = 'c rose * ((('c * 'c rose) L.t * ('c * 'c rose) L.t * 'c option) L.t)
   type ('i, 'c) zipper = (('i, 'c) content, ('i, 'c) zcontext) ZD.zipper
   val zipper = ZD.zipper
 
@@ -70,37 +99,51 @@ struct
     in mk xs children (get_content zipper) end
 end
 
-structure Rose_Zipper = Zipper(
-  structure Z = Rose_Zipper_Base
-  fun init (Rose xs) = List.dest xs |> M.map (fn ((x, cs), xs) => Z.zipper x (cs, [([], xs, NONE)]))
-  fun up zipper =
+functor Rose_Zipper(
+    structure Z : ROSE_ZIPPER_BASE
+    where type L.A.exn = unit
+    where type 'a L.t = 'a list
+    structure AC : IARROW_CHOICE_BASE
+    sharing type AC.cat = Z.L.A.cat
+  ) =
+struct
+open Z
+structure Z = Zipper(
+  structure Z = Z
+  structure L = Z.L
+  structure A = IArrow(L.A)
+  structure M = Move_Base(Z.L.A)
+  structure SC = ISemi_Category(A) open SC
+  fun init _ =
+    A.arr Z.dest_rose >>> L.dest >>> A.arr (fn ((x, cs), xs) => Z.zipper x (cs, [([], xs, NONE)]))
+  fun dest_zipper zipper =
     let
       val c = Z.get_content zipper
       val (ch, xs) = Z.get_zcontext zipper
-    in
-      M.bind (List.dest xs)
-      (fn ((rev_pref, suff, p), xs) => p |>
-        Option.map (fn p => Z.zipper p (Rose (rev rev_pref @ [(c, ch)] @ suff), xs))
-        |> MS.lift)
-    end
-  fun down zipper =
-    let
-      val p = Z.get_content zipper
-      val (Rose ch, xs) = Z.get_zcontext zipper
-    in List.dest ch |> M.map (fn ((c, ch), cs) => Z.zipper c (ch, (([], cs, SOME p) :: xs))) end
-  fun left zipper =
-    let
-      val c = Z.get_content zipper
-      val (ch, xs) = Z.get_zcontext zipper
-    in M.bind (List.dest xs) (fn ((rev_pref, suff, p), xs) =>
-      M.map (fn ((r, rch), rs) => Z.zipper r (rch, (rs, (c, ch) :: suff , p) :: xs)) (List.dest rev_pref)) end
-  fun right zipper =
-    let
-      val c = Z.get_content zipper
-      val (ch, xs) = Z.get_zcontext zipper
-    in M.bind (List.dest xs) (fn ((rev_pref, suff, p), xs) =>
-      M.map (fn ((s, sch), ss) => Z.zipper s (sch, ((c, ch) :: rev_pref, ss, p) :: xs)) (List.dest suff)) end
-  structure M = MB
+    in (ch, (c, xs)) end
+  fun dest_zipper_flip zipper = dest_zipper zipper |> (fn (ch, (c, xs)) => (xs, (c, ch)))
+  fun up _ =
+    A.arr dest_zipper_flip
+    >>> A.first L.dest
+    >>> A.arr (fn (((rev_pref, suff, p), xs), (c, ch)) => case p of
+        NONE => Either.Left ()
+      | SOME p => Z.zipper p (Z.rose (rev rev_pref @ [(c, ch)] @ suff), xs) |> Either.Right)
+    >>> AC.merge L.A.throw (A.id ())
+  fun down _ = A.arr (dest_zipper #> apfst Z.dest_rose)
+    >>> A.first L.dest
+    >>> A.arr (fn (((c, ch), cs), (p, xs)) => Z.zipper c (ch, (L.cons (L.empty, cs, SOME p) xs)))
+  fun left _ = A.arr dest_zipper_flip
+    >>> A.first L.dest
+    >>> A.first (A.arr (fn ((rev_pref, suff, p), xs) => (rev_pref, (suff, p, xs))))
+    >>> A.first (A.first L.dest)
+    >>> A.arr (fn ((((r, rch), rs), (suff, p, xs)), (c, ch)) =>
+      Z.zipper r (rch, L.cons (rs, L.cons (c, ch) suff , p) xs))
+  fun right _ = A.arr dest_zipper_flip
+    >>> A.first L.dest
+    >>> A.first (A.arr (fn ((rev_pref, suff, p), xs) => (suff, (rev_pref, p, xs))))
+    >>> A.first (A.first L.dest)
+    >>> A.arr (fn ((((s, sch), ss), (rev_pref, p, xs)), (c, ch)) =>
+      Z.zipper s (sch, L.cons (L.cons (c, ch) rev_pref, ss, p) xs))
 )
-
+open Z
 end
