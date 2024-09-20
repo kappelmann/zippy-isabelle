@@ -4,7 +4,7 @@
 functor Int_Enumerable(
     structure A : IARROW_BASE
     structure M : MOVE_BASE
-    sharing type M.C.cat = A.cat
+    sharing type M.T.cat = A.cat
   ) : ENUMERABLE = Enumerable(
   structure M = M
   type ('i, 'a) init_data = int

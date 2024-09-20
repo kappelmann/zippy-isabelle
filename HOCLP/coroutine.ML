@@ -6,19 +6,20 @@ sig
 
 structure C : ICATEGORY_BASE
 
-type ('i, 'a, 'b) coroutine
+type ('i, 'j, 'a, 'b) coroutine
 
-val coroutine : ('i, 'i, 'a, 'b * ('i, 'a, 'b) coroutine) C.cat -> ('i, 'a, 'b) coroutine
-val resume : ('i, 'a, 'b) coroutine -> ('i, 'i, 'a, 'b * ('i, 'a, 'b) coroutine) C.cat
+val coroutine : ('i, 'j, 'a, 'b * ('j, 'i, 'a, 'b) coroutine) C.cat -> ('i, 'j, 'a, 'b) coroutine
+val resume : ('i, 'j, 'a, 'b) coroutine -> ('i, 'j, 'a, 'b * ('j, 'i, 'a, 'b) coroutine) C.cat
 
 end
 
-functor ICoroutine(C : ICATEGORY_BASE) : ICOROUTINE =
+functor ICoroutine(C : ICATEGORY_BASE) : ICOROUTINE
+=
 struct
 
 structure C = C
 
-datatype ('i, 'a, 'b) coroutine = Coroutine of ('i, 'i, 'a, 'b * ('i, 'a, 'b) coroutine) C.cat
+datatype ('i, 'j, 'a, 'b) coroutine = Coroutine of ('i, 'j, 'a, 'b * ('j, 'i, 'a, 'b) coroutine) C.cat
 
 val coroutine = Coroutine
 fun resume (Coroutine f) = f

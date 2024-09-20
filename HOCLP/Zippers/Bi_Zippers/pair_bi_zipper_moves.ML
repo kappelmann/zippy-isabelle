@@ -17,23 +17,23 @@ sig
   where type ('i, 'a, 'b) Left.to = ('i, 'a, 'b) M1.Left.to * ('i, 'a, 'b) M2.Left.to
   where type ('i, 'a, 'b) Right.from = ('i, 'a, 'b) M1.Right.from * ('i, 'a, 'b) M2.Right.from
   where type ('i, 'a, 'b) Right.to = ('i, 'a, 'b) M1.Right.to * ('i, 'a, 'b) M2.Right.to
-  sharing type M1.C.cat = C.cat
-  sharing type M2.C.cat = C.cat
+  sharing type M1.T.cat = T.cat
+  sharing type M2.T.cat = T.cat
 end
 
 functor Pair_Bi_Zipper_Moves(
-    structure A : IARROW_BASE
+    structure A : LAZY_IARROW_BASE
     structure M1 : BI_ZIPPER_MOVES
-    sharing type M1.C.cat = A.cat
+    sharing type M1.T.cat = A.T.cat
     structure M2 : BI_ZIPPER_MOVES
-    sharing type M2.C.cat = M1.C.cat
+    sharing type M2.T.cat = M1.T.cat
   ) : PAIR_BI_ZIPPER_MOVES =
 struct
 
 structure M1 = M1
 structure M2 = M2
 
-structure M = Move_Base(M1.C)
+structure M : MOVE_BASE = M1
 open M
 
 structure Base = struct structure A = A end

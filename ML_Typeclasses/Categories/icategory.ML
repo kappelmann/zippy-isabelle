@@ -292,15 +292,31 @@ val merge : ('i, 'j, 'a, 'c) cat -> ('i, 'j, 'b, 'c) cat -> ('i, 'j, ('a, 'b) Ei
 
 end
 
-functor IArrow_Choice_Arrow_Choice(AC : ARROW_CHOICE_BASE) : IARROW_CHOICE_BASE =
+signature IARROW_CHOICE =
+sig
+
+include IARROW_CHOICE_BASE
+val opt : ('i, 'j, unit, 'b) cat -> ('i, 'j, 'a, 'b) cat -> ('i, 'j, 'a option, 'b) cat
+
+end
+
+functor IArrow_Choice(A : IARROW_CHOICE_BASE) : IARROW_CHOICE =
+struct
+
+open A
+fun opt fnone fsome = comp (merge fnone fsome) (arr Either.of_opt)
+
+end
+
+functor IArrow_Choice_Arrow_Choice(AC : ARROW_CHOICE) : IARROW_CHOICE =
 struct
 open AC
 structure A = IArrow_Arrow(AC)
 open A
 end
 
-functor Arrow_Choice_IArrow_Choice(structure AC : IARROW_CHOICE_BASE; structure T : GROUND_TYPE)
-  : ARROW_CHOICE_BASE =
+functor Arrow_Choice_IArrow_Choice(structure AC : IARROW_CHOICE; structure T : GROUND_TYPE)
+  : ARROW_CHOICE =
 struct
 open AC
 structure A = Arrow_IArrow(structure A = AC; structure T = T)

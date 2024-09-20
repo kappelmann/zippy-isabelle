@@ -4,7 +4,7 @@
 functor Direction_Zipper_Moves(
     structure A : IARROW
     structure M : MOVE_BASE
-    sharing type M.C.cat = A.cat
+    sharing type M.T.cat = A.cat
   ) : HOM_ZIPPER_MOVES = Hom_Zipper_Moves(
   structure M = M
   type ('i, 'a) init_from = unit

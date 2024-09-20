@@ -6,15 +6,15 @@ sig
   include MOVE_BASE
 
   structure Init : MOVE
-  sharing type Init.C.cat = C.cat
+  sharing type Init.T.cat = T.cat
   structure Up : MOVE
-  sharing type Up.C.cat = C.cat
+  sharing type Up.T.cat = T.cat
   structure Down : MOVE
-  sharing type Down.C.cat = C.cat
+  sharing type Down.T.cat = T.cat
   structure Left : MOVE
-  sharing type Left.C.cat = C.cat
+  sharing type Left.T.cat = T.cat
   structure Right : MOVE
-  sharing type Right.C.cat = C.cat
+  sharing type Right.T.cat = T.cat
 end
 
 signature BI_ZIPPER_MOVES_ZIPPER_MOVES_CONTENT_ARGS =
@@ -30,7 +30,7 @@ end
 functor Bi_Zipper_Moves_Zipper_Moves(
     structure CA : BI_ZIPPER_MOVES_ZIPPER_MOVES_CONTENT_ARGS
     structure M : ZIPPER_MOVES
-    sharing type CA.C.cat = M.C.cat
+    sharing type CA.T.cat = M.T.cat
   ) : BI_ZIPPER_MOVES =
 struct
 open CA
@@ -44,7 +44,7 @@ end
 functor Zipper_Moves_Bi_Zipper_Moves(M : BI_ZIPPER_MOVES) : ZIPPER_MOVES =
 struct
 structure ZM = M
-structure M = Move_Base(ZM.C)
+structure M : MOVE_BASE =ZM
 open M
 
 structure Init = Move_Bi_Move(ZM.Init)
@@ -80,7 +80,7 @@ struct
 structure ZM = Bi_Zipper_Moves_Zipper_Moves(
   structure CA  =
   struct
-    structure M = Move_Base(M.C)
+    structure M : MOVE_BASE = M
     open M
     type ('i, 'a, 'b) init_content = ('i, 'a, 'b) content
     type ('i, 'a, 'b) up_content = ('i, 'a, 'b) content

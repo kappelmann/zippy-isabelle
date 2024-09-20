@@ -7,11 +7,11 @@ sig
   structure BZ2 : BI_ZIPPER
 
   structure N1 : BI_NODE
-  where type ('i, 'a, 'b) next = ('i, 'i, unit, ('i, 'b, 'a) BZ2.container) BZ2.Init.C.cat
+  where type ('i, 'a, 'b) next = ('i, 'i, unit, ('i, 'b, 'a) BZ2.container) BZ2.Init.cat
   sharing type N1.node = BZ1.content
 
   structure N2 : BI_NODE
-  where type ('i, 'a, 'b) next = ('i, 'i, unit, ('i, 'b, 'a) BZ1.container) BZ1.Init.C.cat
+  where type ('i, 'a, 'b) next = ('i, 'i, unit, ('i, 'b, 'a) BZ1.container) BZ1.Init.cat
   sharing type N2.node = BZ2.content
 end
 
@@ -27,10 +27,10 @@ sig
     where type ('i, 'a, 'b) next = ('i, 'a, 'b) A.N2.next
     where type ('i, 'a, 'b) node = ('i, 'a, 'b) A.N2.node
     structure ZD : ZIPPER_DATA
-    structure DA1 : IARROW_APPLY_BASE
-    structure DA2 : IARROW_APPLY_BASE
-    structure UA1 : IARROW_APPLY_BASE
-    structure UA2 : IARROW_APPLY_BASE
+    structure DA1 : LAZY_IARROW_APPLY_BASE
+    structure DA2 : LAZY_IARROW_APPLY_BASE
+    structure UA1 : LAZY_IARROW_APPLY_BASE
+    structure UA2 : LAZY_IARROW_APPLY_BASE
     type ('i, 'a, 'b) zcontext1
     type ('i, 'a, 'b) zcontext2
     type ('i, 'a, 'b) parent1 =
@@ -52,28 +52,32 @@ sig
     where type ('i, 'a, 'b) Z1.content = ('i, 'a, 'b) A.BZ1.content
     where type ('i, 'a, 'b) Z1.zcontext = ('i, 'a, 'b) zcontext1
     where type ('i, 'a, 'b) Z1.container = ('i, 'a, 'b) A.BZ1.container * ('i, 'a, 'b) parent1
-    where type ('i, 'j, 'a, 'b) Z1.C.cat = ('i, 'j, 'a, 'b) A.BZ1.C.cat
+    where type ('i, 'j, 'a, 'b) Z1.T.cat = ('i, 'j, 'a, 'b) A.BZ1.T.cat
     where type ('i, 'a, 'b) Z2.content = ('i, 'a, 'b) A.BZ2.content
     where type ('i, 'a, 'b) Z2.zcontext = ('i, 'a, 'b) zcontext2
     where type ('i, 'a, 'b) Z2.container = ('i, 'a, 'b) A.BZ2.container * ('i, 'a, 'b) parent2
-    where type ('i, 'j, 'a, 'b) Z2.C.cat = ('i, 'j, 'a, 'b) A.BZ2.C.cat
-    where type ('i, 'j, 'a, 'b) Down1.C.cat = ('i, 'j, 'a, 'b) DA1.cat
-    where type ('i, 'j, 'a, 'b) Down2.C.cat = ('i, 'j, 'a, 'b) DA2.cat
-    where type ('i, 'j, 'a, 'b) Up1.C.cat = ('i, 'j, 'a, 'b) UA1.cat
-    where type ('i, 'j, 'a, 'b) Up2.C.cat = ('i, 'j, 'a, 'b) UA2.cat
+    where type ('i, 'j, 'a, 'b) Z2.T.cat = ('i, 'j, 'a, 'b) A.BZ2.T.cat
+    where type ('i, 'j, 'a, 'b) Down1.T.cat = ('i, 'j, 'a, 'b) DA1.T.cat
+    where type ('i, 'j, 'a, 'b) Down2.T.cat = ('i, 'j, 'a, 'b) DA2.T.cat
+    where type ('i, 'j, 'a, 'b) Up1.T.cat = ('i, 'j, 'a, 'b) UA1.T.cat
+    where type ('i, 'j, 'a, 'b) Up2.T.cat = ('i, 'j, 'a, 'b) UA2.T.cat
 end
 
-signature IARROW_IARROW_APPLY_BASE =
-  sig structure A : IARROW structure AA : IARROW_APPLY_BASE sharing type A.cat = AA.cat end
+signature LAZY_IARROW_IARROW_APPLY_BASE =
+sig
+  structure A : LAZY_IARROW
+  structure AA : LAZY_IARROW_APPLY_BASE
+  sharing type A.T.cat = AA.T.cat
+end
 
 functor Alternating_Bi_Zippers_Bi_Nodes(
-    structure UA1 : IARROW_IARROW_APPLY_BASE
-    structure UA2 : IARROW_IARROW_APPLY_BASE
-    structure DA1 : IARROW_IARROW_APPLY_BASE
-    structure DA2 : IARROW_IARROW_APPLY_BASE
+    structure UA1 : LAZY_IARROW_IARROW_APPLY_BASE
+    structure UA2 : LAZY_IARROW_IARROW_APPLY_BASE
+    structure DA1 : LAZY_IARROW_IARROW_APPLY_BASE
+    structure DA2 : LAZY_IARROW_IARROW_APPLY_BASE
     structure A : ALTERNATING_BI_ZIPPERS_BI_NODES_BASE_ARGS
-    sharing type A.BZ1.C.cat = DA2.A.cat
-    sharing type A.BZ2.C.cat = DA1.A.cat
+    sharing type A.BZ1.T.cat = DA2.A.T.cat
+    sharing type A.BZ2.T.cat = DA1.A.T.cat
     structure ZD : ZIPPER_DATA
   ) : ALTERNATING_BI_ZIPPERS_BI_NODES =
 (* )= *)
@@ -161,32 +165,34 @@ structure Z2 = Extend_Bi_Zipper_Context(
 
 structure Down1 : BI_MOVE =
 struct
-  structure MB = Move_Base(Z2.Init.C)
+  structure MB : MOVE_BASE = Z2.Init
   open MB
   type ('i, 'a, 'b) from = ('i, 'a, 'b) Z1.zipper
   type ('i, 'a, 'b) to = ('i, 'b, 'a) Z2.zipper
   structure SC = ISemi_Category(DA1) open SC DA1in
   fun move _ =
-    A.arr (fn zipper =>
+    (A.arr (fn zipper =>
       Z1.get_content zipper |> N1.dest_node |> (fn {content, next} => ((next, ()), (zipper, content))))
     >>> A.***
       (AA.app, A.arr (fn (zipper, content) => ZD.zipper content (Z1.get_zcontext zipper) |> UA2in.A.K))
-    >>> Z2.Init.move ()
+    >>> Z2.Init.move)
+    ()
 end
 
 structure Down2 : BI_MOVE =
 struct
-  structure MB = Move_Base(Z1.Init.C)
+  structure MB : MOVE_BASE = Z1.Init
   open MB
   type ('i, 'a, 'b) from = ('i, 'a, 'b) Z2.zipper
   type ('i, 'a, 'b) to = ('i, 'b, 'a) Z1.zipper
   structure SC = ISemi_Category(DA2) open SC DA2in
   fun move _ =
-    A.arr (fn zipper =>
+    (A.arr (fn zipper =>
       Z2.get_content zipper |> N2.dest_node |> (fn {content, next} => ((next, ()), (zipper, content))))
     >>> A.***
       (AA.app, A.arr (fn (zipper, content) => ZD.zipper content (Z2.get_zcontext zipper) |> UA1in.A.K))
-    >>> Z1.Init.move ()
+    >>> Z1.Init.move)
+    ()
 end
 
 structure Up1 : BI_MOVE =
@@ -195,14 +201,15 @@ struct
   open MB
   type ('i, 'a, 'b) from = ('i, 'a, 'b) Z1.zipper
   type ('i, 'a, 'b) to = ('i, 'b, 'a) Z2.zipper
-  structure SC = ISemi_Category(MB.C) open SC UA1in
-  fun move _ = A.arr (Z1.unzip #> apsnd (rpair ()))
+  structure SC = ISemi_Category(MB) open SC UA1in
+  fun move _ = (A.arr (Z1.unzip #> apsnd (rpair ()))
     >>> A.second AA.app
     >>> A.arr (fn (next, parent_zipper) =>
       let
         val {content, zcontext} = ZD.dest_zipper parent_zipper
         val content = N2.node content (DA2in.A.K next)
-      in Z2.zipper content zcontext end)
+      in Z2.zipper content zcontext end))
+    ()
 end
 
 structure Up2 : BI_MOVE =
@@ -211,14 +218,15 @@ struct
   open MB
   type ('i, 'a, 'b) from = ('i, 'a, 'b) Z2.zipper
   type ('i, 'a, 'b) to = ('i, 'b, 'a) Z1.zipper
-  structure SC = ISemi_Category(MB.C) open SC UA2in
-  fun move _ = A.arr (Z2.unzip #> apsnd (rpair ()))
+  structure SC = ISemi_Category(MB) open SC UA2in
+  fun move _ = (A.arr (Z2.unzip #> apsnd (rpair ()))
     >>> A.second AA.app
     >>> A.arr (fn (next, parent_zipper) =>
       let
         val {content, zcontext} = ZD.dest_zipper parent_zipper
         val content = N1.node content (DA1in.A.K next)
-      in Z1.zipper content zcontext end)
+      in Z1.zipper content zcontext end))
+    ()
 end
 
 end

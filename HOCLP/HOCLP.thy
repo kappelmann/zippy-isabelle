@@ -31,10 +31,21 @@ ML\<open>
     structure MS = State_Trans(structure M = ME; structure SR = Pair_State_Result_Base)
     in
     structure M = IMonad_Exception_State_Trans(structure M = ME; structure S = MS)
-    structure AE = IArrow_Exception(IKleisli_Arrow_Exception(M))
-    structure AAC = IKleisli_IArrow_Apply_Choice(M)
-    structure AA = struct structure AA = AAC structure A = IArrow(AA) end
-    structure MB = Move_Base(AA.A)
+    structure A =
+    struct
+      structure AE = IArrow_Exception(IKleisli_Arrow_Exception(M))
+      structure AA = IKleisli_IArrow_Apply_Choice(M)
+      structure AC = AA
+      structure A = IArrow(AC)
+    end
+    structure LA =
+    struct
+      structure AE = Lazy_IArrow_Exception(A.AE)
+      structure AA = Lazy_IArrow_Apply_Base(A.AA)
+      structure AC = Lazy_IArrow_Choice_Base(A.AC)
+      structure A = Lazy_IArrow(A.A)
+    end
+    structure MB = Move_Base(LA.A)
     end
   end
 \<close>
@@ -46,32 +57,32 @@ ML\<open>
   (* structure Data_Zipper = Rose_Zipper( *)
   structure Data_Zipper = List_Zipper(
     (* structure Z = Rose_Zipper_Base(GList) *)
-    (* structure AC = SIn.AAC *)
+    (* structure AC = IArrow_Choice(SIn.A.AC) *)
     structure Z = List_Zipper_Base(GList)
-    fun mk_exn_horizontal _ = SIn.AA.A.K ()
+    fun mk_exn_horizontal _ = SIn.A.A.K ()
   )
   structure AZ = Alternating_Bi_Zippers_Bi_Nodes(
     structure A = Alternating_Bi_Zippers_Bi_Nodes_Base_Args_Simple_Zippers(
-      structure A1 = SIn.AA.A
-      structure A2 = SIn.AA.A
+      structure A1 = SIn.LA.A
+      structure A2 = SIn.LA.A
       type ('i, 'c, 'n) ncontent1 = 'c
       type ('i, 'c, 'n) ncontent2 = 'c
       structure Z1 = Data_Zipper
       structure Z2 = Data_Zipper
     )
-    structure UA1 = SIn.AA
-    structure UA2 = SIn.AA
-    structure DA1 = SIn.AA
-    structure DA2 = SIn.AA
+    structure UA1 = SIn.LA
+    structure UA2 = SIn.LA
+    structure DA1 = SIn.LA
+    structure DA2 = SIn.LA
     structure ZD  = Zipper_Data
   )
 \<close>
 
 ML\<open>
-  structure E1 = DFS_Postorder_Enumerable_Bi_Zipper(structure AE = SIn.AE; structure Z = AZ.Z1)
-  structure E2 = DFS_Postorder_Enumerable_Bi_Zipper(structure AE = SIn.AE; structure Z = AZ.Z2)
-  structure T1 = Test(structure AZ = AZ; structure AE = SIn.AE; structure E1 = E1; structure E2 = E2)
-  structure T2 = Test(structure AZ = Flip_Alternating_Bi_Zippers(AZ); structure AE = SIn.AE;
+  structure E1 = DFS_Postorder_Enumerable_Bi_Zipper(structure AE = SIn.LA.AE; structure Z = AZ.Z1)
+  structure E2 = DFS_Postorder_Enumerable_Bi_Zipper(structure AE = SIn.LA.AE; structure Z = AZ.Z2)
+  structure T1 = Test(structure AZ = AZ; structure AE = SIn.LA.AE; structure E1 = E1; structure E2 = E2)
+  structure T2 = Test(structure AZ = Flip_Alternating_Bi_Zippers(AZ); structure AE = SIn.LA.AE;
     structure E1' = E1; structure E1 = E2; structure E2 = E1')
 \<close>
 
@@ -87,25 +98,63 @@ fun init_nodes content next =
   let val node = AZ.N1.node content next
   in GList.cons node GList.empty end
   (* in Data_Zipper.rose (GList.cons (node, Data_Zipper.rose GList.empty) GList.empty) end *)
-fun init_nodes_no_next content = init_nodes content SIn.AE.throw
+fun init_nodes_no_next content = init_nodes content SIn.LA.AE.throw
 \<close>
 
 ML\<open>
   structure Mk_Action = Mk_Action(
-    structure A = SIn.AA.A
-    type ('i, 'a, 'b, 'ma) zipperma = ('i, ('a, 'ma) Content_Mk_Action.cma, 'b) AZ.Z2.zipper
+    structure A = SIn.LA.A
+    type ('i, 'a, 'b, 'ma) zipper_mka = ('i, ('a, 'ma) Content_Mk_Action.cma, 'b) AZ.Z2.zipper
   )
 \<close>
 
 ML\<open>
-  local open SIn.M in
+  (* local open SIn.M in *)
   val tac = resolve0_tac [@{thm sillyrule}] |> SOMEGOAL
-  val coroutine = Mk_Action.Coroutine.coroutine (fn zipper =>
-    let
+  (* ('p, 'i, 'a, 'b) zipper,
+  ('p, 'i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) to)
+  Coroutine.coroutine *)
+  local structure MU = Move_Util(structure AE = SIn.LA.AE; structure AC = SIn.LA.AC) open MU.SC SIn.LA.A in
+  val get_parent_content = AZ.Up2.move
+    >>> arr (AZ.Z1.get_content #> AZ.N1.get_content)
+  (* fun test_sq sq =
+    arr (fn zipper =>
+      let
+        val prio = 0
+        val act = arr (fn zipper =>
+          let val thmsq = get_goals zipper |> tac
+          in zipper end)
+        val next = Mk_Action.Coroutine.coroutine (fn _ => SIn.AE.throw ())
+      in ((prio, act), next) end)
+    |> Mk_Action.Coroutine.coroutine *)
+    (* let
       val prio = 0
-      val act = pure
-      val next = Mk_Action.Coroutine.coroutine (fn _ => throw ())
-    in ((prio, act), next) |> pure end)
+      val act = arr (fn zipper => zipper)
+      val next = Mk_Action.Coroutine.coroutine (fn _ => SIn.AE.throw ())
+    in ((prio, act), next) end *)
+  (* fun test tac = get_parent_content
+    >>> tac
+    >>> (fn thmsq =>
+      let
+        val prio = 0
+        val act = arr (fn zipper => zipper)
+        val next = Mk_Action.Coroutine.coroutine (fn _ => SIn.AE.throw ())
+      in ((prio, act), next) end)
+    ) *)
+    (* >>> first *)
+  fun mk_actionc get_goals = arr (fn zipper =>
+      let
+        val prio = 0
+        val act = arr (fn zipper =>
+          let val thmsq = get_goals zipper |> tac
+          in zipper end)
+        val next = Mk_Action.Coroutine.coroutine (fn _ => SIn.LA.AE.throw ())
+      in ((prio, act), next) end)
+    |> Mk_Action.Coroutine.coroutine
+  fun mk_new_content zipper prio mk_action = AZ.N2.node (prio, mk_action) SIn.LA.AE.throw
+  val zappend = arr snd
+  val get_goals = undefined
+  (* fun test _ = Mk_Action.mk_action_mk_actionc zappend mk_new_content (mk_actionc get_goals) *)
   end
 \<close>
 
@@ -117,20 +166,20 @@ ML\<open>
 \<close>
 
 ML\<open>
-  local structure MU = Move_Util(structure AE = SIn.AE; structure AC = SIn.AAC) open MU.SC SIn.AA.A in
-  val init_parent = SIn.AE.throw
+  local structure MU = Move_Util(open SIn.LA) open MU.SC SIn.LA SIn.LA.A in
+  val init_parent = AE.throw
   val init_content = Goal.init @{cprop "PROP P"}
   (* val init_action_content = CMA.mk_content "blub" (init_action_content ()) *)
   val init_action_content = 0
   fun mk_init_nodes _ =
-    init_nodes init_content (SIn.AA.A.K [AZ.N2.node init_action_content SIn.AE.throw])
+    init_nodes init_content (A.K [AZ.N2.node init_action_content AE.throw])
 
   (* local open AZ Data_Zipper in
   fun mk_init_nodes _ =
     let
-      val no_next = SIn.AE.throw
+      val no_next = SIn.LA.AE.throw
       fun no_children _ = rose []
-      val Knext = SIn.AA.A.K
+      val Knext = SIn.LA.A.K
       val node0 = (N1.node 0 no_next, no_children ())
       val node2 = (N1.node 2 no_next, rose [(N1.node 1 no_next, no_children ())])
       val node3 = (N1.node 3 no_next, rose [node0, node2])
@@ -152,12 +201,11 @@ ML\<open>
     (* (mact >>= (fn (p, act) => (@{print} "action!"; act))) *)
     (* (fn exn => (@{print} "no further action"; throw exn)) *)
 
-  val test =  (mk_init_nodes (), init_parent)
-    |> (T1.first1 ()
-      (* >>> AZ.Down1.move () *)
+  val test = (mk_init_nodes (), init_parent)
+    |> (T1.first1
       >>> arr (rpair 0)
-      >>> MU.AF.fold (T1.next ()) update
-    )
+      >>> MU.AF.fold T1.next update
+    ) ()
     (* |> (fn x => MU.fold T2.next update x (zero ())) >>= run_action) *)
     (* |> funpow 2 (fn x => SIn.M.bind (SIn.M.map AZ.Z2.unzip x) (T2.first1 ())) *)
     |> (fn st => st @{context})

@@ -171,3 +171,20 @@ val cases : ('a, 'c) cat -> ('b, 'd) cat -> (('a, 'b) Either.either, ('c, 'd) Ei
 val merge : ('a, 'c) cat -> ('b, 'c) cat -> (('a, 'b) Either.either, 'c) cat
 
 end
+
+signature ARROW_CHOICE =
+sig
+
+include ARROW_CHOICE_BASE
+val opt : (unit, 'b) cat -> ('a, 'b) cat -> ('a option, 'b) cat
+
+end
+
+functor Arrow_Choice(A : ARROW_CHOICE_BASE) : ARROW_CHOICE =
+struct
+
+open A
+fun opt fnone fsome = comp (merge fnone fsome) (arr Either.of_opt)
+
+end
+

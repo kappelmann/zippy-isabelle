@@ -17,6 +17,8 @@ fun app (f, x) = f x
 
 end
 
+(*Kleisli category*)
+
 signature KLEISLI =
 sig
   structure M : MONAD_BASE

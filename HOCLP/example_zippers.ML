@@ -38,7 +38,7 @@ structure Z = Zipper(
   structure Z = Z
   structure L = Z.L
   structure A = IArrow(L.A)
-  structure M = Move_Base(Z.L.A)
+  structure M = Move_Base(Lazy_ICategory_Base(Z.L.A))
   structure SC = ISemi_Category(A) open SC
   fun init _ = L.dest >>> A.arr (fn (x, xs) => Z.zipper x (L.empty, xs))
   fun dest_zipper zipper =
@@ -103,7 +103,7 @@ functor Rose_Zipper(
     structure Z : ROSE_ZIPPER_BASE
     where type L.A.exn = unit
     where type 'a L.t = 'a list
-    structure AC : IARROW_CHOICE_BASE
+    structure AC : IARROW_CHOICE
     sharing type AC.cat = Z.L.A.cat
   ) =
 struct
@@ -112,7 +112,7 @@ structure Z = Zipper(
   structure Z = Z
   structure L = Z.L
   structure A = IArrow(L.A)
-  structure M = Move_Base(Z.L.A)
+  structure M = Move_Base(Lazy_ICategory_Base(Z.L.A))
   structure SC = ISemi_Category(A) open SC
   fun init _ =
     A.arr Z.dest_rose >>> L.dest >>> A.arr (fn ((x, cs), xs) => Z.zipper x (cs, [([], xs, NONE)]))
@@ -125,10 +125,9 @@ structure Z = Zipper(
   fun up _ =
     A.arr dest_zipper_flip
     >>> A.first L.dest
-    >>> A.arr (fn (((rev_pref, suff, p), xs), (c, ch)) => case p of
-        NONE => Either.Left ()
-      | SOME p => Z.zipper p (Z.rose (rev rev_pref @ [(c, ch)] @ suff), xs) |> Either.Right)
-    >>> AC.merge L.A.throw (A.id ())
+    >>> A.arr (fn (((rev_pref, suff, p), xs), (c, ch)) =>
+      Option.map (fn p => Z.zipper p (Z.rose (rev rev_pref @ [(c, ch)] @ suff), xs)) p)
+    >>> AC.opt L.A.throw (A.id ())
   fun down _ = A.arr (dest_zipper #> apfst Z.dest_rose)
     >>> A.first L.dest
     >>> A.arr (fn (((c, ch), cs), (p, xs)) => Z.zipper c (ch, (L.cons (L.empty, cs, SOME p) xs)))

@@ -5,13 +5,13 @@ signature MOVE_UTIL =
 sig
   include MOVE_BASE
   structure AE : IARROW_EXCEPTION
-  sharing type AE.cat = C.cat
-  structure AC : IARROW_CHOICE_BASE
-  sharing type AC.cat = C.cat
+  where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) T.cat
+  structure AC : IARROW_CHOICE
+  where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) T.cat
   structure SC : ISEMI_CATEGORY
-  sharing type SC.cat = C.cat
+  where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) T.cat
   structure AF : IARROW_FOLD
-  sharing type AF.AE.cat = C.cat
+  where type ('i, 'j, 'a, 'b) AE.cat = ('i, 'j, 'a, 'b) T.cat
 end
 
 functor Move_Util(
@@ -21,10 +21,10 @@ functor Move_Util(
   ) : MOVE_UTIL =
 struct
 
-structure MB = Move_Base(AE)
+structure MB = Move_Base(Lazy_ICategory_Base(AE))
 open MB
 structure AE = AE
-structure AC = AC
+structure AC = IArrow_Choice(AC)
 structure SC = ISemi_Category(AE)
 structure AF = IArrow_Fold(structure AE = AE; structure AC = AC)
 

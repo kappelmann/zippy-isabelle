@@ -7,5 +7,6 @@ begin
 
 ML_file\<open>category.ML\<close>
 ML_file\<open>category_instance.ML\<close>
+ML_file\<open>lazy_category.ML\<close>
 
 end

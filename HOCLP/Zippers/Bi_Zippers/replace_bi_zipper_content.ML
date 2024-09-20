@@ -35,7 +35,7 @@ functor Replace_Bi_Zipper_Content(
     where type ('i, 'a, 'b) zcontext = ('i, 'a, 'b) Z.zcontext
     where type ('i, 'a, 'b) zipper = ('i, 'a, 'b) Z.zipper
     where type ('i, 'a, 'b) container = ('i, 'a, 'b) Z.container
-    where type ('i, 'j, 'a, 'b) C.cat = ('i, 'j, 'a, 'b) Z.C.cat
+    where type ('i, 'j, 'a, 'b) T.cat = ('i, 'j, 'a, 'b) Z.T.cat
   =
 Bi_Zipper_Bi_Zipper_Moves(
   structure M = Z
@@ -58,7 +58,7 @@ Bi_Zipper(
     type ('i, 'a, 'b) container = ('i, 'a, 'b) ncontainer
     fun unzip x = x |> Z.unzip |> ncontainer
   end
-  fun init _ = M.C.comp_lazy Z.Init.move (dest_ncontainer ())
+  fun init _ = M.comp Z.Init.move dest_ncontainer ()
   val up = Z.Up.move
   val down = Z.Down.move
   val left = Z.Left.move

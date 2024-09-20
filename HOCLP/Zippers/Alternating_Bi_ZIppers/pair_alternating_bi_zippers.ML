@@ -2,34 +2,34 @@
     Author:     Kevin Kappelmann
 *)
 functor Pair_Alternating_Bi_Zippers(
-    structure A1 : IARROW_BASE
-    structure A2 : IARROW_BASE
-    structure AU1 : IARROW_BASE
-    structure AU2 : IARROW_BASE
+    structure A1 : LAZY_IARROW_BASE
+    structure A2 : LAZY_IARROW_BASE
+    structure AU1 : LAZY_IARROW_BASE
+    structure AU2 : LAZY_IARROW_BASE
     structure AZ1 : ALTERNATING_BI_ZIPPERS
-    sharing type AZ1.Z1.C.cat = A1.cat
-    sharing type AZ1.Z2.C.cat = A2.cat
-    sharing type AZ1.Up1.C.cat = AU1.cat
-    sharing type AZ1.Up2.C.cat = AU2.cat
+    sharing type AZ1.Z1.T.cat = A1.T.cat
+    sharing type AZ1.Z2.T.cat = A2.T.cat
+    sharing type AZ1.Up1.T.cat = AU1.T.cat
+    sharing type AZ1.Up2.T.cat = AU2.T.cat
     structure AZ2 : ALTERNATING_BI_ZIPPERS
-    sharing type AZ1.Z1.C.cat = AZ2.Z1.C.cat
-    sharing type AZ1.Z2.C.cat = AZ2.Z2.C.cat
-    sharing type AZ1.Up1.C.cat = AZ2.Up1.C.cat
-    sharing type AZ1.Up2.C.cat = AZ2.Up2.C.cat
+    sharing type AZ1.Z1.T.cat = AZ2.Z1.T.cat
+    sharing type AZ1.Z2.T.cat = AZ2.Z2.T.cat
+    sharing type AZ1.Up1.T.cat = AZ2.Up1.T.cat
+    sharing type AZ1.Up2.T.cat = AZ2.Up2.T.cat
   ) :
     ALTERNATING_BI_ZIPPERS
     where type ('i, 'a, 'b) Z1.content = ('i, 'a, 'b) AZ1.Z1.content * ('i, 'a, 'b) AZ2.Z1.content
     where type ('i, 'a, 'b) Z1.zcontext = ('i, 'a, 'b) AZ1.Z1.zcontext * ('i, 'a, 'b) AZ2.Z1.zcontext
     where type ('i, 'a, 'b) Z1.zipper = ('i, 'a, 'b) AZ1.Z1.zipper * ('i, 'a, 'b) AZ2.Z1.zipper
     where type ('i, 'a, 'b) Z1.container = ('i, 'a, 'b) AZ1.Z1.container * ('i, 'a, 'b) AZ2.Z1.container
-    where type ('i, 'j, 'a, 'b) Z1.C.cat = ('i, 'j, 'a, 'b) AZ1.Z1.C.cat
+    where type ('i, 'j, 'a, 'b) Z1.T.cat = ('i, 'j, 'a, 'b) AZ1.Z1.T.cat
     where type ('i, 'a, 'b) Z2.content = ('i, 'a, 'b) AZ1.Z2.content * ('i, 'a, 'b) AZ2.Z2.content
     where type ('i, 'a, 'b) Z2.zcontext = ('i, 'a, 'b) AZ1.Z2.zcontext * ('i, 'a, 'b) AZ2.Z2.zcontext
     where type ('i, 'a, 'b) Z2.zipper = ('i, 'a, 'b) AZ1.Z2.zipper * ('i, 'a, 'b) AZ2.Z2.zipper
     where type ('i, 'a, 'b) Z2.container = ('i, 'a, 'b) AZ1.Z2.container * ('i, 'a, 'b) AZ2.Z2.container
-    where type ('i, 'j, 'a, 'b) Z2.C.cat = ('i, 'j, 'a, 'b)  AZ1.Z2.C.cat
-    where type ('i, 'j, 'a, 'b) Up1.C.cat = ('i, 'j, 'a, 'b) AZ1.Up1.C.cat
-    where type ('i, 'j, 'a, 'b) Up2.C.cat = ('i, 'j, 'a, 'b) AZ1.Up2.C.cat
+    where type ('i, 'j, 'a, 'b) Z2.T.cat = ('i, 'j, 'a, 'b)  AZ1.Z2.T.cat
+    where type ('i, 'j, 'a, 'b) Up1.T.cat = ('i, 'j, 'a, 'b) AZ1.Up1.T.cat
+    where type ('i, 'j, 'a, 'b) Up2.T.cat = ('i, 'j, 'a, 'b) AZ1.Up2.T.cat
   =
 struct
 

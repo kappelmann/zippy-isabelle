@@ -7,7 +7,7 @@ struct
     content : 'c,
     mk_action : 'ma
   }
-  fun mk_content content mk_action = CMA {content = content, mk_action = mk_action}
+  fun mk_content_mk_action content mk_action = CMA {content = content, mk_action = mk_action}
 
   fun get_content (CMA {content,...}) = content
   fun get_mk_action (CMA {mk_action,...}) = mk_action
@@ -22,7 +22,7 @@ end
 
 functor Mk_Action(
   structure A : IARROW_BASE
-  type ('i, 'a, 'b, 'ma) zipperma
+  type ('i, 'a, 'b, 'ma) zipper_mka
   (* structure AZ : ALTERNATING_BI_ZIPPERS_BI_NODES *)
   (* sharing type AZ.Z2.K.M.t = ME.t *)
   (* val ncontent2 : unit -> (('a, 'b, 'c) AZ.N2.content, 'b, ('a, 'b, 'c) AZ.N2.content, 'b) SLens.lens *)
@@ -31,20 +31,20 @@ struct
 
 (* structure MB = Move_Base(A) *)
 local type ('p, 'i, 'a, 'b, 'ma) to =
-  'p * ('i, 'i, ('i, 'a, 'b, 'ma) zipperma, ('i, 'a, 'b, 'ma) zipperma) A.cat
+  'p * ('i, 'i, ('i, 'a, 'b, 'ma) zipper_mka, ('i, 'a, 'b, 'ma) zipper_mka) A.cat
 in
 datatype ('p, 'i, 'a, 'b) mk_action = Mk_Action of ('i, 'i,
-  ('i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) zipperma,
+  ('i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) zipper_mka,
   ('p, 'i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) to)
   A.cat
 
 val mk_action = Mk_Action
 fun dest_mk_action (Mk_Action ma) = ma
 
-local type ('p, 'i, 'a, 'b) zipper = ('i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) zipperma
+local type ('p, 'i, 'a, 'b) zipper = ('i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) zipper_mka
 in
 structure Coroutine = ICoroutine(A)
-type ('p, 'i, 'a, 'b) mk_actionc = ('i,
+type ('p, 'i, 'a, 'b) mk_actionc = ('i, 'i,
   ('p, 'i, 'a, 'b) zipper,
   ('p, 'i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) to)
   Coroutine.coroutine
@@ -55,14 +55,28 @@ end
 
 local structure SC = ISemi_Category(A) open SC
 in
-(*invariant: append returns the zipper at the same position*)
+(*invariant: zappend returns the zipper at the same position*)
 fun mk_action_mk_actionc zappend mk_new_content (mk_actionc  : ('p, 'i, 'a, 'b) mk_actionc) =
   let
     fun update_action prio action mk_actionc =
       let val append_child =
         A.arr (fn zipper =>
-          mk_action_mk_actionc zappend mk_new_content mk_actionc
-          |> mk_new_content zipper prio
+          mk_new_content zipper prio (mk_action_mk_actionc zappend mk_new_content mk_actionc)
+          |> rpair zipper)
+        >>> zappend
+      in append_child >>> action end
+  in
+    Coroutine.resume mk_actionc
+    >>> A.arr (fn ((prio, action), mk_actionc) => (prio, update_action prio action mk_actionc))
+    |> mk_action
+  end
+
+fun mk_action_mk_actionc' zappend mk_new_content (mk_actionc  : ('p, 'i, 'a, 'b) mk_actionc) =
+  let
+    fun update_action prio action mk_actionc =
+      let val append_child =
+        A.arr (fn zipper =>
+          mk_new_content zipper prio (mk_action_mk_actionc zappend mk_new_content mk_actionc)
           |> rpair zipper)
         >>> zappend
       in append_child >>> action end

@@ -2,14 +2,14 @@
     Author:     Kevin Kappelmann
 *)
 functor Alternating_Bi_Zippers_Bi_Nodes_Base_Args_Simple_Zippers(
-    structure A1 : IARROW_BASE
-    structure A2 : IARROW_BASE
+    structure A1 : LAZY_IARROW_BASE
+    structure A2 : LAZY_IARROW_BASE
     structure Z1 : ZIPPER
     where type ('i, 'a) content = 'a
-    sharing type Z1.C.cat = A1.cat
+    sharing type Z1.T.cat = A1.T.cat
     structure Z2 : ZIPPER
     where type ('i, 'a) content = 'a
-    sharing type Z2.C.cat = A2.cat
+    sharing type Z2.T.cat = A2.T.cat
     type ('i, 'a, 'b) ncontent1 (*content for node1*)
     type ('i, 'a, 'b) ncontent2 (*content for node2*)
   ) :
@@ -26,19 +26,19 @@ functor Alternating_Bi_Zippers_Bi_Nodes_Base_Args_Simple_Zippers(
     (* where ('i, 'a, 'b) BZ2.zcontext = ('i, ('i, 'a, 'b) N2.node) Z2.zcontext *)
     (* where ('i, 'a, 'b) BZ2.zipper = ('i, ('i, 'a, 'b) N2.node) Z2.zipper *)
     (* where ('i, 'a, 'b) BZ2.container = ('i, ('i, 'a, 'b) N1.node) Z2.container *)
-    where type ('i, 'j, 'a, 'b) BZ1.C.cat = ('i, 'j, 'a, 'b) Z1.C.cat
-    where type ('i, 'j, 'a, 'b) BZ2.C.cat = ('i, 'j, 'a, 'b) Z2.C.cat
+    where type ('i, 'j, 'a, 'b) BZ1.T.cat = ('i, 'j, 'a, 'b) Z1.T.cat
+    where type ('i, 'j, 'a, 'b) BZ2.T.cat = ('i, 'j, 'a, 'b) Z2.T.cat
   end
   =
 struct
 
 structure N1 = Bi_Node(
   type ('i, 'a, 'b) content = ('i, 'a, 'b) ncontent1
-  type ('i, 'a, 'b) next = ('i, 'i, unit, 'b) Z2.Init.C.cat
+  type ('i, 'a, 'b) next = ('i, unit, 'b) Z2.Init.move
 )
 structure N2 = Bi_Node(
   type ('i, 'a, 'b) content = ('i, 'a, 'b) ncontent2
-  type ('i, 'a, 'b) next = ('i, 'i, unit, 'b) Z1.Init.C.cat
+  type ('i, 'a, 'b) next = ('i, unit, 'b) Z1.Init.move
 )
 
 structure BZ1 = Bi_Zipper_Zipper(type ('i, 'a, 'b) content = ('i, 'a, 'b) N1.node; structure Z = Z1)
@@ -74,18 +74,18 @@ structure N1 = Replace_Bi_Node_Content_Next(
   type ('i, 'a, 'b) ncontent = ('i, 'a, 'b) N.content
   val ncontent = I
   val dest_ncontent = I
-  type ('i, 'a, 'b) nnext = ('i, 'i, unit, ('i, 'b, 'a) BZ2.container) BZ2.Init.C.cat
-  fun nnext x = BZ2.Init.C.comp (A2.arr AC.dest_acontainer2) x
-  fun dest_nnext x = BZ2.Init.C.comp (A2.arr AC.acontainer2) x
+  type ('i, 'a, 'b) nnext = ('i, unit, ('i, 'b, 'a) BZ2.container) BZ2.Init.move
+  fun nnext x = BZ2.Init.comp (A2.arr AC.dest_acontainer2) x
+  fun dest_nnext x = BZ2.Init.comp (A2.arr AC.acontainer2) x
 )
 structure N2 = Replace_Bi_Node_Content_Next(
   structure N = N2
   type ('i, 'a, 'b) ncontent = ('i, 'a, 'b) N.content
   val ncontent = I
   val dest_ncontent = I
-  type ('i, 'a, 'b) nnext = ('i, 'i, unit, ('i, 'b, 'a) BZ1.container) BZ1.Init.C.cat
-  fun nnext x = BZ1.Init.C.comp (A1.arr AC.dest_acontainer1) x
-  fun dest_nnext x = BZ1.Init.C.comp (A1.arr AC.acontainer1) x
+  type ('i, 'a, 'b) nnext = ('i, unit, ('i, 'b, 'a) BZ1.container) BZ1.Init.move
+  fun nnext x = BZ1.Init.comp (A1.arr AC.dest_acontainer1) x
+  fun dest_nnext x = BZ1.Init.comp (A1.arr AC.acontainer1) x
 )
 
 end
