@@ -21,7 +21,7 @@ struct
 end
 
 functor Mk_Action(
-  structure A : IARROW_BASE
+  structure A : IARROW
   type ('i, 'a, 'b, 'ma) zipper_mka
   (* structure AZ : ALTERNATING_BI_ZIPPERS_BI_NODES *)
   (* sharing type AZ.Z2.K.M.t = ME.t *)
@@ -48,6 +48,8 @@ type ('p, 'i, 'a, 'b) mk_actionc = ('i, 'i,
   ('p, 'i, 'a, 'b) zipper,
   ('p, 'i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) to)
   Coroutine.coroutine
+type ('p, 'i, 'a, 'b) mk_actionc' = ('i, 'i, ('p, 'i, 'a, 'b) zipper, 'p, ('p, 'i, 'a, 'b) zipper)
+  Coroutine.acoroutine
 end
 end
 
@@ -71,18 +73,13 @@ fun mk_action_mk_actionc zappend mk_new_content (mk_actionc  : ('p, 'i, 'a, 'b) 
     |> mk_action
   end
 
-fun mk_action_mk_actionc' zappend mk_new_content (mk_actionc  : ('p, 'i, 'a, 'b) mk_actionc) =
-  let
-    fun update_action prio action mk_actionc =
-      let val append_child =
-        A.arr (fn zipper =>
-          mk_new_content zipper prio (mk_action_mk_actionc zappend mk_new_content mk_actionc)
-          |> rpair zipper)
-        >>> zappend
-      in append_child >>> action end
+fun mk_action_mk_actionc' insert_new_mk_actionc (mk_actionc  : ('p, 'i, 'a, 'b) mk_actionc') =
+  let fun update_action prio mk_actionc = Coroutine.resume mk_actionc
+    >>> A.second (A.arr (mk_action_mk_actionc' insert_new_mk_actionc))
+    >>> insert_new_mk_actionc prio
   in
     Coroutine.resume mk_actionc
-    >>> A.arr (fn ((prio, action), mk_actionc) => (prio, update_action prio action mk_actionc))
+    >>> A.arr (fn (prio, mk_actionc) => (prio, update_action prio mk_actionc))
     |> mk_action
   end
 end

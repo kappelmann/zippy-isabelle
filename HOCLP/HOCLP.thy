@@ -15,6 +15,7 @@ theory HOCLP
     SpecCheck.SpecCheck_Show
     ML_Alternating_Bi_Zippers
     ML_Typeclasses.ML_State
+    Main
 begin
 
 paragraph \<open>Summary\<close>
