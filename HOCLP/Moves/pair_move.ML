@@ -5,13 +5,13 @@ signature PAIR_MOVE =
 sig
   structure M1 : MOVE
   structure M2 : MOVE
-  sharing type M1.T.cat = M2.T.cat
+  sharing type M1.cat = M2.cat
 
   include MOVE
   where type ('i, 'a) from = ('i, 'a) M1.from * ('i, 'a) M2.from
   where type ('i, 'a) to = ('i, 'a) M1.to * ('i, 'a) M2.to
-  sharing type M1.T.cat = T.cat
-  sharing type M2.T.cat = T.cat
+  sharing type M1.cat = cat
+  sharing type M2.cat = cat
 end
 
 functor Pair_Bi_Move_Pair_Move(type ('i, 'a, 'b) content; structure PM : PAIR_MOVE) : PAIR_BI_MOVE =
@@ -34,9 +34,9 @@ end
 functor Pair_Move(
     structure A : LAZY_IARROW_BASE
     structure M1 : MOVE
-    sharing type M1.T.cat = A.T.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) A.T.lcat
     structure M2 : MOVE
-    sharing type M2.T.cat = M1.T.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) M1.cat
   ) : PAIR_MOVE =
 Pair_Move_Pair_Bi_Move(Pair_Bi_Move(
   structure A = A

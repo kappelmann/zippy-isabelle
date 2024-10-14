@@ -6,23 +6,22 @@ sig
 end
 
 functor Test(
+  structure AE : LAZY_IARROW_EXCEPTION
   structure AZ : ALTERNATING_BI_ZIPPERS
+  where type ('i, 'j, 'a, 'b) Z1.cat = ('i, 'j, 'a, 'b) AE.cat
+  where type ('i, 'j, 'a, 'b) Z2.cat = ('i, 'j, 'a, 'b) AE.cat
+  where type ('i, 'j, 'a, 'b) Up1.cat = ('i, 'j, 'a, 'b) AE.cat
+  where type ('i, 'j, 'a, 'b) Up2.cat = ('i, 'j, 'a, 'b) AE.cat
 
   structure E1 : BI_ENUMERABLE
   where type ('i, 'a, 'b) init_data = ('i, 'a, 'b) AZ.Z1.container
   where type ('i, 'a, 'b) data = ('i, 'a, 'b) AZ.Z1.zipper
-  sharing type E1.T.cat = AZ.Z1.T.cat
-  sharing type E1.T.cat = AZ.Z2.T.cat
-  sharing type E1.T.cat = AZ.Up1.T.cat
-  sharing type E1.T.cat = AZ.Up2.T.cat
+  where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) AE.cat
 
   structure E2 : BI_ENUMERABLE
   where type ('i, 'a, 'b) init_data = ('i, 'a, 'b) AZ.Z2.container
   where type ('i, 'a, 'b) data = ('i, 'a, 'b) AZ.Z2.zipper
-  sharing type E2.T.cat = E1.T.cat
-
-  structure AE : LAZY_IARROW_EXCEPTION
-  sharing type AE.T.cat = E1.T.cat
+  where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) AE.cat
 ) =
 struct
 

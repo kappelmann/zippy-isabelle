@@ -2,7 +2,6 @@
 section \<open>Zippers\<close>
 theory ML_Zippers_Base
   imports
-    ML_Moves
     ML_Typeclasses.ML_Lenses
 begin
 

@@ -7,14 +7,14 @@ functor Flip_Alternating_Bi_Zippers(AZ : ALTERNATING_BI_ZIPPERS) :
     where type ('i, 'a, 'b) Z1.zcontext = ('i, 'a, 'b) AZ.Z2.zcontext
     where type ('i, 'a, 'b) Z1.zipper = ('i, 'a, 'b) AZ.Z2.zipper
     where type ('i, 'a, 'b) Z1.container = ('i, 'a, 'b) AZ.Z2.container
-    where type ('i, 'j, 'a, 'b) Z1.T.cat = ('i, 'j, 'a, 'b) AZ.Z2.T.cat
+    where type ('i, 'j, 'a, 'b) Z1.cat = ('i, 'j, 'a, 'b) AZ.Z2.cat
     where type ('i, 'a, 'b) Z2.content = ('i, 'a, 'b) AZ.Z1.content
     where type ('i, 'a, 'b) Z2.zcontext = ('i, 'a, 'b) AZ.Z1.zcontext
     where type ('i, 'a, 'b) Z2.zipper = ('i, 'a, 'b) AZ.Z1.zipper
     where type ('i, 'a, 'b) Z2.container = ('i, 'a, 'b) AZ.Z1.container
-    where type ('i, 'j, 'a, 'b) Z2.T.cat = ('i, 'j, 'a, 'b) AZ.Z1.T.cat
-    where type ('i, 'j, 'a, 'b) Up1.T.cat = ('i, 'j, 'a, 'b) AZ.Up2.T.cat
-    where type ('i, 'j, 'a, 'b) Up2.T.cat = ('i, 'j, 'a, 'b) AZ.Up1.T.cat
+    where type ('i, 'j, 'a, 'b) Z2.cat = ('i, 'j, 'a, 'b) AZ.Z1.cat
+    where type ('i, 'j, 'a, 'b) Up1.cat = ('i, 'j, 'a, 'b) AZ.Up2.cat
+    where type ('i, 'j, 'a, 'b) Up2.cat = ('i, 'j, 'a, 'b) AZ.Up1.cat
   =
 struct
 structure Z1 = AZ.Z2

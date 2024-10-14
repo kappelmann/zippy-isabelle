@@ -35,5 +35,5 @@ functor Instantiate_Bi_Move(
     BI_MOVE
     where type ('i, 'a, 'b) from = ('i, ('i, 'a, 'b) inst1, ('i, 'a, 'b) inst2) M.from
     where type ('i, 'a, 'b) to = ('i, ('i, 'a, 'b) inst1, ('i, 'a, 'b) inst2) M.to
-    where type ('i, 'j, 'a, 'b) T.cat = ('i, 'j, 'a, 'b) M.T.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) M.cat
   = M

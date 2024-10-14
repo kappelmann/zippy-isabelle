@@ -3,14 +3,14 @@
 *)
 signature PAIR_BI_ZIPPER_BASE =
 sig
-structure Z1 : BI_ZIPPER_BASE
-structure Z2 : BI_ZIPPER_BASE
+  structure Z1 : BI_ZIPPER_BASE
+  structure Z2 : BI_ZIPPER_BASE
 
-include BI_ZIPPER_BASE
-where type ('i, 'a, 'b) content = ('i, 'a, 'b) Z1.content * ('i, 'a, 'b) Z2.content
-where type ('i, 'a, 'b) zcontext = ('i, 'a, 'b) Z1.zcontext * ('i, 'a, 'b) Z2.zcontext
-where type ('i, 'a, 'b) zipper = ('i, 'a, 'b) Z1.zipper * ('i, 'a, 'b) Z2.zipper
-where type ('i, 'a, 'b) container = ('i, 'a, 'b) Z1.container * ('i, 'a, 'b) Z2.container
+  include BI_ZIPPER_BASE
+  where type ('i, 'a, 'b) content = ('i, 'a, 'b) Z1.content * ('i, 'a, 'b) Z2.content
+  where type ('i, 'a, 'b) zcontext = ('i, 'a, 'b) Z1.zcontext * ('i, 'a, 'b) Z2.zcontext
+  where type ('i, 'a, 'b) zipper = ('i, 'a, 'b) Z1.zipper * ('i, 'a, 'b) Z2.zipper
+  where type ('i, 'a, 'b) container = ('i, 'a, 'b) Z1.container * ('i, 'a, 'b) Z2.container
 end
 
 functor Pair_Bi_Zipper_Base(
@@ -50,7 +50,7 @@ signature PAIR_BI_ZIPPER =
 sig
   structure Z1 : BI_ZIPPER
   structure Z2 : BI_ZIPPER
-  sharing type Z2.T.cat = Z1.T.cat
+  sharing type Z2.cat = Z1.cat
 
   include BI_ZIPPER
   where type ('i, 'a, 'b) content = ('i, 'a, 'b) Z1.content * ('i, 'a, 'b) Z2.content
@@ -62,9 +62,9 @@ end
 functor Pair_Bi_Zipper(
   structure A : LAZY_IARROW_BASE
   structure Z1 : BI_ZIPPER
-  sharing type Z1.T.cat = A.T.cat
+  where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) A.T.lcat
   structure Z2 : BI_ZIPPER
-  sharing type Z2.T.cat = Z1.T.cat
+  where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) Z1.cat
   ) : PAIR_BI_ZIPPER =
 struct
 

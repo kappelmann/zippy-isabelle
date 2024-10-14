@@ -5,21 +5,21 @@ signature PAIR_BI_MOVE =
 sig
   structure M1 : BI_MOVE
   structure M2 : BI_MOVE
-  sharing type M1.T.cat = M2.T.cat
+  sharing type M1.cat = M2.cat
 
   include BI_MOVE
   where type ('i, 'a, 'b) from = ('i, 'a, 'b) M1.from * ('i, 'a, 'b) M2.from
   where type ('i, 'a, 'b) to = ('i, 'a, 'b) M1.to * ('i, 'a, 'b) M2.to
-  sharing type M1.T.cat = T.cat
-  sharing type M2.T.cat = T.cat
+  sharing type M1.cat = cat
+  sharing type M2.cat = cat
 end
 
 functor Pair_Bi_Move(
     structure A : LAZY_IARROW_BASE
     structure M1 : BI_MOVE
-    sharing type M1.T.cat = A.T.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) A.cat
     structure M2 : BI_MOVE
-    sharing type M2.T.cat = M1.T.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) M1.cat
   ) : PAIR_BI_MOVE
   =
 struct

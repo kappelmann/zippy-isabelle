@@ -100,5 +100,5 @@ functor Instantiate_Bi_Zipper(
     where type ('i, 'a, 'b) zcontext = ('i, ('i, 'a, 'b) inst1, ('i, 'a, 'b) inst2) Z.zcontext
     where type ('i, 'a, 'b) zipper = ('i, ('i, 'a, 'b) inst1, ('i, 'a, 'b) inst2) Z.zipper
     where type ('i, 'a, 'b) container = ('i, ('i, 'a, 'b) inst1, ('i, 'a, 'b) inst2) Z.container
-    where type ('i, 'j, 'a, 'b) T.cat = ('i, 'j, 'a, 'b) Z.Init.T.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) Z.Init.cat
   = Z

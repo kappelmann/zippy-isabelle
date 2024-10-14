@@ -2,16 +2,17 @@
     Author:     Kevin Kappelmann
 *)
 functor Direction_Zipper_Moves(
-    structure A : IARROW
+    structure A : LAZY_IARROW
     structure M : MOVE_BASE
-    sharing type M.T.cat = A.cat
-  ) : HOM_ZIPPER_MOVES = Hom_Zipper_Moves(
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) A.T.lcat
+  ) : HOM_ZIPPER_MOVES where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) M.cat
+  = Hom_Zipper_Moves(
   structure M = M
   type ('i, 'a) init_from = unit
   type ('i, 'a) data = Zipper_Direction.direction
-  fun init x = A.K Zipper_Direction.Init
-  fun up x = A.K Zipper_Direction.Up
-  fun down x = A.K Zipper_Direction.Down
-  fun left x = A.K Zipper_Direction.Left
-  fun right x = A.K Zipper_Direction.Right
+  fun init _ = A.K Zipper_Direction.Init ()
+  fun up _ = A.K Zipper_Direction.Up ()
+  fun down _ = A.K Zipper_Direction.Down ()
+  fun left _ = A.K Zipper_Direction.Left ()
+  fun right _ = A.K Zipper_Direction.Right ()
 )

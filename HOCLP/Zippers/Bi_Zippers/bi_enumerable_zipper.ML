@@ -7,7 +7,7 @@
 functor DFS_Postorder_Enumerable_Bi_Zipper(
     structure AE : LAZY_IARROW_EXCEPTION
     structure Z : BI_ZIPPER
-    sharing type Z.T.cat = AE.T.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) AE.T.lcat
   ) :
     LAST_BI_ENUMERABLE
     where type ('i, 'a, 'b) init_data = ('i, 'a, 'b) Z.Init.from

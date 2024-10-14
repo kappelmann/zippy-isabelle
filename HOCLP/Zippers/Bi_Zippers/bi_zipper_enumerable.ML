@@ -6,13 +6,13 @@ functor Bi_Zipper_Moves_Bi_Enumerable(
     structure L : GLIST
     sharing type L.A.cat = A.T.cat
     structure E : BI_ENUMERABLE
-    sharing type E.T.cat = L.A.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) A.T.lcat
     val init_data : ('i, ('i, 'a, 'b) E.data L.t, ('i, 'a, 'b) E.init_data) E.move
   ) :
     HOM_BI_ZIPPER_MOVES
     where type ('i, 'a, 'b) init_from = ('i, 'a, 'b) E.init_data
     where type ('i, 'a, 'b) data = ('i, 'a, 'b) E.data L.t
-    where type ('i, 'j, 'a, 'b) T.cat = ('i, 'j, 'a, 'b) E.T.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) E.cat
   =
 Hom_Bi_Zipper_Moves(
   structure M = E
@@ -43,7 +43,7 @@ functor Bi_Zipper_Bi_Enumerable(
     structure L : GLIST
     sharing type L.A.cat = A.T.cat
     structure E : BI_ENUMERABLE
-    sharing type E.T.cat = L.A.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) A.T.lcat
     val init_data : ('i, ('i, 'a, 'b) E.data L.t, ('i, 'a, 'b) E.init_data) E.move
     val unzip : ('i, 'a, 'b) E.data L.t -> ('i, 'a, 'b) E.init_data
   ) :
@@ -52,7 +52,7 @@ functor Bi_Zipper_Bi_Enumerable(
     where type ('i, 'a, 'b) zcontext = unit
     where type ('i, 'a, 'b) zipper = ('i, 'a, 'b) E.data L.t
     where type ('i, 'a, 'b) container = ('i, 'a, 'b) E.init_data
-    where type ('i, 'j, 'a, 'b) T.cat = ('i, 'j, 'a, 'b) E.T.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) E.cat
   =
 Content_Bi_Zipper(
   structure M = Bi_Zipper_Moves_Bi_Enumerable(

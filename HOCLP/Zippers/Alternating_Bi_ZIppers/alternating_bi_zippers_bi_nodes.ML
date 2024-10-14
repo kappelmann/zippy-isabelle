@@ -27,10 +27,10 @@ sig
     where type ('i, 'a, 'b) next = ('i, 'a, 'b) A.N2.next
     where type ('i, 'a, 'b) node = ('i, 'a, 'b) A.N2.node
     structure ZD : ZIPPER_DATA
-    structure DA1 : LAZY_IARROW_APPLY_BASE
-    structure DA2 : LAZY_IARROW_APPLY_BASE
-    structure UA1 : LAZY_IARROW_APPLY_BASE
-    structure UA2 : LAZY_IARROW_APPLY_BASE
+    structure DA1 : IARROW_APPLY_BASE
+    structure DA2 : IARROW_APPLY_BASE
+    structure UA1 : IARROW_APPLY_BASE
+    structure UA2 : IARROW_APPLY_BASE
     type ('i, 'a, 'b) zcontext1
     type ('i, 'a, 'b) zcontext2
     type ('i, 'a, 'b) parent1 =
@@ -52,15 +52,15 @@ sig
     where type ('i, 'a, 'b) Z1.content = ('i, 'a, 'b) A.BZ1.content
     where type ('i, 'a, 'b) Z1.zcontext = ('i, 'a, 'b) zcontext1
     where type ('i, 'a, 'b) Z1.container = ('i, 'a, 'b) A.BZ1.container * ('i, 'a, 'b) parent1
-    where type ('i, 'j, 'a, 'b) Z1.T.cat = ('i, 'j, 'a, 'b) A.BZ1.T.cat
+    where type ('i, 'j, 'a, 'b) Z1.cat = ('i, 'j, 'a, 'b) A.BZ1.cat
     where type ('i, 'a, 'b) Z2.content = ('i, 'a, 'b) A.BZ2.content
     where type ('i, 'a, 'b) Z2.zcontext = ('i, 'a, 'b) zcontext2
     where type ('i, 'a, 'b) Z2.container = ('i, 'a, 'b) A.BZ2.container * ('i, 'a, 'b) parent2
-    where type ('i, 'j, 'a, 'b) Z2.T.cat = ('i, 'j, 'a, 'b) A.BZ2.T.cat
-    where type ('i, 'j, 'a, 'b) Down1.T.cat = ('i, 'j, 'a, 'b) DA1.T.cat
-    where type ('i, 'j, 'a, 'b) Down2.T.cat = ('i, 'j, 'a, 'b) DA2.T.cat
-    where type ('i, 'j, 'a, 'b) Up1.T.cat = ('i, 'j, 'a, 'b) UA1.T.cat
-    where type ('i, 'j, 'a, 'b) Up2.T.cat = ('i, 'j, 'a, 'b) UA2.T.cat
+    where type ('i, 'j, 'a, 'b) Z2.cat = ('i, 'j, 'a, 'b) A.BZ2.cat
+    where type ('i, 'j, 'a, 'b) Down1.cat = ('i, 'j, 'a, 'b) DA1.cat
+    where type ('i, 'j, 'a, 'b) Down2.cat = ('i, 'j, 'a, 'b) DA2.cat
+    where type ('i, 'j, 'a, 'b) Up1.cat = ('i, 'j, 'a, 'b) UA1.cat
+    where type ('i, 'j, 'a, 'b) Up2.cat = ('i, 'j, 'a, 'b) UA2.cat
 end
 
 signature LAZY_IARROW_IARROW_APPLY_BASE =
@@ -76,8 +76,8 @@ functor Alternating_Bi_Zippers_Bi_Nodes(
     structure DA1 : LAZY_IARROW_IARROW_APPLY_BASE
     structure DA2 : LAZY_IARROW_IARROW_APPLY_BASE
     structure A : ALTERNATING_BI_ZIPPERS_BI_NODES_BASE_ARGS
-    sharing type A.BZ1.T.cat = DA2.A.T.cat
-    sharing type A.BZ2.T.cat = DA1.A.T.cat
+    where type ('i, 'j, 'a, 'b) BZ1.cat = ('i, 'j, 'a, 'b) DA2.A.cat
+    where type ('i, 'j, 'a, 'b) BZ2.cat = ('i, 'j, 'a, 'b) DA1.A.cat
     structure ZD : ZIPPER_DATA
   ) : ALTERNATING_BI_ZIPPERS_BI_NODES =
 (* )= *)

@@ -9,7 +9,7 @@ sig
   include BI_ZIPPER
   where type ('i, 'a, 'b) container = ('i, 'a, 'b) Z.container * ('i, 'a, 'b) new_zcontext
   sharing type content = Z.content
-  sharing type T.cat = Z.T.cat
+  sharing type cat = Z.cat
 
   val mk_zcontext : ('i, 'a, 'b) Z.zcontext -> ('i, 'a, 'b) new_zcontext -> ('i, 'a, 'b) zcontext
   val get_old_zcontext : ('i, 'a, 'b) zcontext -> ('i, 'a, 'b) Z.zcontext
@@ -25,7 +25,7 @@ functor Extend_Bi_Zipper_Context(
     structure ZD : ZIPPER_DATA
     structure A : LAZY_IARROW_BASE
     structure Z : BI_ZIPPER
-    sharing type Z.T.cat = A.T.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) A.T.lcat
     type ('i, 'a, 'b) new_zcontext
     type ('i, 'a, 'b) zcontext
     val mk_zcontext : ('i, 'a, 'b) Z.zcontext -> ('i, 'a, 'b) new_zcontext -> ('i, 'a, 'b) zcontext

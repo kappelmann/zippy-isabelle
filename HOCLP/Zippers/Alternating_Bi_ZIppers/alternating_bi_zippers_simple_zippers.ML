@@ -6,10 +6,10 @@ functor Alternating_Bi_Zippers_Bi_Nodes_Base_Args_Simple_Zippers(
     structure A2 : LAZY_IARROW_BASE
     structure Z1 : ZIPPER
     where type ('i, 'a) content = 'a
-    sharing type Z1.T.cat = A1.T.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) A1.cat
     structure Z2 : ZIPPER
     where type ('i, 'a) content = 'a
-    sharing type Z2.T.cat = A2.T.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) A2.cat
     type ('i, 'a, 'b) ncontent1 (*content for node1*)
     type ('i, 'a, 'b) ncontent2 (*content for node2*)
   ) :
@@ -26,8 +26,8 @@ functor Alternating_Bi_Zippers_Bi_Nodes_Base_Args_Simple_Zippers(
     (* where ('i, 'a, 'b) BZ2.zcontext = ('i, ('i, 'a, 'b) N2.node) Z2.zcontext *)
     (* where ('i, 'a, 'b) BZ2.zipper = ('i, ('i, 'a, 'b) N2.node) Z2.zipper *)
     (* where ('i, 'a, 'b) BZ2.container = ('i, ('i, 'a, 'b) N1.node) Z2.container *)
-    where type ('i, 'j, 'a, 'b) BZ1.T.cat = ('i, 'j, 'a, 'b) Z1.T.cat
-    where type ('i, 'j, 'a, 'b) BZ2.T.cat = ('i, 'j, 'a, 'b) Z2.T.cat
+    where type ('i, 'j, 'a, 'b) BZ1.cat = ('i, 'j, 'a, 'b) Z1.cat
+    where type ('i, 'j, 'a, 'b) BZ2.cat = ('i, 'j, 'a, 'b) Z2.cat
   end
   =
 struct

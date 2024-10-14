@@ -35,7 +35,7 @@ functor Replace_Bi_Zipper_Content(
     where type ('i, 'a, 'b) zcontext = ('i, 'a, 'b) Z.zcontext
     where type ('i, 'a, 'b) zipper = ('i, 'a, 'b) Z.zipper
     where type ('i, 'a, 'b) container = ('i, 'a, 'b) Z.container
-    where type ('i, 'j, 'a, 'b) T.cat = ('i, 'j, 'a, 'b) Z.T.cat
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) Z.cat
   =
 Bi_Zipper_Bi_Zipper_Moves(
   structure M = Z
@@ -45,7 +45,9 @@ Bi_Zipper_Bi_Zipper_Moves(
 )
 
 functor Replace_Bi_Zipper_Container(
+    structure C : LAZY_ISEMI_CATEGORY_BASE
     structure Z : BI_ZIPPER
+    where type ('i, 'j, 'a, 'b) cat = ('i, 'j, 'a, 'b) C.T.lcat
     type ('i, 'a, 'b) ncontainer
     val ncontainer : ('i, 'a, 'b) Z.container -> ('i, 'a, 'b) ncontainer
     val dest_ncontainer : ('i, ('i, 'a, 'b) ncontainer, ('i, 'a, 'b) Z.container) Z.move
