@@ -265,6 +265,7 @@ sig
 
 include IARROW_EXCEPTION_BASE
 
+val throw' : exn -> ('i, 'i, 'a, 'b) cat
 val catch' : ('i, 'j, 'a, 'b) cat -> ('i, 'j, 'a, 'b) cat -> ('i, 'j, 'a, 'b) cat
 val try : ('i, 'i, 'a, 'a) cat -> ('i, 'i, 'a, 'a) cat
 val repeat : ('i, 'i, 'a, 'a) cat -> ('i, 'i, 'a, 'a) cat
@@ -276,6 +277,7 @@ struct
 
 open A
 
+fun throw' x = comp throw (arr (K x))
 fun catch' f g = catch f (comp g (arr fst))
 fun try f = catch' f (id ())
 fun repeat f = try (comp_lazy (fn _ => repeat f) f)

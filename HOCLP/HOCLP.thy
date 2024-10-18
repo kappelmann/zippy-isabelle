@@ -43,7 +43,7 @@ ML\<open>
     struct
       structure AE = Lazy_IArrow_Exception(A.AE)
       structure AA = Lazy_IArrow_Apply_Base(A.AA)
-      structure AC = Lazy_IArrow_Choice_Base(A.AC)
+      structure AC = IArrow_Choice(Lazy_IArrow_Choice_Base(A.AC))
       structure A = Lazy_IArrow(A.A)
     end
     structure MB = Move_Base(LA.A)
@@ -91,7 +91,6 @@ lemma sillyrule: "PROP Q \<Longrightarrow> PROP P" sorry
 
 ML_file\<open>util.ML\<close>
 ML_file\<open>coroutine.ML\<close>
-
 ML_file\<open>mk_action.ML\<close>
 
 ML\<open>
@@ -103,59 +102,58 @@ fun init_nodes_no_next content = init_nodes content SIn.LA.AE.throw
 \<close>
 
 ML\<open>
-  structure Mk_Action = Mk_Action(
+  structure CO = ICoroutine_Util(
+    structure CO = ICoroutine(SIn.LA.A)
+    structure AE = SIn.LA.AE
+  )
+  structure MA = Mk_Action(
+    structure M = SIn.MB
+    type ('i, 'a, 'b, 'ma) data = ('i, ('a, 'ma) Content_Mk_Action.cma, 'b) AZ.Z2.zipper
+  )
+  structure MAU = Mk_Action_Util(
     structure A = SIn.LA.A
-    type ('i, 'a, 'b, 'ma) zipper_mka = ('i, ('a, 'ma) Content_Mk_Action.cma, 'b) AZ.Z2.zipper
+    structure AC = SIn.LA.AC
+    structure AE = SIn.LA.AE
+    structure MA = MA
+    structure CO = CO
   )
 \<close>
 
 ML\<open>
-  (* local open SIn.M in *)
-  val tac = resolve0_tac [@{thm sillyrule}] |> SOMEGOAL
-  (* ('p, 'i, 'a, 'b) zipper,
-  ('p, 'i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) to)
-  Coroutine.coroutine *)
-  local structure MU = Move_Util(structure AE = SIn.LA.AE; structure AC = SIn.LA.AC) open MU.SC SIn.LA.A in
+  val tac = resolve0_tac [@{thm sillyrule}] |> HEADGOAL
+  fun map_next x = ((AZ.Z2.content ()) |> SLens.comp (AZ.N2.next ()) |> SLens.modify |> curry) x
+
+  local structure MU = Move_Util(structure AE = SIn.LA.AE; structure AC = SIn.LA.AC) open MU MU.SC SIn.LA.A in
+  fun test
+    (y : ('i, 'b, ('a, ('p, 'i, 'a, 'b) MA.mk_action) Content_Mk_Action.cma) AZ.N1.content)
+    (x : ('i, ('a, ('p, 'i, 'a, 'b) MA.mk_action) Content_Mk_Action.cma, 'b) AZ.Z2.zipper)
+    : ('p, 'i, 'a, 'b) MA.data =
+    map_next (fn _ => K (init_nodes_no_next y)) x
+
+  fun Kmk_prio_sq _ = pair Prio.HIGH
+  fun ac_empty_sq _ = CO.throw ()
+  fun ac_from_sq sq = MAU.ac_from_sq Kmk_prio_sq (ac_empty_sq ()) sq
+  val mk_child = id () (*TODO*)
+  val append = arr (uncurry Data_Zipper.append)
+  (* val update_new_mk_action = MAU.update_new_mk_action mk_child append *)
+  (* fun update_mk_action = MAU.update_mk_action e set_mk_action update_new_mk_action *)
+  (* fun update_pulled = update_pulled *)
+  (* fun update_data = MAU.update_data update_pulled update_mk_action *)
+  fun mk_action_from_ac update_data sq = MAU.mk_action_from_ac update_data (ac_from_sq sq)
+
+  fun blub update sq =
+    let
+      fun update_data _ = arr (fn (zipper, (x, mk_action)) =>
+        map_next (update x) zipper)
+    in MAU.mk_action_from_ac update_data (ac_from_sq sq) end
+  fun update (x : ('i, 'b, ('a, ('p, 'i, 'a, 'b) MA.mk_action) Content_Mk_Action.cma) AZ.N1.content)
+    = K (init_nodes_no_next x) |> Library.K
+  fun test sq = blub @{undefined} sq
+  (* fun test sq = blub init_nodes_no_next sq *)
+
   val get_parent_content = AZ.Up2.move
     >>> arr (AZ.Z1.get_content #> AZ.N1.get_content)
-  (* fun test_sq sq =
-    arr (fn zipper =>
-      let
-        val prio = 0
-        val act = arr (fn zipper =>
-          let val thmsq = get_goals zipper |> tac
-          in zipper end)
-        val next = Mk_Action.Coroutine.coroutine (fn _ => SIn.AE.throw ())
-      in ((prio, act), next) end)
-    |> Mk_Action.Coroutine.coroutine *)
-    (* let
-      val prio = 0
-      val act = arr (fn zipper => zipper)
-      val next = Mk_Action.Coroutine.coroutine (fn _ => SIn.AE.throw ())
-    in ((prio, act), next) end *)
-  (* fun test tac = get_parent_content
-    >>> tac
-    >>> (fn thmsq =>
-      let
-        val prio = 0
-        val act = arr (fn zipper => zipper)
-        val next = Mk_Action.Coroutine.coroutine (fn _ => SIn.AE.throw ())
-      in ((prio, act), next) end)
-    ) *)
-    (* >>> first *)
-  fun mk_actionc get_goals = arr (fn zipper =>
-      let
-        val prio = 0
-        val act = arr (fn zipper =>
-          let val thmsq = get_goals zipper |> tac
-          in zipper end)
-        val next = Mk_Action.Coroutine.coroutine (fn _ => SIn.LA.AE.throw ())
-      in ((prio, act), next) end)
-    |> Mk_Action.Coroutine.coroutine
-  fun mk_new_content zipper prio mk_action = AZ.N2.node (prio, mk_action) SIn.LA.AE.throw
-  val zappend = arr snd
-  val get_goals = undefined
-  (* fun test _ = Mk_Action.mk_action_mk_actionc zappend mk_new_content (mk_actionc get_goals) *)
+  fun get_parent_tac tac = get_parent_content >>> tac
   end
 \<close>
 

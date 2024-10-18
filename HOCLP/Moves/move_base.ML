@@ -8,9 +8,9 @@ sig
   type ('i, 'a) hom_move = ('i, 'a, 'a) move
 end
 
-functor Move_Base(LC : ICATEGORY_BASE) : MOVE_BASE =
+functor Move_Base(C : ICATEGORY_BASE) : MOVE_BASE =
 struct
-  open LC
+  open C
   type ('i, 'a, 'b) move = ('i, 'i, 'a, 'b) cat
   type ('i, 'a) hom_move = ('i, 'a, 'a) move
 end

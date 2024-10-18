@@ -160,7 +160,7 @@ structure A = Lazy_IArrow_Base(AE)
 open A
 type exn = AE.exn
 fun throw _ = AE.throw
-fun catch f fe _= Lazy_Cat_Util.lift2 AE.catch f fe
+fun catch f fe _ = Lazy_Cat_Util.lift2 AE.catch f fe
 end
 
 signature LAZY_IARROW_EXCEPTION =
@@ -174,9 +174,10 @@ functor Lazy_IArrow_Exception(AE : IARROW_EXCEPTION) : LAZY_IARROW_EXCEPTION =
 struct
 structure A = Lazy_IArrow_Exception_Base(AE)
 open A
-fun catch' f fe _= Lazy_Cat_Util.lift2 AE.catch' f fe
-fun try f _= Lazy_Cat_Util.lift1 AE.try f
-fun repeat f _= Lazy_Cat_Util.lift1 AE.repeat f
+fun throw' e = Lazy_Cat_Util.lift (AE.throw' e)
+fun catch' f fe _ = Lazy_Cat_Util.lift2 AE.catch' f fe
+fun try f _ = Lazy_Cat_Util.lift1 AE.try f
+fun repeat f _ = Lazy_Cat_Util.lift1 AE.repeat f
 end
 
 signature LAZY_IARROW_CHOICE_BASE =

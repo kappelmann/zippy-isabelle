@@ -1,7 +1,22 @@
 (*  Title:      HOCLP/mk_action.ML
     Author:     Kevin Kappelmann
 *)
-structure Content_Mk_Action =
+signature CONTENT_MK_ACTION =
+sig
+  type ('c, 'ma) cma
+  val mk_content_mk_action: 'c -> 'ma -> ('c, 'ma) cma
+
+  val get_content : ('c, 'ma) cma -> 'c
+  val get_mk_action : ('c, 'ma) cma -> 'ma
+
+  val map_content : ('c1 -> 'c2) -> ('c1, 'ma) cma -> ('c2, 'ma) cma
+  val map_mk_action : ('ma1 -> 'ma2) -> ('c, 'ma1) cma -> ('c, 'ma2) cma
+
+  val content : unit -> (('c2, 'ma) cma, 'c2, ('c1, 'ma) cma, 'c1) SLens.lens
+  val mk_action : unit -> (('c, 'ma2) cma, 'ma2, ('c, 'ma1) cma, 'ma1) SLens.lens
+end
+
+structure Content_Mk_Action : CONTENT_MK_ACTION =
 struct
   datatype ('c, 'ma) cma = CMA of {
     content : 'c,
@@ -20,70 +35,136 @@ struct
   fun mk_action _ = SLens.lens get_mk_action (uncurry map_mk_action)
 end
 
+signature MK_ACTION =
+sig
+  include MOVE_BASE
+
+  type ('p, 'i, 'a, 'b) data
+  type ('p, 'i, 'a, 'b) to = 'p * ('i, ('p, 'i, 'a, 'b) data) hom_move
+
+  type ('p, 'i, 'a, 'b) mk_action
+  val mk_action : ('i, ('p, 'i, 'a, 'b) data, ('p, 'i, 'a, 'b) to) move ->
+    ('p, 'i, 'a, 'b) mk_action
+  val dest_mk_action : ('p, 'i, 'a, 'b) mk_action ->
+    ('i, ('p, 'i, 'a, 'b) data, ('p, 'i, 'a, 'b) to) move
+end
+
 functor Mk_Action(
-  structure A : IARROW
-  type ('i, 'a, 'b, 'ma) zipper_mka
-  (* structure AZ : ALTERNATING_BI_ZIPPERS_BI_NODES *)
-  (* sharing type AZ.Z2.K.M.t = ME.t *)
-  (* val ncontent2 : unit -> (('a, 'b, 'c) AZ.N2.content, 'b, ('a, 'b, 'c) AZ.N2.content, 'b) SLens.lens *)
-) =
+    structure M : MOVE_BASE
+    type ('i, 'a, 'b, 'ma) data
+  ) : MK_ACTION =
 struct
 
-(* structure MB = Move_Base(A) *)
-local type ('p, 'i, 'a, 'b, 'ma) to =
-  'p * ('i, 'i, ('i, 'a, 'b, 'ma) zipper_mka, ('i, 'a, 'b, 'ma) zipper_mka) A.cat
-in
-datatype ('p, 'i, 'a, 'b) mk_action = Mk_Action of ('i, 'i,
-  ('i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) zipper_mka,
-  ('p, 'i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) to)
-  A.cat
+open M
 
-val mk_action = Mk_Action
-fun dest_mk_action (Mk_Action ma) = ma
+datatype ('p, 'i, 'a, 'b) mk_action = Mk_Action of ('i,
+  ('i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) data,
+  'p * ('i, ('i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) data) hom_move)
+  move
+type ('p, 'i, 'a, 'b) data = ('i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) data
+type ('p, 'i, 'a, 'b) to = 'p * ('i, ('p, 'i, 'a, 'b) data) hom_move
 
-local type ('p, 'i, 'a, 'b) zipper = ('i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) zipper_mka
-in
-structure Coroutine = ICoroutine(A)
-type ('p, 'i, 'a, 'b) mk_actionc = ('i, 'i,
-  ('p, 'i, 'a, 'b) zipper,
-  ('p, 'i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) to)
-  Coroutine.coroutine
-type ('p, 'i, 'a, 'b) mk_actionc' = ('i, 'i, ('p, 'i, 'a, 'b) zipper, 'p, ('p, 'i, 'a, 'b) zipper)
-  Coroutine.acoroutine
-end
+fun mk_action mka = Mk_Action mka
+fun dest_mk_action (Mk_Action mka) = mka
+
 end
 
-(* fun action_ord x = x |> HOCLP_Util.fst_ord Prio.ord *)
+signature MK_ACTION_UTIL =
+sig
+  structure AE : IARROW_EXCEPTION_BASE
+  structure MA : MK_ACTION
+  sharing type MA.cat = AE.cat
+  structure CO : ICOROUTINE
+  sharing type CO.C.cat = AE.cat
 
-local structure SC = ISemi_Category(A) open SC
+  val mk_action_from_ac : ('p ->
+    (*updates given data with pulled 'c and the mk_action created from the tailing coroutine*)
+    ('i, ('p, 'i, 'a, 'b) MA.data * ('c * ('p, 'i, 'a, 'b) MA.mk_action),
+      ('p, 'i, 'a, 'b) MA.data) MA.move) ->
+    ('i, 'i, ('p, 'i, 'a, 'b) MA.data, 'p, 'c) CO.acoroutine -> ('p, 'i, 'a, 'b) MA.mk_action
+
+  val update_data :
+    (*update with pulled data*)
+    ('i, 'c * ('p, 'i, 'a, 'b) MA.data, ('p, 'i, 'a, 'b) MA.data) MA.move ->
+    (*update with new mk_action data*)
+    ('i, ('p, 'i, 'a, 'b) MA.mk_action * ('p, 'i, 'a, 'b) MA.data,
+      ('p, 'i, 'a, 'b) MA.data) MA.move ->
+    ('i, ('p, 'i, 'a, 'b) MA.data * ('c * ('p, 'i, 'a, 'b) MA.mk_action),
+      ('p, 'i, 'a, 'b) MA.data) MA.move
+
+  val throw_mk_action : AE.exn -> ('p, 'i, 'a, 'b) MA.mk_action
+  val set_throw_mk_action : AE.exn -> (('a, 'b, 'c, 'd) MA.mk_action -> 'r) -> 'r
+  val update_mk_action : AE.exn ->
+    (('p, 'i, 'a, 'b) MA.mk_action -> ('i, ('p, 'i, 'a, 'b) MA.data) MA.hom_move) ->
+    ('i, 'c * ('p, 'i, 'a, 'b) MA.data, 'r) MA.move ->
+    ('i, 'c * ('p, 'i, 'a, 'b) MA.data, 'r) MA.move
+
+  val update_new_mk_action :
+    ('i, ('p, 'i, 'a, 'b) MA.mk_action * ('p, 'i, 'a, 'b) MA.data, 'ch) MA.move ->
+    ('i, 'ch * ('p, 'i, 'a, 'b) MA.data, ('p, 'i, 'a, 'b) MA.data) MA.move ->
+    ('i, ('p, 'i, 'a, 'b) MA.mk_action * ('p, 'i, 'a, 'b) MA.data, ('p, 'i, 'a, 'b) MA.data) MA.move
+
+  val ac_from_sq : ('d -> 'c Seq.seq -> 'p * 'c Seq.seq) -> ('i, 'i, 'd, 'c, 'p) CO.acoroutine ->
+    'c Seq.seq -> ('i, 'i, 'd, 'p, 'c) CO.acoroutine
+end
+
+functor Mk_Action_Util(
+    structure A : IARROW
+    structure AC : IARROW_CHOICE
+    sharing type AC.cat = A.cat
+    structure AE : IARROW_EXCEPTION
+    sharing type AE.cat = A.cat
+    structure MA : MK_ACTION
+    sharing type MA.cat = A.cat
+    structure CO : ICOROUTINE
+    sharing type CO.C.cat = A.cat
+  ) : MK_ACTION_UTIL =
+struct
+
+structure AE = AE
+structure MA = MA
+structure CO = CO
+
+local structure SC = ISemi_Category(A) open SC A
 in
-(*invariant: zappend returns the zipper at the same position*)
-fun mk_action_mk_actionc zappend mk_new_content (mk_actionc  : ('p, 'i, 'a, 'b) mk_actionc) =
+fun mk_action_from_ac update_data pd_ac =
+  let fun update_action prio dp_ac = id () &&& CO.resume dp_ac
+    >>> A.second (A.second (A.arr (mk_action_from_ac update_data)))
+    >>> update_data prio
+  in
+    CO.resume pd_ac
+    >>> A.arr (fn (prio, dp_ac) => (prio, update_action prio dp_ac))
+    |> MA.mk_action
+  end
+
+fun update_data update_pulled update_mk_action =
+  arr (fn (data, (x, mk_action)) => (mk_action, (x, data)))
+  >>> second update_pulled
+  >>> update_mk_action
+
+fun throw_mk_action e = AE.throw' e |> MA.mk_action
+fun set_throw_mk_action e set_mk_action = throw_mk_action e |> set_mk_action
+
+fun update_mk_action e set_mk_action update_new_mk_action =
+  second (set_throw_mk_action e set_mk_action)
+  >>> update_new_mk_action
+
+fun update_new_mk_action mk_child append = (mk_child &&& arr snd) >>> append
+
+fun ac_from_sq mk_prio_sq ac_empty_sq sq =
   let
-    fun update_action prio action mk_actionc =
-      let val append_child =
-        A.arr (fn zipper =>
-          mk_new_content zipper prio (mk_action_mk_actionc zappend mk_new_content mk_actionc)
-          |> rpair zipper)
-        >>> zappend
-      in append_child >>> action end
+    fun update sq = arr (fn zipper => Seq.pull sq |> Either.of_opt |> Either.map_left (Library.K zipper))
+      >>> AC.merge (CO.resume ac_empty_sq) (second (arr (ac_from_sq mk_prio_sq ac_empty_sq)))
+      |> CO.acoroutine
   in
-    Coroutine.resume mk_actionc
-    >>> A.arr (fn ((prio, action), mk_actionc) => (prio, update_action prio action mk_actionc))
-    |> mk_action
+    arr (fn data => mk_prio_sq data sq ||> update)
+    |> CO.acoroutine
   end
 
-fun mk_action_mk_actionc' insert_new_mk_actionc (mk_actionc  : ('p, 'i, 'a, 'b) mk_actionc') =
-  let fun update_action prio mk_actionc = Coroutine.resume mk_actionc
-    >>> A.second (A.arr (mk_action_mk_actionc' insert_new_mk_actionc))
-    >>> insert_new_mk_actionc prio
-  in
-    Coroutine.resume mk_actionc
-    >>> A.arr (fn (prio, mk_actionc) => (prio, update_action prio mk_actionc))
-    |> mk_action
-  end
 end
+
 end
+
 
 (* fun with_parent_content mk_action zipper = Up2.K.M.bind (Up2.move zipper)
   (fn parent => let val content = L.get (L.content1 ()) parent in mk_action content zipper end) *)

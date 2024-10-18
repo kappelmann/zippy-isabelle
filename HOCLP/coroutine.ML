@@ -33,3 +33,28 @@ fun coroutine f = acoroutine f
 fun resume (Coroutine f) = f
 
 end
+
+signature ICOROUTINE_UTIL =
+sig
+  include ICOROUTINE
+  structure AE : IARROW_EXCEPTION_BASE
+  sharing type AE.cat = C.cat
+  val throw : AE.exn -> ('i, 'i, 'a, 'b, 'c) acoroutine
+end
+
+functor ICoroutine_Util(
+    structure AE : IARROW_EXCEPTION
+    structure CO : ICOROUTINE
+    sharing type CO.C.cat = AE.cat
+  ) : ICOROUTINE_UTIL =
+struct
+
+open CO
+structure AE = AE
+
+local structure SC = ISemi_Category(AE) open SC
+in
+fun throw e = AE.throw' e |> acoroutine
+end
+
+end
