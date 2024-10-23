@@ -37,6 +37,7 @@ ML\<open>
       structure AE = IArrow_Exception(IKleisli_Arrow_Exception(M))
       structure AA = IKleisli_IArrow_Apply_Choice(M)
       structure AC = AA
+      structure C = ICategory(AA)
       structure A = IArrow(AC)
     end
     structure LA =
@@ -44,6 +45,7 @@ ML\<open>
       structure AE = Lazy_IArrow_Exception(A.AE)
       structure AA = Lazy_IArrow_Apply_Base(A.AA)
       structure AC = IArrow_Choice(Lazy_IArrow_Choice_Base(A.AC))
+      structure C = Lazy_ICategory(A.C)
       structure A = Lazy_IArrow(A.A)
     end
     structure MB = Move_Base(LA.A)
@@ -94,21 +96,14 @@ ML_file\<open>coroutine.ML\<close>
 ML_file\<open>mk_action.ML\<close>
 
 ML\<open>
-fun init_nodes content next =
-  let val node = AZ.N1.node content next
-  in GList.cons node GList.empty end
-  (* in Data_Zipper.rose (GList.cons (node, Data_Zipper.rose GList.empty) GList.empty) end *)
-fun init_nodes_no_next content = init_nodes content SIn.LA.AE.throw
-\<close>
-
-ML\<open>
+  structure CMA = Content_Mk_Action
   structure CO = ICoroutine_Util(
     structure CO = ICoroutine(SIn.LA.A)
     structure AE = SIn.LA.AE
   )
   structure MA = Mk_Action(
     structure M = SIn.MB
-    type ('i, 'a, 'b, 'ma) data = ('i, ('a, 'ma) Content_Mk_Action.cma, 'b) AZ.Z2.zipper
+    type ('i, 'a, 'b, 'ma) data = ('i, ('a, 'ma) CMA.cma, 'b) AZ.Z2.zipper
   )
   structure MAU = Mk_Action_Util(
     structure A = SIn.LA.A
@@ -120,58 +115,67 @@ ML\<open>
 \<close>
 
 ML\<open>
+fun init_nodes content next =
+  let val node = AZ.N1.node content next
+  in GList.cons node GList.empty end
+  (* in Data_Zipper.rose (GList.cons (node, Data_Zipper.rose GList.empty) GList.empty) end *)
+fun init_nodes_no_next content = init_nodes content SIn.LA.AE.throw
+
+\<close>
+
+ML\<open>
   val tac = resolve0_tac [@{thm sillyrule}] |> HEADGOAL
-  fun map_next x = ((AZ.Z2.content ()) |> SLens.comp (AZ.N2.next ()) |> SLens.modify |> curry) x
-
-  local structure MU = Move_Util(structure AE = SIn.LA.AE; structure AC = SIn.LA.AC) open MU MU.SC SIn.LA.A in
-  fun test
-    (y : ('i, 'b, ('a, ('p, 'i, 'a, 'b) MA.mk_action) Content_Mk_Action.cma) AZ.N1.content)
-    (x : ('i, ('a, ('p, 'i, 'a, 'b) MA.mk_action) Content_Mk_Action.cma, 'b) AZ.Z2.zipper)
+  local structure MU = Move_Util(open SIn.LA) open MU MU.SC SIn.LA.A in
+  (* fun test
+    (y : ('i, 'b, ('a, ('p, 'i, 'a, 'b) MA.mk_action) CMA.cma) AZ.N1.content)
+    (x : ('i, ('a, ('p, 'i, 'a, 'b) MA.mk_action) CMA.cma, 'b) AZ.Z2.zipper)
     : ('p, 'i, 'a, 'b) MA.data =
-    map_next (fn _ => K (init_nodes_no_next y)) x
-
-  fun Kmk_prio_sq _ = pair Prio.HIGH
+    map_next (fn _ => K (init_nodes_no_next y)) x *)
+  fun mk_prio_sq _ = pair Prio.HIGH
   fun ac_empty_sq _ = CO.throw ()
-  fun ac_from_sq sq = MAU.ac_from_sq Kmk_prio_sq (ac_empty_sq ()) sq
-  val mk_child = id () (*TODO*)
-  val append = arr (uncurry Data_Zipper.append)
-  (* val update_new_mk_action = MAU.update_new_mk_action mk_child append *)
-  (* fun update_mk_action = MAU.update_mk_action e set_mk_action update_new_mk_action *)
-  (* fun update_pulled = update_pulled *)
-  (* fun update_data = MAU.update_data update_pulled update_mk_action *)
-  fun mk_action_from_ac update_data sq = MAU.mk_action_from_ac update_data (ac_from_sq sq)
-
-  fun blub update sq =
-    let
-      fun update_data _ = arr (fn (zipper, (x, mk_action)) =>
-        map_next (update x) zipper)
-    in MAU.mk_action_from_ac update_data (ac_from_sq sq) end
-  fun update (x : ('i, 'b, ('a, ('p, 'i, 'a, 'b) MA.mk_action) Content_Mk_Action.cma) AZ.N1.content)
-    = K (init_nodes_no_next x) |> Library.K
-  fun test sq = blub @{undefined} sq
-  (* fun test sq = blub init_nodes_no_next sq *)
-
-  val get_parent_content = AZ.Up2.move
+  fun ac_from_sq sq = MAU.ac_from_sq mk_prio_sq (ac_empty_sq ()) sq
+  fun mk_child content = arr (fn (action, _) =>
+    AZ.N2.node (CMA.mk_content_mk_action content action) AE.throw)
+  fun append_child data zipper =
+    let val map = AZ.Z2.zcontext () |> SLens.comp (AZ.lzcontext2 ()) |> SLens.modify
+    in map (Data_Zipper.append_zcontext data, zipper) end
+  fun update_new_mk_action content =
+    MAU.update_new_mk_action (mk_child content) (arr (uncurry append_child))
+  val e = ()
+  fun set_mk_action mk_action =
+    let val set = AZ.Z2.content () |> SLens.comp (AZ.N2.content ()) |> SLens.comp (CMA.mk_action ())
+      |> SLens.set
+    in arr (Library.curry set mk_action) end
+  fun update_mk_action content = MAU.update_mk_action e set_mk_action (update_new_mk_action content)
+  fun update_pulled _ =
+    (let
+      fun init_nodes content next =
+        let val node = AZ.N1.node content next
+        in GList.cons node GList.empty end
+      val set = AZ.Z2.content () |> SLens.comp (AZ.N2.next ()) |> SLens.set
+    in
+      first (arr (fn content => K (init_nodes content AE.throw)))
+      >>> arr set
+    end) ()
+  fun update_data content _ = MAU.update_data update_pulled (update_mk_action content)
+  val datasq = Seq.cons @{thm refl} (Seq.single @{thm trans})
+  fun mk_action _ = MAU.mk_action_from_ac (update_data 0) (ac_from_sq datasq)
+  (* fun update (x : ('i, 'b, ('a, ('p, 'i, 'a, 'b) MA.mk_action) CMA.cma) AZ.N1.content) *)
+    (* = K (init_nodes_no_next x) |> Library.K *)
+  (* val get_parent_content = AZ.Up2.move
     >>> arr (AZ.Z1.get_content #> AZ.N1.get_content)
-  fun get_parent_tac tac = get_parent_content >>> tac
+  fun get_parent_tac tac = get_parent_content >>> tac *)
   end
 \<close>
 
 ML\<open>
-  (* fun init_action_content _ = *)
-    (* (fn g => fn _ => (resolve0_tac [@{thm sillyrule}] |> SOMEGOAL) g |> M.pure) *)
-    (* |> HOCLP.with_parent_content *)
-    (* |> HOCLP.mk_action_content_seq Prio.MEDIUM *)
-\<close>
-
-ML\<open>
   local structure MU = Move_Util(open SIn.LA) open MU.SC SIn.LA SIn.LA.A in
-  val init_parent = AE.throw
   val init_content = Goal.init @{cprop "PROP P"}
   (* val init_action_content = CMA.mk_content "blub" (init_action_content ()) *)
-  val init_action_content = 0
+  val init_action_content = CMA.mk_content_mk_action 0 (mk_action ())
   fun mk_init_nodes _ =
-    init_nodes init_content (A.K [AZ.N2.node init_action_content AE.throw])
+    init_nodes init_content (K [AZ.N2.node init_action_content AE.throw,
+      AZ.N2.node (CMA.mk_content_mk_action 0 (mk_action ())) AE.throw])
 
   (* local open AZ Data_Zipper in
   fun mk_init_nodes _ =
@@ -189,26 +193,48 @@ ML\<open>
   end *)
 
   (* fun combine f x y = ME.catch (x >>= (fn xin => ME.catch (y >>= f xin) (K x))) (K y) *)
-
   (* fun update zipper acc = combine (pure oo max_ord ZCA.action_ord) acc (ZCA.get_action zipper) *)
     (* |> MU.continue |> pure *)
-  val update = arr (tap (fst #> AZ.Z1.get_content #> @{print})
-    #> snd
-    #> MU.AF.continue)
 
-  (* fun run_action mact = catch *)
-    (* (mact >>= (fn (p, act) => (@{print} "action!"; act))) *)
-    (* (fn exn => (@{print} "no further action"; throw exn)) *)
+  val run_mk_action =
+    arr (AZ.Z2.get_content #> AZ.N2.get_content #> CMA.get_mk_action) &&& id ()
+    >>> arr (fn (mk_action, x) => ((MA.dest_mk_action mk_action, x), x))
+    >>> first AA.app
+    (* in MA.dest_mk_action mk_action () zipper end *)
 
-  val test = (mk_init_nodes (), init_parent)
-    |> (T1.first1
-      >>> arr (rpair 0)
-      >>> MU.AF.fold T1.next update
+  val ord = HOCLP_Util.fst_ord (HOCLP_Util.fst_ord Prio.ord)
+  val max = HOCLP_Util.max_ord ord
+
+  val update = first run_mk_action
+    >>> arr (tap @{print})
+    >>> arr (Library.uncurry max)
+    >>> arr MU.AF.continue
+
+  val run_mk_action_res = first (arr snd) >>> AA.app
+
+  val first2 = AZ.Down1.move >>> arr AZ.Z2.unzip >>> T2.first1
+  fun init _  = (E1.First.move >>> first2) ()
+  fun up _ = AE.repeat (AZ.Up2.move o AZ.Up1.move) ()
+  val next = AE.catch' T2.next (AZ.Up2.move >>> up >>> E1.Next.move >>> first2)
+
+  val unzip = AZ.Up2.move >>> up >>> arr AZ.Z1.unzip
+  val step =
+    init
+    >>> arr (fn x : (Proof.context, (int, (Prio.prio, Proof.context, int, Thm.thm) MA.mk_action) CMA.cma,
+      Thm.thm) AZ.Z2.zipper
+      => x)
+    >>> MU.AF.fold_init T2.next update (run_mk_action >>> arr MU.AF.continue)
+    >>> arr MU.AF.dest_res
+    >>> run_mk_action_res
+    >>> unzip
+  val result = (mk_init_nodes (), AE.throw)
+    |> (C.repeatn 2 step
+      >>> AZ.Z1.Init.move
+      >>> AZ.Down1.move
+      >>> AZ.Z2.Down.move
+      >>> AZ.Down2.move
     ) ()
-    (* |> (fn x => MU.fold T2.next update x (zero ())) >>= run_action) *)
-    (* |> funpow 2 (fn x => SIn.M.bind (SIn.M.map AZ.Z2.unzip x) (T2.first1 ())) *)
     |> (fn st => st @{context})
-    (* |> @{print} *)
   end
 \<close>
 

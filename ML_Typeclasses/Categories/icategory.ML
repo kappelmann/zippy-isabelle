@@ -73,6 +73,24 @@ structure SC = Semi_Category_ISemi_Category(structure SC = C; structure T = T)
 open SC
 end
 
+signature ICATEGORY =
+sig
+
+include ICATEGORY_BASE
+val repeatn : int -> ('i, 'i, 'a, 'a) cat -> ('i, 'i, 'a, 'a) cat
+
+end
+
+functor ICategory(C : ICATEGORY_BASE) : ICATEGORY =
+struct
+
+open C
+
+fun repeatn 0 _ = id ()
+  | repeatn n f = comp_lazy (fn _ => repeatn (n - 1) f) f
+
+end
+
 signature IARROW_BASE =
 sig
 
@@ -269,6 +287,7 @@ val throw' : exn -> ('i, 'i, 'a, 'b) cat
 val catch' : ('i, 'j, 'a, 'b) cat -> ('i, 'j, 'a, 'b) cat -> ('i, 'j, 'a, 'b) cat
 val try : ('i, 'i, 'a, 'a) cat -> ('i, 'i, 'a, 'a) cat
 val repeat : ('i, 'i, 'a, 'a) cat -> ('i, 'i, 'a, 'a) cat
+val try_step : ('i, 'j, 'a, 'b) cat -> ('i, 'i, 'a, 'a) cat -> ('i, 'j, 'a, 'b) cat
 
 end
 
@@ -281,6 +300,7 @@ fun throw' x = comp throw (arr (K x))
 fun catch' f g = catch f (comp g (arr fst))
 fun try f = catch' f (id ())
 fun repeat f = try (comp_lazy (fn _ => repeat f) f)
+fun try_step f step = catch' f (comp_lazy (fn _ => try_step f step) step)
 
 end
 

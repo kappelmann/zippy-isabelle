@@ -44,6 +44,20 @@ open SC
 fun id _ = C.id
 end
 
+signature LAZY_ICATEGORY =
+sig
+  structure T : TLAZY_ICAT
+  include ICATEGORY
+  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+end
+
+functor Lazy_ICategory(C : ICATEGORY) : LAZY_ICATEGORY =
+struct
+structure LC = Lazy_ICategory_Base(C)
+open LC
+fun repeatn n f _ = Lazy_Cat_Util.lift1 (C.repeatn n) f
+end
+
 signature LAZY_IARROW_BASE =
 sig
   structure T : TLAZY_ICAT
@@ -178,6 +192,7 @@ fun throw' e = Lazy_Cat_Util.lift (AE.throw' e)
 fun catch' f fe _ = Lazy_Cat_Util.lift2 AE.catch' f fe
 fun try f _ = Lazy_Cat_Util.lift1 AE.try f
 fun repeat f _ = Lazy_Cat_Util.lift1 AE.repeat f
+fun try_step f fe _ = Lazy_Cat_Util.lift2 AE.try_step f fe
 end
 
 signature LAZY_IARROW_CHOICE_BASE =

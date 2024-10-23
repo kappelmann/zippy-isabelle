@@ -56,7 +56,7 @@ structure Z = Zipper(
   fun right _ = mk_exn_horizontal () >>> L.A.throw
 )
 open Z
-fun append content = map_zcontext (apsnd (fn ts => ts @ [content]))
+fun append_zcontext content = apsnd (fn ts => ts @ [content])
 end
 
 signature ROSE_ZIPPER_BASE =

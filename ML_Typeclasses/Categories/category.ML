@@ -44,6 +44,24 @@ val id : unit -> ('a, 'a) cat
 
 end
 
+signature CATEGORY =
+sig
+
+include CATEGORY_BASE
+val repeatn : int -> ('a, 'a) cat -> ('a, 'a) cat
+
+end
+
+functor Category(C : CATEGORY_BASE) : CATEGORY =
+struct
+
+open C
+
+fun repeatn 0 _ = id ()
+  | repeatn n f = comp_lazy (fn _ => repeatn (n - 1) f) f
+
+end
+
 signature ARROW_BASE =
 sig
 

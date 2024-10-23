@@ -30,8 +30,6 @@ in
 
 fun down_init down_move unzip init_move = init_move o arr unzip o down_move
 
-fun try_step f step = catch' f (comp_lazy (fn _ => try_step f step) step)
-
 fun first1 _ = (comp_lazy (fn _ => next1) E1.First.move) ()
 and first2 _ = (next2 o E2.First.move) ()
 and next1 _ = try (first2 o arr AZ.Z2.unzip o AZ.Down1.move) ()

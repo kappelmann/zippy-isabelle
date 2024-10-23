@@ -7,11 +7,11 @@ sig
   structure BZ2 : BI_ZIPPER
 
   structure N1 : BI_NODE
-  where type ('i, 'a, 'b) next = ('i, 'i, unit, ('i, 'b, 'a) BZ2.container) BZ2.Init.cat
+  where type ('i, 'a, 'b) next = ('i, unit, ('i, 'b, 'a) BZ2.container) BZ2.Init.move
   sharing type N1.node = BZ1.content
 
   structure N2 : BI_NODE
-  where type ('i, 'a, 'b) next = ('i, 'i, unit, ('i, 'b, 'a) BZ1.container) BZ1.Init.cat
+  where type ('i, 'a, 'b) next = ('i, unit, ('i, 'b, 'a) BZ1.container) BZ1.Init.move
   sharing type N2.node = BZ2.content
 end
 

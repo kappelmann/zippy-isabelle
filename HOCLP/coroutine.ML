@@ -28,9 +28,9 @@ datatype ('i, 'j, 'a, 'b, 'c) acoroutine =
 
 type ('i, 'j, 'a, 'b) coroutine = ('i, 'j, 'a, 'b, 'b) acoroutine
 
-fun acoroutine f = Coroutine f
-fun coroutine f = acoroutine f
-fun resume (Coroutine f) = f
+fun acoroutine c = Coroutine c
+fun coroutine c = acoroutine c
+fun resume (Coroutine c) = c
 
 end
 
@@ -40,6 +40,9 @@ sig
   structure AE : IARROW_EXCEPTION_BASE
   sharing type AE.cat = C.cat
   val throw : AE.exn -> ('i, 'i, 'a, 'b, 'c) acoroutine
+
+  val map : ('j, 'j, 'b1, 'b2) C.cat -> ('i, 'i, 'c1, 'c2) C.cat ->
+    ('i, 'j, 'a, 'b1, 'c1) acoroutine -> ('i, 'j, 'a, 'b2, 'c2) acoroutine
 end
 
 functor ICoroutine_Util(
@@ -55,6 +58,9 @@ structure AE = AE
 local structure SC = ISemi_Category(AE) open SC
 in
 fun throw e = AE.throw' e |> acoroutine
+
+fun map f g c = resume c >>> AE.*** (f, AE.arr (map2 g f)) |> acoroutine
+and map2 f g c = resume c >>> AE.*** (f, AE.arr (map g f)) |> acoroutine
 end
 
 end

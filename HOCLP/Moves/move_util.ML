@@ -4,6 +4,10 @@
 signature MOVE_UTIL =
 sig
   include MOVE_BASE
+  structure C : ICATEGORY
+  sharing type C.cat = cat
+  structure A : IARROW
+  sharing type A.cat = cat
   structure AE : IARROW_EXCEPTION
   sharing type AE.cat = cat
   structure AC : IARROW_CHOICE
@@ -15,17 +19,23 @@ sig
 end
 
 functor Move_Util(
+    structure C : ICATEGORY
+    structure A : IARROW
+    sharing type A.cat = C.cat
     structure AE : IARROW_EXCEPTION
-    structure AC : IARROW_CHOICE_BASE
-    sharing type AC.cat = AE.cat
+    sharing type AE.cat = C.cat
+    structure AC : IARROW_CHOICE
+    sharing type AC.cat = C.cat
   ) : MOVE_UTIL =
 struct
 
-structure MB = Move_Base(AE)
+structure MB = Move_Base(A)
 open MB
+structure C = C
+structure A = A
 structure AE = AE
-structure AC = IArrow_Choice(AC)
-structure SC = ISemi_Category(AE)
-structure AF = IArrow_Fold(structure AE = AE; structure AC = AC)
+structure AC = AC
+structure SC = ISemi_Category(C)
+structure AF = IArrow_Fold(structure A = A; structure AE = AE; structure AC = AC)
 
 end
