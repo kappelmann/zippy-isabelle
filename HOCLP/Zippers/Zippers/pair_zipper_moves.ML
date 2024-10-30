@@ -21,24 +21,24 @@ sig
   sharing type M2.cat = cat
 end
 
-functor Pair_Bi_Zipper_Moves_Pair_Zipper_Moves(
-    structure CA : BI_ZIPPER_MOVES_ZIPPER_MOVES_CONTENT_ARGS
+functor Pair_QZipper_Moves_Pair_Zipper_Moves(
+    structure CA : QZIPPER_MOVES_ZIPPER_MOVES_CONTENT_ARGS
     structure PM : PAIR_ZIPPER_MOVES
     sharing type CA.cat = PM.cat
-  ) : PAIR_BI_ZIPPER_MOVES =
+  ) : PAIR_QZIPPER_MOVES =
 struct
 structure Base = struct structure CA = CA end
-structure M1 = Bi_Zipper_Moves_Zipper_Moves(open Base; structure M = PM.M1)
-structure M2 = Bi_Zipper_Moves_Zipper_Moves(open Base; structure M = PM.M2)
-structure M = Bi_Zipper_Moves_Zipper_Moves(open Base; structure M = PM)
+structure M1 = QZipper_Moves_Zipper_Moves(open Base; structure M = PM.M1)
+structure M2 = QZipper_Moves_Zipper_Moves(open Base; structure M = PM.M2)
+structure M = QZipper_Moves_Zipper_Moves(open Base; structure M = PM)
 open M
 end
 
-functor Pair_Zipper_Moves_Pair_Bi_Zipper_Moves(PM : PAIR_BI_ZIPPER_MOVES) : PAIR_ZIPPER_MOVES =
+functor Pair_Zipper_Moves_Pair_QZipper_Moves(PM : PAIR_QZIPPER_MOVES) : PAIR_ZIPPER_MOVES =
 struct
-structure M1 = Zipper_Moves_Bi_Zipper_Moves(PM.M1)
-structure M2 = Zipper_Moves_Bi_Zipper_Moves(PM.M2)
-structure M = Zipper_Moves_Bi_Zipper_Moves(PM)
+structure M1 = Zipper_Moves_QZipper_Moves(PM.M1)
+structure M2 = Zipper_Moves_QZipper_Moves(PM.M2)
+structure M = Zipper_Moves_QZipper_Moves(PM)
 open M
 end
 
@@ -55,18 +55,18 @@ structure CA =
 struct
   structure M : MOVE_BASE = M1
   open M
-  type ('i, 'a, 'b) init_content = 'a
-  type ('i, 'a, 'b) up_content = 'a
-  type ('i, 'a, 'b) down_content = 'a
-  type ('i, 'a, 'b) left_content = 'a
-  type ('i, 'a, 'b) right_content = 'a
+  type ('i, 'a, 'b, 'c, 'd) init_content = 'a
+  type ('i, 'a, 'b, 'c, 'd) up_content = 'a
+  type ('i, 'a, 'b, 'c, 'd) down_content = 'a
+  type ('i, 'a, 'b, 'c, 'd) left_content = 'a
+  type ('i, 'a, 'b, 'c, 'd) right_content = 'a
 end
 
-structure PM = Pair_Zipper_Moves_Pair_Bi_Zipper_Moves(Pair_Bi_Zipper_Moves(
+structure PM = Pair_Zipper_Moves_Pair_QZipper_Moves(Pair_QZipper_Moves(
   structure A = A
   structure Base = struct structure CA = CA end
-  structure M1 = Bi_Zipper_Moves_Zipper_Moves(open Base; structure M = M1)
-  structure M2 = Bi_Zipper_Moves_Zipper_Moves(open Base; structure M = M2))
+  structure M1 = QZipper_Moves_Zipper_Moves(open Base; structure M = M1)
+  structure M2 = QZipper_Moves_Zipper_Moves(open Base; structure M = M2))
 )
 open PM
 

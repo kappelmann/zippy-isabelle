@@ -39,30 +39,30 @@ signature MK_ACTION =
 sig
   include MOVE_BASE
 
-  type ('p, 'i, 'a, 'b) data
-  type ('p, 'i, 'a, 'b) to = 'p * ('i, ('p, 'i, 'a, 'b) data) hom_move
+  type ('p, 'i, 'a, 'b, 'c, 'd) data
+  type ('p, 'i, 'a, 'b, 'c, 'd) to = 'p * ('i, ('p, 'i, 'a, 'b, 'c, 'd) data) hom_move
 
-  type ('p, 'i, 'a, 'b) mk_action
-  val mk_action : ('i, ('p, 'i, 'a, 'b) data, ('p, 'i, 'a, 'b) to) move ->
-    ('p, 'i, 'a, 'b) mk_action
-  val dest_mk_action : ('p, 'i, 'a, 'b) mk_action ->
-    ('i, ('p, 'i, 'a, 'b) data, ('p, 'i, 'a, 'b) to) move
+  type ('p, 'i, 'a, 'b, 'c, 'd) mk_action
+  val mk_action : ('i, ('p, 'i, 'a, 'b, 'c, 'd) data, ('p, 'i, 'a, 'b, 'c, 'd) to) move ->
+    ('p, 'i, 'a, 'b, 'c, 'd) mk_action
+  val dest_mk_action : ('p, 'i, 'a, 'b, 'c, 'd) mk_action ->
+    ('i, ('p, 'i, 'a, 'b, 'c, 'd) data, ('p, 'i, 'a, 'b, 'c, 'd) to) move
 end
 
 functor Mk_Action(
     structure M : MOVE_BASE
-    type ('i, 'a, 'b, 'ma) data
+    type ('i, 'a, 'b, 'c, 'd, 'ma) data
   ) : MK_ACTION =
 struct
 
 open M
 
-datatype ('p, 'i, 'a, 'b) mk_action = Mk_Action of ('i,
-  ('i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) data,
-  'p * ('i, ('i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) data) hom_move)
+datatype ('p, 'i, 'a, 'b, 'c, 'd) mk_action = Mk_Action of ('i,
+  ('i, 'a, 'b, 'c, 'd, ('p, 'i, 'a, 'b, 'c, 'd) mk_action) data,
+  'p * ('i, ('i, 'a, 'b, 'c, 'd, ('p, 'i, 'a, 'b, 'c, 'd) mk_action) data) hom_move)
   move
-type ('p, 'i, 'a, 'b) data = ('i, 'a, 'b, ('p, 'i, 'a, 'b) mk_action) data
-type ('p, 'i, 'a, 'b) to = 'p * ('i, ('p, 'i, 'a, 'b) data) hom_move
+type ('p, 'i, 'a, 'b, 'c, 'd) data = ('i, 'a, 'b, 'c, 'd, ('p, 'i, 'a, 'b, 'c, 'd) mk_action) data
+type ('p, 'i, 'a, 'b, 'c, 'd) to = 'p * ('i, ('p, 'i, 'a, 'b, 'c, 'd) data) hom_move
 
 fun mk_action mka = Mk_Action mka
 fun dest_mk_action (Mk_Action mka) = mka
@@ -77,39 +77,52 @@ sig
   structure CO : ICOROUTINE
   sharing type CO.C.cat = AE.cat
 
+  type ('p, 'x, 'i, 'a, 'b, 'c, 'd) pd_ac =
+    ('i, 'i, ('p, 'i, 'a, 'b, 'c, 'd) MA.data, 'p, 'x) CO.acoroutine
+
   val mk_action_from_ac : ('p ->
-    (*updates given data with pulled 'c and the mk_action created from the tailing coroutine*)
-    ('i, ('p, 'i, 'a, 'b) MA.data * ('c * ('p, 'i, 'a, 'b) MA.mk_action),
-      ('p, 'i, 'a, 'b) MA.data) MA.move) ->
-    ('i, 'i, ('p, 'i, 'a, 'b) MA.data, 'p, 'c) CO.acoroutine -> ('p, 'i, 'a, 'b) MA.mk_action
+    (*update given data with pulled 'x and the tailing coroutine*)
+    ('i, ('x * ('p, 'x, 'i, 'a, 'b, 'c, 'd) pd_ac) * ('p, 'i, 'a, 'b, 'c, 'd) MA.data,
+      ('p, 'i, 'a, 'b, 'c, 'd) MA.data) MA.move) ->
+    (*get coroutine*)
+    ('i, ('p, 'i, 'a, 'b, 'c, 'd) MA.data, ('p, 'x, 'i, 'a, 'b, 'c, 'd) pd_ac) MA.move ->
+    ('p, 'i, 'a, 'b, 'c, 'd) MA.mk_action
 
   val update_data :
     (*update with pulled data*)
-    ('i, 'c * ('p, 'i, 'a, 'b) MA.data, ('p, 'i, 'a, 'b) MA.data) MA.move ->
-    (*update with new mk_action data*)
-    ('i, ('p, 'i, 'a, 'b) MA.mk_action * ('p, 'i, 'a, 'b) MA.data,
-      ('p, 'i, 'a, 'b) MA.data) MA.move ->
-    ('i, ('p, 'i, 'a, 'b) MA.data * ('c * ('p, 'i, 'a, 'b) MA.mk_action),
-      ('p, 'i, 'a, 'b) MA.data) MA.move
+    ('i, 'x * ('p, 'i, 'a, 'b, 'c, 'd) MA.data, ('p, 'i, 'a, 'b, 'c, 'd) MA.data) MA.move ->
+    (*update with tailing coroutine*)
+    ('i, 'ac * ('p, 'i, 'a, 'b, 'c, 'd) MA.data, ('p, 'i, 'a, 'b, 'c, 'd) MA.data) MA.move ->
+    ('i, ('x * 'ac) * ('p, 'i, 'a, 'b, 'c, 'd) MA.data, ('p, 'i, 'a, 'b, 'c, 'd) MA.data) MA.move
 
-  val throw_mk_action : AE.exn -> ('p, 'i, 'a, 'b) MA.mk_action
-  val set_throw_mk_action : AE.exn -> (('a, 'b, 'c, 'd) MA.mk_action -> 'r) -> 'r
-  val update_mk_action : AE.exn ->
-    (('p, 'i, 'a, 'b) MA.mk_action -> ('i, ('p, 'i, 'a, 'b) MA.data) MA.hom_move) ->
-    ('i, 'c * ('p, 'i, 'a, 'b) MA.data, 'r) MA.move ->
-    ('i, 'c * ('p, 'i, 'a, 'b) MA.data, 'r) MA.move
+  val update_ac :
+    (*make new child node*)
+    ('i, 'ac * ('p, 'i, 'a, 'b, 'c, 'd) MA.data, 'ch) MA.move ->
+    (*add child node to data*)
+    ('i, 'ch * ('p, 'i, 'a, 'b, 'c, 'd) MA.data, ('p, 'i, 'a, 'b, 'c, 'd) MA.data) MA.move ->
+    (*update data with tailing coroutine*)
+    ('i, 'ac * ('p, 'i, 'a, 'b, 'c, 'd) MA.data, ('p, 'i, 'a, 'b, 'c, 'd) MA.data) MA.move ->
+    ('i, 'ac * ('p, 'i, 'a, 'b, 'c, 'd) MA.data, ('p, 'i, 'a, 'b, 'c, 'd) MA.data) MA.move
 
-  val update_new_mk_action :
-    ('i, ('p, 'i, 'a, 'b) MA.mk_action * ('p, 'i, 'a, 'b) MA.data, 'ch) MA.move ->
-    ('i, 'ch * ('p, 'i, 'a, 'b) MA.data, ('p, 'i, 'a, 'b) MA.data) MA.move ->
-    ('i, ('p, 'i, 'a, 'b) MA.mk_action * ('p, 'i, 'a, 'b) MA.data, ('p, 'i, 'a, 'b) MA.data) MA.move
+  val throw_mk_action : AE.exn -> ('p, 'i, 'a, 'b, 'c, 'd) MA.mk_action
+  val set_throw_mk_action : AE.exn -> (('p, 'i, 'a, 'b, 'c, 'd) MA.mk_action -> 'r) -> 'r
+  val disable_mk_aktion_update_ac : AE.exn ->
+    (*set disabled action*)
+    (('p, 'i, 'a, 'b, 'c, 'd) MA.mk_action -> ('i, ('p, 'i, 'a, 'b, 'c, 'd) MA.data) MA.hom_move) ->
+    (*update with tailing coroutine*)
+    ('i, 'ac * ('p, 'i, 'a, 'b, 'c, 'd) MA.data, 'r) MA.move ->
+    ('i, 'ac * ('p, 'i, 'a, 'b, 'c, 'd) MA.data, 'r) MA.move
 
-  val ac_from_sq : ('d -> 'c Seq.seq -> 'p * 'c Seq.seq) -> ('i, 'i, 'd, 'c, 'p) CO.acoroutine ->
-    'c Seq.seq -> ('i, 'i, 'd, 'p, 'c) CO.acoroutine
+  val ac_from_sq : ('i, 'i, 'd, 'x, 'p) CO.acoroutine ->
+    ('i, 'i, 'd * 'x Seq.seq, 'p * 'x Seq.seq) CO.coroutine -> ('i, 'd, 'x Seq.seq) MA.move ->
+    ('i, 'i, 'd, 'p, 'x) CO.acoroutine
+
 end
 
 functor Mk_Action_Util(
     structure A : IARROW
+    structure AA : IARROW_APPLY_BASE
+    sharing type AA.cat = A.cat
     structure AC : IARROW_CHOICE
     sharing type AC.cat = A.cat
     structure AE : IARROW_EXCEPTION
@@ -125,39 +138,48 @@ structure AE = AE
 structure MA = MA
 structure CO = CO
 
+type ('p, 'x, 'i, 'a, 'b, 'c, 'd) pd_ac =
+  ('i, 'i, ('p, 'i, 'a, 'b, 'c, 'd) MA.data, 'p, 'x) CO.acoroutine
+
 local structure SC = ISemi_Category(A) open SC A
 in
-fun mk_action_from_ac update_data pd_ac =
-  let fun update_action prio dp_ac = id () &&& CO.resume dp_ac
-    >>> A.second (A.second (A.arr (mk_action_from_ac update_data)))
+fun mk_action_from_ac update_data get_ac =
+  let fun update_action prio dp_ac = CO.resume dp_ac &&& id ()
     >>> update_data prio
   in
-    CO.resume pd_ac
+    (get_ac >>> arr CO.resume) &&& id ()
+    >>> AA.app
     >>> A.arr (fn (prio, dp_ac) => (prio, update_action prio dp_ac))
     |> MA.mk_action
   end
 
-fun update_data update_pulled update_mk_action =
-  arr (fn (data, (x, mk_action)) => (mk_action, (x, data)))
+fun update_data update_pulled update_ac =
+  arr (fn ((x, mk_action), data) => (mk_action, (x, data)))
   >>> second update_pulled
-  >>> update_mk_action
+  >>> update_ac
+
+fun update_ac mk_child add_child update_ac =
+  arr (fn (ac, data) => (ac, (ac, data)))
+  >>> second (mk_child &&& arr snd >>> add_child)
+  >>> update_ac
 
 fun throw_mk_action e = AE.throw' e |> MA.mk_action
 fun set_throw_mk_action e set_mk_action = throw_mk_action e |> set_mk_action
 
-fun update_mk_action e set_mk_action update_new_mk_action =
+fun disable_mk_aktion_update_ac e set_mk_action update_ac =
   second (set_throw_mk_action e set_mk_action)
-  >>> update_new_mk_action
+  >>> update_ac
 
-fun update_new_mk_action mk_child append = (mk_child &&& arr snd) >>> append
-
-fun ac_from_sq mk_prio_sq ac_empty_sq sq =
+fun ac_from_sq ac_empty_sq mk_prio_sq_c get_sq =
   let
-    fun update sq = arr (fn zipper => Seq.pull sq |> Either.of_opt |> Either.map_left (Library.K zipper))
-      >>> AC.merge (CO.resume ac_empty_sq) (second (arr (ac_from_sq mk_prio_sq ac_empty_sq)))
+    fun update mk_prio_sq_c sq =
+      arr (fn data => Seq.pull sq |> Either.of_opt |> Either.map_left (Library.K data))
+      >>> AC.merge (CO.resume ac_empty_sq) (second (arr (K #> ac_from_sq ac_empty_sq mk_prio_sq_c)))
       |> CO.acoroutine
   in
-    arr (fn data => mk_prio_sq data sq ||> update)
+    id () &&& get_sq
+    >>> CO.resume mk_prio_sq_c
+    >>> arr (fn ((prio, sq), mk_prio_sq_c) => (prio, update mk_prio_sq_c sq))
     |> CO.acoroutine
   end
 

@@ -57,14 +57,6 @@ fun comp l1 l2 =
     val m2 = modify l2
   in lens (A.comp g1 g2) (AA.uncurry (A.curry m2 o A.curry m1)) end
 
-fun comp_lazy l1 l2 =
-  let
-    val g1 = get o l1
-    val m1 = modify o l1
-    val g2 = get l2
-    val m2 = modify l2
-  in lens (A.comp_lazy g1 g2) (AA.uncurry (fn x => x |> A.curry m2 o A.curry (m1 ()))) end
-
 end
 
 signature LENS =

@@ -18,13 +18,13 @@ sig
   val unzip : ('i, 'a) zipper -> ('i, 'a) container
 end
 
-functor Bi_Zipper_Base_Zipper_Base(type ('i, 'a, 'b) content; structure Z : ZIPPER_BASE)
-  : BI_ZIPPER_BASE =
+functor QZipper_Base_Zipper_Base(type ('i, 'a, 'b, 'c, 'd) content; structure Z : ZIPPER_BASE)
+  : QZIPPER_BASE =
 struct
-type ('i, 'a, 'b) zcontext = ('i, ('i, 'a, 'b) content) Z.zcontext
-type ('i, 'a, 'b) zipper = ('i, ('i, 'a, 'b) content) Z.zipper
-type ('i, 'a, 'b) container = ('i, ('i, 'a, 'b) content) Z.container
-type ('i, 'a, 'b) content = ('i, ('i, 'a, 'b) content) Z.content
+type ('i, 'a, 'b, 'c, 'd) zcontext = ('i, ('i, 'a, 'b, 'c, 'd) content) Z.zcontext
+type ('i, 'a, 'b, 'c, 'd) zipper = ('i, ('i, 'a, 'b, 'c, 'd) content) Z.zipper
+type ('i, 'a, 'b, 'c, 'd) container = ('i, ('i, 'a, 'b, 'c, 'd) content) Z.container
+type ('i, 'a, 'b, 'c, 'd) content = ('i, ('i, 'a, 'b, 'c, 'd) content) Z.content
 val zipper = Z.zipper
 val get_content = Z.get_content
 val get_zcontext = Z.get_zcontext
@@ -33,12 +33,12 @@ val map_zcontext = Z.map_zcontext
 val unzip = Z.unzip
 end
 
-functor Zipper_Base_Bi_Zipper_Base(Z : BI_ZIPPER_BASE) : ZIPPER_BASE =
+functor Zipper_Base_QZipper_Base(Z : QZIPPER_BASE) : ZIPPER_BASE =
 struct
-type ('i, 'a) zcontext = ('i, 'a, unit) Z.zcontext
-type ('i, 'a) zipper = ('i, 'a, unit) Z.zipper
-type ('i, 'a) container = ('i, 'a, unit) Z.container
-type ('i, 'a) content = ('i, 'a, unit) Z.content
+type ('i, 'a) zcontext = ('i, 'a, unit, unit, unit) Z.zcontext
+type ('i, 'a) zipper = ('i, 'a, unit, unit, unit) Z.zipper
+type ('i, 'a) container = ('i, 'a, unit, unit, unit) Z.container
+type ('i, 'a) content = ('i, 'a, unit, unit, unit) Z.content
 val zipper = Z.zipper
 val get_content = Z.get_content
 val get_zcontext = Z.get_zcontext
@@ -57,21 +57,21 @@ sig
   sharing type data = zipper
 end
 
-functor Bi_Zipper_Zipper(type ('i, 'a, 'b) content; structure Z : ZIPPER) : BI_ZIPPER =
+functor QZipper_Zipper(type ('i, 'a, 'b, 'c, 'd) content; structure Z : ZIPPER) : QZIPPER =
 struct
-structure Base = struct type ('i, 'a, 'b) content = ('i, 'a, 'b) content end
-structure ZB = Bi_Zipper_Base_Zipper_Base(open Base; structure Z = Z)
-structure ZM = Hom_Bi_Zipper_Moves_Hom_Zipper_Moves(open Base; structure M = Z)
+structure Base = struct type ('i, 'a, 'b, 'c, 'd) content = ('i, 'a, 'b, 'c, 'd) content end
+structure ZB = QZipper_Base_Zipper_Base(open Base; structure Z = Z)
+structure ZM = Hom_QZipper_Moves_Hom_Zipper_Moves(open Base; structure M = Z)
 open ZB
 open ZM
 fun content _ = SLens.lens get_content (uncurry map_content)
 fun zcontext _ = SLens.lens get_zcontext (uncurry map_zcontext)
 end
 
-functor Zipper_Bi_Zipper(Z : BI_ZIPPER) : ZIPPER =
+functor Zipper_QZipper(Z : QZIPPER) : ZIPPER =
 struct
-structure ZB = Zipper_Base_Bi_Zipper_Base(Z)
-structure ZM = Hom_Zipper_Moves_Hom_Bi_Zipper_Moves(Z)
+structure ZB = Zipper_Base_QZipper_Base(Z)
+structure ZM = Hom_Zipper_Moves_Hom_QZipper_Moves(Z)
 open ZB
 open ZM
 fun content _ = SLens.lens get_content (uncurry map_content)
@@ -87,8 +87,8 @@ functor Zipper(
     val left : ('i, ('i, 'a) Z.zipper) M.hom_move
     val right : ('i, ('i, 'a) Z.zipper) M.hom_move
   ) : ZIPPER =
-Zipper_Bi_Zipper(Bi_Zipper(
-  structure Z = Bi_Zipper_Base_Zipper_Base(type ('i, 'a, 'b) content = 'a; structure Z = Z)
+Zipper_QZipper(QZipper(
+  structure Z = QZipper_Base_Zipper_Base(type ('i, 'a, 'b, 'c, 'd) content = 'a; structure Z = Z)
   structure M = M
   val init = init
   val up = up
@@ -103,8 +103,8 @@ functor Zipper_Zipper_Moves(
     sharing type M.init_from = Z.container
     sharing type M.data = Z.zipper
   ) : ZIPPER =
-Zipper_Bi_Zipper(Bi_Zipper_Bi_Zipper_Moves(
-  structure Base = struct type ('i, 'a, 'b) content = 'a end
-  structure Z = Bi_Zipper_Base_Zipper_Base(open Base; structure Z = Z)
-  structure M = Hom_Bi_Zipper_Moves_Hom_Zipper_Moves(open Base; structure M = M)
+Zipper_QZipper(QZipper_QZipper_Moves(
+  structure Base = struct type ('i, 'a, 'b, 'c, 'd) content = 'a end
+  structure Z = QZipper_Base_Zipper_Base(open Base; structure Z = Z)
+  structure M = Hom_QZipper_Moves_Hom_Zipper_Moves(open Base; structure M = M)
 ))

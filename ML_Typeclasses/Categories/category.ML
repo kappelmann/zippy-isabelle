@@ -12,7 +12,6 @@ sig
 
 type ('a, 'b) cat
 val comp : ('b, 'c) cat -> ('a, 'b) cat -> ('a, 'c) cat
-val comp_lazy : (unit -> ('b, 'c) cat) -> ('a, 'b) cat -> ('a, 'c) cat
 
 end
 
@@ -31,6 +30,15 @@ struct
 open SC
 fun f >>> g = comp g f
 fun f o g = comp f g
+
+end
+
+(*needed to take fixpoints in certain recursive definitions of arrows*)
+signature LAZY_COMP =
+sig
+
+include SEMI_CATEGORY_BASE
+val comp_lazy : (unit -> ('b, 'c) cat) -> ('a, 'b) cat -> ('a, 'c) cat
 
 end
 
@@ -57,8 +65,7 @@ struct
 
 open C
 
-fun repeatn 0 _ = id ()
-  | repeatn n f = comp_lazy (fn _ => repeatn (n - 1) f) f
+fun repeatn n f = if n <= 0 then id () else comp (repeatn (n - 1) f) f
 
 end
 
@@ -164,9 +171,9 @@ sig
 
 include ARROW_EXCEPTION_BASE
 
+val throw' : exn -> ('a, 'b) cat
 val catch' : ('a, 'b) cat -> ('a, 'b) cat -> ('a, 'b) cat
 val try : ('a, 'a) cat -> ('a, 'a) cat
-val repeat : ('a, 'a) cat -> ('a, 'a) cat
 
 end
 
@@ -175,9 +182,9 @@ struct
 
 open A
 
+fun throw' x = comp throw (arr (K x))
 fun catch' f g = catch f (comp g (arr fst))
 fun try f = catch' f (id ())
-fun repeat move = try (comp_lazy (fn _ => repeat move) move)
 
 end
 
@@ -205,4 +212,3 @@ open A
 fun opt fnone fsome = comp (merge fnone fsome) (arr Either.of_opt)
 
 end
-

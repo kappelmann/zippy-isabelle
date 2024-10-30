@@ -3,22 +3,28 @@
 
 Instances of categories.
 *)
+(*standard function space*)
 structure SArrow_Apply : ARROW_APPLY_BASE =
 struct
 
-(*standard function space*)
 type ('a, 'b) cat = 'a -> 'b
 fun id _ = I
 fun comp f g x = f (g x)
-fun comp_lazy f g x = f () (g x)
 val arr = I
 fun (f *** g) (x, y) = (f x, g y)
 fun app (f, x) = f x
 
 end
 
-(*Kleisli category*)
+structure SLazy_Comp : LAZY_COMP =
+struct
 
+open SArrow_Apply
+fun comp_lazy f g x = f () (g x)
+
+end
+
+(*Kleisli category*)
 signature KLEISLI =
 sig
   structure M : MONAD_BASE
@@ -31,7 +37,6 @@ structure M = M
 type ('a, 'b) kleisli = 'a -> 'b M.t
 end
 
-(*Kleisli category*)
 functor Kleisli_Arrow_Apply_Choice(M : MONAD_BASE) :
   sig
     include KLEISLI
@@ -39,6 +44,7 @@ functor Kleisli_Arrow_Apply_Choice(M : MONAD_BASE) :
     where type ('a, 'b) cat = ('a, 'b) kleisli
     val cases : ('a, 'c) cat -> ('b, 'd) cat -> (('a, 'b) Either.either, ('c, 'd) Either.either) cat
     val merge : ('a, 'c) cat -> ('b, 'c) cat -> (('a, 'b) Either.either, 'c) cat
+    val comp_lazy : (unit -> ('b, 'c) cat) -> ('a, 'b) cat -> ('a, 'c) cat
   end =
 struct
 
@@ -120,4 +126,3 @@ val throw = ME.throw
 fun catch f g x = ME.catch (f x) (g o pair x)
 
 end
-

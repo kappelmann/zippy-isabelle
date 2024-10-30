@@ -2,7 +2,7 @@
 section \<open>Bi-Zippers\<close>
 theory ML_Zippers
   imports
-    ML_Bi_Zippers
+    ML_QZippers
 begin
 
 ML_file\<open>zipper_moves.ML\<close>

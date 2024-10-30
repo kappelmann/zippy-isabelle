@@ -21,31 +21,31 @@ sig
   sharing type Prev.cat = cat
 end
 
-functor Bi_Enumerable_Enumerable(
-    type ('i, 'a, 'b) content
+functor QEnumerable_Enumerable(
+    type ('i, 'a, 'b, 'c, 'd) content
     structure E : ENUMERABLE
-  ) : BI_ENUMERABLE =
+  ) : QENUMERABLE =
 struct
 structure M : MOVE_BASE = E
 open M
 
-structure Base = struct type ('i, 'a, 'b) content = ('i, 'a, 'b) content end
-structure First = Bi_Move_Move(open Base; structure M = E.First)
-structure Next = Hom_Bi_Move_Hom_Move(open Base; structure M = E.Next)
-structure Prev = Hom_Bi_Move_Hom_Move(open Base; structure M = E.Prev)
+structure Base = struct type ('i, 'a, 'b, 'c, 'd) content = ('i, 'a, 'b, 'c, 'd) content end
+structure First = QMove_Move(open Base; structure M = E.First)
+structure Next = Hom_QMove_Hom_Move(open Base; structure M = E.Next)
+structure Prev = Hom_QMove_Hom_Move(open Base; structure M = E.Prev)
 
-type ('i, 'a, 'b) init_data = ('i, 'a, 'b) First.from
-type ('i, 'a, 'b) data = ('i, 'a, 'b) First.to
+type ('i, 'a, 'b, 'c, 'd) init_data = ('i, 'a, 'b, 'c, 'd) First.from
+type ('i, 'a, 'b, 'c, 'd) data = ('i, 'a, 'b, 'c, 'd) First.to
 
 end
 
-functor Enumerable_Bi_Enumerable(E : BI_ENUMERABLE) : ENUMERABLE =
+functor Enumerable_QEnumerable(E : QENUMERABLE) : ENUMERABLE =
 struct
 structure M : MOVE_BASE = E
 open M
-structure First = Move_Bi_Move(E.First)
-structure Next = Hom_Move_Hom_Bi_Move(E.Next)
-structure Prev = Hom_Move_Hom_Bi_Move(E.Prev)
+structure First = Move_QMove(E.First)
+structure Next = Hom_Move_Hom_QMove(E.Next)
+structure Prev = Hom_Move_Hom_QMove(E.Prev)
 type ('i, 'a) init_data = ('i, 'a) First.from
 type ('i, 'a) data = ('i, 'a) First.to
 end
@@ -58,10 +58,10 @@ functor Enumerable(
     val next : ('i, ('i, 'a) data) M.hom_move
     val prev : ('i, ('i, 'a) data) M.hom_move
   ) : ENUMERABLE =
-Enumerable_Bi_Enumerable(Bi_Enumerable(
+Enumerable_QEnumerable(QEnumerable(
   structure M = M
-  type ('i, 'a, 'b) init_data = ('i, 'a) init_data
-  type ('i, 'a, 'b) data = ('i, 'a) data
+  type ('i, 'a, 'b, 'c, 'd) init_data = ('i, 'a) init_data
+  type ('i, 'a, 'b, 'c, 'd) data = ('i, 'a) data
   val first = first
   val next = next
   val prev = prev
@@ -77,29 +77,29 @@ sig
   sharing type Last.cat = cat
 end
 
-functor Last_Bi_Enumerable_Last_Enumerable(
-    type ('i, 'a, 'b) content
+functor Last_QEnumerable_Last_Enumerable(
+    type ('i, 'a, 'b, 'c, 'd) content
     structure E : LAST_ENUMERABLE
-  ) : LAST_BI_ENUMERABLE =
+  ) : LAST_QENUMERABLE =
 struct
-structure Base = struct type ('i, 'a, 'b) content = ('i, 'a, 'b) content end
-structure BE = Bi_Enumerable_Enumerable(open Base; structure E = E)
+structure Base = struct type ('i, 'a, 'b, 'c, 'd) content = ('i, 'a, 'b, 'c, 'd) content end
+structure BE = QEnumerable_Enumerable(open Base; structure E = E)
 open BE
-structure Last = Bi_Move_Move(open Base; structure M = E.Last)
+structure Last = QMove_Move(open Base; structure M = E.Last)
 end
 
-functor Last_Enumerable_Last_Bi_Enumerable(BE : LAST_BI_ENUMERABLE) : LAST_ENUMERABLE =
+functor Last_Enumerable_Last_QEnumerable(BE : LAST_QENUMERABLE) : LAST_ENUMERABLE =
 struct
-structure E = Enumerable_Bi_Enumerable(BE)
+structure E = Enumerable_QEnumerable(BE)
 open E
-structure Last = Move_Bi_Move(BE.Last)
+structure Last = Move_QMove(BE.Last)
 end
 
 functor Last_Enumerable(
     structure E : ENUMERABLE
     val last : ('i, ('i, 'a) E.init_data, ('i, 'a) E.data) E.move
   ) : LAST_ENUMERABLE =
-Last_Enumerable_Last_Bi_Enumerable(Last_Bi_Enumerable(
-  structure E = Bi_Enumerable_Enumerable(type ('i, 'a, 'b) content = 'a; structure E = E)
+Last_Enumerable_Last_QEnumerable(Last_QEnumerable(
+  structure E = QEnumerable_Enumerable(type ('i, 'a, 'b, 'c, 'd) content = 'a; structure E = E)
   val last = last
 ))

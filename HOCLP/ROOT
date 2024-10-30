@@ -7,8 +7,8 @@ session HOCLP = "Pure" +
     "Enumerable"
     "Moves"
     "Zippers"
-    "Zippers/Alternating_Bi_Zippers"
-    "Zippers/Bi_Zippers"
+    "Zippers/Alternating_QZippers"
+    "Zippers/QZippers"
     "Zippers/Zippers"
   theories
     HOCLP

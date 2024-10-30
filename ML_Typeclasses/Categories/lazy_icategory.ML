@@ -27,7 +27,20 @@ struct
 structure T = TLazy_ICat(type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) SC.cat)
 type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
 fun comp f g _ = Lazy_Cat_Util.lift2 SC.comp f g
-fun comp_lazy f g _ = Lazy_Cat_Util.lift2 SC.comp_lazy f g
+end
+
+signature LAZY_ILAZY_COMP =
+sig
+  structure T : TLAZY_ICAT
+  include ILAZY_COMP
+  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+end
+
+functor Lazy_Lazy_Comp(L : ILAZY_COMP) : LAZY_ILAZY_COMP =
+struct
+structure SC = Lazy_ISemi_Category_Base(L)
+open SC
+fun comp_lazy f g _ = Lazy_Cat_Util.lift2 L.comp_lazy f g
 end
 
 signature LAZY_ICATEGORY_BASE =
@@ -191,6 +204,19 @@ open A
 fun throw' e = Lazy_Cat_Util.lift (AE.throw' e)
 fun catch' f fe _ = Lazy_Cat_Util.lift2 AE.catch' f fe
 fun try f _ = Lazy_Cat_Util.lift1 AE.try f
+end
+
+signature LAZY_IARROW_EXCEPTION_REC =
+sig
+  structure T : TLAZY_ICAT
+  include IARROW_EXCEPTION_REC
+  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+end
+
+functor Lazy_IArrow_Exception_Rec(AE : IARROW_EXCEPTION_REC) : LAZY_IARROW_EXCEPTION_REC =
+struct
+structure A = Lazy_IArrow_Exception(AE)
+open A
 fun repeat f _ = Lazy_Cat_Util.lift1 AE.repeat f
 fun try_step f fe _ = Lazy_Cat_Util.lift2 AE.try_step f fe
 end

@@ -33,7 +33,7 @@ type ('i, 'o, 'a, 'b) kleisli = 'a -> ('i, 'o, 'b) M.t
 end
 
 (*Indexed Kleisli category*)
-functor IKleisli_IArrow_Apply_Choice(M : IMONAD_BASE) :
+functor IKleisli_Arrow_Apply_Choice(M : IMONAD_BASE) :
   sig
     include IKLEISLI
     include IARROW_APPLY_BASE
@@ -41,6 +41,7 @@ functor IKleisli_IArrow_Apply_Choice(M : IMONAD_BASE) :
     val cases : ('i, 'j, 'a, 'c) cat -> ('i, 'j, 'b, 'd) cat ->
       ('i, 'j, ('a, 'b) Either.either, ('c, 'd) Either.either) cat
     val merge : ('i, 'j, 'a, 'c) cat -> ('i, 'j, 'b, 'c) cat -> ('i, 'j, ('a, 'b) Either.either, 'c) cat
+    val comp_lazy : (unit -> ('j, 'k, 'b, 'c) cat) -> ('i, 'j, 'a, 'b) cat -> ('i, 'k, 'a, 'c) cat
   end =
 struct
 
@@ -65,42 +66,42 @@ fun merge f _ (Either.Left x) = f x
 
 end
 
-functor IKleisli_IArrow_Zero(MZ : IMONAD_ZERO_BASE) : sig
+functor IKleisli_Arrow_Zero(MZ : IMONAD_ZERO_BASE) : sig
     include IKLEISLI
     include IARROW_ZERO_BASE
     where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) kleisli
   end =
 struct
 
-structure IKAA = IKleisli_IArrow_Apply_Choice(MZ)
+structure IKAA = IKleisli_Arrow_Apply_Choice(MZ)
 open IKAA
 
 fun zero _ _ = MZ.zero ()
 
 end
 
-functor IKleisli_IArrow_Plus(MP : IMONAD_PLUS_BASE) : sig
+functor IKleisli_Arrow_Plus(MP : IMONAD_PLUS_BASE) : sig
     include IKLEISLI
     include IARROW_PLUS_BASE
     where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) kleisli
   end =
 struct
 
-structure KAZ = IKleisli_IArrow_Zero(MP)
+structure KAZ = IKleisli_Arrow_Zero(MP)
 open KAZ
 
 fun plus f g x = MP.plus_lazy (f x) (fn _ => g x)
 
 end
 
-functor IKleisli_IArrow_Or(MO : IMONAD_OR_BASE) : sig
+functor IKleisli_Arrow_Or(MO : IMONAD_OR_BASE) : sig
     include IKLEISLI
     include IARROW_OR_BASE
     where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) kleisli
   end =
 struct
 
-structure KAZ = IKleisli_IArrow_Zero(MO)
+structure KAZ = IKleisli_Arrow_Zero(MO)
 open KAZ
 
 fun or f g x = MO.or_lazy (f x) (fn _ => g x)
@@ -115,7 +116,7 @@ sig
   end =
 struct
 
-structure KA = IKleisli_IArrow_Apply_Choice(ME)
+structure KA = IKleisli_Arrow_Apply_Choice(ME)
 open KA
 
 type exn = ME.exn

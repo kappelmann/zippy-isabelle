@@ -9,7 +9,6 @@ sig
 
 type ('i, 'o, 'a, 'b) cat
 val comp : ('j, 'k, 'b, 'c) cat -> ('i, 'j, 'a, 'b) cat -> ('i, 'k, 'a, 'c) cat
-val comp_lazy : (unit -> ('j, 'k, 'b, 'c) cat) -> ('i, 'j, 'a, 'b) cat -> ('i, 'k, 'a, 'c) cat
 
 end
 
@@ -20,7 +19,7 @@ type ('i, 'j, 'a, 'b) cat = ('a, 'b) SC.cat
 end
 
 functor Semi_Category_ISemi_Category(
-    structure SC : ISEMI_CATEGORY_BASE;
+    structure SC : ISEMI_CATEGORY_BASE
     structure T : GROUND_TYPE
   ) : SEMI_CATEGORY_BASE =
 struct
@@ -46,6 +45,31 @@ fun f o g = comp f g
 
 end
 
+signature ILAZY_COMP =
+sig
+
+include ISEMI_CATEGORY_BASE
+val comp_lazy : (unit -> ('j, 'k, 'b, 'c) cat) -> ('i, 'j, 'a, 'b) cat -> ('i, 'k, 'a, 'c) cat
+
+end
+
+functor ILazy_Comp_Lazy_Comp(L : LAZY_COMP) : ILAZY_COMP =
+struct
+open L
+structure SC = ISemi_Category_Semi_Category(L)
+open SC
+end
+
+functor Lazy_Comp_ILazy_Comp(
+    structure L : ILAZY_COMP
+    structure T : GROUND_TYPE
+  ) : LAZY_COMP =
+struct
+open L
+structure SC = Semi_Category_ISemi_Category(structure SC = L; structure T = T)
+open SC
+end
+
 signature ICATEGORY_BASE =
 sig
 
@@ -64,7 +88,7 @@ open SC
 end
 
 functor Category_ICategory(
-    structure C : ICATEGORY_BASE;
+    structure C : ICATEGORY_BASE
     structure T : GROUND_TYPE
   ) : CATEGORY_BASE =
 struct
@@ -86,8 +110,7 @@ struct
 
 open C
 
-fun repeatn 0 _ = id ()
-  | repeatn n f = comp_lazy (fn _ => repeatn (n - 1) f) f
+fun repeatn n f = if n <= 0 then id () else comp (repeatn (n - 1) f) f
 
 end
 
@@ -286,8 +309,6 @@ include IARROW_EXCEPTION_BASE
 val throw' : exn -> ('i, 'i, 'a, 'b) cat
 val catch' : ('i, 'j, 'a, 'b) cat -> ('i, 'j, 'a, 'b) cat -> ('i, 'j, 'a, 'b) cat
 val try : ('i, 'i, 'a, 'a) cat -> ('i, 'i, 'a, 'a) cat
-val repeat : ('i, 'i, 'a, 'a) cat -> ('i, 'i, 'a, 'a) cat
-val try_step : ('i, 'j, 'a, 'b) cat -> ('i, 'i, 'a, 'a) cat -> ('i, 'j, 'a, 'b) cat
 
 end
 
@@ -299,8 +320,6 @@ open A
 fun throw' x = comp throw (arr (K x))
 fun catch' f g = catch f (comp g (arr fst))
 fun try f = catch' f (id ())
-fun repeat f = try (comp_lazy (fn _ => repeat f) f)
-fun try_step f step = catch' f (comp_lazy (fn _ => try_step f step) step)
 
 end
 
@@ -312,6 +331,21 @@ val cases : ('i, 'j, 'a, 'c) cat -> ('i, 'j, 'b, 'd) cat ->
   ('i, 'j, ('a, 'b) Either.either, ('c, 'd) Either.either) cat
 val merge : ('i, 'j, 'a, 'c) cat -> ('i, 'j, 'b, 'c) cat -> ('i, 'j, ('a, 'b) Either.either, 'c) cat
 
+end
+
+functor IArrow_Choice_Arrow_Choice(AC : ARROW_CHOICE_BASE) : IARROW_CHOICE_BASE =
+struct
+open AC
+structure A = IArrow_Arrow(AC)
+open A
+end
+
+functor Arrow_Choice_IArrow_Choice(structure AC : IARROW_CHOICE_BASE; structure T : GROUND_TYPE)
+  : ARROW_CHOICE_BASE =
+struct
+open AC
+structure A = Arrow_IArrow(structure A = AC; structure T = T)
+open A
 end
 
 signature IARROW_CHOICE =
@@ -329,19 +363,3 @@ open A
 fun opt fnone fsome = comp (merge fnone fsome) (arr Either.of_opt)
 
 end
-
-functor IArrow_Choice_Arrow_Choice(AC : ARROW_CHOICE) : IARROW_CHOICE =
-struct
-open AC
-structure A = IArrow_Arrow(AC)
-open A
-end
-
-functor Arrow_Choice_IArrow_Choice(structure AC : IARROW_CHOICE; structure T : GROUND_TYPE)
-  : ARROW_CHOICE =
-struct
-open AC
-structure A = Arrow_IArrow(structure A = AC; structure T = T)
-open A
-end
-

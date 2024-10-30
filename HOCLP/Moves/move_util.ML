@@ -8,24 +8,32 @@ sig
   sharing type C.cat = cat
   structure A : IARROW
   sharing type A.cat = cat
-  structure AE : IARROW_EXCEPTION
+  structure AA : IARROW_APPLY_BASE
+  sharing type A.cat = cat
+  structure AE : IARROW_EXCEPTION_REC
   sharing type AE.cat = cat
   structure AC : IARROW_CHOICE
   sharing type AC.cat = cat
   structure SC : ISEMI_CATEGORY
   sharing type SC.cat = cat
+  structure L : ILAZY_COMP
+  sharing type L.cat = C.cat
   structure AF : IARROW_FOLD
-  sharing type AF.AE.cat = cat
+  sharing type AF.cat = cat
 end
 
 functor Move_Util(
     structure C : ICATEGORY
     structure A : IARROW
     sharing type A.cat = C.cat
-    structure AE : IARROW_EXCEPTION
+    structure AA : IARROW_APPLY_BASE
+    sharing type AA.cat = C.cat
+    structure AE : IARROW_EXCEPTION_REC
     sharing type AE.cat = C.cat
     structure AC : IARROW_CHOICE
     sharing type AC.cat = C.cat
+    structure L : ILAZY_COMP
+    sharing type L.cat = C.cat
   ) : MOVE_UTIL =
 struct
 
@@ -33,9 +41,12 @@ structure MB = Move_Base(A)
 open MB
 structure C = C
 structure A = A
+structure AA = AA
 structure AE = AE
 structure AC = AC
 structure SC = ISemi_Category(C)
-structure AF = IArrow_Fold(structure A = A; structure AE = AE; structure AC = AC)
+structure L = L
+structure AF = IArrow_Fold_Exception_Choice(structure A = A; structure AE = AE; structure AC = AC;
+  structure L = L)
 
 end

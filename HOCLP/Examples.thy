@@ -37,7 +37,7 @@ ML\<open>
   structure Int_Bi_Enum = Bi_Enumerable_Enumerable(
     type ('i, 'a, 'b) content = unit; structure E = Int_Enumerable(MB))
   val init_data = 0
-  structure A = IArrow(IKleisli_IArrow_Apply_Choice(Int_Bi_Enum.First.K.M))
+  structure A = IArrow(IKleisli_Arrow_Apply_Choice(Int_Bi_Enum.First.K.M))
   fun init_data_move x = A.K init_data x
   structure Int_Bi_Zipper = Bi_Zipper_Bi_Enumerable(
     structure L = Example_Zippers.List

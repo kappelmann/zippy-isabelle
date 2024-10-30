@@ -5,7 +5,7 @@ theory ML_Enumerable
     ML_Moves
 begin
 
-ML_file\<open>bi_enumerable.ML\<close>
+ML_file\<open>qenumerable.ML\<close>
 ML_file\<open>enumerable.ML\<close>
 
 ML_file\<open>int_enumerable.ML\<close>

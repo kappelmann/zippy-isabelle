@@ -45,7 +45,20 @@ struct
 structure T = TLazy_Cat(type ('a, 'b) cat = ('a, 'b) SC.cat)
 type ('a, 'b) cat = ('a, 'b) T.lcat
 fun comp f g _ = Lazy_Cat_Util.lift2 SC.comp f g
-fun comp_lazy f g _ = Lazy_Cat_Util.lift2 SC.comp_lazy f g
+end
+
+signature LAZY_LAZY_COMP =
+sig
+  structure T : TLAZY_CAT
+  include LAZY_COMP
+  where type ('a, 'b) cat = ('a, 'b) T.lcat
+end
+
+functor Lazy_Lazy_Comp(L : LAZY_COMP) : LAZY_LAZY_COMP =
+struct
+structure SC = Lazy_Semi_Category_Base(L)
+open SC
+fun comp_lazy f g _ = Lazy_Cat_Util.lift2 L.comp_lazy f g
 end
 
 signature LAZY_CATEGORY_BASE =
