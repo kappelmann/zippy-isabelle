@@ -5,11 +5,9 @@ Utilities on indexed categories
 *)
 signature IARROW_EXCEPTION_REC =
 sig
-
-include IARROW_EXCEPTION
-val repeat : ('i, 'i, 'a, 'a) cat -> ('i, 'i, 'a, 'a) cat
-val try_step : ('i, 'j, 'a, 'b) cat -> ('i, 'i, 'a, 'a) cat -> ('i, 'j, 'a, 'b) cat
-
+  include IARROW_EXCEPTION
+  val repeat : ('p1, 'i, 'i, 'a, 'a) cat -> ('p1, 'i, 'i, 'a, 'a) cat
+  val try_step : ('p1, 'i, 'j, 'a, 'b) cat -> ('p1, 'i, 'i, 'a, 'a) cat -> ('p1, 'i, 'j, 'a, 'b) cat
 end
 
 functor IArrow_Exception_Rec(
@@ -35,11 +33,11 @@ sig
   val continue : 'a -> 'a res
   val dest_res : 'a res -> 'a
 
-  val fold : ('j, 'i, 'a, 'a) cat -> ('i, 'j, 'a * 'b, 'b res) cat ->
-    ('i, 'j, 'a * 'b, 'b res) cat
+  val fold : ('p1, 'j, 'i, 'a, 'a) cat -> ('p1, 'i, 'j, 'a * 'b, 'b res) cat ->
+    ('p1, 'i, 'j, 'a * 'b, 'b res) cat
 
-  val fold_init : ('i, 'i, 'a, 'a) cat -> ('i, 'i, 'a * 'b, 'b res) cat ->
-    ('i, 'i, 'a, 'b res) cat -> ('i, 'i, 'a, 'b res) cat
+  val fold_init : ('p1, 'i, 'i, 'a, 'a) cat -> ('p1, 'i, 'i, 'a * 'b, 'b res) cat ->
+    ('p1, 'i, 'i, 'a, 'b res) cat -> ('p1, 'i, 'i, 'a, 'b res) cat
 end
 
 functor IArrow_Fold_Exception_Choice(

@@ -4,12 +4,14 @@ session HOCLP = "Pure" +
     ML_Typeclasses
     SpecCheck
   directories
+    "Coroutines"
     "Enumerable"
     "Moves"
+    "Union_Find"
     "Zippers"
-    "Zippers/Alternating_QZippers"
-    "Zippers/QZippers"
-    "Zippers/Zippers"
+    "Zippers/Alternating_Zippers4"
+    "Zippers/Zippers4"
+    "Zippy"
   theories
     HOCLP
 

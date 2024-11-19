@@ -7,16 +7,16 @@ signature IMONAD_STATE_BASE =
 sig
   structure SR : STATE_RESULT_BASE
   include IMONAD_BASE
-  val state : ('si -> ('so, 'a) SR.result) -> ('si, 'so, 'a) t
-  val get : unit -> ('s, 's, 's) t
-  val put : 'so -> ('si, 'so, unit) t
+  val state : ('si -> ('so, 'a) SR.result) -> ('p1, 'si, 'so, 'a) t
+  val get : unit -> ('p1, 's, 's, 's) t
+  val put : 'so -> ('p1, 'si, 'so, unit) t
 end
 
 signature IMONAD_STATE =
 sig
   include IMONAD_STATE_BASE
-  val map_state : ('sj -> 'so) -> ('si, 'sj, 'a) t -> ('si, 'so, 'a) t
-  val map_result : ('a -> 'sj -> ('so, 'b) SR.result) -> ('si, 'sj, 'a) t -> ('si, 'so, 'b) t
+  val map_state : ('sj -> 'so) -> ('p1, 'si, 'sj, 'a) t -> ('p1, 'si, 'so, 'a) t
+  val map_result : ('a -> 'sj -> ('so, 'b) SR.result) -> ('p1, 'si, 'sj, 'a) t -> ('p1, 'si, 'so, 'b) t
 end
 
 functor IMonad_State(M : IMONAD_STATE_BASE) : IMONAD_STATE =
@@ -30,36 +30,34 @@ end
 
 signature STATE_TRANS =
 sig
+  structure SR : STATE_RESULT_BASE
 
-structure SR : STATE_RESULT_BASE
+  type ('p1, 'a) mt
+  type ('p1, 'si, 'so, 'a) state = 'si -> ('p1, ('so, 'a) SR.result) mt
 
-type 'a mt
-type ('si, 'so, 'a) state = 'si -> ('so, 'a) SR.result mt
+  include IMONAD_TRANS
+  where type ('p1, 'si, 'so, 'a) t = ('p1, 'si, 'so, 'a) state
+  sharing type M.t = mt
 
-include IMONAD_TRANS
-where type ('si, 'so, 'a) t = ('si, 'so, 'a) state
-sharing type M.t = mt
+  (*IMONAD_STATE_BASE*)
+  val state : ('si -> ('so, 'a) SR.result) -> ('p1, 'si, 'so, 'a) state
+  val get : unit -> ('p1, 's, 's, 's) state
+  val put : 'so -> ('p1, 'si, 'so, unit) state
 
-(*IMONAD_STATE_BASE*)
-val state : ('si -> ('so, 'a) SR.result) -> ('si, 'so, 'a) state
-val get : unit -> ('s, 's, 's) state
-val put : 'so -> ('si, 'so, unit) state
-
-val eval : ('si, 'so, 'a) state -> 'si -> 'a M.t
-val exec : ('si, 'so, 'a) state -> 'si -> 'so M.t
-
+  val eval : 'si -> ('p1, 'si, 'so, 'a) state -> ('p1, 'a) M.t
+  val exec : 'si -> ('p1, 'si, 'so, 'a) state -> ('p1, 'so) M.t
 end
 
 functor State_Trans(structure M : MONAD_BASE; structure SR : STATE_RESULT_BASE) : STATE_TRANS =
 struct
 
-type 'a mt = 'a M.t
-type ('si, 'so, 'a) state = 'si -> ('so, 'a) SR.result M.t
+type ('p1, 'a) mt = ('p1, 'a) M.t
+type ('p1, 'si, 'so, 'a) state = 'si -> ('p1, ('so, 'a) SR.result) mt
 
 structure MT : IMONAD_TRANS =
 struct
 structure M = Monad(M) open M
-type ('si, 'so, 'a) t = ('si, 'so, 'a) state
+type ('p1, 'si, 'so, 'a) t = ('p1, 'si, 'so, 'a) state
 
 fun lift x s = x >>= (SR.result s #> M.pure)
 
@@ -83,8 +81,8 @@ fun put s = state (fn _ => SR.result s ())
 end
 open MS
 
-fun eval st s = st s |> M.map SR.value
-fun exec st s = st s |> M.map SR.state
+fun eval s st = st s |> M.map SR.value
+fun exec s st = st s |> M.map SR.state
 
 end
 
@@ -92,7 +90,7 @@ functor IMonad_Zero_State_Trans(
     structure M : MONAD_ZERO_BASE
     structure S : STATE_TRANS
     sharing type S.M.t = M.t
-  ) : IMONAD_ZERO_BASE where type ('i, 'j, 'a) t = ('i, 'j, 'a) S.t
+  ) : IMONAD_ZERO_BASE where type ('p1, 'i, 'j, 'a) t = ('p1, 'i, 'j, 'a) S.t
   =
 struct
 fun zero _ = S.lift (M.zero ())
@@ -103,7 +101,7 @@ functor IMonad_Exception_State_Trans(
     structure M : MONAD_EXCEPTION_BASE
     structure S : STATE_TRANS
     sharing type S.M.t = M.t
-  ) : IMONAD_EXCEPTION_BASE where type ('i, 'j, 'a) t = ('i, 'j, 'a) S.t
+  ) : IMONAD_EXCEPTION_BASE where type ('p1, 'i, 'j, 'a) t = ('p1, 'i, 'j, 'a) S.t
   =
 struct
 
@@ -112,4 +110,51 @@ fun throw e = S.lift (M.throw e)
 fun catch m f s = M.catch (m s) (fn e => f e s)
 open S
 
+end
+
+signature IARROW_STATE_BASE =
+sig
+  include IARROW_BASE
+  val get : unit -> ('p1, 's, 's, 'a, 's) cat
+  val put : unit -> ('p1, 'si, 'so, 'so, unit) cat
+end
+
+signature IARROW_STATE =
+sig
+  include IARROW_STATE_BASE
+  val change : ('p1, 'si, 'sm, 'a * 'si, 'so) cat -> ('p1, 'si, 'so, 'a, 'a) cat
+  val access : ('p1, 'si, 'so, 'a * 'si, 'b) cat -> ('p1, 'si, 'so, 'a, 'b) cat
+end
+
+functor IArrow_State(
+    structure AS : IARROW_STATE_BASE
+    structure A : IARROW
+    sharing type A.cat = AS.cat
+  ) : IARROW_STATE =
+struct
+open AS
+open A
+
+local structure SC = ISemi_Category(A) open SC
+in
+fun get_state _ = id () &&& get ()
+fun change f = get_state () &&& id ()
+  >>> first (f >>> put ())
+  >>> arr snd
+fun access f = get_state () >>> f
+end
+
+end
+
+functor IKleisli_Arrow_State(MS : IMONAD_STATE_BASE) :
+  sig
+    include IKLEISLI
+    include IARROW_STATE_BASE
+    where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) kleisli
+  end =
+struct
+structure KA = IKleisli_Arrow_Apply_Choice(MS)
+open KA
+fun get _ _ = MS.get ()
+fun put _ x = MS.put x
 end

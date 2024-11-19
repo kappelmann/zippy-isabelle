@@ -7,7 +7,7 @@ Instances of categories.
 structure SArrow_Apply : ARROW_APPLY_BASE =
 struct
 
-type ('a, 'b) cat = 'a -> 'b
+type ('p1, 'a, 'b) cat = 'a -> 'b
 fun id _ = I
 fun comp f g x = f (g x)
 val arr = I
@@ -28,23 +28,25 @@ end
 signature KLEISLI =
 sig
   structure M : MONAD_BASE
-  type ('a, 'b) kleisli = 'a -> 'b M.t
+  type ('p1, 'a, 'b) kleisli = 'a -> ('p1, 'b) M.t
 end
 
 functor Kleisli(M : MONAD_BASE) : KLEISLI =
 struct
 structure M = M
-type ('a, 'b) kleisli = 'a -> 'b M.t
+type ('p1, 'a, 'b) kleisli = 'a -> ('p1, 'b) M.t
 end
 
 functor Kleisli_Arrow_Apply_Choice(M : MONAD_BASE) :
   sig
     include KLEISLI
     include ARROW_APPLY_BASE
-    where type ('a, 'b) cat = ('a, 'b) kleisli
-    val cases : ('a, 'c) cat -> ('b, 'd) cat -> (('a, 'b) Either.either, ('c, 'd) Either.either) cat
-    val merge : ('a, 'c) cat -> ('b, 'c) cat -> (('a, 'b) Either.either, 'c) cat
-    val comp_lazy : (unit -> ('b, 'c) cat) -> ('a, 'b) cat -> ('a, 'c) cat
+    where type ('p1, 'a, 'b) cat = ('p1, 'a, 'b) kleisli
+    val cases : ('p1, 'a, 'c) cat -> ('p1, 'b, 'd) cat ->
+      ('p1, ('a, 'b) Either.either, ('c, 'd) Either.either) cat
+    val merge : ('p1, 'a, 'c) cat -> ('p1, 'b, 'c) cat ->
+      ('p1, ('a, 'b) Either.either, 'c) cat
+    val comp_lazy : (unit -> ('p1, 'b, 'c) cat) -> ('p1, 'a, 'b) cat -> ('p1, 'a, 'c) cat
   end =
 struct
 
@@ -52,7 +54,7 @@ structure K = Kleisli(M)
 open K
 structure M = Monad(M) open M
 
-type ('a, 'b) cat = ('a, 'b) kleisli
+type ('p1, 'a, 'b) cat = ('p1, 'a, 'b) kleisli
 fun id _ = pure
 fun comp k1 k2 x = k2 x >>= k1
 fun comp_lazy k1 k2 = comp (fn x => k1 () x) k2
@@ -71,7 +73,7 @@ end
 functor Kleisli_Arrow_Zero(MZ : MONAD_ZERO_BASE) : sig
     include KLEISLI
     include ARROW_ZERO_BASE
-    where type ('a, 'b) cat = ('a, 'b) kleisli
+    where type ('p1, 'a, 'b) cat = ('p1, 'a, 'b) kleisli
   end =
 struct
 
@@ -85,7 +87,7 @@ end
 functor Kleisli_Arrow_Plus(MP : MONAD_PLUS_BASE) : sig
     include KLEISLI
     include ARROW_PLUS_BASE
-    where type ('a, 'b) cat = ('a, 'b) kleisli
+    where type ('p1, 'a, 'b) cat = ('p1, 'a, 'b) kleisli
   end =
 struct
 
@@ -99,7 +101,7 @@ end
 functor Kleisli_Arrow_Or(MO : MONAD_OR_BASE) : sig
     include KLEISLI
     include ARROW_OR_BASE
-    where type ('a, 'b) cat = ('a, 'b) kleisli
+    where type ('p1, 'a, 'b) cat = ('p1, 'a, 'b) kleisli
   end =
 struct
 
@@ -113,7 +115,7 @@ end
 functor Kleisli_Arrow_Exception(ME : MONAD_EXCEPTION_BASE) : sig
     include KLEISLI
     include ARROW_EXCEPTION_BASE
-    where type ('a, 'b) cat = ('a, 'b) kleisli
+    where type ('p1, 'a, 'b) cat = ('p1, 'a, 'b) kleisli
   end =
 struct
 

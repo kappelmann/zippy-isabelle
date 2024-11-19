@@ -6,7 +6,7 @@ Instances of basic typeclasses.
 structure Identity_Monad : MONAD_BASE =
 struct
 
-type 'a t = 'a
+type ('p1, 'a) t = 'a
 fun map f x = f x
 fun pure x = x
 fun f <*> x = f x
@@ -17,7 +17,7 @@ end
 structure Identity_Foldable : FOLDABLE_BASE =
 struct
 
-type 'a f = 'a
+type ('p1, 'a) f = 'a
 fun foldl f x acc = f x acc
 fun foldr f x acc = f x acc
 
@@ -39,7 +39,7 @@ struct
 
 structure F = F
 
-type 'a t = 'a Seq.seq F.t
+type ('p1, 'a) t = ('p1, 'a Seq.seq) F.t
 fun lift x = F.map Seq.single x
 fun map f = F.map (Seq.map f)
 
@@ -48,7 +48,7 @@ end
 functor Seq_Foldable_Trans(F : FOLDABLE_BASE) : FOLDABLE_BASE =
 struct
 
-type 'a f = 'a Seq.seq F.f
+type ('p1, 'a) f = ('p1, 'a Seq.seq) F.f
 
 fun fold_base step sq acc = case Seq.pull sq of
     SOME (x, sq) => step (fold_base step sq) x acc
@@ -100,7 +100,7 @@ struct
 
 structure F = F
 
-type 'a t = 'a list F.t
+type ('p1, 'a) t = ('p1, 'a list) F.t
 fun lift x = F.map single x
 fun map f = F.map (List.map f)
 
@@ -109,7 +109,7 @@ end
 functor List_Foldable_Trans(F : FOLDABLE_BASE) : FOLDABLE_BASE =
 struct
 
-type 'a f = 'a list F.f
+type ('p1, 'a) f = ('p1, 'a list) F.f
 
 fun fold_base _ [] = I
   | fold_base step (x :: xs) = step (fold_base step xs) x
@@ -159,7 +159,7 @@ struct
 
 structure F = F
 
-type 'a t = 'a option F.t
+type ('p1, 'a) t = ('p1, 'a option) F.t
 fun lift x = F.map SOME x
 fun map f = F.map (Option.map f)
 
@@ -205,7 +205,7 @@ end
 functor Option_Foldable_Trans(F : FOLDABLE_BASE) : FOLDABLE_BASE =
 struct
 
-type 'a f = 'a option F.f
+type ('p1, 'a) f = ('p1, 'a option) F.f
 
 fun fold_base _ NONE = I
   | fold_base f (SOME x) = f x
@@ -245,12 +245,12 @@ struct
 
 structure M = M
 
-datatype ('a, 'b) freef = Pure of 'a | Free of 'b F.t
-datatype 'a freet = FreeT of ('a, 'a freet) freef M.t
+datatype ('p1, 'a, 'b) freef = Pure of 'a | Free of ('p1, 'b) F.t
+datatype ('p1, 'a) freet = FreeT of ('p1, ('p1, 'a, ('p1, 'a) freet) freef) M.t
 
 fun runFreeT (FreeT m) = m
 
-type 'a t = 'a freet
+type ('p1, 'a) t = ('p1, 'a) freet
 
 fun lift x = FreeT (M.map Pure x)
 

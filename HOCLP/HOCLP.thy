@@ -3,18 +3,16 @@ section \<open>Higher-Order Constraint Logic Programming (HOCLP)\<close>
 theory HOCLP
   imports
     ML_Unification.ML_Attributes
-    ML_Unification.ML_Functor_Instances
-    ML_Unification.ML_Logger
     ML_Unification.ML_Priorities
     ML_Unification.ML_Tactic_Utils
     ML_Unification.ML_Term_Utils
     ML_Unification.ML_Term_Index
-    (* ML_Unification.ML_General_Utils *)
-    ML_Unification.Setup_Result_Commands
+    ML_Unification.Unify_Resolve_Tactics_Base
     (* Universal_Data.Universal_Data *)
     SpecCheck.SpecCheck_Show
-    ML_Alternating_QZippers
     ML_Typeclasses.ML_State
+    ML_Alternating_Zippers4
+    Zippy
     Main
 begin
 
@@ -28,38 +26,41 @@ https://www.staff.city.ac.uk/~ross/papers/notation.pdf
 paragraph \<open>Summary\<close>
 text \<open>A higher-order constraint logic programming tactic.\<close>
 
-setup_result hoclp_logger = \<open>Logger.new_logger Logger.root "HOCLP"\<close>
-
 ML\<open>
   structure SIn =
   struct
     local
     structure MO = Option_Monad_Or_Trans(Identity_Monad)
     structure ME = Monad_Exception_Monad_Or(MO)
-    structure MS = State_Trans(structure M = ME; structure SR = Pair_State_Result_Base)
     in
+    structure MS = State_Trans(structure M = ME; structure SR = Pair_State_Result_Base)
     structure M = IMonad_Exception_State_Trans(structure M = ME; structure S = MS)
+    structure M : MONAD_EXCEPTION_BASE = struct open M type ('p1, 'a) t = (unit, 'p1, 'p1, 'a) t end
     structure A =
     struct
-      structure L : ILAZY_COMP = IKleisli_Arrow_Apply_Choice(M)
-      structure AE = IArrow_Exception_Rec(
-        structure A = IArrow_Exception(IKleisli_Arrow_Exception(M))
+      structure L : LAZY_COMP = Kleisli_Arrow_Apply_Choice(M)
+      structure AE = Arrow_Exception_Rec(
+        structure A = Arrow_Exception(Kleisli_Arrow_Exception(M))
         structure L = L
       )
-      structure AA = IKleisli_Arrow_Apply_Choice(M)
-      structure AC = AA
-      structure C = ICategory(AA)
-      structure A = IArrow(AC)
+      structure AC = Kleisli_Arrow_Apply_Choice(M)
+      structure AA : ARROW_APPLY = Arrow_Apply(AC)
+      structure C = Category(AA)
+      structure A = Arrow(AC)
+      structure LE = Lens(structure A = A; structure L = Lens_Base(AA))
     end
     structure LA =
     struct
       structure L = Lazy_Lazy_Comp(A.L)
-      structure AE = Lazy_IArrow_Exception_Rec(A.AE)
-      structure AA = Lazy_IArrow_Apply_Base(A.AA)
-      structure AC = IArrow_Choice(Lazy_IArrow_Choice_Base(A.AC))
-      structure C = Lazy_ICategory(A.C)
-      structure A = Lazy_IArrow(A.A)
+      structure AE = Lazy_Arrow_Exception_Rec(A.AE)
+      structure AA = Lazy_Arrow_Apply(A.AA)
+      structure AC = Arrow_Choice(Lazy_Arrow_Choice_Base(A.AC))
+      structure C = Lazy_Category(A.C)
+      structure A = Lazy_Arrow(A.A)
+      structure LE = Lens(structure A = A; structure L = Lens_Base(AA))
     end
+    structure GList = GList(M)
+    structure LGList = Lazy_GList(structure A = LA.AE; structure L = GList)
     structure MB = Move_Base(LA.A)
     end
   end
@@ -68,61 +69,72 @@ ML\<open>
 ML_file\<open>example_zippers.ML\<close>
 
 ML\<open>
-  structure GList = GList(SIn.M)
-  (* structure Data_Zipper = Rose_Zipper( *)
   structure Data_Zipper = List_Zipper(
-    (* structure Z = Rose_Zipper_Base(GList) *)
-    (* structure AC = IArrow_Choice(SIn.A.AC) *)
-    structure Z = List_Zipper_Base(GList)
+    structure A = SIn.LA.A
+    structure L = SIn.LA.LE
+    structure LI = SIn.LGList
     fun mk_exn_horizontal _ = SIn.A.A.K ()
   )
-  structure AZ = Alternating_QZippers_QNodes(
-    structure A = Alternating_QZippers_QNodes_Base_Args_Simple_Zippers(
-      structure A1 = SIn.LA.A
-      structure A2 = SIn.LA.A
-      structure A3 = SIn.LA.A
-      structure A4 = SIn.LA.A
-      type ('i, 'a, 'b, 'c, 'd) ncontent1 = 'a
-      type ('i, 'a, 'b, 'c, 'd) ncontent2 = 'a
-      type ('i, 'a, 'b, 'c, 'd) ncontent3 = 'a
-      type ('i, 'a, 'b, 'c, 'd) ncontent4 = 'a
+  structure AZ = Alternating_Zippers4_Nodes(
+    structure A = Alternating_Zippers4_Nodes_Base_Args_Simple_Zippers(
+      structure A = SIn.LA.A
+      type ('p1, 'a1, 'a2, 'a3, 'a4) ncontent1 = 'a1
+      type ('p1, 'a1, 'a2, 'a3, 'a4) ncontent2 = 'a2
+      type ('p1, 'a1, 'a2, 'a3, 'a4) ncontent3 = 'a3
+      type ('p1, 'a1, 'a2, 'a3, 'a4) ncontent4 = 'a4
       structure Z1 = Data_Zipper
       structure Z2 = Data_Zipper
       structure Z3 = Data_Zipper
       structure Z4 = Data_Zipper
     )
-    structure DA1 = SIn.LA
-    structure DA2 = SIn.LA
-    structure DA3 = SIn.LA
-    structure DA4 = SIn.LA
-    structure UA1 = SIn.LA
-    structure UA2 = SIn.LA
-    structure UA3 = SIn.LA
-    structure UA4 = SIn.LA
+    structure AA = SIn.LA
     structure ZD  = Zipper_Data
   )
 \<close>
 
 ML_file\<open>util.ML\<close>
-ML_file\<open>coroutine.ML\<close>
-ML_file\<open>mk_action.ML\<close>
+
+ML_file\<open>content_mk_action.ML\<close>
+
+ML_file\<open>result_update_info.ML\<close>
+
+lemma test: "A \<Longrightarrow> B \<Longrightarrow> G \<Longrightarrow> B \<Longrightarrow> (A \<Longrightarrow> A) \<Longrightarrow> E \<Longrightarrow> A &&& B &&& C &&& D &&& E &&& F &&& G"
+  sorry
 
 ML\<open>
-  structure CMA = Content_Mk_Action
-  structure CO = ICoroutine_Util(
-    structure CO = ICoroutine(SIn.LA.A)
-    structure AE = SIn.LA.AE
-  )
-  structure MA = Mk_Action(
-    structure M = SIn.MB
-    type ('i, 'a, 'b, 'c, 'd, 'ma) data = ('i, ('a, 'ma) CMA.cma, 'b, 'c, 'd) AZ.Z4.zipper
-  )
-  structure MAU = Mk_Action_Util(
-    open SIn.LA
-    structure MA = MA
-    structure CO = CO
-  )
+datatype 'i pos_update_info = Skip | Move of 'i
+
+datatype ('r, 'ui) result = Result of {
+    result : 'r,
+    update_info : 'ui
+  }
 \<close>
+
+ML\<open>
+datatype 'i pos_update_info = Skip | Move of 'i
+datatype ('i, 'r) result = Result of {
+    result : 'r,
+    pos_update_info : 'i -> 'i pos_update_info
+  }
+
+val state = @{thm test} |> `Thm.nprems_of |> uncurry Goal.protect
+val gclusterss = GCS.init state
+val gclusters = GC.init (apsnd (map snd) gclusterss)
+
+val DETERM_SUCCEED = the oo SINGLE
+val cheat = Skip_Proof.cheat_tac @{context} |> ALLGOALS |> DETERM_SUCCEED
+
+val solved_gclusterss = map (GC.get_state #> cheat #> GCS.init) gclusters
+val solved_gclusters = solved_gclusterss |> map (apsnd (map snd) #> GC.init)
+
+val finisheds = map (fst #> GCS.is_finished) solved_gclusterss
+val test = GCS.finish_gclusters @{context} (map fst solved_gclusterss) (fst gclusterss)
+
+(* val update = fold_index (fn (i, j) => General_Util.fun_update (equal j) i) indices (K (~1,~1)) *)
+val test = GCS.mk_gpos_index (gclusterss |> snd |> map fst)
+\<close>
+
+ML_file\<open>hoclp.ML\<close>
 
 lemma sillyrule: "PROP Q \<Longrightarrow> PROP P" sorry
 
@@ -131,316 +143,67 @@ ML\<open>
 \<close>
 
 ML\<open>
-  (* ('a, 'b, int, 'c, 'd, ('a, 'c, 'b, int, 'c, 'd, 'e) MAU.pd_ac) MA.data *)
-datatype ('p, 'x, 'i, 'a, 'b, 'c, 'd) mk_ac = Mk_AC of
-  ('p, 'x, 'i, 'a, 'b, 'c, ('p, 'x, 'i, 'a, 'b, 'c, 'd) mk_ac) MAU.pd_ac
-  ('i, 'i, ('p, 'i, 'a, 'b, 'c, 'd) MA.data, 'p, 'x) CO.acoroutine
-
-type ('p, 'x, 'i, 'a, 'b, 'c, 'd) pz_ac = ('p, 'x, 'i, 'a, 'b, 'c, ('p, 'x, 'i, 'a, 'b, 'c, 'd) mk_ac) MAU.pd_ac
-type ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper3 =
-  ('i, ('p, 'x, 'i, 'b, 'c, 'd, 'a) mk_ac, 'b, 'c, 'd) AZ.Z3.zipper
-type ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper4 = ('p, 'i, 'a, 'b, 'c, ('p, 'x, 'i, 'a, 'b, 'c, 'd) mk_ac) MA.data
-type ('p, 'x, 'i, 'a, 'b, 'c, 'd) node4 =
-  ('i, ('a, ('p, 'i, 'a, 'b, 'c, ('p, 'x, 'i, 'a, 'b, 'c, 'd) mk_ac) MA.mk_action) CMA.cma, 'b, 'c, ('p, 'x, 'i, 'a, 'b, 'c, 'd) mk_ac) AZ.N4.node
-(* type ('p, 'i, 'a, 'b, 'c, 'd) to = 'p * ('i, ('p, 'i, 'a, 'b, 'c, 'd) data) hom_move *)
-
-fun mk_ac mkac = Mk_AC mkac
-fun dest_mk_ac (Mk_AC mkac) = mkac
-\<close>
-
-(* ML\<open>
-signature REC_QDATA =
-sig
-  type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data1
-  type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data2
-  type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data3
-  type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data4
-
-  type ('i, 'a, 'b, 'c, 'd) rdata1
-  type ('i, 'a, 'b, 'c, 'd) rdata2
-  type ('i, 'a, 'b, 'c, 'd) rdata3
-  type ('i, 'a, 'b, 'c, 'd) rdata4
-
-  val dest_rdata1 : ('i, 'a, 'b, 'c, 'd) rdata1 ->
-    ('i, 'a, 'b, 'c, 'd, ('i, 'a, 'b, 'c, 'd) rdata1, ('i, 'b, 'c, 'd, 'a) rdata2,
-    ('i, 'c, 'd, 'a, 'b) rdata3, ('i, 'd, 'a, 'b, 'c) rdata4) data1
-  val rdata1 : ('i, 'a, 'b, 'c, 'd, ('i, 'a, 'b, 'c, 'd) rdata1, ('i, 'b, 'c, 'd, 'a) rdata2,
-    ('i, 'c, 'd, 'a, 'b) rdata3, ('i, 'd, 'a, 'b, 'c) rdata4) data1 ->
-    ('i, 'a, 'b, 'c, 'd) rdata1
-
-  val dest_rdata2 : ('i, 'a, 'b, 'c, 'd) rdata2 ->
-    ('i, 'a, 'b, 'c, 'd, ('i, 'a, 'b, 'c, 'd) rdata2, ('i, 'b, 'c, 'd, 'a) rdata3,
-    ('i, 'c, 'd, 'a, 'b) rdata4, ('i, 'd, 'a, 'b, 'c) rdata1) data2
-  val rdata2 : ('i, 'a, 'b, 'c, 'd, ('i, 'a, 'b, 'c, 'd) rdata2, ('i, 'b, 'c, 'd, 'a) rdata3,
-    ('i, 'c, 'd, 'a, 'b) rdata4, ('i, 'd, 'a, 'b, 'c) rdata1) data2 ->
-    ('i, 'a, 'b, 'c, 'd) rdata2
-
-  val dest_rdata3 : ('i, 'a, 'b, 'c, 'd) rdata3 ->
-    ('i, 'a, 'b, 'c, 'd, ('i, 'a, 'b, 'c, 'd) rdata3, ('i, 'b, 'c, 'd, 'a) rdata4,
-    ('i, 'c, 'd, 'a, 'b) rdata1, ('i, 'd, 'a, 'b, 'c) rdata2) data3
-  val rdata3 : ('i, 'a, 'b, 'c, 'd, ('i, 'a, 'b, 'c, 'd) rdata3, ('i, 'b, 'c, 'd, 'a) rdata4,
-    ('i, 'c, 'd, 'a, 'b) rdata1, ('i, 'd, 'a, 'b, 'c) rdata2) data3 ->
-    ('i, 'a, 'b, 'c, 'd) rdata3
-
-  val dest_rdata4 : ('i, 'a, 'b, 'c, 'd) rdata4 ->
-    ('i, 'a, 'b, 'c, 'd, ('i, 'a, 'b, 'c, 'd) rdata4, ('i, 'b, 'c, 'd, 'a) rdata1,
-    ('i, 'c, 'd, 'a, 'b) rdata2, ('i, 'd, 'a, 'b, 'c) rdata3) data4
-  val rdata4 : ('i, 'a, 'b, 'c, 'd, ('i, 'a, 'b, 'c, 'd) rdata4, ('i, 'b, 'c, 'd, 'a) rdata1,
-    ('i, 'c, 'd, 'a, 'b) rdata2, ('i, 'd, 'a, 'b, 'c) rdata3) data4 ->
-    ('i, 'a, 'b, 'c, 'd) rdata4
-end
-
-functor Rec_QData(
-    type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data1
-    type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data2
-    type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data3
-    type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data4
-  ) : REC_QDATA =
-struct
-
-type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data1 = ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data1
-type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data2 = ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data2
-type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data3 = ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data3
-type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data4 = ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data4
-
-datatype ('i, 'a, 'b, 'c, 'd) rdata1 = RData1 of ('i, 'a, 'b, 'c, 'd,
-  ('i, 'a, 'b, 'c, 'd) rdata1,
-  ('i, 'b, 'c, 'd, 'a) rdata2,
-  ('i, 'c, 'd, 'a, 'b) rdata3,
-  ('i, 'd, 'a, 'b, 'c) rdata4) data1
-and ('i, 'a, 'b, 'c, 'd) rdata2 = RData2 of ('i, 'a, 'b, 'c, 'd,
-  ('i, 'a, 'b, 'c, 'd) rdata2,
-  ('i, 'b, 'c, 'd, 'a) rdata3,
-  ('i, 'c, 'd, 'a, 'b) rdata4,
-  ('i, 'd, 'a, 'b, 'c) rdata1) data2
-and ('i, 'a, 'b, 'c, 'd) rdata3 = RData3 of ('i, 'a, 'b, 'c, 'd,
-  ('i, 'a, 'b, 'c, 'd) rdata3,
-  ('i, 'b, 'c, 'd, 'a) rdata4,
-  ('i, 'c, 'd, 'a, 'b) rdata1,
-  ('i, 'd, 'a, 'b, 'c) rdata2) data3
-and ('i, 'a, 'b, 'c, 'd) rdata4 = RData4 of ('i, 'a, 'b, 'c, 'd,
-  ('i, 'a, 'b, 'c, 'd) rdata4,
-  ('i, 'b, 'c, 'd, 'a) rdata1,
-  ('i, 'c, 'd, 'a, 'b) rdata2,
-  ('i, 'd, 'a, 'b, 'c) rdata3) data4
-
-val rdata1 = RData1
-fun dest_rdata1 (RData1 x) = x
-
-val rdata2 = RData2
-fun dest_rdata2 (RData2 x) = x
-
-val rdata3 = RData3
-fun dest_rdata3 (RData3 x) = x
-
-val rdata4 = RData4
-fun dest_rdata4 (RData4 x) = x
-end
-
-signature CONTENT_MK_ACTION =
-sig
-  type ('c, 'ma) cma
-  val mk_content_mk_action: 'c -> 'ma -> ('c, 'ma) cma
-
-  val get_content : ('c, 'ma) cma -> 'c
-  val get_mk_action : ('c, 'ma) cma -> 'ma
-
-  val map_content : ('c1 -> 'c2) -> ('c1, 'ma) cma -> ('c2, 'ma) cma
-  val map_mk_action : ('ma1 -> 'ma2) -> ('c, 'ma1) cma -> ('c, 'ma2) cma
-
-  val content : unit -> (('c2, 'ma) cma, 'c2, ('c1, 'ma) cma, 'c1) SLens.lens
-  val mk_action : unit -> (('c, 'ma2) cma, 'ma2, ('c, 'ma1) cma, 'ma1) SLens.lens
-end
-
-structure Rec_Zippers = Rec_QData(
-  type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data1 = ('i, 'a, 'b, 'c, 'd) AZ.Z1.zipper
-  type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data2 = ('i, 'a, 'b, 'c, 'd) AZ.Z2.zipper
-  type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data3 = ('i, 'a, 'b, 'c, 'd) AZ.Z3.zipper
-  type ('i, 'a, 'b, 'c, 'd, 'r1, 'r2, 'r3, 'r4) data4 = ('i, 'a, 'b, 'c, 'd) AZ.Z4.zipper
-)
-
-structure AZN = AZ
-structure AZ = Replace_Alternating_QZippers_Zipper(
-  structure A1 = SIn.LA.A
-  structure A2 = SIn.LA.A
-  structure A3 = SIn.LA.A
-  structure A4 = SIn.LA.A
-  structure DA1 = SIn.LA.A
-  structure DA2 = SIn.LA.A
-  structure DA3 = SIn.LA.A
-  structure DA4 = SIn.LA.A
-  structure UA1 = SIn.LA.A
-  structure UA2 = SIn.LA.A
-  structure UA3 = SIn.LA.A
-  structure UA4 = SIn.LA.A
-  structure AZ = AZ
-  type ('i, 'a, 'b, 'c, 'd) nzipper1 = ('i, 'a, 'b, 'c, 'd) Rec_Zippers.rdata1
-  type ('i, 'a, 'b, 'c, 'd) nzipper2 = ('i, 'a, 'b, 'c, 'd) Rec_Zippers.rdata2
-  type ('i, 'a, 'b, 'c, 'd) nzipper3 = ('i, 'a, 'b, 'c, 'd) Rec_Zippers.rdata3
-  type ('i, 'a, 'b, 'c, 'd) nzipper4 = ('i, 'a, 'b, 'c, 'd) Rec_Zippers.rdata4
-  val nzipper1 = Rec_Zippers.rdata1
-  val nzipper2 = Rec_Zippers.rdata2
-  val nzipper3 = Rec_Zippers.rdata3
-  val nzipper4 = Rec_Zippers.rdata4
-  val dest_nzipper1 = Rec_Zippers.dest_rdata1
-  val dest_nzipper2 = Rec_Zippers.dest_rdata2
-  val dest_nzipper3 = Rec_Zippers.dest_rdata3
-  val dest_nzipper4 = Rec_Zippers.dest_rdata4
-)
-\<close> *)
-
-ML\<open>
-  structure E1 = DFS_Postorder_Enumerable_QZipper(structure AE = SIn.LA.AE; structure Z = AZ.Z1)
-  structure E2 = DFS_Postorder_Enumerable_QZipper(structure AE = SIn.LA.AE; structure Z = AZ.Z2)
-  structure E3 = DFS_Postorder_Enumerable_QZipper(structure AE = SIn.LA.AE; structure Z = AZ.Z3)
-  structure E4 = DFS_Postorder_Enumerable_QZipper(structure AE = SIn.LA.AE; structure Z = AZ.Z4)
-  structure T1 = Test(structure AZ = AZ; structure AE = SIn.LA.AE; structure L = SIn.LA.L;
-    structure E1 = E1; structure E2 = E2; structure E3 = E3; structure E4 = E4)
-  structure T2 = Test(structure AZ = Rotate_Alternating_QZippers(AZ); structure AE = SIn.LA.AE; structure L = SIn.LA.L;
-    structure E1' = E1; structure E1 = E2; structure E2 = E3; structure E3 = E4; structure E4 = E1')
-\<close>
-
-ML\<open>
-  local structure MU = Move_Util(open SIn.LA) open MU MU.SC MU.A in
-  fun mk_prio_sq_c prio =
-    arr (fn (_, sq) => ((prio, sq), mk_prio_sq_c (Prio.halve prio)))
-    |> CO.coroutine
-  fun ac_empty_sq _ = CO.throw ()
-  fun ac_from_sq get_sq = MAU.ac_from_sq (ac_empty_sq ()) (mk_prio_sq_c Prio.HIGH) get_sq
-  fun mk_child content
-  :
-    ('p, 'x, 'i, 'a, 'b, 'c, 'd) pz_ac * ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper4 ->
-    ('p, 'x, 'i, 'a, 'b, 'c, 'd) node4
-    =
-    let
-      val get = AZ.Z4.content () |> SLens.comp (AZ.N4.content ()) |> SLens.comp (CMA.mk_action ())
-        |> SLens.get
-      fun mk_node_no_child mka = AZ.N4.node (CMA.mk_content_mk_action content mka) AE.throw
-    in snd #> get #> mk_node_no_child end
-  fun append_child (ch : ('p, 'x, 'i, 'a, 'b, 'c, 'd) node4)
-    (zipper : ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper4) : ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper4 =
-    let val map = AZ.Z4.zcontext () |> SLens.comp (AZ.lzcontext4 ()) |> SLens.modify
-    in map (Data_Zipper.append_zcontext ch, zipper) end
-  fun update_tail_ac _
-    : ('i, 'i, ('p, 'x, 'i, 'a, 'b, 'c, 'd) pz_ac
-      * ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper4, ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper4) SIn.A.AA.cat
-  =
-    (let
-      val map = AZ.Z4.zcontext () |> SLens.comp (AZ.parent4 ()) |> SLens.modify
-      val set = AZ.ZD.content () |> SLens.set
-      fun map_parent4 ac parent4 = arr (pair parent4) >>> AA.app >>> arr (Library.curry set (mk_ac ac))
-    in arr (apfst map_parent4 #> map) end) ()
-  fun update_ac content
-    : ('i, ('p, 'x, 'i, 'a, 'b, 'c, 'd) pz_ac * ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper4,
-      ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper4) MAU.MA.move
-      =
-    MAU.update_ac (arr (mk_child content)) (arr (Library.uncurry append_child)) update_tail_ac
-  val e = ()
-  fun set_mk_action mk_action =
-    let val set = AZ.Z4.content () |> SLens.comp (AZ.N4.content ()) |> SLens.comp (CMA.mk_action ())
-      |> SLens.set
-    in arr (Library.curry set mk_action) end
-  fun disable_mk_aktion_update_ac content
-    : ('i, ('p, 'x, 'i, 'a, 'b, 'c, 'd) pz_ac * ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper4, ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper4) MAU.MA.move
-    =
-    MAU.disable_mk_aktion_update_ac e set_mk_action (update_ac content)
-  fun update_pulled _
-    : ('i, 'i, 'b * ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper4, ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper4) SIn.A.AA.cat
-      =
-    (let
-      fun init_nodes content next =
-        let val node = AZ.N1.node content next
-        in GList.cons node GList.empty end
-      val set = AZ.Z4.content () |> SLens.comp (AZ.N4.next ()) |> SLens.set
-    in
-      first (arr (fn content => K (init_nodes content AE.throw)))
-      >>> arr set
-    end) ()
-(* ('i, ('p, 'i, 'a, 'b, 'c, 'd) mk_ac, 'b, 'c, 'd) AZ.Z3.zipper *)
-  fun update_data content _
-    : ('i, ('b * ('p, 'x, 'i, 'a, 'b, 'c, 'd) pz_ac) * ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper4, ('p, 'x, 'i, 'a, 'b, 'c, 'd) zipper4) MAU.MA.move
-    = MAU.update_data update_pulled (disable_mk_aktion_update_ac content)
-  val datasq = Seq.cons @{thm refl} (Seq.single @{thm trans})
-  fun mk_action content = MAU.mk_action_from_ac (update_data content) (AE.throw' ())
-  end
-\<close>
-
-(* ML\<open> *)
-  fun init_nodes content next =
-    let val node = AZ.N1.node content next
-    in GList.cons node GList.empty end
-    (* in Data_Zipper.rose (GList.cons (node, Data_Zipper.rose GList.empty) GList.empty) end *)
-  fun init_nodes_no_next content = init_nodes content SIn.LA.AE.throw
-
-  local structure MU = Move_Util(open SIn.LA) open MU.SC MU MU.A in
-  fun mk_action _ = MA.mk_action (AE.throw' ())
-  val init_content = Goal.init @{cprop "PROP P"}
-  (* val init_action_content = CMA.mk_content "blub" (init_action_content ()) *)
-  val init_action_content = CMA.mk_content_mk_action 0 (mk_action ())
-  fun mk_init_nodes _ =
-    init_nodes init_content (K [AZ.N2.node init_action_content AE.throw,
-      AZ.N2.node (CMA.mk_content_mk_action 0 (mk_action ())) AE.throw])
-
-  (* local open AZ Data_Zipper in
+  local structure LE = SIn.LA.LE; structure MU = Move_Util(open SIn.LA) open MU.SC MU MU.A HOCLP in
+  val defstate = ()
+  fun eval_safe f x = f () x |> SIn.MS.eval defstate |> the
   fun mk_init_nodes _ =
     let
-      val no_next = SIn.LA.AE.throw
-      fun no_children _ = rose []
-      val Knext = SIn.LA.A.K
-      val node0 = (N1.node 0 no_next, no_children ())
-      val node2 = (N1.node 2 no_next, rose [(N1.node 1 no_next, no_children ())])
-      val node3 = (N1.node 3 no_next, rose [node0, node2])
-      val node7 = (N2.node 7 (rose [node3] |> Knext), no_children ())
-      val node4 = (N1.node 4 no_next, no_children ())
-      val node5 = (N1.node 5 (rose [node7] |> Knext), rose [node4])
-    in rose [node5, node3] end
-  end *)
+      val n4 = eval_safe AZ.N4.node (eval_safe CMA.content_mk_action (0, mk_action 1), AE.throw)
+      fun datasq _ = Seq.cons @{thm refl} (Seq.single @{thm trans})
+      (* fun datasq _ = Seq.make (fn _ => SOME (@{thm refl}, datasq ())) *)
+      fun prioc prio = CO.coroutine (fn x =>
+        x |> (first (K prio) >>> arr (rpair (prioc (Prio.halve prio)))))
+      val ac = MAU.ac_from_sq (CO.throw ()) (prioc Prio.HIGH) (K (datasq ())) |> Ac
+      val n3 = eval_safe AZ.N3.node (ac, K [n4])
+      val n2 = eval_safe AZ.N2.node (Goal.init @{cprop "PROP P"}, K [n3])
+      val n1 = eval_safe AZ.N1.node (Goal.init @{cprop "PROP P"}, K [n2])
+    in [n1] end
 
-  (* fun combine f x y = ME.catch (x >>= (fn xin => ME.catch (y >>= f xin) (K x))) (K y) *)
-  (* fun update zipper acc = combine (pure oo max_ord ZCA.action_ord) acc (ZCA.get_action zipper) *)
-    (* |> MU.continue |> pure *)
-
-  val run_mk_action =
-    arr (AZ.Z2.get_content #> AZ.N2.get_content #> CMA.get_mk_action) &&& id ()
-    >>> arr (fn (mk_action, x) => ((MA.dest_mk_action mk_action, x), x))
+  fun run_mk_action _ =
+    (AZ.Z4.ZO.content () |> LE.comp (AZ.N4.content ()) |> LE.comp (CMA.mk_action ()) |> LE.get) &&& id ()
+    >>> arr (fn (mk_action, x) => ((MA.run mk_action, x), x))
     >>> first AA.app
-    (* in MA.dest_mk_action mk_action () zipper end *)
-
+    |> Lazy_Cat_Util.unlift
   val ord = HOCLP_Util.fst_ord (HOCLP_Util.fst_ord Prio.ord)
   val max = HOCLP_Util.max_ord ord
 
-  val update = first run_mk_action
-    >>> arr (tap @{print})
+  fun update _ = first run_mk_action
     >>> arr (Library.uncurry max)
     >>> arr MU.AF.continue
+    |> Lazy_Cat_Util.unlift
 
-  val run_mk_action_res = first (arr snd) >>> AA.app
+  fun run_mk_action_res _ = first (arr snd) >>> AA.app
+    |> Lazy_Cat_Util.unlift
 
-  (* val first2 = AZ.Down1.move >>> arr AZ.Z2.unzip >>> T2.first1 *)
-  (* fun init _  = (E1.First.move >>> first2) () *)
-  (* fun init _ = T1.first1 *)
-  (* fun up _ : int = AE.repeat (AZ.Up2.move o AZ.Up3.move o AZ.Up4.move o AZ.Up1.move) () *)
+  fun init _ = T4.first2
+    |> Lazy_Cat_Util.unlift
+  fun up _ = AE.repeat (AZ.Up2.move o AZ.Up3.move o AZ.Up4.move o AZ.Up1.move)
+    |> Lazy_Cat_Util.unlift
   (* val next = AE.catch' T2.next (AZ.Up2.move >>> up >>> E1.Next.move >>> first2) *)
 
-  (* val unzip = AZ.Up2.move >>> up >>> arr AZ.Z1.unzip *)
-  (* val step =
-    init
-    >>> arr (fn x : (Proof.context, (int, (Prio.prio, Proof.context, int, Thm.thm) MA.mk_action) CMA.cma,
-      Thm.thm) AZ.Z2.zipper
-      => x)
-    >>> MU.AF.fold_init T2.next update (run_mk_action >>> arr MU.AF.continue)
+  fun unzip _ = AZ.Up4.move >>> AZ.Up3.move >>> AZ.Up2.move >>> up >>> AZ.Z1.ZM.Unzip.move
+    |> Lazy_Cat_Util.unlift
+  fun step _ = init
+    >>> arr (fn (x : (unit, Prio.prio, thm, thm, thm, int, int) zipper4) => x)
+    >>> MU.AF.fold_init T4.next update (run_mk_action >>> arr MU.AF.continue)
     >>> arr MU.AF.dest_res
     >>> run_mk_action_res
-    >>> unzip *)
-  val result = (mk_init_nodes (), AE.throw)
-    |> (
-      AZ.Z1.Init.move
-      (* C.repeatn 2 step *)
+    >>> unzip
+    |> Lazy_Cat_Util.unlift
+  fun result n =
+    (
+      (* step *)
+      C.repeatn n step
       (* >>> AZ.Z1.Init.move *)
-      (* >>> AZ.Down1.move *)
-    ) ()
-    |> (fn st => st @{context})
+      (* >>> step *)
+      |> Lazy_Cat_Util.unlift
+    ) (mk_init_nodes (), AE.throw)
   end
+\<close>
+
+ML\<open>
+  val a = result 0
+    |> SIn.MS.eval ()
 \<close>
 
 
@@ -465,7 +228,7 @@ ML\<open>
 
 (* method_setup hoclpdt = HOCLPDT.hoclp_method_parser "Higher-Order Constraint Logic Programming"
 
-declare[[ML_dattr "fn _ => Logger.set_log_levels hoclp_logger Logger.ALL"]]
+declare[[ML_dattr "fn _ => Logger.set_log_levels zippy_logger Logger.ALL"]]
 declare[[eta_contract=false]]
 
 theorem test:

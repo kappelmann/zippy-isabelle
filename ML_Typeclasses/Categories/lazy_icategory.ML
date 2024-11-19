@@ -5,27 +5,27 @@ Lazy indexed categories.
 *)
 signature TLAZY_ICAT =
 sig
-type ('i, 'o, 'a, 'b) cat
-type ('i, 'o, 'a, 'b) lcat = unit -> ('i, 'o, 'a, 'b) cat
+  type ('p1, 'i, 'o, 'a, 'b) cat
+  type ('p1, 'i, 'o, 'a, 'b) lcat = unit -> ('p1, 'i, 'o, 'a, 'b) cat
 end
 
-functor TLazy_ICat(type ('i, 'o, 'a, 'b) cat) : TLAZY_ICAT =
+functor TLazy_ICat(type ('p1, 'i, 'o, 'a, 'b) cat) : TLAZY_ICAT =
 struct
-type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) cat
-type ('i, 'o, 'a, 'b) lcat = unit -> ('i, 'o, 'a, 'b) cat
+type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) cat
+type ('p1, 'i, 'o, 'a, 'b) lcat = unit -> ('p1, 'i, 'o, 'a, 'b) cat
 end
 
 signature LAZY_ISEMI_CATEGORY_BASE =
 sig
   structure T : TLAZY_ICAT
   include ISEMI_CATEGORY_BASE
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
 functor Lazy_ISemi_Category_Base(SC : ISEMI_CATEGORY_BASE) : LAZY_ISEMI_CATEGORY_BASE =
 struct
-structure T = TLazy_ICat(type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) SC.cat)
-type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+structure T = TLazy_ICat(type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) SC.cat)
+type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 fun comp f g _ = Lazy_Cat_Util.lift2 SC.comp f g
 end
 
@@ -33,10 +33,10 @@ signature LAZY_ILAZY_COMP =
 sig
   structure T : TLAZY_ICAT
   include ILAZY_COMP
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
-functor Lazy_Lazy_Comp(L : ILAZY_COMP) : LAZY_ILAZY_COMP =
+functor Lazy_ILazy_Comp(L : ILAZY_COMP) : LAZY_ILAZY_COMP =
 struct
 structure SC = Lazy_ISemi_Category_Base(L)
 open SC
@@ -47,7 +47,7 @@ signature LAZY_ICATEGORY_BASE =
 sig
   structure T : TLAZY_ICAT
   include ICATEGORY_BASE
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
 functor Lazy_ICategory_Base(C : ICATEGORY_BASE) : LAZY_ICATEGORY_BASE =
@@ -61,7 +61,7 @@ signature LAZY_ICATEGORY =
 sig
   structure T : TLAZY_ICAT
   include ICATEGORY
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
 functor Lazy_ICategory(C : ICATEGORY) : LAZY_ICATEGORY =
@@ -75,7 +75,7 @@ signature LAZY_IARROW_BASE =
 sig
   structure T : TLAZY_ICAT
   include IARROW_BASE
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
 functor Lazy_IArrow_Base(A : IARROW_BASE) : LAZY_IARROW_BASE =
@@ -90,7 +90,7 @@ signature LAZY_IARROW =
 sig
   structure T : TLAZY_ICAT
   include IARROW
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
 functor Lazy_IArrow(A : IARROW) : LAZY_IARROW =
@@ -108,21 +108,7 @@ signature LAZY_IARROW_APPLY_BASE =
 sig
   structure T : TLAZY_ICAT
   include IARROW_APPLY_BASE
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
-end
-
-functor Lazy_IArrow_Apply_Base(AA : IARROW_APPLY_BASE) : LAZY_IARROW_APPLY_BASE =
-struct
-structure A = Lazy_IArrow_Base(AA)
-open A
-fun app _ =  AA.comp AA.app (AA.*** (AA.arr (fn f => f ()), AA.id ()))
-end
-
-signature LAZY_IARROW_APPLY_BASE =
-sig
-  structure T : TLAZY_ICAT
-  include IARROW_APPLY_BASE
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
 functor Lazy_IArrow_Apply_Base(AA : IARROW_APPLY_BASE) : LAZY_IARROW_APPLY_BASE =
@@ -136,7 +122,7 @@ signature LAZY_IARROW_ZERO_BASE =
 sig
   structure T : TLAZY_ICAT
   include IARROW_ZERO_BASE
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
 functor Lazy_IArrow_Zero_Base(AZ : IARROW_ZERO_BASE) : LAZY_IARROW_ZERO_BASE =
@@ -150,7 +136,7 @@ signature LAZY_IARROW_PLUS_BASE =
 sig
   structure T : TLAZY_ICAT
   include IARROW_PLUS_BASE
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
 functor Lazy_IArrow_Plus_Base(AP : IARROW_PLUS_BASE) : LAZY_IARROW_PLUS_BASE =
@@ -164,7 +150,7 @@ signature LAZY_IARROW_OR_BASE =
 sig
   structure T : TLAZY_ICAT
   include IARROW_OR_BASE
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
 functor Lazy_IArrow_Or_Base(AO : IARROW_OR_BASE) : LAZY_IARROW_OR_BASE =
@@ -178,7 +164,7 @@ signature LAZY_IARROW_EXCEPTION_BASE =
 sig
   structure T : TLAZY_ICAT
   include IARROW_EXCEPTION_BASE
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
 functor Lazy_IArrow_Exception_Base(AE : IARROW_EXCEPTION_BASE) : LAZY_IARROW_EXCEPTION_BASE =
@@ -194,7 +180,7 @@ signature LAZY_IARROW_EXCEPTION =
 sig
   structure T : TLAZY_ICAT
   include IARROW_EXCEPTION
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
 functor Lazy_IArrow_Exception(AE : IARROW_EXCEPTION) : LAZY_IARROW_EXCEPTION =
@@ -210,7 +196,7 @@ signature LAZY_IARROW_EXCEPTION_REC =
 sig
   structure T : TLAZY_ICAT
   include IARROW_EXCEPTION_REC
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
 functor Lazy_IArrow_Exception_Rec(AE : IARROW_EXCEPTION_REC) : LAZY_IARROW_EXCEPTION_REC =
@@ -225,7 +211,7 @@ signature LAZY_IARROW_CHOICE_BASE =
 sig
   structure T : TLAZY_ICAT
   include IARROW_CHOICE_BASE
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
 functor Lazy_IArrow_Choice_Base(AC : IARROW_CHOICE_BASE) : LAZY_IARROW_CHOICE_BASE =
@@ -240,7 +226,7 @@ signature LAZY_IARROW_CHOICE =
 sig
   structure T : TLAZY_ICAT
   include IARROW_CHOICE
-  where type ('i, 'o, 'a, 'b) cat = ('i, 'o, 'a, 'b) T.lcat
+  where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) T.lcat
 end
 
 functor Lazy_IArrow_Choice(AC : IARROW_CHOICE) : LAZY_IARROW_CHOICE =
