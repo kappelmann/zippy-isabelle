@@ -2,7 +2,7 @@
     Author:     Kevin Kappelmann
 *)
 functor Replace_Zipper4_Optics_Zipper(
-    structure A : LAZY_ARROW
+    structure A : KLEISLI_ARROW
     structure Z : ZIPPER4_OPTICS
     where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) A.cat
     type ('p1, 'a1, 'a2, 'a3, 'a4) nzipper
@@ -23,17 +23,12 @@ type ('p1, 'a1, 'a2, 'a3, 'a4) zipper = ('p1, 'a1, 'a2, 'a3, 'a4) nzipper
 
 local structure SC = Semi_Category(A) open SC A
 in
-fun zipper _ = Z.zipper >>> nzipper
-  |> Lazy_Cat_Util.unlift
-fun get_content _ = dest_nzipper >>> Z.get_content
-  |> Lazy_Cat_Util.unlift
-fun get_zcontext _ = dest_nzipper >>> Z.get_zcontext
-  |> Lazy_Cat_Util.unlift
+fun zipper x = x |> (Z.zipper >>> nzipper)
+fun get_content x = x |> (dest_nzipper >>> Z.get_content)
+fun get_zcontext x = x |> (dest_nzipper >>> Z.get_zcontext)
 
-fun map_content _ = second dest_nzipper >>> Z.map_content >>> nzipper
-  |> Lazy_Cat_Util.unlift
-fun map_zcontext _ = second dest_nzipper >>> Z.map_zcontext >>> nzipper
-  |> Lazy_Cat_Util.unlift
+fun map_content x = x |> (second dest_nzipper >>> Z.map_content >>> nzipper)
+fun map_zcontext x = x |> (second dest_nzipper >>> Z.map_zcontext >>> nzipper)
 
 fun content _ = L.lens get_content map_content
 fun zcontext _ = L.lens get_zcontext map_zcontext

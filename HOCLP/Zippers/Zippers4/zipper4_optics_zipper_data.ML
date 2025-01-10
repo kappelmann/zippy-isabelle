@@ -10,7 +10,7 @@ sig
 end
 
 functor Zipper4_Optics_Zipper_Data(
-    structure A : LAZY_ARROW_BASE
+    structure A : KLEISLI_ARROW_BASE
     structure L : LENS
     where type ('p1, 'a, 'b) C.cat = ('p1, 'a, 'b) A.cat
     structure ZD : ZIPPER_DATA
@@ -34,21 +34,16 @@ type ('p1, 'a1, 'a2, 'a3, 'a4) zipper =
   (('p1, 'a1, 'a2, 'a3, 'a4) content, ('p1, 'a1, 'a2, 'a3, 'a4) zcontext) ZD.zipper
 
 open A
-fun zipper _ = arr (uncurry ZD.zipper)
-  |> Lazy_Cat_Util.unlift
+fun zipper x = x |> arr (uncurry ZD.zipper)
 
 fun zipper_lens _ = L.lens_get_mk
   (A.arr (ZD.dest_zipper #> (fn {content, zcontext} => (content, zcontext)))) zipper
 fun content _ = L.lens_fst (zipper_lens ())
 fun zcontext _ = L.lens_snd (zipper_lens ())
-fun get_content _ = L.get (content ())
-  |> Lazy_Cat_Util.unlift
-fun map_content _ = L.modify (content ())
-  |> Lazy_Cat_Util.unlift
-fun get_zcontext _ = L.get (zcontext ())
-  |> Lazy_Cat_Util.unlift
-fun map_zcontext _ = L.modify (zcontext ())
-  |> Lazy_Cat_Util.unlift
+fun get_content x = x |> L.get (content ())
+fun map_content x = x |> L.modify (content ())
+fun get_zcontext x = x |> L.get (zcontext ())
+fun map_zcontext x = x |> L.modify (zcontext ())
 
 end
 

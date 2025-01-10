@@ -10,7 +10,7 @@ sig
   where type ('p1, 'a1, 'a2, 'a3, 'a4) ZM.container =
     ('p1, 'a1, 'a2, 'a3, 'a4) Zbase.ZM.container * ('p1, 'a1, 'a2, 'a3, 'a4) new_zcontext
   sharing type ZO.content = Zbase.ZO.content
-  sharing type cat = Zbase.cat
+  sharing type M.t = Zbase.M.t
 
   val mk_zcontext : ('p1,
     ('p1, 'a1, 'a2, 'a3, 'a4) Zbase.ZO.zcontext * ('p1, 'a1, 'a2, 'a3, 'a4) new_zcontext,
@@ -29,15 +29,13 @@ sig
 end
 
 functor Extend_Zipper4_Context(
-    structure A : LAZY_ARROW
     structure Z : ZIPPER4
-    where type ('p1, 'a, 'b) cat = ('p1, 'a, 'b) A.cat
     type ('p1, 'a1, 'a2, 'a3, 'a4) new_zcontext
     type ('p1, 'a1, 'a2, 'a3, 'a4) zcontext
     structure ZO : ZIPPER4_OPTICS
     where type ('p1, 'a1, 'a2, 'a3, 'a4) content = ('p1, 'a1, 'a2, 'a3, 'a4) Z.ZO.content
     where type ('p1, 'a1, 'a2, 'a3, 'a4) zcontext = ('p1, 'a1, 'a2, 'a3, 'a4) zcontext
-    where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) A.cat
+    where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) Z.cat
     val mk_zcontext : ('p1,
       ('p1, 'a1, 'a2, 'a3, 'a4) Z.ZO.zcontext * ('p1, 'a1, 'a2, 'a3, 'a4) new_zcontext,
       ('p1, 'a1, 'a2, 'a3, 'a4) zcontext) Z.cat
@@ -57,21 +55,19 @@ val mk_zcontext = mk_zcontext
 val get_base_zcontext = get_base_zcontext
 val get_new_zcontext = get_new_zcontext
 
-local structure SC = Semi_Category(A) open SC A
+local structure SC = Semi_Category(Z); structure A = Kleisli_Arrow(Z.M) open SC A
 in
 
-fun zipper_from_base_zipper _ =
+fun zipper_from_base_zipper x = x |>
   (second (Z.ZO.get_content &&& Z.ZO.get_zcontext)
   >>> arr (fn (new_zcontext, (content, base_zcontext)) => (content, (base_zcontext, new_zcontext)))
   >>> second mk_zcontext
   >>> ZO.zipper)
-  ()
 
-fun base_zipper_from_zipper _ =
+fun base_zipper_from_zipper x = x |>
   (ZO.get_content &&& ZO.get_zcontext
   >>> second get_base_zcontext
   >>> Z.ZO.zipper)
-  ()
 
 structure Z = Zipper4(
   structure ZO = ZO
@@ -83,22 +79,16 @@ structure Z = Zipper4(
     structure M = Zin
     type ('p1, 'a1, 'a2, 'a3, 'a4) container =
       ('p1, 'a1, 'a2, 'a3, 'a4) Zin.container * ('p1, 'a1, 'a2, 'a3, 'a4) new_zcontext
-    fun zip _ = first Zin.Zip.move >>> arr swap >>> zipper_from_base_zipper
-      |> Lazy_Cat_Util.unlift
-    fun unzip _ =
-      (base_zipper_from_zipper >>> Zin.Unzip.move) &&& (ZO.get_zcontext >>> get_new_zcontext)
-      |> Lazy_Cat_Util.unlift
+    fun zip x = x |> (first Zin.Zip.move >>> arr swap >>> zipper_from_base_zipper)
+    fun unzip x = x |>
+      ((base_zipper_from_zipper >>> Zin.Unzip.move) &&& (ZO.get_zcontext >>> get_new_zcontext))
     fun lift_move move =
       (ZO.get_zcontext >>> get_new_zcontext) &&& (base_zipper_from_zipper >>> move)
       >>> zipper_from_base_zipper
-    fun up _ = lift_move Zin.Up.move
-      |> Lazy_Cat_Util.unlift
-    fun down _ = lift_move Zin.Down.move
-      |> Lazy_Cat_Util.unlift
-    fun left _ = lift_move Zin.Left.move
-      |> Lazy_Cat_Util.unlift
-    fun right _ = lift_move Zin.Right.move
-      |> Lazy_Cat_Util.unlift
+    fun up x = x |> lift_move Zin.Up.move
+    fun down x = x |> lift_move Zin.Down.move
+    fun left x = x |> lift_move Zin.Left.move
+    fun right x = x |> lift_move Zin.Right.move
   )
 )
 open Z
@@ -106,3 +96,4 @@ open Z
 end
 
 end
+

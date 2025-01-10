@@ -3,6 +3,7 @@ section \<open>Zippers4\<close>
 theory ML_Zippers4
   imports
     ML_Enumerable
+    ML_Lists
     ML_Zippers_Base
 begin
 
@@ -25,7 +26,7 @@ ML_file\<open>replace_zipper4_content.ML\<close>
 ML_file\<open>extend_zipper4_context.ML\<close>
 ML_file\<open>pair_zipper4.ML\<close>
 
-ML_file\<open>enumerable4_zipper_moves.ML\<close>
+ML_file\<open>dfs_postorder_enumerable4_zipper_moves.ML\<close>
 ML_file\<open>zipper4_moves_enumerable.ML\<close>
 
 ML_file\<open>direction_zipper_moves.ML\<close>

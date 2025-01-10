@@ -38,30 +38,24 @@ ML\<open>
     structure M : MONAD_EXCEPTION_BASE = struct open M type ('p1, 'a) t = (unit, 'p1, 'p1, 'a) t end
     structure A =
     struct
-      structure L : LAZY_COMP = Kleisli_Arrow_Apply_Choice(M)
-      structure AE = Arrow_Exception_Rec(
-        structure A = Arrow_Exception(Kleisli_Arrow_Exception(M))
-        structure L = L
-      )
-      structure AC = Kleisli_Arrow_Apply_Choice(M)
-      structure AA : ARROW_APPLY = Arrow_Apply(AC)
-      structure C = Category(AA)
-      structure A = Arrow(AC)
-      structure LE = Lens(structure A = A; structure L = Lens_Base(AA))
-    end
-    structure LA =
-    struct
-      structure L = Lazy_Lazy_Comp(A.L)
-      structure AE = Lazy_Arrow_Exception_Rec(A.AE)
-      structure AA = Lazy_Arrow_Apply(A.AA)
-      structure AC = Arrow_Choice(Lazy_Arrow_Choice_Base(A.AC))
-      structure C = Lazy_Category(A.C)
-      structure A = Lazy_Arrow(A.A)
-      structure LE = Lens(structure A = A; structure L = Lens_Base(AA))
+      structure AE : KLEISLI_ARROW_EXCEPTION_REC = Kleisli_Arrow_Exception_Rec(
+      struct
+        structure AE = Kleisli_Arrow_Exception_Base(M); open AE
+        structure A = Arrow_Exception(AE); open A
+      end)
+      (* structure AC = Kleisli_Arrow_Apply_Choice_Base(M) *)
+      structure AA : KLEISLI_ARROW_ARROW_APPLY =
+      struct
+        structure AA = Kleisli_Arrow_Apply_Base(M); open AA
+        structure AA = Arrow_Apply(AA); open AA
+        structure A = Arrow(AA); open A
+      end
+      structure C = Category(AA.A)
+      structure A : KLEISLI_ARROW = struct open AA AA.A end
+      structure LE = Lens(structure A = A; structure L = Lens_Base(AA.AA))
     end
     structure GList = GList(M)
-    structure LGList = Lazy_GList(structure A = LA.AE; structure L = GList)
-    structure MB = Move_Base(LA.A)
+    structure MB = Move_Base(M)
     end
   end
 \<close>
@@ -70,14 +64,14 @@ ML_file\<open>example_zippers.ML\<close>
 
 ML\<open>
   structure Data_Zipper = List_Zipper(
-    structure A = SIn.LA.A
-    structure L = SIn.LA.LE
-    structure LI = SIn.LGList
-    fun mk_exn_horizontal _ = SIn.A.A.K ()
+    structure A = SIn.A.A
+    structure L = SIn.A.LE
+    structure LI = SIn.GList
+    fun mk_exn_horizontal x = x |> SIn.A.A.K ()
   )
   structure AZ = Alternating_Zippers4_Nodes(
     structure A = Alternating_Zippers4_Nodes_Base_Args_Simple_Zippers(
-      structure A = SIn.LA.A
+      structure A = SIn.A.A
       type ('p1, 'a1, 'a2, 'a3, 'a4) ncontent1 = 'a1
       type ('p1, 'a1, 'a2, 'a3, 'a4) ncontent2 = 'a2
       type ('p1, 'a1, 'a2, 'a3, 'a4) ncontent3 = 'a3
@@ -87,7 +81,7 @@ ML\<open>
       structure Z3 = Data_Zipper
       structure Z4 = Data_Zipper
     )
-    structure AA = SIn.LA
+    structure AA = SIn.A.AA
     structure ZD  = Zipper_Data
   )
 \<close>
@@ -96,7 +90,7 @@ ML_file\<open>util.ML\<close>
 
 ML_file\<open>content_mk_action.ML\<close>
 
-ML_file\<open>result_update_info.ML\<close>
+ML_file\<open>Zippy/result_update_info.ML\<close>
 
 lemma test: "A \<Longrightarrow> B \<Longrightarrow> G \<Longrightarrow> B \<Longrightarrow> (A \<Longrightarrow> A) \<Longrightarrow> E \<Longrightarrow> A &&& B &&& C &&& D &&& E &&& F &&& G"
   sorry
@@ -131,7 +125,7 @@ val finisheds = map (fst #> GCS.is_finished) solved_gclusterss
 val test = GCS.finish_gclusters @{context} (map fst solved_gclusterss) (fst gclusterss)
 
 (* val update = fold_index (fn (i, j) => General_Util.fun_update (equal j) i) indices (K (~1,~1)) *)
-val test = GCS.mk_gpos_index (gclusterss |> snd |> map fst)
+(* val test = GCS.mk_gpos_index (gclusterss |> snd |> map fst) *)
 \<close>
 
 ML_file\<open>hoclp.ML\<close>

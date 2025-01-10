@@ -43,5 +43,5 @@ functor Instantiate_Move4(
     where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) inst1,
       ('p1, 'a1, 'a2, 'a3, 'a4) inst2, ('p1, 'a1, 'a2, 'a3, 'a4) inst3,
       ('p1, 'a1, 'a2, 'a3, 'a4) inst4) M.to
-    where type ('p1, 'a, 'b) cat = ('p1, 'a, 'b) M.cat
+    where type ('p1, 'a) K.M.t = ('p1, 'a) M.K.M.t
   = M

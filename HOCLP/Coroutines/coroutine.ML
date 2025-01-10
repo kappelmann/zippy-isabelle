@@ -28,17 +28,21 @@ type ('p1, 'a, 'b) coroutine = ('p1, 'a, 'b, 'b) acoroutine
 fun acoroutine c = Coroutine c
 fun coroutine c = acoroutine c
 fun resume (Coroutine c) = c
+
 end
 
 signature COROUTINE_UTIL =
 sig
   include COROUTINE
-  structure AE : ARROW_EXCEPTION_BASE
+  structure AE : ARROW_EXCEPTION
   sharing type AE.cat = C.cat
-  val throw : AE.exn -> ('p1, 'a, 'b, 'c) acoroutine
+  val throw : 'p1 AE.exn -> ('p1, 'a, 'b, 'c) acoroutine
+  val cons : ('p1, 'a, 'b) C.cat -> ('p1, 'a, 'c, 'b) acoroutine -> ('p1, 'a, 'b, 'c) acoroutine
 
   val map : ('p1, 'b1, 'b2) C.cat -> ('p1,  'c1, 'c2) C.cat ->
     ('p1, 'a, 'b1, 'c1) acoroutine -> ('p1, 'a, 'b2, 'c2) acoroutine
+
+  val enum : ('p1, 'b, 'b) C.cat -> 'b -> ('p1, 'a, 'b) coroutine
 end
 
 functor Coroutine_Util(
@@ -55,10 +59,50 @@ local structure SC = Semi_Category(AE) open SC
 in
 fun throw e = AE.throw' e |> acoroutine
 
+fun cons f c = acoroutine (f >>> AE.arr (rpair c))
+
 fun map f g c = resume c >>> AE.*** (f, AE.arr (map2 g f)) |> acoroutine
 and map2 f g c = resume c >>> AE.*** (f, AE.arr (map g f)) |> acoroutine
+
+fun enum next x = AE.arr (K x) >>> next >>> AE.arr (fn x => (x, enum next x)) |> coroutine
+
+end
 end
 
+signature COROUTINE_UTIL_APPLY =
+sig
+  include COROUTINE_UTIL
+  structure AA : ARROW_APPLY
+  sharing type AA.cat = C.cat
+
+  val gen_list_of : ('p1, 'a, 'l) AE.cat -> ('p1, 'b * 'l, 'l) C.cat ->
+    ('p1, 'a, 'b) coroutine -> ('p1, 'a, 'l) C.cat
+  val list_of : ('p1, 'a, 'b) coroutine -> ('p1, 'a, 'b list) C.cat
+  val seq_of : ('p1, 'a, 'b) coroutine -> ('p1, 'a, 'b Seq.seq) C.cat
+end
+
+functor Coroutine_Util_Apply(
+    structure A : ARROW_ARROW_APPLY
+    structure CO : COROUTINE_UTIL
+    sharing type CO.C.cat = A.A.cat
+  ) : COROUTINE_UTIL_APPLY =
+struct
+
+structure AA = A.AA
+open CO
+
+local structure SC = Semi_Category(AE) open SC A.A
+in
+fun gen_list_of empty cons c = AE.catch'
+  (resume c &&& id ()
+    >>> arr (fn ((x, c), s) => (x, (gen_list_of empty cons c, s)))
+    >>> second AA.app
+    >>> cons)
+  empty
+
+fun list_of c = gen_list_of (K []) (arr (op ::)) c
+fun seq_of c = gen_list_of (K Seq.empty) (arr (Library.uncurry Seq.cons)) c
+end
 end
 
 signature ICOROUTINE =
@@ -95,7 +139,7 @@ sig
   include ICOROUTINE
   structure AE : IARROW_EXCEPTION_BASE
   sharing type AE.cat = C.cat
-  val throw : AE.exn -> ('p1, 'i, 'i, 'a, 'b, 'c) acoroutine
+  val throw : 'p1 AE.exn -> ('p1, 'i, 'i, 'a, 'b, 'c) acoroutine
 
   val map : ('p1, 'j, 'j, 'b1, 'b2) C.cat -> ('p1,'i, 'i, 'c1, 'c2) C.cat ->
     ('p1, 'i, 'j, 'a, 'b1, 'c1) acoroutine -> ('p1, 'i, 'j, 'a, 'b2, 'c2) acoroutine

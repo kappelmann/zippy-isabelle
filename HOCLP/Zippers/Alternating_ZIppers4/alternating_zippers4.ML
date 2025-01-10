@@ -5,129 +5,130 @@ signature ALTERNATING_ZIPPERS4_MOVES =
 sig
   include MOVE_BASE
   structure Z1 : ZIPPER4_MOVES
-  sharing type Z1.cat = cat
+  sharing type Z1.M.t = M.t
   structure Z2 : ZIPPER4_MOVES
-  sharing type Z2.cat = cat
+  sharing type Z2.M.t = M.t
   structure Z3 : ZIPPER4_MOVES
-  sharing type Z3.cat = cat
+  sharing type Z3.M.t = M.t
   structure Z4 : ZIPPER4_MOVES
-  sharing type Z4.cat = cat
+  sharing type Z4.M.t = M.t
 
   structure Down1 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z1.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z2.zipper
-  sharing type Down1.cat = cat
+  sharing type Down1.M.t = M.t
 
   structure Down2 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z2.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z3.zipper
-  sharing type Down2.cat = cat
+  sharing type Down2.M.t = M.t
 
   structure Down3 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z3.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z4.zipper
-  sharing type Down3.cat = cat
+  sharing type Down3.M.t = M.t
 
   structure Down4 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z4.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z1.zipper
-  sharing type Down4.cat = cat
+  sharing type Down4.M.t = M.t
 
   structure Up1 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z1.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z4.zipper
-  sharing type Up1.cat = cat
+  sharing type Up1.M.t = M.t
 
   structure Up2 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z2.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z1.zipper
-  sharing type Up2.cat = cat
+  sharing type Up2.M.t = M.t
 
   structure Up3 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z3.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z2.zipper
-  sharing type Up3.cat = cat
+  sharing type Up3.M.t = M.t
 
   structure Up4 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z4.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z3.zipper
-  sharing type Up4.cat = cat
+  sharing type Up4.M.t = M.t
 end
 
 signature ALTERNATING_ZIPPERS4 =
 sig
   include MOVE_BASE
   structure L : LENS
+  where type ('p1, 'a, 'b) C.cat = ('p1, 'a, 'b) cat
   structure Z1 : ZIPPER4
-  sharing type Z1.cat = cat
   sharing type Z1.ZO.L.lens = L.lens
+  sharing type Z1.M.t = M.t
   structure Z2 : ZIPPER4
-  sharing type Z2.cat = cat
+  sharing type Z2.M.t = M.t
   sharing type Z2.ZO.L.lens = L.lens
   structure Z3 : ZIPPER4
-  sharing type Z3.cat = cat
+  sharing type Z3.M.t = M.t
   sharing type Z3.ZO.L.lens = L.lens
   structure Z4 : ZIPPER4
-  sharing type Z4.cat = cat
+  sharing type Z4.M.t = M.t
   sharing type Z4.ZO.L.lens = L.lens
 
   structure Down1 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z1.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z2.zipper
-  sharing type Down1.cat = cat
+  sharing type Down1.M.t = M.t
 
   structure Down2 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z2.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z3.zipper
-  sharing type Down2.cat = cat
+  sharing type Down2.M.t = M.t
 
   structure Down3 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z3.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z4.zipper
-  sharing type Down3.cat = cat
+  sharing type Down3.M.t = M.t
 
   structure Down4 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z4.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z1.zipper
-  sharing type Down4.cat = cat
+  sharing type Down4.M.t = M.t
 
   structure Up1 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z1.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z4.zipper
-  sharing type Up1.cat = cat
+  sharing type Up1.M.t = M.t
 
   structure Up2 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z2.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z1.zipper
-  sharing type Up2.cat = cat
+  sharing type Up2.M.t = M.t
 
   structure Up3 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z3.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z2.zipper
-  sharing type Up3.cat = cat
+  sharing type Up3.M.t = M.t
 
   structure Up4 : MOVE4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) from = ('p1, 'a1, 'a2, 'a3, 'a4) Z4.zipper
   where type ('p1, 'a1, 'a2, 'a3, 'a4) to = ('p1, 'a1, 'a2, 'a3, 'a4) Z3.zipper
-  sharing type Up4.cat = cat
+  sharing type Up4.M.t = M.t
 end
 
 functor Alternating_Zippers4(
     structure A : ALTERNATING_ZIPPERS4_MOVES
     structure ZO1 : ZIPPER4_OPTICS
+    where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) A.Z1.cat
     sharing type ZO1.zipper = A.Z1.zipper
-    sharing type ZO1.L.C.cat = A.Z1.cat
     structure ZO2 : ZIPPER4_OPTICS
+    where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) A.Z2.cat
     sharing type ZO2.zipper = A.Z2.zipper
-    sharing type ZO2.L.C.cat = A.Z2.cat
     sharing type ZO2.L.lens = ZO1.L.lens
     structure ZO3 : ZIPPER4_OPTICS
+    where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) A.Z3.cat
     sharing type ZO3.zipper = A.Z3.zipper
-    sharing type ZO3.L.C.cat = A.Z3.cat
     sharing type ZO3.L.lens = ZO1.L.lens
     structure ZO4 : ZIPPER4_OPTICS
+    where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) A.Z4.cat
     sharing type ZO4.zipper = A.Z4.zipper
-    sharing type ZO4.L.C.cat = A.Z4.cat
     sharing type ZO4.L.lens = ZO1.L.lens
   ) : ALTERNATING_ZIPPERS4 =
 struct

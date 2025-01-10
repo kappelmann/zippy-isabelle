@@ -21,7 +21,7 @@ functor Instantiate_Node4(
   = N
 
 functor Replace_Node4_Content_Next(
-    structure A : LAZY_ARROW_BASE
+    structure A : KLEISLI_ARROW_BASE
     structure N : NODE4
     where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) A.cat
     type ('p1, 'a1, 'a2, 'a3, 'a4) ncontent
@@ -51,20 +51,14 @@ type ('p1, 'a1, 'a2, 'a3, 'a4) node = ('p1, 'a1, 'a2, 'a3, 'a4) N.node
 
 structure SC = Semi_Category(A) open SC A
 
-fun node _ = (dest_ncontent *** dest_nnext) >>> N.node
-  |> Lazy_Cat_Util.unlift
+fun node x = x |> ((dest_ncontent *** dest_nnext) >>> N.node)
 
 fun content _ = L.comp (L.lens_get_mk ncontent dest_ncontent) (N.content ())
 fun next _ = L.comp (L.lens_get_mk nnext dest_nnext) (N.next ())
 
-fun get_content _ = content () |> L.get
-  |> Lazy_Cat_Util.unlift
-fun get_next _ = next () |> L.get
-  |> Lazy_Cat_Util.unlift
-
-fun map_content _ = content () |> L.modify
-  |> Lazy_Cat_Util.unlift
-fun map_next _ = next () |> L.modify
-  |> Lazy_Cat_Util.unlift
+fun get_content x = x |> L.get (content ())
+fun get_next x = x |> L.get (next ())
+fun map_content x = x |> L.modify (content ())
+fun map_next x = x |> L.modify (next ())
 
 end

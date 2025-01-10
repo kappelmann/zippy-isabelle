@@ -52,7 +52,6 @@ sig
 include IMONAD_BASE
   val >>= : ('p1, 'i, 'j, 'a) t * ('a -> ('p1, 'j, 'k, 'b) t) -> ('p1, 'i, 'k, 'b) t
   val join : ('p1, 'i, 'j, ('p1, 'j, 'k, 'a) t) t -> ('p1, 'i, 'k, 'a) t
-  val >=> : ('a -> ('p1, 'i, 'j, 'b) t) * ('b -> ('p1, 'j, 'k, 'c) t) -> 'a -> ('p1, 'i, 'k, 'c) t
 end
 
 functor IMonad(M : IMONAD_BASE) : IMONAD =
@@ -60,7 +59,6 @@ struct
 open M
 fun m >>= f = bind m f
 fun join x = bind x I
-fun (fm >=> gm) x = fm x >>= gm
 end
 
 signature IMONAD_TRANS =
@@ -95,7 +93,7 @@ end
 signature IMONAD_EXCEPTION_BASE =
 sig
   include IMONAD_BASE
-  type exn
-  val throw : exn -> ('p1, 'i, 'i, 'a) t
-  val catch : ('p1, 'i, 'j, 'a) t -> (exn -> ('p1, 'i, 'j, 'a) t) -> ('p1, 'i, 'j, 'a) t
+  type 'p1 exn
+  val throw : 'p1 exn -> ('p1, 'i, 'i, 'a) t
+  val catch : ('p1, 'i, 'j, 'a) t -> ('p1 exn -> ('p1, 'i, 'j, 'a) t) -> ('p1, 'i, 'j, 'a) t
 end

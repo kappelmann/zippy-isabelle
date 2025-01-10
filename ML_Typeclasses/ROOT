@@ -1,4 +1,5 @@
 session ML_Typeclasses = "Pure" +
+  sessions ML_Unification
   directories
     Categories
     Lenses

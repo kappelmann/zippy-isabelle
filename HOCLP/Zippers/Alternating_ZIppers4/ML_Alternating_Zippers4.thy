@@ -25,6 +25,6 @@ ML_file\<open>alternating_zippers4_zippers.ML\<close>
 
 ML_file\<open>alternating_zippers4_simple_zippers.ML\<close>
 
-ML_file\<open>alternating_zippers4_enumerable.ML\<close>
+ML_file\<open>dfs_postorder_enumerable_alternating_zippers4.ML\<close>
 
 end

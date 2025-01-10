@@ -146,14 +146,16 @@ end
 
 end
 
-functor IKleisli_Arrow_State(MS : IMONAD_STATE_BASE) :
-  sig
-    include IKLEISLI
-    include IARROW_STATE_BASE
-    where type ('p1, 'i, 'o, 'a, 'b) cat = ('p1, 'i, 'o, 'a, 'b) kleisli
-  end =
+signature IKLEISLI_ARROW_STATE_BASE =
+sig
+  structure K : IKLEISLI
+  include IARROW_STATE_BASE
+  where type ('p1, 'i, 'j, 'a, 'b) cat = ('p1, 'i, 'j, 'a, 'b) K.kleisli
+end
+
+functor IKleisli_Arrow_State_Base(MS : IMONAD_STATE_BASE) : IKLEISLI_ARROW_STATE_BASE =
 struct
-structure KA = IKleisli_Arrow_Apply_Choice(MS)
+structure KA = IKleisli_Arrow_Apply_Base(MS)
 open KA
 fun get _ _ = MS.get ()
 fun put _ x = MS.put x

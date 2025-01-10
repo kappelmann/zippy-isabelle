@@ -12,6 +12,4 @@ ML_file\<open>move4.ML\<close>
 ML_file\<open>pair_move4.ML\<close>
 ML_file\<open>replace_move4_from_to.ML\<close>
 
-ML_file\<open>move_util.ML\<close>
-
 end

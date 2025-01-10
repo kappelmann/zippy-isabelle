@@ -7,6 +7,7 @@ sig
   val pretty : Proof.context -> state -> Pretty.T
   val init : cterm -> state
   val get_thm : state -> thm
+  val nprems_of : state -> int
 
   val is_finished : state -> bool
 
@@ -22,6 +23,7 @@ type state = thm
 val pretty = Thm.pretty_thm
 val init = Goal.init
 val get_thm = Goal.conclude
+val nprems_of = Thm.nprems_of
 
 val is_finished = Thm.no_prems
 

@@ -69,10 +69,11 @@ signature LENS =
 sig
   include LENS_BASE
 
-  type ('p1, 't, 's, 'o) setter = ('p1, ('o * 's), 't) C.cat
+  type ('p1, 't, 'o, 's) setter = ('p1, ('o * 's), 't) C.cat
   type ('p1, 's, 'o) ssetter = ('p1, ('o * 's), 's) C.cat
 
-  val set : ('p1, 't, 'o, 's, 'i) lens -> ('p1, 't, 's, 'o) setter
+  val set_modify : ('p1, 't, 'o, 's, 'i) modifier -> ('p1, 't, 'o, 's) setter
+  val set : ('p1, 't, 'o, 's, 'i) lens -> ('p1, 't, 'o, 's) setter
 
   val lens_get : ('p1, 's, 'i) C.cat -> ('p1, 'o, 'o, 's, 'i) lens
   val lens_mk : ('p1, 'o, 't) C.cat -> ('p1, 't, 'o, 'i, 'i) lens
@@ -95,10 +96,11 @@ struct
 
 open L
 
-type ('p1, 't, 's, 'o) setter = ('p1, ('o * 's), 't) C.cat
+type ('p1, 't, 'o, 's) setter = ('p1, ('o * 's), 't) C.cat
 type ('p1, 's, 'o) ssetter = ('p1, ('o * 's), 's) C.cat
 
-fun set l = C.comp (modify l) (A.first (A.arr A.K))
+fun set_modify m = C.comp m (A.first (A.arr A.K))
+fun set l = set_modify (modify l)
 
 fun lens_get f =
   L.lens (L.id () |> L.get |> L.C.comp f) (A.second f |> L.C.comp (L.modify (L.id ())))
@@ -201,3 +203,54 @@ fun lens_app_K x l = lens_K (lens_app x l)
 end
 
 end
+
+signature LENS_KLEISLI =
+sig
+  include LENS
+  structure K : KLEISLI
+  val get_monad : ('p1, 's, ('p1, 'i) K.M.t) getter -> ('p1, 's, 'i) getter
+  val modify_monad : ('p1, 't, ('p1, 'o) K.M.t, 's, ('p1, 'i) K.M.t) modifier ->
+    ('p1, 't, 'o, 's, 'i) modifier
+  val lens_monad : ('p1, 't, ('p1, 'o) K.M.t, 's, ('p1, 'i) K.M.t) lens ->
+    ('p1, 't, 'o, 's, 'i) lens
+end
+
+functor Lens_Kleisli(
+    structure A : KLEISLI_ARROW_BASE
+    structure L : LENS
+    where type ('p1, 'a, 'b) C.cat = ('p1, 'a, 'b) A.cat
+  ) : LENS_KLEISLI =
+struct
+
+open L
+structure K = A.K
+
+fun get_monad f = (fn x => K.M.bind (f x) I)
+fun modify_monad f = apfst K.M.map #> f
+fun lens_monad l = L.lens (get_monad (L.get l)) (modify_monad (L.modify l))
+
+end
+
+signature LENS_KLEISLI_EXCEPTION =
+sig
+  include LENS_KLEISLI
+  val set_safe : ('p1, 't, 'o, 's, ('p1, 'i) K.M.t) lens -> ('p1, 't, 'o, 's) setter
+end
+
+functor Lens_Kleisli_Exception(
+    structure AE : KLEISLI_ARROW_EXCEPTION
+    structure L : LENS
+    where type ('p1, 'a, 'b) C.cat = ('p1, 'a, 'b) AE.cat
+  ) : LENS_KLEISLI_EXCEPTION =
+struct
+
+structure LK = Lens_Kleisli(structure A = AE; structure L = L)
+open LK
+
+local structure SC = Semi_Category(AE) structure A = Kleisli_Arrow(K.M) open SC
+in
+fun set_safe l = apfst (fn x => AE.catch' (K.M.map (Library.K x)) (A.K x)) #> modify l
+end
+
+end
+

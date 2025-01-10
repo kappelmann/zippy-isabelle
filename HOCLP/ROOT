@@ -1,4 +1,4 @@
-session HOCLP = "Pure" +
+session Zippy = "Pure" +
   sessions
     ML_Unification
     ML_Typeclasses
@@ -6,18 +6,23 @@ session HOCLP = "Pure" +
   directories
     "Coroutines"
     "Enumerable"
+    "Lists"
     "Moves"
     "Union_Find"
     "Zippers"
     "Zippers/Alternating_Zippers4"
     "Zippers/Zippers4"
+    "Zippers/Zippers4/Zipper4_Instances"
     "Zippy"
+    "Zippy/Zippy_Actions"
+    "Zippy/Zippy_Goals"
+    "Zippy/Zippy_Prover"
   theories
     HOCLP
 
-session HOCLP_Tests in "Tests" = "HOL" +
+session Zippy_Tests in "Tests" = "HOL" +
   sessions
-    HOCLP
+    Zippy
     SpecCheck
   theories
     HOCLP_Tests

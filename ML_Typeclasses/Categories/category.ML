@@ -31,13 +31,6 @@ fun f o g = comp f g
 
 end
 
-(*needed to take fixpoints in certain recursive definitions of arrows*)
-signature LAZY_COMP =
-sig
-  include SEMI_CATEGORY_BASE
-  val comp_lazy : (unit -> ('p1, 'b, 'c) cat) -> ('p1, 'a, 'b) cat -> ('p1, 'a, 'c) cat
-end
-
 signature CATEGORY_BASE =
 sig
   include SEMI_CATEGORY_BASE
@@ -117,6 +110,13 @@ end
 
 end
 
+signature ARROW_ARROW_APPLY =
+sig
+  structure A : ARROW
+  structure AA : ARROW_APPLY
+  where type ('p1, 'a, 'b) cat = ('p1, 'a, 'b) A.cat
+end
+
 signature ARROW_ZERO_BASE =
 sig
   include ARROW_BASE
@@ -138,17 +138,17 @@ end
 signature ARROW_EXCEPTION_BASE =
 sig
   include ARROW_BASE
-  type exn
+  type 'p1 exn
 
-  val throw : ('p1, exn, 'a) cat
-  val catch : ('p1, 'a, 'b) cat -> ('p1, 'a * exn, 'b) cat -> ('p1, 'a, 'b) cat
+  val throw : ('p1, 'p1 exn, 'a) cat
+  val catch : ('p1, 'a, 'b) cat -> ('p1, 'a * 'p1 exn, 'b) cat -> ('p1, 'a, 'b) cat
 end
 
 signature ARROW_EXCEPTION =
 sig
   include ARROW_EXCEPTION_BASE
 
-  val throw' : exn -> ('p1, 'a, 'b) cat
+  val throw' : 'p1 exn -> ('p1, 'a, 'b) cat
   val catch' : ('p1, 'a, 'b) cat -> ('p1, 'a, 'b) cat -> ('p1, 'a, 'b) cat
   val try : ('p1, 'a, 'a) cat -> ('p1, 'a, 'a) cat
 end

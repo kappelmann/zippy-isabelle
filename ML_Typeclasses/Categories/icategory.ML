@@ -24,13 +24,6 @@ fun f >>> g = comp g f
 fun f o g = comp f g
 end
 
-signature ILAZY_COMP =
-sig
-  include ISEMI_CATEGORY_BASE
-  val comp_lazy : (unit -> ('p1, 'j, 'k, 'b, 'c) cat) -> ('p1, 'i, 'j, 'a, 'b) cat ->
-    ('p1, 'i, 'k, 'a, 'c) cat
-end
-
 signature ICATEGORY_BASE =
 sig
   include ISEMI_CATEGORY_BASE
@@ -129,17 +122,17 @@ end
 signature IARROW_EXCEPTION_BASE =
 sig
   include IARROW_BASE
-  type exn
+  type 'p1 exn
 
-  val throw : ('p1, 'i, 'i, exn, 'a) cat
-  val catch : ('p1, 'i, 'j, 'a, 'b) cat -> ('p1, 'i, 'j, 'a * exn, 'b) cat ->
+  val throw : ('p1, 'i, 'i, 'p1 exn, 'a) cat
+  val catch : ('p1, 'i, 'j, 'a, 'b) cat -> ('p1, 'i, 'j, 'a * 'p1 exn, 'b) cat ->
     ('p1, 'i, 'j, 'a, 'b) cat
 end
 
 signature IARROW_EXCEPTION =
 sig
   include IARROW_EXCEPTION_BASE
-  val throw' : exn -> ('p1, 'i, 'i, 'a, 'b) cat
+  val throw' : 'p1 exn -> ('p1, 'i, 'i, 'a, 'b) cat
   val catch' : ('p1, 'i, 'j, 'a, 'b) cat -> ('p1, 'i, 'j, 'a, 'b) cat -> ('p1, 'i, 'j, 'a, 'b) cat
   val try : ('p1, 'i, 'i, 'a, 'a) cat -> ('p1, 'i, 'i, 'a, 'a) cat
 end

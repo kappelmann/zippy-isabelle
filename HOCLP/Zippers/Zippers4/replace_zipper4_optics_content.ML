@@ -2,7 +2,7 @@
     Author:     Kevin Kappelmann
 *)
 functor Replace_Zipper4_Optics_Content(
-    structure A : LAZY_ARROW
+    structure A : KLEISLI_ARROW
     structure Z : ZIPPER4_OPTICS
     where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) A.cat
     type ('p1, 'a1, 'a2, 'a3, 'a4) ncontent
@@ -25,12 +25,9 @@ fun content _ = L.comp (L.lens_get_mk ncontent dest_ncontent) (Z.content ())
 
 local structure SC = Semi_Category(A) open SC A
 in
-fun zipper _ = first dest_ncontent >>> Z.zipper
-  |> Lazy_Cat_Util.unlift
-fun get_content _ = L.get (content ())
-  |> Lazy_Cat_Util.unlift
-fun map_content _ = L.modify (content ())
-  |> Lazy_Cat_Util.unlift
+fun zipper x = x |> (first dest_ncontent >>> Z.zipper)
+fun get_content x = x |> (L.get (content ()))
+fun map_content x = x |> (L.modify (content ()))
 end
 
 end

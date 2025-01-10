@@ -2,7 +2,7 @@
     Author:     Kevin Kappelmann
 *)
 functor Content_Zipper4_Optics(
-    structure A : LAZY_ARROW_ARROW_APPLY
+    structure A : KLEISLI_ARROW_ARROW_APPLY
     structure L : LENS
     where type ('p1, 'a, 'b) C.cat = ('p1, 'a, 'b) A.A.cat
     type ('p1, 'a1, 'a2, 'a3, 'a4) content
@@ -20,17 +20,13 @@ struct
   type ('p1, 'a1, 'a2, 'a3, 'a4) zcontext = unit
   type ('p1, 'a1, 'a2, 'a3, 'a4) zipper = ('p1, 'a1, 'a2, 'a3, 'a4) content
   open A A.A
-  fun zipper _ = arr fst
-    |> Lazy_Cat_Util.unlift
+  fun zipper x = x |> arr fst
 
-  fun get_content _ = id ()
-    |> Lazy_Cat_Util.unlift
-  fun get_zcontext _ = K ()
-    |> Lazy_Cat_Util.unlift
+  fun get_content x = x |> id ()
+  fun get_zcontext x = x |> K ()
 
   val map_content = AA.app
-  fun map_zcontext _ = arr snd
-    |> Lazy_Cat_Util.unlift
+  fun map_zcontext x = x |> arr snd
 
   fun content _ = L.lens get_content map_content
   fun zcontext _ = L.lens get_zcontext map_zcontext

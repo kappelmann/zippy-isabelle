@@ -10,18 +10,18 @@ sig
   val try_step : ('p1, 'i, 'j, 'a, 'b) cat -> ('p1, 'i, 'i, 'a, 'a) cat -> ('p1, 'i, 'j, 'a, 'b) cat
 end
 
-functor IArrow_Exception_Rec(
-    structure A : IARROW_EXCEPTION
-    structure L : ILAZY_COMP
-    sharing type L.cat = A.cat
-  ) : IARROW_EXCEPTION_REC =
+signature IKLEISLI_ARROW_EXCEPTION_REC =
+sig
+  structure K : IKLEISLI
+  include IARROW_EXCEPTION_REC
+  where type ('p1, 'i, 'j, 'a, 'b) cat = ('p1, 'i, 'j, 'a, 'b) K.kleisli
+end
+
+functor IKleisli_Arrow_Exception_Rec(AE : IKLEISLI_ARROW_EXCEPTION) : IKLEISLI_ARROW_EXCEPTION_REC =
 struct
-
-open A
-
-fun repeat move = try (L.comp_lazy (fn _ => repeat move) move)
-fun try_step f step = catch' f (L.comp_lazy (fn _ => try_step f step) step)
-
+open AE
+fun repeat move x = x |> try (comp (repeat move) move)
+fun try_step f step x = x |> catch' f (comp (try_step f step) step)
 end
 
 signature IARROW_FOLD =
@@ -40,16 +40,17 @@ sig
     ('p1, 'i, 'i, 'a, 'b res) cat -> ('p1, 'i, 'i, 'a, 'b res) cat
 end
 
-functor IArrow_Fold_Exception_Choice(
-    structure A : IARROW
-    structure AE : IARROW_EXCEPTION_REC
-    sharing type AE.cat = A.cat
-    structure AC : IARROW_CHOICE_BASE
-    sharing type AC.cat = A.cat
-    structure L : ILAZY_COMP
-    sharing type L.cat = A.cat
-  ) : IARROW_FOLD =
+signature IKLEISLI_ARROW_FOLD =
+sig
+  structure K : IKLEISLI
+  include IARROW_FOLD
+  where type ('p1, 'i, 'j, 'a, 'b) cat = ('p1, 'i, 'j, 'a, 'b) K.kleisli
+end
+
+functor IKleisli_Arrow_Fold_Exception_Rec(AE : IKLEISLI_ARROW_EXCEPTION_REC) : IKLEISLI_ARROW_FOLD =
 struct
+
+open AE
 
 datatype 'a res = Stop of 'a | Continue of 'a
 
@@ -58,19 +59,18 @@ val continue = Continue
 fun dest_res (Stop x) = x
   | dest_res (Continue x) = x
 
-open A
-
-local structure SC = ISemi_Category(AE) open SC
+local structure SC = ISemi_Category(AE) structure A = IKleisli_Arrow(K.M) open SC A
 in
 
-fun fold_step next cont = arr (fn (_, res as Stop _) => Either.Left res | x => Either.Right x)
-  >>> AC.merge (id ()) (AE.catch' (L.comp_lazy cont (next *** arr dest_res)) (arr snd))
+fun fold_step _ _ (_, res as Stop _) = res |> id ()
+  | fold_step next cont x = x |> (AE.catch' ((next *** arr dest_res) >>> cont) (arr snd))
 
-fun fold next update = arr fst &&& update >>> fold_step next (fn _ => fold next update)
+fun fold next update x = x |> (arr fst &&& update >>> fold_step next (fold next update))
 
 fun fold_init next update init = AE.try_step (id () &&& init) next
-  >>> fold_step next (fn _ => fold next update)
+  >>> fold_step next (fold next update)
 
 end
 
 end
+

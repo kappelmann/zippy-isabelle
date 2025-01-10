@@ -2,9 +2,7 @@
     Author:     Kevin Kappelmann
 *)
 functor Replace_Zipper4_Moves_Container(
-    structure C : LAZY_SEMI_CATEGORY_BASE
     structure Z : ZIPPER4_MOVES
-    where type ('p1, 'a, 'b) cat = ('p1, 'a, 'b) C.cat
     type ('p1, 'a1, 'a2, 'a3, 'a4) ncontainer
     val ncontainer :
       ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) Z.container, ('p1, 'a1, 'a2, 'a3, 'a4) ncontainer) Z.move
@@ -14,14 +12,13 @@ functor Replace_Zipper4_Moves_Container(
   : ZIPPER4_MOVES
     where type ('p1, 'a1, 'a2, 'a3, 'a4) container = ('p1, 'a1, 'a2, 'a3, 'a4) ncontainer
     where type ('p1, 'a1, 'a2, 'a3, 'a4) zipper = ('p1, 'a1, 'a2, 'a3, 'a4) Z.zipper
-    where type ('p1, 'a, 'b) cat = ('p1, 'a, 'b) Z.cat
+    where type ('p1, 'a) M.t = ('p1, 'a) Z.M.t
   =
 Zipper4_Moves(
-  structure M = Z
   open Z
+  structure M = Z
   type ('p1, 'a1, 'a2, 'a3, 'a4) container = ('p1, 'a1, 'a2, 'a3, 'a4) ncontainer
   structure Base = struct
-    structure C = C
     type ('p1, 'a1, 'a2, 'a3, 'a4) nfrom = ('p1, 'a1, 'a2, 'a3, 'a4) ncontainer
     type ('p1, 'a1, 'a2, 'a3, 'a4) nto = ('p1, 'a1, 'a2, 'a3, 'a4) ncontainer
     val dest_nfrom = dest_ncontainer

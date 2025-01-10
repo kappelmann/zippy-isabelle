@@ -22,7 +22,7 @@ functor Rotate_Alternating_Zippers4(AZ : ALTERNATING_ZIPPERS4) :
   where type ('p1, 'a1, 'a2, 'a3, 'a4) Z4.ZO.zcontext = ('p1, 'a1, 'a2, 'a3, 'a4) AZ.Z1.ZO.zcontext
   where type ('p1, 'a1, 'a2, 'a3, 'a4) Z4.ZM.container = ('p1, 'a1, 'a2, 'a3, 'a4) AZ.Z1.ZM.container
   where type ('p1, 'a1, 'a2, 'a3, 'a4) Z4.zipper = ('p1, 'a1, 'a2, 'a3, 'a4) AZ.Z1.zipper
-  where type ('p1, 'a, 'b) cat = ('p1, 'a, 'b) AZ.cat
+  where type ('p1, 'a) M.t = ('p1, 'a) AZ.M.t
   =
 struct
 structure M : MOVE_BASE = AZ

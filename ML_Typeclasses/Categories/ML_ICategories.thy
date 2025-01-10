@@ -10,6 +10,4 @@ ML_file\<open>icategory_instance.ML\<close>
 
 ML_file\<open>icategory_util.ML\<close>
 
-ML_file\<open>lazy_icategory.ML\<close>
-
 end

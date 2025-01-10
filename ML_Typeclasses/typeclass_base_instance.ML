@@ -90,7 +90,7 @@ local structure M = Monad(M) open M
 in
 fun f <*> x = x >>= (fn x => f >>= (Seq.maps (fn f => F.map f x) #> M.pure))
 
-fun bind x f = x >>= (T.traverse f >=> (Seq.flat #> M.pure))
+fun bind x f = x >>= T.traverse f >>= (Seq.flat #> M.pure)
 end
 
 end
@@ -190,11 +190,11 @@ fun or_lazy x fy = OM.M.bind x (fn NONE => fy () | _ => x)
 end
 
 functor Option_Monad_Exception_Trans_Exception(M : MONAD_EXCEPTION_BASE)
-  : MONAD_EXCEPTION_BASE where type exn = M.exn =
+  : MONAD_EXCEPTION_BASE where type 'p1 exn = 'p1 M.exn =
 struct
 
 structure OM = Option_Monad_Trans(M)
-type exn = M.exn
+type 'p1 exn = 'p1 M.exn
 
 fun throw e = e |> OM.lift o M.throw
 fun catch m f = M.catch m f
@@ -228,11 +228,11 @@ fun traverse f = T.traverse (fn NONE => A.pure NONE | SOME x => A.map SOME (f x)
 
 end
 
-functor Monad_Exception_Monad_Or(M : MONAD_OR_BASE) : MONAD_EXCEPTION_BASE where type exn = unit =
+functor Monad_Exception_Monad_Or(M : MONAD_OR_BASE) : MONAD_EXCEPTION_BASE where type 'p1 exn = unit =
 struct
 
 open M
-type exn = unit
+type 'p1 exn = unit
 
 val throw = zero
 val catch = or_lazy

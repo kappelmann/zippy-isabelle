@@ -4,10 +4,10 @@
 Instances of basic indexed typeclasses.
 *)
 functor IMonad_Exception_IMonad_Or(M : IMONAD_OR_BASE)
-  : IMONAD_EXCEPTION_BASE where type exn = unit =
+  : IMONAD_EXCEPTION_BASE where type 'p1 exn = unit =
 struct
 open M
-type exn = unit
+type 'p1 exn = unit
 
 val throw = zero
 val catch = or_lazy

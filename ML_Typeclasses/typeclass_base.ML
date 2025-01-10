@@ -14,7 +14,6 @@ support the case for i=1.
 *)
 infix 1 <*>
 infix 1 >>=
-infix 1 >=>
 infix 1 <&>
 
 signature FUNCTOR_BASE =
@@ -85,7 +84,6 @@ sig
   include MONAD_BASE
   val >>= : ('p1, 'a) t * ('a -> ('p1, 'b) t) -> ('p1, 'b) t
   val join : ('p1, ('p1, 'a) t) t -> ('p1, 'a) t
-  val >=> : ('a -> ('p1, 'b) t) * ('b -> ('p1, 'c) t) -> 'a -> ('p1, 'c) t
   val flat1 : ('p1, 'a -> ('p1, 'b) t) t -> 'a -> ('p1, 'b) t
   val flat2 : ('p1, 'a -> 'b -> ('p1, 'c) t) t -> 'a -> 'b -> ('p1, 'c) t
 end
@@ -96,7 +94,6 @@ struct
 open M
 fun x >>= f = bind x f
 fun join x = x >>= I
-fun (fm >=> gm) x = fm x >>= gm
 fun flat1 fm x = fm >>= (fn f => f x)
 fun flat2 fm x = M.map (fn f => f x) fm |> flat1
 
@@ -180,9 +177,9 @@ end
 signature MONAD_EXCEPTION_BASE =
 sig
   include MONAD_BASE
-  type exn
-  val throw : exn -> ('p1, 'a) t
-  val catch : ('p1, 'a) t -> (exn -> ('p1, 'a) t) -> ('p1, 'a) t
+  type 'p1 exn
+  val throw : 'p1 exn -> ('p1, 'a) t
+  val catch : ('p1, 'a) t -> ('p1 exn -> ('p1, 'a) t) -> ('p1, 'a) t
 end
 
 signature FOLDABLE_BASE =
@@ -190,6 +187,29 @@ sig
   type ('p1, 'a) f
   val foldl : ('a -> 'b -> 'b) -> ('p1, 'a) f -> 'b -> 'b
   val foldr : ('a -> 'b -> 'b) -> ('p1, 'a) f -> 'b -> 'b
+end
+
+signature FOLDABLE_MONAD =
+sig
+  include FOLDABLE_BASE
+  structure M : MONAD_BASE
+
+  val foldlM : ('a -> 'b -> ('q1, 'b) M.t) -> ('p1, 'a) f -> 'b -> ('q1, 'b) M.t
+  val foldrM : ('a -> 'b -> ('q1, 'b) M.t) -> ('p1, 'a) f -> 'b -> ('q1, 'b) M.t
+end
+
+functor Foldable_Monad(structure F : FOLDABLE_BASE; structure M : MONAD_BASE) : FOLDABLE_MONAD =
+struct
+
+open F
+structure M = M
+
+fun foldlM f xs acc = let fun c x k acc = M.bind (f x acc) k
+  in foldr c xs M.pure acc end
+
+fun foldrM f xs acc = let fun c x k acc = M.bind (f x acc) k
+  in foldl c xs M.pure acc end
+
 end
 
 signature TRAVERSABLE_BASE =

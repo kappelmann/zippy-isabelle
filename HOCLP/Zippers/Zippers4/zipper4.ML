@@ -6,18 +6,18 @@ sig
   include MOVE_BASE
   type ('p1, 'a1, 'a2, 'a3, 'a4) zipper
   structure ZM : ZIPPER4_MOVES
-  structure ZO : ZIPPER4_OPTICS
   sharing type ZM.zipper = zipper
+  sharing type ZM.M.t = M.t
+  structure ZO : ZIPPER4_OPTICS
+  where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) cat
   sharing type ZO.zipper = zipper
-  sharing type ZM.cat = cat
-  sharing type ZO.L.C.cat = cat
 end
 
 functor Zipper4(
     structure ZM : ZIPPER4_MOVES
     structure ZO : ZIPPER4_OPTICS
+    where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) ZM.cat
     sharing type ZO.zipper = ZM.zipper
-    sharing type ZO.L.C.cat = ZM.cat
   ) : ZIPPER4 =
 struct
 
