@@ -1,30 +1,16 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory Zippy_Prover
   imports
-    ML_Union_Find
-    ML_Unification.Unify_Resolve_Tactics_Base
-    ML_Zipper4_Instances
+    ML_Typeclasses.ML_State
+    ML_Zipper5_Instances
     Zippy_Goals
+    Zippy_Prover_Tactics
 begin
 
 paragraph \<open>Summary\<close>
 text \<open>Theorem proving framework based on zipper data structures.\<close>
 
-ML_file\<open>zippy_thm_state.ML\<close>
-ML_file\<open>zippy_goal_clusters.ML\<close>
-ML_file\<open>zippy_goal_cluster.ML\<close>
-ML_file\<open>zippy_focus.ML\<close>
-
-ML_file\<open>zippy_action_num_data.ML\<close>
-
 ML_file\<open>zippy_prover_base.ML\<close>
-
-ML_file\<open>zippy_goal_pos_update.ML\<close>
-ML_file\<open>zippy_goal_pos_update_util.ML\<close>
-
-ML_file\<open>zippy_result_update_data.ML\<close>
-ML_file\<open>zippy_tactic_result.ML\<close>
-ML_file\<open>zippy_tactic.ML\<close>
 
 ML_file\<open>zippy_prover_base_util.ML\<close>
 
@@ -40,19 +26,26 @@ local
   structure MS = State_Trans(structure M = ME; structure SR = Pair_State_Result_Base)
   structure M = IMonad_Exception_State_Trans(structure M = ME; structure S = MS)
   structure M : MONAD_EXCEPTION_BASE = struct open M type ('p1, 'a) t = (unit, 'p1, 'p1, 'a) t end
-  structure LZ = List_Zipper4(
-    structure A = Kleisli_Arrow(M)
+  structure A = Kleisli_Arrow(M)
+  structure ZGC = List_Zipper4(
+    structure A = A
     structure L = Lens(structure A = A; structure L = Lens_Base(Kleisli_Arrow_Apply(M)))
     structure LI = GList(M)
     fun mk_exn_horizontal x = x |> A.K ()
+  )
+  structure ZACT = Rose_Zipper4(
+    structure A = A
+    structure L = ZGC.ZO.L
+    structure LI = ZGC.LI
   )
   structure AE = Kleisli_Arrow_Exception_Rec(Kleisli_Arrow_Exception(M))
   @{functor_instance struct_name = ZPA
     and functor_name = Zippy_Prover_Args
     and id = \<open>""\<close>
     and more_args = \<open>
-      structure LZ = LZ
-      val parent_logger = zippy_logger\<close>
+      val parent_logger = zippy_logger
+      structure ZGC = ZGC
+      structure ZACT = ZACT\<close>
     }
 in
   structure Zippy = Zippy_Prover(ZPA)
@@ -114,7 +107,7 @@ ML\<open>
       >>> Z.Up4.move >>> Z.Up3.move >>> Z.Up2.move)
   end
 \<close>
-
+declare [[ML_print_depth=10000]]
 ML\<open>
    local structure Z = Zippy structure SC = Semi_Category(Z)
     structure A = Kleisli_Arrow_Arrow_Apply(Zippy_Monad)
@@ -134,9 +127,21 @@ ML\<open>
       >>> up >>> step
       >>> up >>> step
       >>> up >>> step
-      >>> up >>> step >>> up
+      >>> up >>> step
+      (* >>> up >>> step >>> up *)
+      >>> up
+      (* >>> Z.Up4.move >>> Z.Up3.move
+      >>> Z.Z2.ZM.Up.move *)
+      (* >>> Z.Z2.ZM.Up.move *)
+      (* >>> Z.Z2.ZM.Up.move *)
+      (* >>> Z.Z2.ZM.Up.move *)
+      (* >>> Z.Down2.move >>> Z.Down3.move
+      >>> Z.Z4.ZM.Down.move
+      >>> Z.Down4.move*)
+      (* >>> Z.get_gcluster_list_thmsq' @{context} *)
       >>> Z.finish_gclusters' @{context}
       >>> arr Seq.list_of
+      (* >>> K () *)
       (* >>> up >>> step
       >>> up >>> step
       >>> up >>> step
@@ -154,5 +159,6 @@ ML\<open>
       (* |> (fn f => f @{context}) *)
   end
 \<close>
+
 
 end

@@ -3,9 +3,20 @@
 *)
 signature ZIPPY_PROVER_ARGS =
 sig
-  structure LZ : LIST_ZIPPER4
+  structure ZGCS : SINGLE_CONTENT_ZIPPER4
+  where type ('p1, 'a1, 'a2, 'a3, 'a4) content = 'a1
+
+  structure ZGC : LIST_ZIPPER4
   where type 'a LI.t = 'a list
   where type 'p1 LI.M.exn = unit
+  sharing type ZGC.M.t = ZGCS.M.t
+  sharing type ZGC.ZO.L.lens = ZGCS.ZO.L.lens
+
+  structure ZACT : ROSE_ZIPPER4
+  where type 'a LI.t = 'a list
+  where type 'p1 LI.M.exn = 'p1 ZGC.LI.M.exn
+  sharing type ZACT.M.t = ZGCS.M.t
+  sharing type ZACT.ZO.L.lens = ZGCS.ZO.L.lens
 
   type ('p1, 'a1, 'a2, 'a3, 'a4) node1
   type ('p1, 'a1, 'a2, 'a3, 'a4) node2
@@ -16,28 +27,28 @@ sig
   where type ('p1, 'a1, 'a2, 'a3, 'a4) N1.node = ('p1, 'a1, 'a2, 'a3, 'a4) node1
   where type ('p1, 'a1, 'a2, 'a3, 'a4) N1.content = 'a1
   where type ('p1, 'a1, 'a2, 'a3, 'a4) A.Z1.ZM.container =
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node1, 'a2, 'a3, 'a4) LZ.ZM.container
+    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node1, 'a2, 'a3, 'a4) ZGCS.ZM.container
   where type ('p1, 'a1, 'a2, 'a3, 'a4) A.Z1.ZO.zcontext =
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node1, 'a2, 'a3, 'a4) LZ.ZO.zcontext
+    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node1, 'a2, 'a3, 'a4) ZGCS.ZO.zcontext
   where type ('p1, 'a1, 'a2, 'a3, 'a4) N2.node = ('p1, 'a1, 'a2, 'a3, 'a4) node2
   where type ('p1, 'a1, 'a2, 'a3, 'a4) N2.content = 'a2
   where type ('p1, 'a1, 'a2, 'a3, 'a4) A.Z2.ZM.container =
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node2, 'a2, 'a3, 'a4) LZ.ZM.container
+    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node2, 'a2, 'a3, 'a4) ZGC.ZM.container
   where type ('p1, 'a1, 'a2, 'a3, 'a4) A.Z2.ZO.zcontext =
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node2, 'a2, 'a3, 'a4) LZ.ZO.zcontext
+    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node2, 'a2, 'a3, 'a4) ZGC.ZO.zcontext
   where type ('p1, 'a1, 'a2, 'a3, 'a4) N3.node = ('p1, 'a1, 'a2, 'a3, 'a4) node3
   where type ('p1, 'a1, 'a2, 'a3, 'a4) N3.content = 'a3
   where type ('p1, 'a1, 'a2, 'a3, 'a4) A.Z3.ZM.container =
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node3, 'a2, 'a3, 'a4) LZ.ZM.container
+    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node3, 'a2, 'a3, 'a4) ZACT.ZM.container
   where type ('p1, 'a1, 'a2, 'a3, 'a4) A.Z3.ZO.zcontext =
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node3, 'a2, 'a3, 'a4) LZ.ZO.zcontext
+    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node3, 'a2, 'a3, 'a4) ZACT.ZO.zcontext
   where type ('p1, 'a1, 'a2, 'a3, 'a4) N4.node = ('p1, 'a1, 'a2, 'a3, 'a4) node4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) N4.content = 'a4
   where type ('p1, 'a1, 'a2, 'a3, 'a4) A.Z4.ZM.container =
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node4, 'a2, 'a3, 'a4) LZ.ZM.container
+    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node4, 'a2, 'a3, 'a4) ZACT.ZM.container
   where type ('p1, 'a1, 'a2, 'a3, 'a4) A.Z4.ZO.zcontext =
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node4, 'a2, 'a3, 'a4) LZ.ZO.zcontext
-  sharing type AZN.M.t = LZ.LI.M.t
+    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4) node4, 'a2, 'a3, 'a4) ZACT.ZO.zcontext
+  sharing type AZN.M.t = ZGCS.M.t
 
   include ZIPPY_PROVER_BASE_UTIL
   where type ('p1, 'a1, 'a2, 'a3, 'a4) Z1.ZM.container = ('p1, 'a1, 'a2, 'a3, 'a4) AZN.Z1.ZM.container
@@ -63,13 +74,24 @@ end
 functor Zippy_Prover_Args(
     structure FIA : FUNCTOR_INSTANCE_ARGS
     val parent_logger : Logger.logger_binding
-    structure LZ : LIST_ZIPPER4
+    structure ZGC : LIST_ZIPPER4
     where type 'a LI.t = 'a list
     where type 'p1 LI.M.exn = unit
+    structure ZACT : ROSE_ZIPPER4
+    where type 'a LI.t = 'a list
+    where type 'p1 LI.M.exn = 'p1 ZGC.LI.M.exn
+    sharing type ZACT.M.t = ZGC.M.t
+    sharing type ZACT.ZO.L.lens = ZGC.ZO.L.lens
   ) : ZIPPY_PROVER_ARGS =
 struct
 
-structure LZ = LZ
+structure ZGC = ZGC
+structure ZACT = ZACT
+structure ZGCS = Single_Content_Zipper4(
+  structure AE = Kleisli_Arrow_Exception(ZGC.LI.M)
+  structure L = ZGC.ZO.L
+  type ('p1, 'a1, 'a2, 'a3, 'a4) content = 'a1
+)
 
 structure AZN = Alternating_Zippers4_Nodes(
   structure A = Alternating_Zippers4_Nodes_Base_Args_Simple_Zippers(
@@ -77,10 +99,10 @@ structure AZN = Alternating_Zippers4_Nodes(
     type ('p1, 'a1, 'a2, 'a3, 'a4) ncontent2 = 'a2
     type ('p1, 'a1, 'a2, 'a3, 'a4) ncontent3 = 'a3
     type ('p1, 'a1, 'a2, 'a3, 'a4) ncontent4 = 'a4
-    structure Z1 = LZ
-    structure Z2 = LZ
-    structure Z3 = LZ
-    structure Z4 = LZ
+    structure Z1 = ZGCS
+    structure Z2 = ZGC
+    structure Z3 = ZACT
+    structure Z4 = ZACT
   )
   structure ZD = Zipper_Data
 )
@@ -96,13 +118,13 @@ structure FIU = Functor_Instance_Util(FIA)
   and id = FIU.FIA.id
   and more_args = \<open>structure UF = Imperative_Union_Find; val parent_logger = parent_logger\<close>}
 
-local structure M = LZ.LI.M; structure A = Kleisli_Arrow(M)
+local structure M = ZGC.LI.M; structure A = Kleisli_Arrow(M)
 in
 structure Base =
 struct
   structure AF = SArrow_Arrow_Apply.A
   structure AT = A
-  structure L = LZ.ZO.L
+  structure L = ZGC.ZO.L
   fun lift f = AT.arr f
 end
 structure Z = Zippy_Prover_Base(

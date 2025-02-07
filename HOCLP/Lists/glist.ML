@@ -15,9 +15,12 @@ sig
   val is_empty : 'a t -> bool
   val dest : 'a t -> ('p1, 'a * 'a t) M.t
   val foldl : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
+
+  val nth : 'a t -> int -> ('p1, 'a) M.t
+  val length : 'a t -> int
 end
 
-functor GList(M : MONAD_EXCEPTION_BASE where type 'p1 exn = unit) : GLIST =
+functor GList(M : MONAD_EXCEPTION_BASE where type 'p1 exn = unit) : GLIST where type 'a t = 'a list =
 struct
   structure M = M
   type 'a t = 'a list
@@ -27,5 +30,7 @@ struct
   val cons = cons
   fun dest [] = M.throw ()
     | dest (x :: xs) = M.pure (x, xs)
-  val from_list : 'a list -> 'a t = I
+  val from_list = I
+  fun nth xs n = nth xs n handle Subscript => M.throw ()
+  val length =length
 end

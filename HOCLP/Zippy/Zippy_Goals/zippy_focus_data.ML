@@ -40,10 +40,17 @@ fun more _ = L.lens get_more map_more
 
 end
 
+signature KLEISLI_ZIPPY_FOCUS_DATA =
+sig
+  structure K : KLEISLI
+  include ZIPPY_FOCUS_DATA
+  where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) K.kleisli
+end
+
 signature LIFT_ZIPPY_FOCUS_DATA =
 sig
   structure FD : ZIPPY_FOCUS_DATA
-  include ZIPPY_FOCUS_DATA
+  include KLEISLI_ZIPPY_FOCUS_DATA
   where type ('f, 'm) focus_data = ('f, 'm) FD.focus_data
 end
 
@@ -60,6 +67,7 @@ struct
 
 structure FD = FD
 structure L = L
+structure K = AT.K
 
 type ('f, 'm) focus_data = ('f, 'm) FD.focus_data
 

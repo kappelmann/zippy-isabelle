@@ -4,19 +4,23 @@ session Zippy = "Pure" +
     ML_Typeclasses
     SpecCheck
   directories
+    "Antiquotations"
     "Coroutines"
-    "Enumerable"
     "Lists"
-    "Moves"
     "Union_Find"
-    "Zippers"
-    "Zippers/Alternating_Zippers4"
-    "Zippers/Zippers4"
-    "Zippers/Zippers4/Zipper4_Instances"
+    "Gen_Zippers/"
+    "Gen_Zippers/Zippers5"
+    "Gen_Zippers/Zippers5/Alternating_Zippers"
+    "Gen_Zippers/Zippers5/Enumerable"
+    "Gen_Zippers/Zippers5/Moves"
+    "Gen_Zippers/Zippers5/Zippers"
+    "Gen_Zippers/Zippers5/Zippers/Zipper_Instances"
     "Zippy"
     "Zippy/Zippy_Actions"
     "Zippy/Zippy_Goals"
     "Zippy/Zippy_Prover"
+    "Zippy/Zippy_Prover/Goals"
+    "Zippy/Zippy_Prover/Tactics"
   theories
     HOCLP
 

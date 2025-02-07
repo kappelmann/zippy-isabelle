@@ -1,0 +1,101 @@
+(*  Title:      HOCLP/alternating_zippers5_moves.ML
+    Author:     Kevin Kappelmann
+*)
+signature ALTERNATING_ZIPPERS5_MOVES =
+sig
+  include MOVE_BASE
+  \<^imap>\<open>\<open>{i}\<close> => \<open>structure Z{i} : ZIPPER5_MOVES sharing type Z{i}.M.t = M.t\<close>\<close>
+
+  structure Down1 : MOVE5
+  where type @{T_args} from = @{T_args} Z1.zipper
+  where type @{T_args} to = @{T_args} Z2.zipper
+  sharing type Down1.M.t = M.t
+
+  structure Down2 : MOVE5
+  where type @{T_args} from = @{T_args} Z2.zipper
+  where type @{T_args} to = @{T_args} Z3.zipper
+  sharing type Down2.M.t = M.t
+
+  structure Down3 : MOVE5
+  where type @{T_args} from = @{T_args} Z3.zipper
+  where type @{T_args} to = @{T_args} Z4.zipper
+  sharing type Down3.M.t = M.t
+
+  structure Down4 : MOVE5
+  where type @{T_args} from = @{T_args} Z4.zipper
+  where type @{T_args} to = @{T_args} Z5.zipper
+  sharing type Down4.M.t = M.t
+
+  structure Down5 : MOVE5
+  where type @{T_args} from = @{T_args} Z5.zipper
+  where type @{T_args} to = @{T_args} Z1.zipper
+  sharing type Down5.M.t = M.t
+
+  structure Up1 : MOVE5
+  where type @{T_args} from = @{T_args} Z1.zipper
+  where type @{T_args} to = @{T_args} Z5.zipper
+  sharing type Up1.M.t = M.t
+
+  structure Up2 : MOVE5
+  where type @{T_args} from = @{T_args} Z2.zipper
+  where type @{T_args} to = @{T_args} Z1.zipper
+  sharing type Up2.M.t = M.t
+
+  structure Up3 : MOVE5
+  where type @{T_args} from = @{T_args} Z3.zipper
+  where type @{T_args} to = @{T_args} Z2.zipper
+  sharing type Up3.M.t = M.t
+
+  structure Up4 : MOVE5
+  where type @{T_args} from = @{T_args} Z4.zipper
+  where type @{T_args} to = @{T_args} Z3.zipper
+  sharing type Up4.M.t = M.t
+
+  structure Up5 : MOVE5
+  where type @{T_args} from = @{T_args} Z5.zipper
+  where type @{T_args} to = @{T_args} Z4.zipper
+  sharing type Up5.M.t = M.t
+end
+
+functor Instantiate_Alternating_Zippers5_Moves(
+    type @{T_args} inst1
+    type @{T_args} inst2
+    type @{T_args} inst3
+    type @{T_args} inst4
+    type @{T_args} inst5
+    structure Z : ALTERNATING_ZIPPERS5_MOVES
+  ) :
+    ALTERNATING_ZIPPERS5_MOVES
+    where type @{T_args} Z1.container = ('p1, @{T_args} inst1,
+      @{T_args} inst2, @{T_args} inst3,
+      @{T_args} inst4, @{T_args} inst5) Z.Z1.container
+    where type @{T_args} Z1.zipper = ('p1, @{T_args} inst1,
+      @{T_args} inst2, @{T_args} inst3,
+      @{T_args} inst4, @{T_args} inst5) Z.Z1.zipper
+    where type @{T_args} Z2.container = ('p1, @{T_args} inst1,
+      @{T_args} inst2, @{T_args} inst3,
+      @{T_args} inst4, @{T_args} inst5) Z.Z2.container
+    where type @{T_args} Z2.zipper = ('p1, @{T_args} inst1,
+      @{T_args} inst2, @{T_args} inst3,
+      @{T_args} inst4, @{T_args} inst5) Z.Z2.zipper
+    where type @{T_args} Z3.container = ('p1, @{T_args} inst1,
+      @{T_args} inst2, @{T_args} inst3,
+      @{T_args} inst4, @{T_args} inst5) Z.Z3.container
+    where type @{T_args} Z3.zipper = ('p1, @{T_args} inst1,
+      @{T_args} inst2, @{T_args} inst3,
+      @{T_args} inst4, @{T_args} inst5) Z.Z3.zipper
+    where type @{T_args} Z4.container = ('p1, @{T_args} inst1,
+      @{T_args} inst2, @{T_args} inst3,
+      @{T_args} inst4, @{T_args} inst5) Z.Z4.container
+    where type @{T_args} Z4.zipper = ('p1, @{T_args} inst1,
+      @{T_args} inst2, @{T_args} inst3,
+      @{T_args} inst4, @{T_args} inst5) Z.Z4.zipper
+    where type @{T_args} Z5.container = ('p1, @{T_args} inst1,
+      @{T_args} inst2, @{T_args} inst3,
+      @{T_args} inst4, @{T_args} inst5) Z.Z5.container
+    where type @{T_args} Z5.zipper = ('p1, @{T_args} inst1,
+      @{T_args} inst2, @{T_args} inst3,
+      @{T_args} inst4, @{T_args} inst5) Z.Z5.zipper
+    where type ('p1, 'a) M.t = ('p1, 'a) Z.M.t
+  = Z
+

@@ -40,10 +40,17 @@ fun more _ = L.lens get_more map_more
 
 end
 
+signature KLEISLI_ZIPPY_COPY_DATA =
+sig
+  structure K : KLEISLI
+  include ZIPPY_COPY_DATA
+  where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) K.kleisli
+end
+
 signature LIFT_ZIPPY_COPY_DATA =
 sig
   structure CD : ZIPPY_COPY_DATA
-  include ZIPPY_COPY_DATA
+  include KLEISLI_ZIPPY_COPY_DATA
   where type ('c, 'm) copy_data = ('c, 'm) CD.copy_data
 end
 
@@ -60,6 +67,7 @@ struct
 
 structure CD = CD
 structure L = L
+structure K = AT.K
 
 type ('cd, 'm) copy_data = ('cd, 'm) CD.copy_data
 
@@ -74,3 +82,4 @@ fun get_more x = x |> L.get (more ())
 fun map_more x = x |> L.modify (more ())
 
 end
+

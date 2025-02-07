@@ -42,17 +42,24 @@ fun more _ = L.lens get_more map_more
 
 end
 
+signature KLEISLI_ZIPPY_PACTION_DATA =
+sig
+  structure K : KLEISLI
+  include ZIPPY_PACTION_DATA
+  where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) K.kleisli
+end
+
 signature LIFT_ZIPPY_PACTION_DATA =
 sig
-  structure AD : ZIPPY_PACTION_DATA
-  include ZIPPY_PACTION_DATA
-  where type ('pa, 'm) paction_data = ('pa, 'm) AD.paction_data
+  structure PAD : ZIPPY_PACTION_DATA
+  include KLEISLI_ZIPPY_PACTION_DATA
+  where type ('pa, 'm) paction_data = ('pa, 'm) PAD.paction_data
 end
 
 functor Lift_Zippy_PAction_Data(
     structure AF : ARROW
-    structure AD : ZIPPY_PACTION_DATA
-    sharing type AD.L.C.cat = AF.cat
+    structure PAD : ZIPPY_PACTION_DATA
+    sharing type PAD.L.C.cat = AF.cat
     structure AT : KLEISLI_ARROW_BASE
     structure L : LENS
     where type ('p1, 'pa, 'b) C.cat = ('p1, 'pa, 'b) AT.cat
@@ -60,14 +67,15 @@ functor Lift_Zippy_PAction_Data(
   ) : LIFT_ZIPPY_PACTION_DATA =
 struct
 
-structure AD = AD
+structure PAD = PAD
 structure L = L
+structure K = AT.K
 
-type ('pa, 'm) paction_data = ('pa, 'm) AD.paction_data
+type ('pa, 'm) paction_data = ('pa, 'm) PAD.paction_data
 
-fun paction_data x = x |> lift AD.paction_data
+fun paction_data x = x |> lift PAD.paction_data
 fun paction_data_lens _ =
-  L.lens_get_mk (lift (AF.&&& (AD.get_paction, AD.get_more))) paction_data
+  L.lens_get_mk (lift (AF.&&& (PAD.get_paction, PAD.get_more))) paction_data
 fun paction _ = L.lens_fst (paction_data_lens ())
 fun more _ = L.lens_snd (paction_data_lens ())
 fun get_paction x = x |> L.get (paction ())

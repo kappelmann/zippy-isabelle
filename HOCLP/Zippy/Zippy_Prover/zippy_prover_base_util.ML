@@ -11,29 +11,10 @@ sig
   sharing type TR.GPU.F.focus = F.focus
 
   (* misc *)
-  val enum_zippers : ('p1, 'zs, 'z) cat -> ('p1, 'z, 'z) cat ->
-    ('p1, 'zs, ('p1, 'a, 'z) CO.coroutine) cat
-  val list_zippers : ('p1, 'zs, 'z) cat -> ('p1, 'z, 'z) cat -> ('p1, 'zs, 'z list) cat
-
   val gen_is_gcs_finished : ('p1, 'a, (GCS.gclusters, 'b) GCSD.gclusters_data) cat ->
     ('p1, 'a, bool) cat
 
   (* copy *)
-  (** run copies **)
-  val gen_get_run_copy : ('p1, ('p1, 'cud, 'p, 'r, 'a1, 'a2, 'a3, 'a4) zipper3,
-      (('p1, 'cud, 'p, 'r, 'a1, 'a2, 'a3, 'a4) copy, 'd) CD.copy_data) cat ->
-    'cud -> ('p1, 'cud, 'p, 'r, 'a1, 'a2, 'a3, 'a4) zipper3 ->
-    ('p1, ('p1, 'cud, 'p, 'r, 'a1, 'a2, 'a3, 'a4) zipper1) hom_move
-
-  val gen_copy_parent_actions :
-    (*foldM*)
-    ((('p1, 'cud, 'p, 'r, 'a1, 'a2, 'a3, 'a4) zipper3 ->
-        ('p1, ('p1, 'cud, 'p, 'r, 'a1, 'a2, 'a3, 'a4) zipper1) hom_move) ->
-      'z3s -> ('p1, ('p1, 'cud, 'p, 'r, 'a1, 'a2, 'a3, 'a4) zipper1) hom_move) ->
-    ('p1, ('p1, 'cud, 'p, 'r, 'a1, 'a2, 'a3, 'a4) zipper3,
-      (('p1, 'cud, 'p, 'r, 'a1, 'a2, 'a3, 'a4) copy, 'd) CD.copy_data) cat ->
-    'cud -> 'z3s -> ('p1, ('p1, 'cud, 'p, 'r, 'a1, 'a2, 'a3, 'a4) zipper1) hom_move
-
   (** make copy **)
   val gen_copy_cpfocus :
     (*move to cluster position*)
@@ -74,10 +55,6 @@ sig
       (('p1, cud, 'p, 'r, 'a1, 'a2, 'a3, 'a4) copy, 'd) CD.copy_data) cat ->
     TR.result_update_data -> ('p1, 'z4, ('p1, cud, 'p, 'r, 'a1, 'a2, 'a3, 'a4) zipper1) cat
 
-  (** action number **)
-  val init_action_num : int
-  val next_action_num : int -> int
-
   (** action priorities **)
   val Kupdate_prio_co : ('p -> 'p) -> 'p -> ('p1, 'x * 'sq, 'p * 'sq) CO.coroutine
 
@@ -107,19 +84,9 @@ local structure SC = Semi_Category(Z); structure M = Monad(K.M) structure AE = A
 in
 
 (* misc *)
-fun enum_zippers init next = init >>> arr (fn x => CO.cons (K x) (CO.enum next x))
-fun list_zippers init next = enum_zippers init next >>> arr CO.list_of >>> AA.app' ()
-
 fun gen_is_gcs_finished get_gcsd = get_gcsd >>> GCSD.get_gclusters >>> arr GCS.is_finished
 
 (* copy *)
-(** run copies **)
-fun gen_get_run_copy get_copy_data cud z3 z1 =
-  get_copy_data z3 >>= CD.get_copy >>= arr (dest_copy #> (fn copy => (copy cud z3, z1))) >>= AA.app
-
-fun gen_copy_parent_actions foldM get_copy_data =
-  AU.copy_parent_actions foldM (gen_get_run_copy get_copy_data)
-
 (** make copy **)
 fun gen_copy_cpfocus move_cpos init_copy (cpos, focus) zipper3 =
   move_cpos cpos >>> init_copy zipper3 focus
@@ -138,10 +105,6 @@ type cud = F.focus -> (int * F.focus) list
 fun gen_update_result_update_data set_gcs set_gc_list foldM get_parent_actions get_copy_data =
   AU.update_result (init_result_update_data set_gcs set_gc_list) get_parent_actions
     (gen_copy_parent_actions foldM get_copy_data)
-
-(** action number **)
-val init_action_num = 0
-val next_action_num = General_Util.succ
 
 (** action priorities **)
 fun Kupdate_prio_co update_prio p =
