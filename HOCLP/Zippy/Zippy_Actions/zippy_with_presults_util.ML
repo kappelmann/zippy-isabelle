@@ -14,8 +14,8 @@ sig
 
   (* copy *)
   (** run copies **)
-  val get_run_copy : copy_update_data -> ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z3.zipper ->
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z1.zipper) hom_move
+  val get_run_copy : copy_update_data -> @{T_args} Z3.zipper ->
+    (@{ParaT_args}, @{T_args} Z1.zipper) hom_move
 
   val gen_copy_parent_actions :
     (*foldM*)
@@ -25,50 +25,49 @@ sig
     'cud -> 'pas -> ('p1, 'z, 'z) cat
 
   val copy_parent_actions :
-    ((('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z3.zipper ->
-      ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z1.zipper) hom_move) -> 'zs -> ('p1, 'z, 'z) cat) ->
+    ((@{T_args} Z3.zipper ->
+      (@{ParaT_args}, @{T_args} Z1.zipper) hom_move) -> 'zs -> ('p1, 'z, 'z) cat) ->
     copy_update_data -> 'zs -> ('p1, 'z, 'z) cat
 
   (* actions *)
-  val empty_paction : 'p1 COU.AE.exn -> ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) paction
+  val empty_paction : 'p1 COU.AE.exn -> @{T_args} paction
 
   val gen_paction_from_presults :
     (*get presults*)
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z4.zipper, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) presults) cat ->
+    (@{ParaT_args}, @{T_args} Z4.zipper, @{T_args} presults) cat ->
     (*action when results are empty*)
-    ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) action ->
+    @{T_args} action ->
     (*update zipper with pulled result and the remaining presults*)
-    (result * ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) presults -> ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) action) ->
-    ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) paction
+    (result * @{T_args} presults -> @{T_args} action) ->
+    @{T_args} paction
 
-  val paction_from_presults : ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) action ->
-    (result * ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) presults -> ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) action) ->
-    ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) paction
+  val paction_from_presults : @{T_args} action ->
+    (result * @{T_args} presults -> @{T_args} action) ->
+    @{T_args} paction
 
   val update_result_tail_presults :
     (*update with pulled result*)
-    (prio -> result -> ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z4.zipper, 'z) cat) ->
+    (prio -> result -> (@{ParaT_args}, @{T_args} Z4.zipper, 'z) cat) ->
     (*update with remaining presults*)
-    (prio -> ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) presults ->
-      ('p1, 'z, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z4.zipper) cat) ->
-    result * ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) presults -> ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) action
+    (prio -> @{T_args} presults -> ('p1, 'z, @{T_args} Z4.zipper) cat) ->
+    result * @{T_args} presults -> @{T_args} action
 
   val gen_update_result :
     (*init child node*)
-    (prio -> result -> ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z4.zipper, 'cud * 'ch) cat) ->
+    (prio -> result -> (@{ParaT_args}, @{T_args} Z4.zipper, 'cud * 'ch) cat) ->
     (*get parent actions*)
     ('p1, 'ch, 'pas) cat ->
     (*copy parent actions*)
     ('cud -> 'pas -> ('p1, 'ch, 'z) cat) ->
-    prio -> result -> ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z4.zipper, 'z) cat
+    prio -> result -> (@{ParaT_args}, @{T_args} Z4.zipper, 'z) cat
 
   val presults_from_sq :
     (*coroutine in case of an empty sequence*)
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z4.zipper, result, prio) CO.acoroutine ->
+    (@{ParaT_args}, @{T_args} Z4.zipper, result, prio) CO.acoroutine ->
     (*create next priority while optionally updating the sequence*)
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z4.zipper * result Seq.seq,
+    (@{ParaT_args}, @{T_args} Z4.zipper * result Seq.seq,
       prio * result Seq.seq) CO.coroutine ->
-    result Seq.seq -> ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) presults
+    result Seq.seq -> @{T_args} presults
 end
 
 functor Zippy_With_PResults_Util(

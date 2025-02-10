@@ -28,7 +28,7 @@ context
 begin
 ML_file\<open>node_succ.ML\<close>
 context
-  notes [[T_args n = 6]]
+  notes [[T_args stop = 5]]
 begin
 ML_file\<open>modify_node_succ.ML\<close>
 end
@@ -40,8 +40,6 @@ ML_file\<open>alternating_zippers_nodes_zippers.ML\<close>
 
 ML_file\<open>alternating_zippers_nodes_simple_zippers.ML\<close>
 
-(* ML_file\<open>dfs_postorder_enumerable_alternating_zippers5.ML\<close> *)
-
-term a
+ML_file\<open>dfs_postorder_enumerable_alternating_zippers.ML\<close>
 
 end

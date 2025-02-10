@@ -2,7 +2,7 @@
 theory Zippy_Prover
   imports
     ML_Typeclasses.ML_State
-    ML_Zipper5_Instances
+    ML_Zipper_Instances
     Zippy_Goals
     Zippy_Prover_Tactics
 begin

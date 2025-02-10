@@ -1,7 +1,7 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory Zippy_Actions
   imports
-    ML_Alternating_Zippers5
+    ML_Alternating_Zippers
     Zippy_Base
 begin
 

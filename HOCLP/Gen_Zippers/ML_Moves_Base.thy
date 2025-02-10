@@ -17,9 +17,10 @@ ML\<open>
     and more_args = \<open>val init_args = {
       args = SOME ["'p1"],
       sep = SOME ", ",
-      encl = SOME ("(", ")"),
+      encl = SOME ("", ""),
       encl_arg = SOME ("", ""),
-      n = SOME NONE
+      start = SOME 0,
+      stop = SOME NONE
     }\<close>}
 \<close>
 local_setup \<open>Para_Type_Args_Antiquotations.setup_args_attribute
@@ -34,9 +35,10 @@ ML\<open>
     and more_args = \<open>val init_args = {
       args = SOME ["'a1"],
       sep = SOME ", ",
-      encl = SOME ("(", ")"),
+      encl = SOME ("", ""),
       encl_arg = SOME ("", ""),
-      n = SOME NONE
+      start = SOME 0,
+      stop = SOME NONE
     }\<close>}
 \<close>
 local_setup \<open>Poly_Type_Args_Antiquotations.setup_args_attribute
@@ -53,7 +55,8 @@ ML\<open>
       sep = SOME ", ",
       encl = SOME ("(", ")"),
       encl_arg = SOME ("", ""),
-      n = SOME NONE
+      start = SOME 0,
+      stop = SOME NONE
     }\<close>}
 \<close>
 local_setup \<open>Type_Args_Antiquotations.setup_args_attribute

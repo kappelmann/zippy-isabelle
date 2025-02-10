@@ -9,145 +9,128 @@ sig
   type prio
 
   structure CD : KLEISLI_ZIPPY_COPY_DATA
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) cd_more
+  type @{T_args} cd_more
   structure PAD : ZIPPY_PACTION_DATA
   where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) CD.L.C.cat
   sharing type PAD.L.lens = CD.L.lens
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pad_more
+  type @{T_args} pad_more
   structure PD : ZIPPY_PRIO_DATA
   where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) CD.L.C.cat
   sharing type PD.L.lens = CD.L.lens
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pd_more
+  type @{T_args} pd_more
 
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) paction
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) copy
+  type @{T_args} paction
+  type @{T_args} copy
 
-  include ALTERNATING_ZIPPERS5_NODES
-  where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) N3.content =
-    (('p1, 'a1, 'a2, 'a3, 'a4, 'a5) copy, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) cd_more) CD.copy_data
-  where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) N4.content =
-    (('p1, 'a1, 'a2, 'a3, 'a4, 'a5) paction, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pad_more) PAD.paction_data
-  where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) N5.content =
-    (prio, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pd_more) PD.prio_data
+  include \<^eval>\<open>T_Args.suffix_Poly_nargs "ALTERNATING_ZIPPERS" ^ "_NODES"\<close>
+  where type @{T_args} N3.content = (@{T_args} copy, @{T_args} cd_more) CD.copy_data
+  where type @{T_args} N4.content = (@{T_args} paction, @{T_args} pad_more) PAD.paction_data
+  where type @{T_args} N5.content = (prio, @{T_args} pd_more) PD.prio_data
   where type ('p1, 'a) M.t = ('p1, 'a) CD.K.M.t
   where type ('p1, 't, 's, 'i, 'o) L.lens = ('p1, 't, 's, 'i, 'o) CD.L.lens
 
-  val mk_copy : (copy_update_data -> ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z3.zipper ->
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z1.zipper) hom_move) ->
-    ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) copy
-  val dest_copy : ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) copy -> copy_update_data ->
-    ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z3.zipper ->
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z1.zipper) hom_move
+  val mk_copy : (copy_update_data -> @{T_args} Z3.zipper ->
+    (@{ParaT_args}, @{T_args} Z1.zipper) hom_move) -> @{T_args} copy
+  val dest_copy : @{T_args} copy -> copy_update_data ->
+    @{T_args} Z3.zipper -> (@{ParaT_args}, @{T_args} Z1.zipper) hom_move
 
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) action = prio ->
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z4.zipper) hom_move
+  type @{T_args} action = prio -> (@{ParaT_args}, @{T_args} Z4.zipper) hom_move
 
-  val mk_paction : ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z4.zipper,
-    prio * ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) action) cat -> ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) paction
-  val dest_paction : ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) paction ->
-    ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) Z4.zipper, prio * ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) action) cat
+  val mk_paction : (@{ParaT_args}, @{T_args} Z4.zipper, prio * @{T_args} action) cat ->
+    @{T_args} paction
+  val dest_paction : @{T_args} paction ->
+    (@{ParaT_args}, @{T_args} Z4.zipper, prio * @{T_args} action) cat
 end
 
 functor Zippy_With_PAction(
     type copy_update_data
     type prio
     structure CD : KLEISLI_ZIPPY_COPY_DATA
-    type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) cd_more
+    type @{T_args} cd_more
     structure PAD : ZIPPY_PACTION_DATA
     where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) CD.L.C.cat
     sharing type PAD.L.lens = CD.L.lens
-    type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pad_more
+    type @{T_args} pad_more
     structure PD : ZIPPY_PRIO_DATA
     where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) CD.L.C.cat
     sharing type PD.L.lens = CD.L.lens
-    type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pd_more
+    type @{T_args} pd_more
 
-    structure Z : ALTERNATING_ZIPPERS5_NODES
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) N3.content = 'a3
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) N4.content = 'a4
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) N5.content = 'a5
+    structure Z : \<^eval>\<open>T_Args.suffix_Poly_nargs "ALTERNATING_ZIPPERS" ^ "_NODES"\<close>
+    where type @{T_args} N3.content = @{PolyT_arg 2}
+    where type @{T_args} N4.content = @{PolyT_arg 3}
+    where type @{T_args} N5.content = @{PolyT_arg 4}
     where type ('p1, 'a) M.t = ('p1, 'a) CD.K.M.t
-    where type ('p1, 't, 's, 'i, 'o) L.lens = ('p1, 't, 's, 'i, 'o) PAD.L.lens
+    sharing type Z.L.lens = PAD.L.lens
   ) : ZIPPY_WITH_PACTION =
 struct
 
 type copy_update_data = copy_update_data
 type prio = prio
 structure CD = CD
-type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) cd_more = ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) cd_more
+type @{T_args} cd_more = @{T_args} cd_more
 structure PAD = PAD
-type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pad_more = ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pad_more
+type @{T_args} pad_more = @{T_args} pad_more
 structure PD = PD
-type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pd_more = ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pd_more
+type @{T_args} pd_more = @{T_args} pd_more
 
 open Z
 
 (* paction *)
-datatype ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm) paction = PAction of
-  ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm) zipper4, prio *
-    (prio -> ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm) zipper4) hom_move)) cat
-withtype ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm) zipper1 = ('p1, 'a1, 'a2, 'a3,
-  (('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm) paction, 'padm) PAD.paction_data, 'a5) Z1.zipper
-and ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm) zipper3 = ('p1, 'a1, 'a2, 'a3,
-  (('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm) paction, 'padm) PAD.paction_data, 'a5) Z3.zipper
-and ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm) zipper4 = ('p1, 'a1, 'a2, 'a3,
-  (('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm) paction, 'padm) PAD.paction_data, 'a5) Z4.zipper
+datatype (@{T_args encl = "" ""}, 'padm) paction = PAction of
+  (@{ParaT_args}, (@{T_args encl = "" ""}, 'padm) zipper4, prio *
+    (prio -> (@{ParaT_args}, (@{T_args encl = "" ""}, 'padm) zipper4) hom_move)) cat
+withtype \<^imap>\<open>\<open>{i}\<close> => \<open>
+(@{T_args encl = "" ""}, 'padm) zipper{i} = (@{ParaT_args}, @{PolyT_args stop = 2},
+  ((@{T_args encl = "" ""}, 'padm) paction, 'padm) PAD.paction_data, @{PolyT_arg 4}) Z{i}.zipper\<close>
+where sep = "and"\<close>
 
 fun mk_paction paction = PAction paction
 fun dest_paction (PAction paction) = paction
 
 (* copy *)
-datatype ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm) copy = Copy of copy_update_data ->
-  ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm) zipper3 ->
-  ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm) zipper1) hom_move
-withtype ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm) zipper1 = ('p1, 'a1, 'a2,
-  (('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm) copy, 'cdm) CD.copy_data, 'a4, 'a5, 'padm) zipper1
-and ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm) zipper3 = ('p1, 'a1, 'a2,
-  (('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm) copy, 'cdm) CD.copy_data, 'a4, 'a5, 'padm) zipper3
-and ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm) zipper4 = ('p1, 'a1, 'a2,
-  (('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm) copy, 'cdm) CD.copy_data, 'a4, 'a5, 'padm) zipper4
-and ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm) paction = ('p1, 'a1, 'a2,
-  (('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm) copy, 'cdm) CD.copy_data, 'a4, 'a5, 'padm) paction
+datatype (@{T_args encl = "" ""}, 'padm, 'cdm) copy = Copy of copy_update_data ->
+  (@{T_args encl = "" ""}, 'padm, 'cdm) zipper3 -> (@{ParaT_args},
+    (@{T_args encl = "" ""}, 'padm, 'cdm) zipper1) hom_move
+withtype
+\<^imap>\<open>\<open>{i}\<close> => \<open>
+(@{T_args encl = "" ""}, 'padm, 'cdm) zipper{i} = (@{ParaT_args}, @{PolyT_args stop = 1},
+  ((@{T_args encl = "" ""}, 'padm, 'cdm) copy, 'cdm) CD.copy_data,
+  @{PolyT_args start = 3 and stop = 4}, 'padm) zipper{i}\<close>
+where sep = "and"\<close>
+and (@{T_args encl = "" ""}, 'padm, 'cdm) paction = (@{ParaT_args}, @{PolyT_args stop = 1},
+  ((@{T_args encl = "" ""}, 'padm, 'cdm) copy, 'cdm) CD.copy_data,
+  @{PolyT_args start = 3 and stop = 4}, 'padm) paction
 
 fun mk_copy copy = Copy copy
 fun dest_copy (Copy copy) = copy
 
-type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm, 'pdm) zipper1 =
-  ('p1, 'a1, 'a2, 'a3, 'a4, (prio, 'pdm) PD.prio_data, 'padm, 'cdm) zipper1
-and ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm, 'pdm) zipper3 =
-  ('p1, 'a1, 'a2, 'a3, 'a4, (prio, 'pdm) PD.prio_data, 'padm, 'cdm) zipper3
-and ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm, 'pdm) zipper4 =
-  ('p1, 'a1, 'a2, 'a3, 'a4, (prio, 'pdm) PD.prio_data, 'padm, 'cdm) zipper4
-and ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm, 'pdm) paction =
-  ('p1, 'a1, 'a2, 'a3, 'a4, (prio, 'pdm) PD.prio_data, 'padm, 'cdm) paction
-and ('p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'padm, 'cdm, 'pdm) copy =
-  ('p1, 'a1, 'a2, 'a3, 'a4, (prio, 'pdm) PD.prio_data, 'padm, 'cdm) copy
+type \<^imap>\<open>\<open>{i}\<close> => \<open>
+(@{T_args encl = "" ""}, 'padm, 'cdm, 'pdm) zipper{i} =
+  (@{ParaT_args}, @{PolyT_args stop = 3}, (prio, 'pdm) PD.prio_data, 'padm, 'cdm) zipper{i}\<close>
+where sep = "and"\<close>
+and (@{T_args encl = "" ""}, 'padm, 'cdm, 'pdm) paction =
+  (@{ParaT_args}, @{PolyT_args stop = 3}, (prio, 'pdm) PD.prio_data, 'padm, 'cdm) paction
+and (@{T_args encl = "" ""}, 'padm, 'cdm, 'pdm) copy =
+  (@{ParaT_args}, @{PolyT_args stop = 3}, (prio, 'pdm) PD.prio_data, 'padm, 'cdm) copy
 
-type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) zipper4 = ('p1, 'a1, 'a2, 'a3, 'a4, 'a5,
-  ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pad_more,
-  ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) cd_more,
-  ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pd_more) zipper4
-and ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) paction = ('p1, 'a1, 'a2, 'a3, 'a4, 'a5,
-  ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pad_more,
-  ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) cd_more,
-  ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pd_more) paction
-and ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) copy = ('p1, 'a1, 'a2, 'a3, 'a4, 'a5,
-  ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pad_more,
-  ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) cd_more,
-  ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pd_more) copy
+type \<^imap>\<open>\<open>{i}\<close> => \<open>
+@{T_args} zipper{i} = (@{T_args encl = "" ""},
+  @{T_args} pad_more, @{T_args} cd_more, @{T_args} pd_more) zipper{i}\<close>
+where sep = "and"\<close>
+and @{T_args} paction = (@{T_args encl = "" ""},
+  @{T_args} pad_more, @{T_args} cd_more, @{T_args} pd_more) paction
+and @{T_args} copy = (@{T_args encl = "" ""},
+  @{T_args} pad_more, @{T_args} cd_more, @{T_args} pd_more) copy
 
-type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) action = prio ->
-  ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) zipper4) hom_move
+type @{T_args} action = prio -> (@{ParaT_args}, @{T_args} zipper4) hom_move
 
-structure Z = Instantiate_Alternating_Zippers5_Nodes(
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1 = 'a1
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2 = 'a2
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3 =
-    (('p1, 'a1, 'a2, 'a3, 'a4, 'a5) copy, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) cd_more) CD.copy_data
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4 =
-    (('p1, 'a1, 'a2, 'a3, 'a4, 'a5) paction, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pad_more) PAD.paction_data
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5 =
-    (prio, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pd_more) PD.prio_data
+structure Z = \<^eval>\<open>T_Args.suffix_Poly_nargs "Instantiate_Alternating_Zippers" ^ "_Nodes"\<close>(
+  \<^imap>\<open>\<open>{i}\<close> => \<open>
+  type @{T_args} inst{i} = @{PolyT_arg \<open>{i} - 1\<close>}\<close>\<close>
+  type @{T_args} inst3 = (@{T_args} copy, @{T_args} cd_more) CD.copy_data
+  type @{T_args} inst4 = (@{T_args} paction, @{T_args} pad_more) PAD.paction_data
+  type @{T_args} inst5 = (prio, @{T_args} pd_more) PD.prio_data
   structure Z = Z
 )
 open Z
@@ -155,136 +138,43 @@ open Z
 end
 
 functor Instantiate_Zippy_With_PAction(
-    type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1
-    type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2
-    type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3
-    type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4
-    type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5
+    \<^imap>\<open>\<open>{i}\<close> => \<open>type @{T_args} inst{i}\<close>\<close>
     structure Z : ZIPPY_WITH_PACTION
   ) :
     ZIPPY_WITH_PACTION
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z1.ZM.container = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z1.ZM.container
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z1.ZO.content = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z1.ZO.content
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z1.ZO.zcontext = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z1.ZO.zcontext
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z1.zipper = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z1.zipper
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z2.ZM.container = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z2.ZM.container
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z2.ZO.content = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z2.ZO.content
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z2.ZO.zcontext = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z2.ZO.zcontext
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z2.zipper = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z2.zipper
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z3.ZM.container = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z3.ZM.container
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z3.ZO.content = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z3.ZO.content
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z3.ZO.zcontext = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z3.ZO.zcontext
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z3.zipper = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z3.zipper
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z4.ZM.container = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z4.ZM.container
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z4.ZO.content = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z4.ZO.content
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z4.ZO.zcontext = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z4.ZO.zcontext
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z4.zipper = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z4.zipper
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z5.ZM.container = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z5.ZM.container
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z5.ZO.content = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z5.ZO.content
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z5.ZO.zcontext = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z5.ZO.zcontext
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.Z5.zipper = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.Z5.zipper
+    \<^imap>\<open>\<open>{i}\<close> => \<open>
+    where type @{T_args} A.Z{i}.ZM.container = (@{ParaT_args},
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.A.Z{i}.ZM.container
+    where type @{T_args} A.Z{i}.ZO.content = (@{ParaT_args},
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.A.Z{i}.ZO.content
+    where type @{T_args} A.Z{i}.ZO.zcontext = (@{ParaT_args},
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.A.Z{i}.ZO.zcontext
+    where type @{T_args} A.Z{i}.zipper = (@{ParaT_args},
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.A.Z{i}.zipper\<close>\<close>
     where type ('p1, 'a) M.t = ('p1, 'a) Z.M.t
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.N1.content = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.N1.content
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) A.N2.content = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.A.N2.content
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) zcontext1 = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.zcontext1
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) zcontext2 = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.zcontext2
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) zcontext3 = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.zcontext3
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) zcontext4 = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.zcontext4
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) zcontext5 = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.zcontext5
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pzipper1 = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.pzipper1
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pzipper2 = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.pzipper2
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pzipper3 = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.pzipper3
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pzipper4 = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.pzipper4
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pzipper5 = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.pzipper5
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) cd_more = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.cd_more
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pad_more = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.pad_more
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) pd_more = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.pd_more
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) paction = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.paction
-    where type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) copy = ('p1, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3,
-      ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4, ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5) Z.copy =
+    \<^imap>\<open>\<open>{i}\<close> => \<open>
+    where type @{T_args} A.N{i}.content = (@{ParaT_args},
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.A.N{i}.content\<close>
+    where stop = 2\<close>
+    \<^imap>\<open>\<open>{i}\<close> => \<open>
+    where type @{T_args} zcontext{i} = (@{ParaT_args},
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.zcontext{i}
+    where type @{T_args} pzipper{i} = (@{ParaT_args},
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.pzipper{i}\<close>\<close>
+    where type @{T_args} cd_more = (@{ParaT_args},
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.cd_more
+    where type @{T_args} pad_more = (@{ParaT_args},
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.pad_more
+    where type @{T_args} pd_more = (@{ParaT_args},
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.pd_more
+    where type @{T_args} paction = (@{ParaT_args},
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.paction
+    where type @{T_args} copy = (@{ParaT_args},
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.copy =
 struct
 open Z
-structure Base =
-struct
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1 = ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst1
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2 = ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst2
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3 = ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst3
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4 = ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst4
-  type ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5 = ('p1, 'a1, 'a2, 'a3, 'a4, 'a5) inst5
-end
-structure Z = Instantiate_Alternating_Zippers5_Nodes(open Base; structure Z = Z)
+structure Base = struct \<^imap>\<open>\<open>{i}\<close> => \<open>type @{T_args} inst{i} = @{T_args} inst{i}\<close>\<close> end
+structure Z = \<^eval>\<open>T_Args.suffix_Poly_nargs "Instantiate_Alternating_Zippers"\<close>(
+  open Base; structure Z = Z)
 open Z
 end

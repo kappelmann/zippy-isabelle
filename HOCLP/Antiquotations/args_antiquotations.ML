@@ -3,7 +3,7 @@
 
 Antiquotation for lists of arguments.
 *)
-@{parse_entries (sig) PARSE_ARGS_ANTIQUOTATIONS_ARGS [args, sep, encl, encl_arg, n]}
+@{parse_entries (sig) PARSE_ARGS_ANTIQUOTATIONS_ARGS [args, sep, encl, encl_arg, start, stop]}
 @{parse_entries (sig) PARSE_ARGS_ANTIQUOTATIONS_ARG_ARGS [args, encl, n]}
 @{parse_entries (sig) PARSE_ARGS_ANTIQUOTATIONS_ARG_CONTEXT_ARGS [args, encl]}
 
@@ -15,14 +15,15 @@ sig
   val PCA_entries_from_PA_entries : ('a, 'b, 'c) PA.entries -> ('a, 'b) PCA.entries
   val PA_entries_from_PCA_entries : ('a, 'b) PCA.entries -> 'c -> ('a, 'b, 'c) PA.entries
 
-  type args_args = (string list, string, string * string, string * string, int option) PAS.entries
+  type args_args = (string list, string, string * string, string * string, int, int option)
+    PAS.entries
   type arg_args = (string list, string * string, int) PA.entries
   type arg_context_args = (string list, string * string) PCA.entries
   val nargs : args_args -> int
   val mk_args_code : args_args -> string
   val mk_arg_code : arg_args -> string
   val args_arg_parsers : (string list parser, string parser, (string * string) parser,
-    (string * string) parser, int option context_parser) PAS.entries
+    (string * string) parser, int context_parser, int option context_parser) PAS.entries
   val arg_arg_parsers : (string list parser, (string * string) parser, int context_parser)
     PA.entries
 end
@@ -32,20 +33,25 @@ struct
 
 structure PU = Parse_Util
 
-@{parse_entries (struct) PAS [args, sep, encl, encl_arg, n]}
+@{parse_entries (struct) PAS [args, sep, encl, encl_arg, start, stop]}
 @{parse_entries (struct) PA [args, encl, n]}
 @{parse_entries (struct) PCA [args, encl]}
 fun PCA_entries_from_PA_entries {args, encl,...} = {args = args, encl = encl}
 fun PA_entries_from_PCA_entries {args, encl} n = {args = args, encl = encl, n = SOME n}
 
-type args_args = (string list, string, string * string, string * string, int option) PAS.entries
+type args_args = (string list, string, string * string, string * string, int, int option)
+  PAS.entries
 type arg_args = (string list, string * string, int) PA.entries
 type arg_context_args = (string list, string * string) PCA.entries
 
-fun nargs entries = case PAS.get_n entries of NONE => length (PAS.get_args entries) | SOME n => n
+fun nargs entries = case (PAS.get_start entries, PAS.get_stop entries) of
+    (start, NONE) => length (PAS.get_args entries) - start
+  | (start, SOME stop) => stop + 1 - start
 
 fun mk_args_code entries = PAS.get_args entries
-  |> (case PAS.get_n entries of NONE => I | SOME n => take n)
+  |> (case (PAS.get_start entries, PAS.get_stop entries) of
+      (start, NONE) => drop start
+    | (start, SOME stop) => drop start #> take (stop + 1 - start))
   |> map (uncurry enclose (PAS.get_encl_arg entries))
   |> space_implode (PAS.get_sep entries)
   |> uncurry enclose (PAS.get_encl entries)
@@ -56,7 +62,7 @@ fun mk_arg_code entries = PA.get_args entries
 
 val args_parser = \<^keyword>\<open>[\<close> |-- Parse.list Parse.embedded --| \<^keyword>\<open>]\<close>
 val encl_parser = Parse.embedded -- Parse.embedded
-fun pos_n_parser fail_empty fail_neg = PU.filter (curry (op <=) 0)
+fun nonneg_n_parser fail_empty fail_neg = PU.filter (curry (op <=) 0)
   (PU.fail fail_neg) (PU.ML_int fail_empty)
 
 val args_arg_parsers = {
@@ -64,15 +70,17 @@ val args_arg_parsers = {
   sep = SOME Parse.embedded,
   encl = SOME encl_parser,
   encl_arg = SOME encl_parser,
-  n = SOME (pos_n_parser (K "number of arguments must not be empty")
-      (K "number of arguments to be printed must be non-negative")
+  start = SOME (nonneg_n_parser (K "start index must not be empty")
+      (K "start index must be non-negative")),
+  stop = SOME (nonneg_n_parser (K "stop index must not be empty")
+      (K "stop index must be non-negative")
     |> PU.option')
 }
 
 val arg_arg_parsers = {
   args = SOME args_parser,
   encl = SOME encl_parser,
-  n = SOME (pos_n_parser (K "argument number must not be empty")
+  n = SOME (nonneg_n_parser (K "argument number must not be empty")
     (K "argument number must be non-negative"))
 }
 end
@@ -95,8 +103,11 @@ sig
   val get_encl_arg : Context.generic -> string * string
   val map_encl_arg : (string * string -> string * string) -> Context.generic -> Context.generic
 
-  val get_n : Context.generic -> int option
-  val map_n : (int option -> int option) -> Context.generic -> Context.generic
+  val get_start : Context.generic -> int
+  val map_start : (int -> int) -> Context.generic -> Context.generic
+
+  val get_stop : Context.generic -> int option
+  val map_stop : (int option -> int option) -> Context.generic -> Context.generic
 
   val nargs : Context.generic -> int
   val mk_args_code : Proof.context -> string
@@ -149,8 +160,11 @@ val map_encl = map_data o PAS.map_encl
 val get_encl_arg = PAS.get_encl_arg o get_data
 val map_encl_arg = map_data o PAS.map_encl_arg
 
-val get_n = PAS.get_n o get_data
-val map_n = map_data o PAS.map_n
+val get_start = PAS.get_start o get_data
+val map_start = map_data o PAS.map_start
+
+val get_stop = PAS.get_stop o get_data
+val map_stop = map_data o PAS.map_stop
 
 fun nargs context = AAA.nargs (get_data context)
 fun mk_args_code ctxt = AAA.mk_args_code (get_data (Context.Proof ctxt))
@@ -172,7 +186,7 @@ val parse_args_entries =
     val parsers = AAA.args_arg_parsers
     val parse_value = PAS.parse_entry (PAS.get_args parsers |> Scan.lift)
       (PAS.get_sep parsers |> Scan.lift) (PAS.get_encl parsers |> Scan.lift)
-      (PAS.get_encl_arg parsers |> Scan.lift) (PAS.get_n parsers)
+      (PAS.get_encl_arg parsers |> Scan.lift) (PAS.get_start parsers) (PAS.get_stop parsers)
     val parse_entry = Parse_Key_Value.parse_entry' (Scan.lift PAS.parse_key)
       (Scan.lift Parse_Util.eq) parse_value
     val required_keys = []
