@@ -138,25 +138,30 @@ open A
 local structure SC = ISemi_Category(A) open SC
 in
 fun get_state _ = id () &&& get ()
-fun change f = get_state () &&& id ()
-  >>> first (f >>> put ())
-  >>> arr snd
 fun access f = get_state () >>> f
+fun change f = access f &&& id ()
+  >>> first (put ())
+  >>> arr snd
 end
 
 end
 
-signature IKLEISLI_ARROW_STATE_BASE =
+signature IKLEISLI_ARROW_STATE =
 sig
   structure K : IKLEISLI
-  include IARROW_STATE_BASE
+  include IARROW_STATE
   where type ('p1, 'i, 'j, 'a, 'b) cat = ('p1, 'i, 'j, 'a, 'b) K.kleisli
 end
 
-functor IKleisli_Arrow_State_Base(MS : IMONAD_STATE_BASE) : IKLEISLI_ARROW_STATE_BASE =
+functor IKleisli_Arrow_State(MS : IMONAD_STATE_BASE) : IKLEISLI_ARROW_STATE =
 struct
 structure KA = IKleisli_Arrow_Apply_Base(MS)
 open KA
+local structure M = IMonad(MS) open M
+in
 fun get _ _ = MS.get ()
 fun put _ x = MS.put x
+fun access f x = get () x >>= (pair x #> f)
+fun change f x = access f x >>= put () >>= arr (fn _ => x)
+end
 end

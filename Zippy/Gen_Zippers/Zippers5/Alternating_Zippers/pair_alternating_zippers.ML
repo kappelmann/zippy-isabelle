@@ -8,12 +8,13 @@ sig
   sharing type AZ2.M.t = AZ1.M.t
 
   include \<^eval>\<open>T_Args.suffix_Poly_nargs "ALTERNATING_ZIPPERS"\<close>
-  where type @{T_args} Z1.ZM.container =
-    @{T_args} AZ1.Z1.ZM.container * @{T_args} AZ2.Z1.ZM.container
-  where type @{T_args} Z1.ZO.content = @{T_args} AZ1.Z1.ZO.content * @{T_args} AZ2.Z1.ZO.content
-  where type @{T_args} Z1.ZO.zcontext = @{T_args} AZ1.Z1.ZO.zcontext * @{T_args} AZ2.Z1.ZO.zcontext
-  where type @{T_args} Z1.zipper = @{T_args} AZ1.Z1.zipper * @{T_args} AZ2.Z1.zipper
-  where type ('p1, 'a) Z1.M.t = ('p1, 'a) AZ1.Z1.M.t
+  \<^imap>\<open>\<open>{i}\<close> => \<open>
+  where type @{T_args} Z{i}.ZM.container =
+    @{T_args} AZ1.Z{i}.ZM.container * @{T_args} AZ2.Z{i}.ZM.container
+  where type @{T_args} Z{i}.ZO.content = @{T_args} AZ1.Z{i}.ZO.content * @{T_args} AZ2.Z{i}.ZO.content
+  where type @{T_args} Z{i}.ZO.zcontext = @{T_args} AZ1.Z{i}.ZO.zcontext * @{T_args} AZ2.Z{i}.ZO.zcontext
+  where type @{T_args} Z{i}.zipper = @{T_args} AZ1.Z{i}.zipper * @{T_args} AZ2.Z{i}.zipper
+  where type ('p1, 'a) Z{i}.M.t = ('p1, 'a) AZ1.Z{i}.M.t\<close>\<close>
 end
 
 functor \<^eval>\<open>T_Args.suffix_Poly_nargs "Pair_Alternating_Zippers"\<close>(
@@ -30,11 +31,6 @@ structure AZ2 = AZ2
 structure M : MOVE_BASE = AZ1
 open M
 structure L = AZ1.L
-
-structure Z1 = \<^eval>\<open>T_Args.suffix_Poly_nargs "Pair_Zipper"\<close>(
-  structure Z1 = AZ1.Z1
-  structure Z2 = AZ2.Z1
-)
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 structure Z{i} = \<^eval>\<open>T_Args.suffix_Poly_nargs "Pair_Zipper"\<close>(

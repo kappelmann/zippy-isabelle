@@ -8,13 +8,13 @@ signature LENS_BASE =
 sig
   structure C : CATEGORY_BASE
 
-  (*abstract lens datatype. The getter and modifier operations work in some
-  category. The type of the value pointed to might change, thereby changing
-  the type of the outer structure.*)
+  (*Abstract lens datatype. The getter and modifier work in some category.
+  The type of the value pointed to might change, thereby changing the type of the outer structure.*)
   type ('p1, 't, 'o, 's, 'i) lens
+  type ('p1, 's, 'i) slens = ('p1, 's, 'i, 's, 'i) lens
+
   type ('p1, 's, 'i) getter = ('p1, 's, 'i) C.cat
   type ('p1, 't, 'o, 's, 'i) modifier = ('p1, ('p1, 'i, 'o) C.cat * 's, 't) C.cat
-  type ('p1, 's, 'i) slens = ('p1, 's, 'i, 's, 'i) lens
   type ('p1, 's, 'i) smodifier = ('p1, 's, 'i, 's, 'i) modifier
 
   val lens : ('p1, 's, 'i) getter -> ('p1, 't, 'o, 's, 'i) modifier -> ('p1, 't, 'o, 's, 'i) lens

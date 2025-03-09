@@ -1,4 +1,5 @@
 session Zippy = "Pure" +
+  options [quick_and_dirty]
   sessions
     ML_Unification
     ML_Typeclasses
@@ -11,15 +12,28 @@ session Zippy = "Pure" +
     "Gen_Zippers/"
     "Gen_Zippers/Zippers5"
     "Gen_Zippers/Zippers5/Alternating_Zippers"
+    "Gen_Zippers/Zippers5/Alternating_Zippers/Instances"
     "Gen_Zippers/Zippers5/Enumerable"
     "Gen_Zippers/Zippers5/Moves"
     "Gen_Zippers/Zippers5/Zippers"
-    "Gen_Zippers/Zippers5/Zippers/Zipper_Instances"
+    "Gen_Zippers/Zippers5/Zippers/Instances"
     "Zippy"
-    "Zippy/Zippy_Actions"
-    "Zippy/Zippy_Goals"
-    "Zippy/Zippy_Prover"
-    "Zippy/Zippy_Prover/Goals"
-    "Zippy/Zippy_Prover/Tactics"
+    "Zippy/Actions"
+    "Zippy/Goals"
+    "Zippy/Identifiers"
+    "Zippy/Prover"
+    "Zippy/Prover/Gen"
+    "Zippy/Prover/Goals"
+    "Zippy/Prover/Instances"
+    "Zippy/Prover/Metadata"
+    "Zippy/Prover/Position"
+    "Zippy/Prover/Tactics"
   theories
     Zippy_Prover
+    Zippy_Prover_Instances
+
+session Zippy_Tests in Tests = "Zippy" +
+  options [quick_and_dirty]
+  theories
+    Zippy_Tests
+

@@ -12,8 +12,6 @@ ML_file'\<open>alternating_zippers_moves.ML\<close>
 ML_file'\<open>alternating_zippers.ML\<close>
 ML_file'\<open>pair_alternating_zippers.ML\<close>
 
-ML_file'\<open>alternating_zippers_util.ML\<close>
-
 ML_file'\<open>replace_alternating_zippers_zipper.ML\<close>
 
 ML_file'\<open>rotate_alternating_zippers.ML\<close>

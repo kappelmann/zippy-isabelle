@@ -130,7 +130,7 @@ open F
 structure F = List_Foldable_Trans(Identity_Foldable)
 
 structure A = Applicative(T.A)
-fun traverse f = T.traverse (fn sq => F.foldr (A.liftA2 cons o f) sq (A.pure []))
+fun traverse f = T.traverse (fn xs => F.foldr (A.liftA2 cons o f) xs (A.pure []))
 
 end
 

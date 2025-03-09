@@ -9,17 +9,17 @@ functor \<^eval>\<open>T_Args.suffix_Poly_nargs "Alternating_Zippers" ^ "_Nodes_
 
     \<^imap>\<open>\<open>{i}\<close> => \<open>
     type @{T_args} ncontent{i} (*content for node{i}*)
-    val ncontent{i} : @{T_args} Z{i}.ZO.content -> @{T_args} ncontent{i}\<close>\<close>
+    val ncontent{i} : (@{ParaT_args}, @{T_args} Z{i}.ZO.content, @{T_args} ncontent{i}) Z1.cat\<close>\<close>
 
     \<^imap>\<open>\<open>{i}\<close> => \<open>
-    val next{i} : @{T_args} Z{i}.ZO.content -> (@{ParaT_args},
-      @{T_args} Z\<^eval>\<open>T_Args.succ_mod_Poly_nargs' {i} ^ "."\<close>ZM.container) Z{i}.M.t\<close>\<close>
+    val next{i} : (@{ParaT_args}, @{T_args} Z{i}.ZO.content, (@{ParaT_args},
+      @{T_args} Z\<^eval>\<open>T_Args.succ_mod_Poly_nargs' {i} ^ "."\<close>ZM.container) Z{i}.M.t) Z1.cat\<close>\<close>
 
     \<^imap>\<open>\<open>{i}\<close> => \<open>
-    val content{i} : @{T_args} ncontent{i} -> (@{ParaT_args},
-        @{T_args} Z\<^eval>\<open>T_Args.succ_mod_Poly_nargs' {i} ^ "."\<close>ZM.container)
-        Z\<^eval>\<open>T_Args.succ_mod_Poly_nargs' {i} ^ "."\<close>M.t ->
-      @{T_args} Z{i}.ZO.content\<close>\<close>
+    val content{i} : @{T_args} ncontent{i} -> (@{ParaT_args}, (@{ParaT_args},
+      @{T_args} Z\<^eval>\<open>T_Args.succ_mod_Poly_nargs' {i} ^ "."\<close>ZM.container)
+        Z\<^eval>\<open>T_Args.succ_mod_Poly_nargs' {i} ^ "."\<close>M.t,
+      @{T_args} Z{i}.ZO.content) Z1.cat\<close>\<close>
   ) :
     \<^eval>\<open>T_Args.suffix_Poly_nargs "ALTERNATING_ZIPPERS" ^ "_NODES_BASE_ARGS"\<close>
     \<^imap>\<open>\<open>{i}\<close> => \<open>
@@ -33,6 +33,8 @@ functor \<^eval>\<open>T_Args.suffix_Poly_nargs "Alternating_Zippers" ^ "_Nodes_
   =
 struct
 structure A = Kleisli_Arrow(Z1.M)
+structure AA = Kleisli_Arrow_Apply(Z1.M)
+
 structure Base = struct structure A = A; structure L = Z1.ZO.L end
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 structure N{i} = \<^eval>\<open>T_Args.suffix_Poly_nargs "Node"\<close>(open Base
@@ -53,8 +55,8 @@ structure Z{i} = \<^eval>\<open>T_Args.suffix_Poly_nargs "Replace_Zipper" ^ "_Co
   open Base
   structure Z = Z{i}
   type @{T_args} ncontent = @{T_args} N{i}.node
-  fun ncontent x = x |> comp N{i}.node (arr ncontent{i} &&& arr next{i})
-  fun dest_ncontent x = x |> comp (arr (uncurry content{i})) (N{i}.get_content &&& N{i}.get_next)
+  fun ncontent x = x |> comp N{i}.node (ncontent{i} &&& next{i})
+  fun dest_ncontent x = x |> comp (AA.uncurry content{i}) (N{i}.get_content &&& N{i}.get_next)
 )\<close>\<close>
 
 end
