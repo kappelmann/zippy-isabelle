@@ -2,8 +2,6 @@
 section \<open>Alternating Zippers\<close>
 theory ML_Alternating_Zippers
   imports
-    ML_Coroutines
-    ML_Enumerable
     ML_Zippers
 begin
 
@@ -35,7 +33,5 @@ end
 ML_file'\<open>alternating_zippers_nodes.ML\<close>
 ML_file'\<open>alternating_zippers_nodes_zippers.ML\<close>
 ML_file'\<open>alternating_zippers_nodes_simple_zippers.ML\<close>
-
-ML_file'\<open>dfs_postorder_enumerable_alternating_zippers.ML\<close>
 
 end

@@ -2,6 +2,7 @@
 theory Zippy_Actions
   imports
     ML_Alternating_Zippers
+    ML_Coroutines
     ML_Order_Utils
     Zippy_Base
 begin

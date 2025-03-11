@@ -18,8 +18,8 @@ sig
   type args = (string, string * string, string * string, int, int, string * Input.source) PA.entries
   type context_args = (string, string * string, string * string, int, int) PCA.entries
   val mk_code : args -> Proof.context -> string * Proof.context
-  val arg_parsers : (string parser, (string * string) parser, (string * string) parser, int parser,
-    int parser, (string * Input.source) parser) PA.entries
+  val arg_parsers : (string parser, (string * string) parser, (string * string) parser, int context_parser,
+    int context_parser, (string * Input.source) parser) PA.entries
 end
 
 structure IMap_Antiquotation_Args : IMAP_ANTIQUOTATION_ARGS =
@@ -60,7 +60,8 @@ fun mk_code entries ctxt =
   end
 
 val encl_parser = Parse.embedded -- Parse.embedded
-fun pos_n_parser fail_neg = PU.filter (curry (op <=) 0) (PU.fail fail_neg) Parse.int
+fun pos_n_parser fail_neg = PU.filter (curry (op <=) 0) (PU.fail fail_neg)
+  (Parse_Util.ML_int (K "number most not be empty"))
 
 val fun_parser = Parse.embedded --| Parse.$$$ "=>" -- Parse.embedded_input
 
@@ -98,10 +99,10 @@ sig
   val binding : binding
 
   val attribute : IMap_Antiquotation_Args.context_args -> attribute
-  val parse_attribute : attribute parser
+  val parse_attribute : attribute context_parser
   val setup_attribute : string option -> local_theory -> local_theory
 
-  val parse_antiquotation_args : (Proof.context -> string * Proof.context) parser
+  val parse_antiquotation_args : (Proof.context -> string * Proof.context) context_parser
   val setup_antiquotation : theory -> theory
 
 end
@@ -149,23 +150,25 @@ val binding = FIU.mk_binding_id_prefix "imap"
 val parse_entries =
   let
     val parsers = IAA.arg_parsers
-    val parse_value = PCA.parse_entry (PA.get_sep parsers) (PA.get_encl parsers)
-      (PA.get_encl_inner parsers) (PA.get_start parsers) (PA.get_stop parsers)
-    val parse_entry = Parse_Key_Value.parse_entry PCA.parse_key Parse_Util.eq parse_value
+    val parse_value = PCA.parse_entry (Scan.lift (PA.get_sep parsers))
+      (Scan.lift (PA.get_encl parsers)) (Scan.lift (PA.get_encl_inner parsers))
+      (PA.get_start parsers) (PA.get_stop parsers)
+    val parse_entry = Parse_Key_Value.parse_entry'
+      (Scan.lift PCA.parse_key) (Scan.lift Parse_Util.eq) parse_value
     val required_keys = []
     val default_entries = PCA.empty_entries ()
-  in PCA.parse_entries_required Parse.and_list1 required_keys parse_entry default_entries end
+  in PCA.parse_entries_required' Parse.and_list1' required_keys parse_entry default_entries end
 
 fun attribute entries = Thm.declaration_attribute (K (map_args (PCA.merge_entries entries)))
 
 val parse_attribute = parse_entries >> attribute
 
-val setup_attribute = Attrib.local_setup binding (Scan.lift (Parse.!!! parse_attribute)) o
+val setup_attribute = Attrib.local_setup binding (Parse.!!!! parse_attribute) o
   the_default ("set imap antiquotation arguments (" ^ FIU.FIA.full_name ^ ")")
 
 val parse_antiquotation_args =
-  (PA.get_f IAA.arg_parsers)
-  -- ((Parse.where_ |-- parse_entries) |> Parse.!!! |> Parse_Util.option)
+  Scan.lift (PA.get_f IAA.arg_parsers)
+  -- ((Scan.lift Parse.where_ |-- parse_entries) |> Parse.!!!! |> Parse_Util.option')
   >> (fn (f, opt_entries) => fn ctxt =>
     let val entries = get_args (Context.Proof ctxt)
       |> PCA.merge_entries (the_default (PCA.empty_entries ()) opt_entries)
@@ -175,7 +178,7 @@ fun read_antiquotation input ctxt =
   let
     val keywords = Thy_Header.get_keywords' ctxt
     val (f, ctxt) = input
-      |> Parse.read_embedded ctxt keywords parse_antiquotation_args
+      |> Parse.read_embedded ctxt keywords (pair (Context.Proof ctxt) #> parse_antiquotation_args #> apsnd snd)
       |> (fn f => f ctxt)
   in ML_Context.expand_antiquotes (ML_Code_Util.read f) ctxt end
 

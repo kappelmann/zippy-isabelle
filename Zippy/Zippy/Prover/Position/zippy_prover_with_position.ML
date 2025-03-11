@@ -4,6 +4,11 @@
 signature ZIPPY_PROVER_WITH_POSITION =
 sig
   include ZIPPY_PROVER_WITH_POSITION_BASE
+  \<^imap>\<open>\<open>{i}\<close> => \<open>
+  val pos{i} : unit ->
+    (@{ParaT_args}, @{T_args} Z{i}.zipper, @{T_args} ZPOS.N{i}.content) L.slens
+  val depth{i} : unit ->
+    (@{ParaT_args}, @{T_args} Z{i}.zipper, @{T_args} ZDEPTH.Z{i}.ZO.content) L.slens\<close>\<close>
 end
 
 functor Zippy_Prover_With_Position(Z : ZIPPY_PROVER_WITH_POSITION_BASE)
@@ -11,6 +16,10 @@ functor Zippy_Prover_With_Position(Z : ZIPPY_PROVER_WITH_POSITION_BASE)
 struct
 
 open Z
+
+\<^imap>\<open>\<open>{i}\<close> => \<open>
+fun pos{i} _ = Z{i}.ZO.content () \> zpos_content{i}
+fun depth{i} _ = Z{i}.ZO.content () \> zdepth_content{i}\<close>\<close>
 
 end
 

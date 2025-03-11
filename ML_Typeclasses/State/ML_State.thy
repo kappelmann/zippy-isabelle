@@ -7,5 +7,6 @@ begin
 
 ML_file\<open>state_result.ML\<close>
 ML_file\<open>state.ML\<close>
+ML_file\<open>istate.ML\<close>
 
 end

@@ -77,7 +77,7 @@ sig
 
   val presults_from_tac :
     (@{ParaT_args}, @{T_args} Z4.zipper * result Seq.seq, prio * result Seq.seq) CO.coroutine ->
-    (GCS.state -> result Seq.seq) -> (@{ParaT_args}, @{T_args} Z2.zipper, @{T_args} presults) cat
+    rd_more T.zippy_tactic -> (@{ParaT_args}, @{T_args} Z2.zipper, @{T_args} presults) cat
 
   (* actions *)
    val gen_init_result_update_data :

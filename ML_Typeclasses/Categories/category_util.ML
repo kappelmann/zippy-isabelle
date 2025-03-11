@@ -7,6 +7,7 @@ signature ARROW_EXCEPTION_REC =
 sig
   include ARROW_EXCEPTION
   val repeat : ('p1, 'a, 'a) cat -> ('p1, 'a, 'a) cat
+  val repeatn_safe : int -> ('p1, 'a, 'a) cat -> ('p1, 'a, 'a) cat
   val try_step : ('p1, 'a, 'b) cat -> ('p1, 'a, 'a) cat -> ('p1, 'a, 'b) cat
 end
 
@@ -21,6 +22,9 @@ functor Kleisli_Arrow_Exception_Rec(AE : KLEISLI_ARROW_EXCEPTION) : KLEISLI_ARRO
 struct
 open AE
 fun repeat move x = x |> try (comp (repeat move) move)
+fun repeatn_safe fuel move x = x |>
+  (if fuel <= 0 then id ()
+  else try (comp (repeatn_safe (fuel - 1) move) move))
 fun try_step f step x = x |> catch' f (comp (try_step f step) step)
 end
 

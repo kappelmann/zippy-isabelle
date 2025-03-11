@@ -27,6 +27,7 @@ structure Zippy_Action_Metadata :
 struct
 
 structure L = SLens
+structure Show = SpecCheck_Show_Base
 
 type description = string
 
@@ -42,7 +43,7 @@ fun eq_metadata (m1 as Metadata {id = id1, description = description1},
   (Zippy_Identifier.eq_id (id1, id2) andalso description1 = description2)
 fun pretty_metadata (Metadata {id, description}) = SpecCheck_Show_Base.record [
     ("id", Zippy_Identifier.pretty_id id),
-    ("description", Pretty.str description)
+    ("description", Show.string description)
   ]
 
 fun get_id (Metadata {id,...}) = id

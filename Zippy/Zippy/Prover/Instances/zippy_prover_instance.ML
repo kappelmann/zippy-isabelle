@@ -5,10 +5,13 @@ signature ZIPPY_PROVER_INSTANCE =
 sig
   include ZIPPY_PROVER_INSTANCE_BASE
 
+  (* misc *)
+  val with_state : (@{ParaT_args} -> (@{ParaT_args}, 'a, 'b) cat) -> (@{ParaT_args}, 'a, 'b) cat
+
   (* lenses *)
   (** Z3 **)
-  val node_action_cluster_metadata : unit -> (@{ParaT_args}, @{T_args} ZCORE.N3.node, ACMD.metadata) L.slens
-  val action_cluster_metadata : unit -> (@{ParaT_args}, @{T_args} Z3.zipper, ACMD.metadata) L.slens
+  val node_actionc_metadata : unit -> (@{ParaT_args}, @{T_args} ZCORE.N3.node, ACMD.metadata) L.slens
+  val actionc_metadata : unit -> (@{ParaT_args}, @{T_args} Z3.zipper, ACMD.metadata) L.slens
 
   (** Z4 **)
   val node_action_metadata : unit -> (@{ParaT_args}, @{T_args} ZCORE.N4.node, AMD.metadata) L.slens
@@ -30,11 +33,58 @@ sig
   (** Z5 **)
   val mk_rdd_more : @{T_args} rdd_more
 
+  (* pretty-printing *)
+  (** Z1 **)
+  val pretty_gcs : Proof.context -> (@{ParaT_args}, @{T_args} Z1.zipper, Pretty.T) cat
+  val pretty_gc : Proof.context -> (@{ParaT_args}, @{T_args} Z2.zipper, Pretty.T) cat
+  val pretty_actionc : (@{ParaT_args}, @{T_args} Z3.zipper, Pretty.T) cat
+  val pretty_action : (@{ParaT_args}, @{T_args} Z4.zipper, Pretty.T) cat
+  val pretty_actiona : (@{ParaT_args}, @{T_args} Z5.zipper, Pretty.T) cat
+
+  (* tactics *)
+  (** lifting **)
+  val add_all_rmd : Zippy_Result_Metadata.metadata * Zippy_Result_Metadata.metadata ->
+    Zippy_Result_Metadata.metadata
+
+  val lift_every_goals_focus_tac : (GCS.state * GCS.state -> RMD.metadata) ->
+    (GCS.goal_pos -> int -> GCS.goal_pos T.GPU.T.target) -> (int -> tactic) -> F.focus ->
+    RMD.metadata T.zippy_tactic
+  val lift_all_goals_focus_tac : (GCS.state * GCS.state -> RMD.metadata) ->
+    (GCS.goal_pos -> int -> GCS.goal_pos T.GPU.T.target) -> (int -> tactic) -> F.focus ->
+    RMD.metadata T.zippy_tactic
+
+  (* presults *)
+  val presults_from_tac' :
+    (@{ParaT_args}, @{T_args} Z4.zipper * result Seq.seq, prio * result Seq.seq) CO.coroutine ->
+    (F.focus -> rd_more T.zippy_tactic) -> F.focus ->
+    (@{ParaT_args}, @{T_args} Z2.zipper, @{T_args} presults) cat
+
   (* actions *)
   (** action from presult **)
-  val cons_move_single_presults_action' : @{T_args} cd_more -> @{T_args} action_fd_more ->
+  val cons_move_single_presults_action' : ACMD.metadata -> AMD.metadata ->
     (focus -> (@{ParaT_args}, @{T_args} Z2.zipper, @{T_args} presults) cat) -> focus ->
     (@{ParaT_args}, @{T_args} Z2.zipper, @{T_args} Z4.zipper) cat
+
+  (** actions from tactics **)
+  val cons_move_tac : ACMD.metadata -> AMD.metadata ->
+    (@{ParaT_args}, @{T_args} Z4.zipper * result Seq.seq, prio * result Seq.seq) CO.coroutine ->
+    (F.focus -> RMD.metadata T.zippy_tactic) -> F.focus ->
+    (@{ParaT_args}, @{T_args} Z2.zipper, @{T_args} Z4.zipper) cat
+
+  (** fold and run actions **)
+  val fold_max_paction_dfs : (@{ParaT_args},
+    @{T_args} Z4.zipper, ((prio * @{T_args} action) * @{T_args} Z4.zipper) AF.res) cat
+  val fold_max_paction_dfs_halve_prio_depth : (@{ParaT_args},
+    @{T_args} Z4.zipper, ((prio * @{T_args} action) * @{T_args} Z4.zipper) AF.res) cat
+
+  val fold_run_max_paction_dfs : (@{ParaT_args}, @{T_args} Z1.ZM.container, @{T_args} Z4.zipper) cat
+  val fold_run_max_paction_dfs_halve_prio_depth : (@{ParaT_args}, @{T_args} Z1.ZM.container,
+    @{T_args} Z4.zipper) cat
+
+  val repeat_fold_run_max_paction_dfs : int option ->
+    (@{ParaT_args}, @{T_args} Z1.ZM.container) hom_move
+  val repeat_fold_run_max_paction_dfs_halve_prio_depth : int option ->
+    (@{ParaT_args}, @{T_args} Z1.ZM.container) hom_move
 
 end
 
@@ -43,10 +93,13 @@ struct
 
 open Z
 
+(* misc *)
+fun with_state f = AS.access (fn (x, s) => f s x)
+
 (* lenses *)
 (** Z3 **)
-fun node_action_cluster_metadata _ = node_cd_more () \> MDD.metadata
-fun action_cluster_metadata _ = actionc_node () \> node_action_cluster_metadata
+fun node_actionc_metadata _ = node_cd_more () \> MDD.metadata
+fun actionc_metadata _ = actionc_node () \> node_actionc_metadata
 
 (** Z4 **)
 fun node_action_metadata _ = node_action_fd_more () \> MDD.metadata
@@ -58,8 +111,8 @@ val node_result_metadata = node_rd_more
 fun result_metadata _ = actiona_node () \> node_result_metadata
 
 local
-  structure SC = Semi_Category(Z); structure M = Monad(K.M)
-  open SC M
+  structure SC = Semi_Category(Z); structure M = Monad(K.M); structure A = Arrow(Z)
+  open SC M A
 in
 
 (* nodes *)
@@ -74,76 +127,109 @@ fun mk_action_fd_more m = MDD.metadata_data (m, ())
 (** Z5 **)
 val mk_rdd_more = ()
 
-fun cons_move_single_presults_action' x = x |>
-  cons_move_single_presults_action mk_rdd_more mk_gcsd_more mk_gcd_more
+(* pretty-printing *)
+local structure Show = SpecCheck_Show_Base
+in
+(** Z1 **)
+fun pretty_gcs ctxt =
+  L.get (gclusters ())
+  >>> arr (fn gcs => Show.record [
+      ("Goal clusters", GCS.pretty_gclusters ctxt gcs)
+    ])
+(** Z2 **)
+fun pretty_gc ctxt =
+  L.get (gcluster ())
+  >>> arr (fn gc => Show.record [
+      ("Goal cluster", GC.pretty_gcluster ctxt gc)
+    ])
+(** Z3 **)
+fun pretty_actionc x = x |>
+  (L.get (actionc_metadata ())
+  >>> arr (fn acmd => Show.record [
+      ("Action cluster", ACMD.pretty_metadata acmd)
+    ]))
+(** Z4 **)
+fun pretty_action x = x |>
+  ((L.get (action_metadata ()) &&& L.get (action_focus ()) &&& L.get (action_actiona_num ()))
+  >>> arr (fn ((amd, foc), actiona_num) => Show.record [
+      ("Action", AMD.pretty_metadata amd),
+      ("Focus", F.pretty foc),
+      ("Action number", Show.int actiona_num)
+    ]))
+(** Z5 **)
+fun pretty_actiona x = x |>
+  ((L.get (result_metadata ()) &&& L.get (actiona_focus ()) &&& L.get (actiona_actiona_num ()))
+  >>> arr (fn ((rmd, foc), actiona_num) => Show.record [
+      ("Result", RMD.pretty_metadata rmd),
+      ("Focus", F.pretty foc),
+      ("Action number", Show.int actiona_num)
+    ]))
+end
 
-fun up4 x = x |>
-  (AE.repeat (Up4.move >>> Up3.move >>> Up2.move >>> Up1.move >>> Up5.move)
-  >>> Up4.move >>> Up3.move >>> Up2.move)
+(* tactics *)
+(** lifting **)
+fun add_all_rmd (rmd1, rmd2) =
+  let val progress =
+    if forall (equal RMD.promising) (List.map Zippy_Result_Metadata.get_progress [rmd1, rmd2])
+    then RMD.promising
+    else RMD.unclear
+  in Zippy_Result_Metadata.metadata progress end
 
+fun lift_every_goals_focus_tac mk_rmd single_goal_target = T.lift_tac' mk_rmd
+  #> T.lift_every_focus_tac T.no_tac add_all_rmd single_goal_target
+
+fun lift_all_goals_focus_tac mk_rmd single_goal_target = T.lift_tac' mk_rmd
+  #> T.lift_all_goals_focus_tac T.no_tac add_all_rmd single_goal_target
+
+(* presults *)
+fun presults_from_tac' mk_prio_sq_c tac f = presults_from_tac mk_prio_sq_c (tac f)
+
+(* actions *)
+(** action from presult **)
+fun cons_move_single_presults_action' acmdm amdm mk_presults f z =
+  mk_cd_more acmdm
+  >>= (fn cdm => mk_action_fd_more amdm
+  >>= (fn afdm => cons_move_single_presults_action mk_rdd_more mk_gcsd_more mk_gcd_more cdm afdm
+    mk_presults f z))
+
+(** actions from tactics **)
+fun cons_move_tac acmd amd mk_prio_sq_c tac =
+  cons_move_single_presults_action' acmd amd (presults_from_tac' mk_prio_sq_c tac)
+
+(** fold and run actions **)
 local
 structure Zippy_DFS = \<^eval>\<open>T_Args.suffix_Poly_nargs "DFS_Postorder_Enumerable_Alternating_Zippers"\<close>(
   structure Base = struct structure AE = AE end
-  structure Z = \<^eval>\<open>T_Args.suffix_Poly_nargs "Rotate_Alternating_Zippers"\<close>(
-    \<^eval>\<open>T_Args.suffix_Poly_nargs "Rotate_Alternating_Zippers"\<close>(
-    \<^eval>\<open>T_Args.suffix_Poly_nargs "Rotate_Alternating_Zippers"\<close>(Z)))
-  structure E1 = \<^eval>\<open>T_Args.suffix_Poly_nargs "DFS_Postorder_Enumerable" ^ "_Zipper_Moves"\<close>(
-    open Base; structure Z = Z.Z1.ZM)
-  structure E2 = \<^eval>\<open>T_Args.suffix_Poly_nargs "DFS_Postorder_Enumerable" ^ "_Zipper_Moves"\<close>(
-    open Base; structure Z = Z.Z2.ZM)
-  structure E3 = \<^eval>\<open>T_Args.suffix_Poly_nargs "DFS_Postorder_Enumerable" ^ "_Zipper_Moves"\<close>(
-    open Base; structure Z = Z.Z3.ZM)
-  structure E4 = \<^eval>\<open>T_Args.suffix_Poly_nargs "DFS_Postorder_Enumerable" ^ "_Zipper_Moves"\<close>(
-    open Base; structure Z = Z.Z4.ZM)
-  structure E5 = \<^eval>\<open>T_Args.suffix_Poly_nargs "DFS_Postorder_Enumerable" ^ "_Zipper_Moves"\<close>(
-    open Base; structure Z = Z.Z5.ZM)
+  structure Z =
+    \<^imap>\<open>\<open>{i}\<close> => \<open>
+    \<^eval>\<open>T_Args.suffix_Poly_nargs "Rotate_Alternating_Zippers"\<close>(\<close> where stop = 3\<close>
+    Z
+    \<^imap>\<open>\<open>{i}\<close> => \<open>)\<close> where stop = 3\<close>
+  \<^imap>\<open>\<open>{i}\<close> => \<open>
+  structure E{i} = \<^eval>\<open>T_Args.suffix_Poly_nargs "DFS_Postorder_Enumerable" ^ "_Zipper_Moves"\<close>(
+    open Base; structure Z = Z.Z{i}.ZM)\<close>\<close>
   structure AE = AE)
 in
-fun fold_max_paction_dfs x = x |> (fold_pactions_max P.ord (Z.id ()) Zippy_DFS.next)
-fun fold_run_max_paction_dfs x = x |> (fold_max_paction_dfs >>> fold_pactions_run_single_res)
+fun gen_fold_max_paction_dfs update_res = fold_pactions_max P.ord update_res Zippy_DFS.next
+fun fold_max_paction_dfs x = x |> gen_fold_max_paction_dfs (Z.id ())
+fun fold_max_paction_dfs_halve_prio_depth x = x |>
+  gen_fold_max_paction_dfs (first (first (arr P.halve)))
+
+fun gen_fold_run_paction_dfs fold_paction =
+  Zippy_DFS.first3 >>> fold_paction >>> fold_pactions_run_single_res
+fun fold_run_max_paction_dfs x = x |> gen_fold_run_paction_dfs fold_max_paction_dfs
+fun fold_run_max_paction_dfs_halve_prio_depth x = x |>
+  gen_fold_run_paction_dfs fold_max_paction_dfs_halve_prio_depth
 end
+
+fun gen_repeat_fold_run_paction fold_run_paction opt_fuel =
+  (case opt_fuel of NONE => AE.repeat | SOME n => AE.repeatn_safe n)
+  (fold_run_paction  >>> top4 >>> Up4.move >>> Up3.move >>> Up2.move >>> Z1.ZM.Unzip.move)
+fun repeat_fold_run_max_paction_dfs opt_fuel =
+  gen_repeat_fold_run_paction fold_run_max_paction_dfs opt_fuel
+fun repeat_fold_run_max_paction_dfs_halve_prio_depth opt_fuel =
+  gen_repeat_fold_run_paction fold_run_max_paction_dfs_halve_prio_depth opt_fuel
 
 end
 
 end
-
-functor Instantiate_Zippy_Prover_Instance(
-    \<^imap>\<open>\<open>{i}\<close> => \<open>type @{T_args} inst{i}\<close>\<close>
-    structure Z : ZIPPY_PROVER_INSTANCE
-  ) :
-    ZIPPY_PROVER_INSTANCE
-    \<^imap>\<open>\<open>{i}\<close> => \<open>
-    where type @{T_args} ZCOREAZ{i}.content = (@{ParaT_args},
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.ZCOREAZ{i}.content\<close>\<close>
-    \<^imap>\<open>\<open>{i}\<close> => \<open>
-    where type @{T_args} ZCOREAZ{i}.zipper = (@{ParaT_args},
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.ZCOREAZ{i}.zipper\<close>
-      where start = 2\<close>
-    where type ('p1, 'a) MS.mt = ('p1, 'a) Z.MS.mt
-    \<^imap>\<open>\<open>{i}\<close> => \<open>
-    where type @{T_args} ZCORE.zcontext{i} = (@{ParaT_args},
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.ZCORE.zcontext{i}
-    where type @{T_args} ZCORE.pzipper{i} = (@{ParaT_args},
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.ZCORE.pzipper{i}\<close>\<close>
-    \<^imap>\<open>\<open>{i}\<close> => \<open>
-    where type @{T_args} Z{i}.ZM.container = (@{ParaT_args},
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.Z{i}.ZM.container
-    where type @{T_args} Z{i}.ZO.content = (@{ParaT_args},
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.Z{i}.ZO.content
-    where type @{T_args} Z{i}.ZO.zcontext = (@{ParaT_args},
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.Z{i}.ZO.zcontext
-    where type @{T_args} Z{i}.zipper = (@{ParaT_args},
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.Z{i}.zipper\<close>\<close>
-    where type @{T_args} paction = (@{ParaT_args},
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.paction
-    where type @{T_args} copy = (@{ParaT_args},
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.copy
-    where type @{T_args} presults = (@{ParaT_args},
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{T_args} inst{j}\<close> where sep = ","\<close>) Z.presults =
-struct
-open Z
-structure Base = struct \<^imap>\<open>\<open>{i}\<close> => \<open>type @{T_args} inst{i} = @{T_args} inst{i}\<close>\<close> end
-structure Z = Instantiate_Zippy_Prover_Instance_Base(open Base; structure Z = Z)
-open Z
-end
-

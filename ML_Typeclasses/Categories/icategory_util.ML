@@ -7,6 +7,7 @@ signature IARROW_EXCEPTION_REC =
 sig
   include IARROW_EXCEPTION
   val repeat : ('p1, 'i, 'i, 'a, 'a) cat -> ('p1, 'i, 'i, 'a, 'a) cat
+  val repeatn_safe : int -> ('p1, 'i, 'i, 'a, 'a) cat -> ('p1, 'i, 'i, 'a, 'a) cat
   val try_step : ('p1, 'i, 'j, 'a, 'b) cat -> ('p1, 'i, 'i, 'a, 'a) cat -> ('p1, 'i, 'j, 'a, 'b) cat
 end
 
@@ -21,6 +22,9 @@ functor IKleisli_Arrow_Exception_Rec(AE : IKLEISLI_ARROW_EXCEPTION) : IKLEISLI_A
 struct
 open AE
 fun repeat move x = x |> try (comp (repeat move) move)
+fun repeatn_safe fuel move x = x |>
+  (if fuel <= 0 then id ()
+  else try (comp (repeatn_safe (fuel - 1) move) move))
 fun try_step f step x = x |> catch' f (comp (try_step f step) step)
 end
 

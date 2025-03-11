@@ -56,6 +56,10 @@ sig
   val prio : unit -> (@{ParaT_args}, @{T_args} Z5.zipper, prio) L.slens
   val pd_more : unit -> (@{ParaT_args}, @{T_args} Z5.zipper, @{T_args} pd_more) L.slens
 
+  (* movements *)
+  \<^imap>\<open>\<open>{i}\<close> => \<open>
+  val top{i} : (@{ParaT_args}, @{T_args} Z{i}.zipper) hom_move\<close>\<close>
+
   (* copy *)
   (** run copies **)
   val get_run_copy : copy_update_data -> @{T_args} Z3.zipper ->
@@ -171,6 +175,13 @@ local
   structure AA = Kleisli_Arrow_Arrow_Apply(M)
   open SC M AA AA.A
 in
+
+(* movements *)
+fun top1 x = x |> (AE.repeat (Up1.move >>> Up5.move >>> Up4.move >>> Up3.move >>> Up2.move))
+fun top2 x = x |> (AE.repeat (Up2.move >>> Up1.move >>> Up5.move >>> Up4.move >>> Up3.move))
+fun top3 x = x |> (AE.repeat (Up3.move >>> Up2.move >>> Up1.move >>> Up5.move >>> Up4.move))
+fun top4 x = x |> (AE.repeat (Up4.move >>> Up3.move >>> Up2.move >>> Up1.move >>> Up5.move))
+fun top5 x = x |> (AE.repeat (Up5.move >>> Up4.move >>> Up3.move >>> Up2.move >>> Up1.move))
 
 (* copy *)
 (** run copies **)

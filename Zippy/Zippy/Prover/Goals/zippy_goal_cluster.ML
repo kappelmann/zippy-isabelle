@@ -8,6 +8,8 @@ sig
   val get_pos : gcluster -> GCS.cluster_pos
   val get_state : gcluster -> GCS.state
   val get_thm : gcluster -> thm
+  val pretty_gcluster : Proof.context -> gcluster -> Pretty.T
+
   val init : GCS.gclusters * int list -> gcluster list
   val init' : GCS.gclusters -> gcluster list
   val init_state : GCS.state -> GCS.gclusters * gcluster list
@@ -28,6 +30,8 @@ fun mk_gcluster pos state = GCluster {state = state, pos = pos}
 fun get_pos (GCluster {pos,...}) = pos
 fun get_state (GCluster {state,...}) = state
 val get_thm = get_state #> TS.get_thm
+
+fun pretty_gcluster ctxt = get_state #> Zippy_Thm_State.pretty ctxt
 
 fun init x = x
   |>> GCS.get_cclusters
