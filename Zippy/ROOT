@@ -1,5 +1,4 @@
 session Zippy = "Pure" +
-  options [quick_and_dirty]
   sessions
     ML_Unification
     ML_Typeclasses

@@ -43,8 +43,7 @@ sig
 
   (* tactics *)
   (** lifting **)
-  val add_all_rmd : Zippy_Result_Metadata.metadata * Zippy_Result_Metadata.metadata ->
-    Zippy_Result_Metadata.metadata
+  val add_all_rmd : RMD.metadata * RMD.metadata -> RMD.metadata
 
   val lift_every_goals_focus_tac : (GCS.state * GCS.state -> RMD.metadata) ->
     (GCS.goal_pos -> int -> GCS.goal_pos T.GPU.T.target) -> (int -> tactic) -> F.focus ->
@@ -56,17 +55,17 @@ sig
   (* presults *)
   val presults_from_tac' :
     (@{ParaT_args}, @{T_args} Z4.zipper * result Seq.seq, prio * result Seq.seq) CO.coroutine ->
-    (F.focus -> rd_more T.zippy_tactic) -> F.focus ->
+    (F.focus -> RMD.metadata T.zippy_tactic) -> F.focus ->
     (@{ParaT_args}, @{T_args} Z2.zipper, @{T_args} presults) cat
 
   (* actions *)
   (** action from presult **)
-  val cons_move_single_presults_action' : ACMD.metadata -> AMD.metadata ->
+  val cons_move_single_presults_action' : AMD.metadata ->
     (focus -> (@{ParaT_args}, @{T_args} Z2.zipper, @{T_args} presults) cat) -> focus ->
     (@{ParaT_args}, @{T_args} Z2.zipper, @{T_args} Z4.zipper) cat
 
   (** actions from tactics **)
-  val cons_move_tac : ACMD.metadata -> AMD.metadata ->
+  val cons_move_tac : AMD.metadata ->
     (@{ParaT_args}, @{T_args} Z4.zipper * result Seq.seq, prio * result Seq.seq) CO.coroutine ->
     (F.focus -> RMD.metadata T.zippy_tactic) -> F.focus ->
     (@{ParaT_args}, @{T_args} Z2.zipper, @{T_args} Z4.zipper) cat
@@ -158,10 +157,11 @@ fun pretty_action x = x |>
     ]))
 (** Z5 **)
 fun pretty_actiona x = x |>
-  ((L.get (result_metadata ()) &&& L.get (actiona_focus ()) &&& L.get (actiona_actiona_num ()))
-  >>> arr (fn ((rmd, foc), actiona_num) => Show.record [
+  (L.get (result_metadata ()) &&& L.get (actiona_focus ()) &&& L.get (actiona_actiona_num ()) &&& L.get (prio ())
+  >>> arr (fn (((rmd, foc), actiona_num), prio) => Show.record [
       ("Result", RMD.pretty_metadata rmd),
       ("Focus", F.pretty foc),
+      ("Priority", Prio.pretty prio),
       ("Action number", Show.int actiona_num)
     ]))
 end
@@ -186,15 +186,24 @@ fun presults_from_tac' mk_prio_sq_c tac f = presults_from_tac mk_prio_sq_c (tac 
 
 (* actions *)
 (** action from presult **)
-fun cons_move_single_presults_action' acmdm amdm mk_presults f z =
-  mk_cd_more acmdm
+local structure ID = Zippy_Identifier
+in
+fun cons_move_single_presults_action' amdm mk_presults f z =
+  AMD.get_id amdm
+  >>= (fn id =>
+    let
+      val acmd_id = ID.combine [id, @{binding "cluster"}]
+      val acmd_desc = "Single action cluster for " ^ ID.quoted_string id
+    in ACMD.metadata (acmd_id, acmd_desc) end)
+  >>= mk_cd_more
   >>= (fn cdm => mk_action_fd_more amdm
   >>= (fn afdm => cons_move_single_presults_action mk_rdd_more mk_gcsd_more mk_gcd_more cdm afdm
     mk_presults f z))
+end
 
 (** actions from tactics **)
-fun cons_move_tac acmd amd mk_prio_sq_c tac =
-  cons_move_single_presults_action' acmd amd (presults_from_tac' mk_prio_sq_c tac)
+fun cons_move_tac amd mk_prio_sq_c tac =
+  cons_move_single_presults_action' amd (presults_from_tac' mk_prio_sq_c tac)
 
 (** fold and run actions **)
 local
@@ -213,7 +222,9 @@ in
 fun gen_fold_max_paction_dfs update_res = fold_pactions_max P.ord update_res Zippy_DFS.next
 fun fold_max_paction_dfs x = x |> gen_fold_max_paction_dfs (Z.id ())
 fun fold_max_paction_dfs_halve_prio_depth x = x |>
-  gen_fold_max_paction_dfs (first (first (arr P.halve)))
+  let fun halve_depth ((p, action), z) =
+    L.get (depth4 ()) z >>= arr (fn d => ((funpow d P.halve p, action), z))
+  in gen_fold_max_paction_dfs halve_depth end
 
 fun gen_fold_run_paction_dfs fold_paction =
   Zippy_DFS.first3 >>> fold_paction >>> fold_pactions_run_single_res
@@ -224,7 +235,7 @@ end
 
 fun gen_repeat_fold_run_paction fold_run_paction opt_fuel =
   (case opt_fuel of NONE => AE.repeat | SOME n => AE.repeatn_safe n)
-  (fold_run_paction  >>> top4 >>> Up4.move >>> Up3.move >>> Up2.move >>> Z1.ZM.Unzip.move)
+  (fold_run_paction  >>> top4 >>> Z1.ZM.Unzip.move)
 fun repeat_fold_run_max_paction_dfs opt_fuel =
   gen_repeat_fold_run_paction fold_run_max_paction_dfs opt_fuel
 fun repeat_fold_run_max_paction_dfs_halve_prio_depth opt_fuel =

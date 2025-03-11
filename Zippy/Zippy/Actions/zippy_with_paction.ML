@@ -58,7 +58,7 @@ sig
 
   (* movements *)
   \<^imap>\<open>\<open>{i}\<close> => \<open>
-  val top{i} : (@{ParaT_args}, @{T_args} Z{i}.zipper) hom_move\<close>\<close>
+  val top{i} : (@{ParaT_args}, @{T_args} Z{i}.zipper, @{T_args} Z1.zipper) move\<close>\<close>
 
   (* copy *)
   (** run copies **)
@@ -177,11 +177,19 @@ local
 in
 
 (* movements *)
-fun top1 x = x |> (AE.repeat (Up1.move >>> Up5.move >>> Up4.move >>> Up3.move >>> Up2.move))
-fun top2 x = x |> (AE.repeat (Up2.move >>> Up1.move >>> Up5.move >>> Up4.move >>> Up3.move))
-fun top3 x = x |> (AE.repeat (Up3.move >>> Up2.move >>> Up1.move >>> Up5.move >>> Up4.move))
-fun top4 x = x |> (AE.repeat (Up4.move >>> Up3.move >>> Up2.move >>> Up1.move >>> Up5.move))
-fun top5 x = x |> (AE.repeat (Up5.move >>> Up4.move >>> Up3.move >>> Up2.move >>> Up1.move))
+fun top1 x = x |>
+  (AE.repeat (Up1.move >>> Up5.move >>> Up4.move >>> Up3.move >>> Up2.move))
+fun top2 x = x |>
+  (AE.repeat (Up2.move >>> Up1.move >>> Up5.move >>> Up4.move >>> Up3.move)
+  >>> Up2.move)
+fun top3 x = x |>
+  (AE.repeat (Up3.move >>> Up2.move >>> Up1.move >>> Up5.move >>> Up4.move)
+  >>> Up3.move >>> Up2.move)
+fun top4 x = x |>
+  (AE.repeat (Up4.move >>> Up3.move >>> Up2.move >>> Up1.move >>> Up5.move)
+  >>> Up4.move >>> Up3.move >>> Up2.move)
+fun top5 x = x |> (AE.repeat (Up5.move >>> Up4.move >>> Up3.move >>> Up2.move >>> Up1.move)
+  >>> Up5.move >>> Up4.move >>> Up3.move >>> Up2.move)
 
 (* copy *)
 (** run copies **)

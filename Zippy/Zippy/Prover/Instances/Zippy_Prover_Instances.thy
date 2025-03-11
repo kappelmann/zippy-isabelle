@@ -40,48 +40,61 @@ ML\<open>
   local structure SC = Semi_Category(Zippy); structure C = Category(Zippy); structure M = Monad(Zippy.M)
     open SC Zippy M
   in
-    fun halve_prio_co p = update_prio_co (fn _ => P.halve) p
+    fun halve_prio_co p = update_prio_co (fn _ => P.halve) (P.double p)
     (* val presults_from_tac = Z.presults_from_tac' @{context} *)
     fun cheat_tac ctxt = resolve_tac ctxt [@{thm cheat}]
       |> lift_all_goals_focus_tac (K (Zippy_Result_Metadata.metadata RMD.promising))
         T.single_goal_empty_target
-    val acmd = ACMD.metadata (@{binding "test cluster"}, "cluster description")
     val amd = AMD.metadata (@{binding "test action"}, "action description")
-    fun add_tac p f ctxt z =
-      acmd
-      >>= (fn acmd => amd
-      >>= (fn amd => cons_move_tac acmd amd (halve_prio_co p) (cheat_tac ctxt) f z))
+    fun add_tac amd p f tac z =
+      amd >>= (fn amd => cons_move_tac amd (halve_prio_co p) tac f z)
     (* (halve_prio_co p) (cheat_tac mk_rmd ctxt) *)
     val test = Timing.timeit
       (fn _ => (
       (init_state' mk_gcsd_more mk_gcd_more
       >>> arr snd
       >>> Down1.move
-      >>> with_state (add_tac P.MEDIUM F.none)
+      >>> with_state (cheat_tac #> add_tac amd P.HIGH (F.goals [1]))
+      >>> Up4.move >>> Up3.move
+      >>> with_state (cheat_tac #> add_tac amd P.LOW (F.goals [2]))
       >>> Up4.move >>> Up3.move >>> Z2.ZM.Down.move
-      >>> with_state (add_tac P.MEDIUM F.none)
+      >>> with_state (cheat_tac #> add_tac amd P.MEDIUM F.none)
       >>> Up4.move >>> Up3.move >>> Z2.ZM.Down.move
-      >>> with_state (add_tac P.LOW F.none)
+      >>> with_state (cheat_tac #> add_tac amd P.MEDIUM F.none)
       >>> Up4.move >>> Up3.move >>> Z2.ZM.Down.move
-      >>> with_state (add_tac P.MEDIUM F.none)
+      >>> with_state (cheat_tac #> add_tac amd P.MEDIUM F.none)
       >>> Up4.move >>> Up3.move >>> Up2.move >>> Z1.ZM.Unzip.move
-      >>> repeat_fold_run_max_paction_dfs NONE
+      >>> repeat_fold_run_max_paction_dfs_halve_prio_depth NONE
       >>> Z1.ZM.Zip.move
+      >>> Down1.move
+      >>> Down2.move >>> Down3.move
+      >>> Down4.move
+      >>> Down5.move
+      >>> Down1.move
+      >>> Down2.move >>> Down3.move
+      >>> top4
+      >>> Down1.move >>> Down2.move >>> Down3.move >>> Down4.move >>> Down5.move
+      (* >>> Down4.move *)
+      (* >>> Down5.move  *)
+      (* >>> with_state pretty_gc *)
+      (* >>> pretty_actiona *)
       (* >>> \<^imap>\<open>\<open>{i}\<close> => \<open>Down{i}.move\<close> where sep = ">>>" and stop = 2\<close> *)
       (* >>> Up5.move *)
       (* >>> Z3.ZM.Down.move *)
       (* >>> pretty_actionc *)
       (* >>> top4 *)
       (* >>> Z1.ZM.Zip.move *)
-      >>> finish_gclusters_oldest_first @{context}
+      (* >>> finish_gclusters_oldest_first @{context} >>> arr Seq.list_of *)
       (* >>> up *)
       (* >>> L.get (L.lens_snd (L.id ())) *)
       (* >>> finish_gclusters_oldest_first @{context} *)
       )
       |> (fn f => f (@{thm test} |> Goal.protect 6) |> MS.eval @{context})
       ))
-      |> the |> Seq.list_of
   end
 \<close>
 
+ML\<open>
+  val a = THEN
+\<close>
 end
