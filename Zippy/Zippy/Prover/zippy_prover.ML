@@ -236,29 +236,29 @@ in
 fun gen_finish_gcluster_list finish_gcluster = LTSM.traverse finish_gcluster
 end
 
-fun gen_finish_gcluster list_gcluster_children fold_append finish_gclusters z = z |>
-  (AE.catch' list_gcluster_children (K [])
+fun gen_finish_gcluster list_gclusters_children fold_append finish_gclusters z = z |>
+  (AE.catch' list_gclusters_children (K [])
   >>> (fn gcs => fold_append finish_gclusters gcs Seq.empty)
   >>> (fn gcs_statesq => get_gcluster_state z
   >>= arr (seq_snoc gcs_statesq)))
 
-fun finish_gclusters_fold list_gcluster_children fold_append ctxt x = x |>
-  gen_finish_gclusters (get_gcluster_list_statesq_fold list_gcluster_children fold_append ctxt) ctxt
-and get_gcluster_list_statesq_fold list_gcluster_children fold_append ctxt x = x |>
-  gen_get_gcluster_list_statesq (finish_gcluster_list_fold list_gcluster_children fold_append ctxt)
-and finish_gcluster_list_fold list_gcluster_children fold_append ctxt x = x |>
-  gen_finish_gcluster_list (finish_gcluster_fold list_gcluster_children fold_append ctxt)
-and finish_gcluster_fold list_gcluster_children fold_append ctxt x = x |>
-  gen_finish_gcluster list_gcluster_children fold_append
-    (finish_gclusters_fold list_gcluster_children fold_append ctxt)
+fun finish_gclusters_fold list_gclusters_children fold_append ctxt x = x |>
+  gen_finish_gclusters (get_gcluster_list_statesq_fold list_gclusters_children fold_append ctxt) ctxt
+and get_gcluster_list_statesq_fold list_gclusters_children fold_append ctxt x = x |>
+  gen_get_gcluster_list_statesq (finish_gcluster_list_fold list_gclusters_children fold_append ctxt)
+and finish_gcluster_list_fold list_gclusters_children fold_append ctxt x = x |>
+  gen_finish_gcluster_list (finish_gcluster_fold list_gclusters_children fold_append ctxt)
+and finish_gcluster_fold list_gclusters_children fold_append ctxt x = x |>
+  gen_finish_gcluster list_gclusters_children fold_append
+    (finish_gclusters_fold list_gclusters_children fold_append ctxt)
 
-fun list_zipper5_gcluster_children x = x |> (Down5.move >>> list_container_zippers1)
+fun list_zipper5_gclusters_children x = x |> (Down5.move >>> list_container_zippers1)
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-and list_zipper{i}_gcluster_children x = x |>
+and list_zipper{i}_gclusters_children x = x |>
   (Down{i}.move
   >>> list_container_zippers\<^eval>\<open>T_Args.succ_mod_Poly_nargs' {i}\<close>
   >>> LT.traverse (AE.catch'
-    list_zipper\<^eval>\<open>T_Args.succ_mod_Poly_nargs' {i}\<close>_gcluster_children (K []))
+    list_zipper\<^eval>\<open>T_Args.succ_mod_Poly_nargs' {i}\<close>_gclusters_children (K []))
   >>> arr List.concat)\<close>
 where start = 2 and stop = 4\<close>
 
@@ -267,7 +267,7 @@ fun fold_newest_first_append f = fold_newest_first (apply_append f)
 fun fold_oldest_first_append f = fold_oldest_first (apply_append f)
 
 fun finish_gclusters_oldest_first x = x
-  |> finish_gclusters_fold list_zipper2_gcluster_children fold_oldest_first_append
+  |> finish_gclusters_fold list_zipper2_gclusters_children fold_oldest_first_append
 
 end
 

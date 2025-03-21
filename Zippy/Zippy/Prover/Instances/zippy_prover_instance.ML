@@ -9,6 +9,10 @@ sig
   val with_state : (@{ParaT_args} -> (@{ParaT_args}, 'a, 'b) cat) -> (@{ParaT_args}, 'a, 'b) cat
 
   (* lenses *)
+  (** Z1 **)
+  val node_gclusters_metadata : unit -> (@{ParaT_args}, @{T_args} ZCORE.N1.node, GCSMD.metadata) L.slens
+  val gclusters_metadata : unit -> (@{ParaT_args}, @{T_args} Z1.zipper, GCSMD.metadata) L.slens
+
   (** Z3 **)
   val node_actionc_metadata : unit -> (@{ParaT_args}, @{T_args} ZCORE.N3.node, ACMD.metadata) L.slens
   val actionc_metadata : unit -> (@{ParaT_args}, @{T_args} Z3.zipper, ACMD.metadata) L.slens
@@ -23,7 +27,7 @@ sig
 
   (* nodes *)
   (** Z1 **)
-  val mk_gcsd_more : @{T_args} gcsd_more
+  val mk_gcsd_more : (@{ParaT_args}, GCSMD.metadata, @{T_args} gcsd_more) cat
   (** Z2 **)
   val mk_gcd_more : (@{ParaT_args}, gcluster, @{T_args} gcd_more) cat
   (** Z3 **)
@@ -85,6 +89,9 @@ sig
   val repeat_fold_run_max_paction_dfs_halve_prio_depth : int option ->
     (@{ParaT_args}, @{T_args} Z1.ZM.container) hom_move
 
+  (* finish *)
+  val finish_promising_gclusters_oldest_first : Proof.context ->
+    (@{ParaT_args}, @{T_args} Z1.zipper, thm Seq.seq) cat
 end
 
 functor Zippy_Prover_Instance(Z : ZIPPY_PROVER_INSTANCE_BASE) : ZIPPY_PROVER_INSTANCE =
@@ -96,6 +103,10 @@ open Z
 fun with_state f = AS.access (fn (x, s) => f s x)
 
 (* lenses *)
+(** Z1 **)
+fun node_gclusters_metadata _ = node_gcsd_more () \> MDD.metadata
+fun gclusters_metadata _ = gclusters_node () \> node_gclusters_metadata
+
 (** Z3 **)
 fun node_actionc_metadata _ = node_cd_more () \> MDD.metadata
 fun actionc_metadata _ = actionc_node () \> node_actionc_metadata
@@ -116,7 +127,7 @@ in
 
 (* nodes *)
 (** Z1 **)
-val mk_gcsd_more = ()
+fun mk_gcsd_more m = MDD.metadata_data (m, ())
 (** Z2 **)
 fun mk_gcd_more _ = M.pure ()
 (** Z3 **)
@@ -131,9 +142,10 @@ local structure Show = SpecCheck_Show_Base
 in
 (** Z1 **)
 fun pretty_gcs ctxt =
-  L.get (gclusters ())
-  >>> arr (fn gcs => Show.record [
-      ("Goal clusters", GCS.pretty_gclusters ctxt gcs)
+  (L.get (gclusters ()) &&& L.get (gclusters_metadata ()))
+  >>> arr (fn (gcs, gcsmd) => Show.record [
+      ("Goal clusters", GCS.pretty_gclusters ctxt gcs),
+      ("Metadata", GCSMD.pretty_metadata gcsmd)
     ])
 (** Z2 **)
 fun pretty_gc ctxt =
@@ -189,7 +201,9 @@ fun presults_from_tac' mk_prio_sq_c tac f = presults_from_tac mk_prio_sq_c (tac 
 local structure ID = Zippy_Identifier
 in
 fun cons_move_single_presults_action' amdm mk_presults f z =
-  AMD.get_id amdm
+  GCSMD.metadata false
+  >>= mk_gcsd_more
+  >>= (fn gcsdm => AMD.get_id amdm
   >>= (fn id =>
     let
       val acmd_id = ID.combine [id, @{binding "cluster"}]
@@ -197,8 +211,8 @@ fun cons_move_single_presults_action' amdm mk_presults f z =
     in ACMD.metadata (acmd_id, acmd_desc) end)
   >>= mk_cd_more
   >>= (fn cdm => mk_action_fd_more amdm
-  >>= (fn afdm => cons_move_single_presults_action mk_rdd_more mk_gcsd_more mk_gcd_more cdm afdm
-    mk_presults f z))
+  >>= (fn afdm => cons_move_single_presults_action mk_rdd_more gcsdm mk_gcd_more cdm afdm
+    mk_presults f z)))
 end
 
 (** actions from tactics **)
@@ -240,6 +254,70 @@ fun repeat_fold_run_max_paction_dfs opt_fuel =
   gen_repeat_fold_run_paction fold_run_max_paction_dfs opt_fuel
 fun repeat_fold_run_max_paction_dfs_halve_prio_depth opt_fuel =
   gen_repeat_fold_run_paction fold_run_max_paction_dfs_halve_prio_depth opt_fuel
+
+(* finish *)
+(**FIXME: consolidate copy-and-paste code*)
+fun seq_snoc sq x = Seq.append sq (Seq.single x)
+
+fun gen_finish_gclusters get_gcluster_list_statesq ctxt =
+  AE.catch' get_gcluster_list_statesq (K Seq.empty) &&& L.get (gclusters ())
+  >>> arr (fn (gcluster_statesq, gcs) =>
+    Seq.maps (fn gcluster_states => GCS.finish_cluster_states ctxt gcluster_states gcs)
+      gcluster_statesq
+    (*base case: no more subgoals*)
+    |> GCS.is_finished gcs ? (fn sq => Seq.cons (GCS.get_state gcs) sq))
+
+fun gen_get_gcluster_list_statesq finish_gcluster_list =
+  Down1.move
+  >>> list_container_zippers2
+  >>> finish_gcluster_list
+
+local structure LTSM = Traversable(List_Traversable_Trans(Identity_Traversable(Seq_Monad_Trans(M))))
+in
+fun gen_finish_gcluster_list finish_gcluster = LTSM.traverse finish_gcluster
+end
+
+fun gen_finish_gcluster list_gclusters_children fold_append finish_gclusters z = z |>
+  (AE.catch' list_gclusters_children (K [])
+  >>> (fn gcs => fold_append finish_gclusters gcs Seq.empty
+  >>= (fn gcs_statesq => get_gcluster_state z
+  >>= arr (fn state => if null gcs then seq_snoc gcs_statesq state else gcs_statesq))))
+
+fun finish_gclusters_fold list_gclusters_children fold_append ctxt x = x |>
+  gen_finish_gclusters (get_gcluster_list_statesq_fold list_gclusters_children fold_append ctxt) ctxt
+and get_gcluster_list_statesq_fold list_gclusters_children fold_append ctxt x = x |>
+  gen_get_gcluster_list_statesq (finish_gcluster_list_fold list_gclusters_children fold_append ctxt)
+and finish_gcluster_list_fold list_gclusters_children fold_append ctxt x = x |>
+  gen_finish_gcluster_list (finish_gcluster_fold list_gclusters_children fold_append ctxt)
+and finish_gcluster_fold list_gclusters_children fold_append ctxt x = x |>
+  gen_finish_gcluster list_gclusters_children fold_append
+    (finish_gclusters_fold list_gclusters_children fold_append ctxt)
+
+local
+  structure LT = List_Traversable_Trans(Identity_Traversable(M))
+  structure LF = Foldable_Monad(
+    structure F = List_Foldable_Trans(Identity_Foldable); structure M = M)
+in
+fun list_promising_zipper5_gclusters_children x =
+  L.get (result_metadata () \> RMD.progress) x
+  >>= (fn progress => (if progress = RMD.Promising
+    then Down5.move x >>= list_container_zippers1
+    else M.pure []))
+
+\<^imap>\<open>\<open>{i}\<close> => \<open>
+and list_promising_zipper{i}_gclusters_children x = x |>
+  (Down{i}.move
+  >>> list_container_zippers\<^eval>\<open>T_Args.succ_mod_Poly_nargs' {i}\<close>
+  >>> LT.traverse (AE.catch'
+    list_promising_zipper\<^eval>\<open>T_Args.succ_mod_Poly_nargs' {i}\<close>_gclusters_children (K []))
+  >>> arr List.concat)\<close>
+where start = 2 and stop = 4\<close>
+
+fun apply_append f x acc = f x >>= arr (Seq.append acc)
+fun fold_oldest_first_append f = LF.foldrM (apply_append f)
+fun finish_promising_gclusters_oldest_first x = x
+  |> finish_gclusters_fold list_promising_zipper2_gclusters_children fold_oldest_first_append
+end
 
 end
 

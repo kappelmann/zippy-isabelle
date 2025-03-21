@@ -4,13 +4,13 @@
 Basic typeclasses inspired by the Haskell Prelude, monad-transformers, and the mtl package.
 
 You might wonder: what are those 'pi type variables?
-They are here because many types ('a1,...,'a{n+1}) t satisfy below laws for
-all 'a1,...,'an. For example, ('a, 'b) either is a functor for all 'a. However, we cannot express
+They are here because many types ('p1,...,'pn, 'a) t satisfy below laws for
+all 'p1,...,'pn. For example, ('a, 'b) either is a functor for all 'a. However, we cannot express
 this in the SML type system. We can only say (t, 'b) either is a functor for each and every ground
 type g. We hence use additional 'pi type variables to allow such instances.
 
-Unfortunately, we cannot do this for an arbitrary number of 'pi type variables. As of now, we only
-support the case for i=1.
+As of now, we only need the cases n=1, given explicitly here, but it could be generalised just in
+the same was as is done for the implementation of the Zippy framework.
 *)
 infix 1 <*>
 infix 1 >>=

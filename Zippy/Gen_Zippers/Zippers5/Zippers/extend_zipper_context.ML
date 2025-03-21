@@ -18,7 +18,7 @@ sig
     @{T_args} Zbase.ZO.zcontext) ZO.L.getter
   val get_new_zcontext : (@{ParaT_args}, @{T_args} ZO.zcontext, @{T_args} new_zcontext) ZO.L.getter
 
-  val zipper_from_base_zipper : (@{ParaT_args}, @{T_args} new_zcontext * @{T_args} Zbase.zipper,
+  val zipper_from_base_zipper : (@{ParaT_args}, @{T_args} Zbase.zipper * @{T_args} new_zcontext,
     @{T_args} zipper) cat
   val base_zipper_from_zipper : (@{ParaT_args}, @{T_args} zipper, @{T_args} Zbase.zipper) cat
 end
@@ -51,8 +51,8 @@ local structure SC = Semi_Category(Z); structure A = Kleisli_Arrow(Z.M) open SC 
 in
 
 fun zipper_from_base_zipper x = x |>
-  (second (Z.ZO.get_content &&& Z.ZO.get_zcontext)
-  >>> arr (fn (new_zcontext, (content, base_zcontext)) => (content, (base_zcontext, new_zcontext)))
+  (first (Z.ZO.get_content &&& Z.ZO.get_zcontext)
+  >>> arr (fn ((content, base_zcontext), new_zcontext) => (content, (base_zcontext, new_zcontext)))
   >>> second mk_zcontext
   >>> ZO.zipper)
 
@@ -69,11 +69,11 @@ structure Z = \<^eval>\<open>T_Args.suffix_Poly_nargs "Zipper"\<close>(
     structure Zin = Z.ZM
     structure M = Zin
     type @{T_args} container = @{T_args} Zin.container * @{T_args} new_zcontext
-    fun zip x = x |> (first Zin.Zip.move >>> arr swap >>> zipper_from_base_zipper)
+    fun zip x = x |> (first Zin.Zip.move >>> zipper_from_base_zipper)
     fun unzip x = x |>
       ((base_zipper_from_zipper >>> Zin.Unzip.move) &&& (ZO.get_zcontext >>> get_new_zcontext))
     fun lift_move move =
-      (ZO.get_zcontext >>> get_new_zcontext) &&& (base_zipper_from_zipper >>> move)
+      (base_zipper_from_zipper >>> move) &&& (ZO.get_zcontext >>> get_new_zcontext)
       >>> zipper_from_base_zipper
     fun up x = x |> lift_move Zin.Up.move
     fun down x = x |> lift_move Zin.Down.move

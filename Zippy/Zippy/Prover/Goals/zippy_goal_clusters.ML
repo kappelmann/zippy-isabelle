@@ -37,7 +37,7 @@ sig
 
   val is_finished : gclusters -> bool
 
-  val finish_cluster_states : Proof.context -> thm list -> gclusters -> state Seq.seq
+  val finish_cluster_states : Proof.context -> state list -> gclusters -> state Seq.seq
 end
 
 functor Zippy_Goal_Clusters(UF : IMPERATIVE_UNION_FIND) : ZIPPY_GOAL_CLUSTERS =
