@@ -1,23 +1,24 @@
 (*  Title:      HOCLP/zipper_moves_list_enumerable..ML
     Author:     Kevin Kappelmann
 *)
-functor \<^eval>\<open>T_Args.suffix_Poly_nargs "Zipper" ^ "_Moves_List_Enumerable"\<close>(
-    structure L : GLIST
-    structure E : \<^eval>\<open>T_Args.suffix_Poly_nargs "ENUMERABLE"\<close>
+functor \<^eval>\<open>sfx_T_nargs "Zipper_Moves_List_Enumerable"\<close>(
+    structure L : \<^eval>\<open>sfx_ParaT_nargs "GLIST"\<close>
+    structure E : \<^eval>\<open>sfx_T_nargs "ENUMERABLE"\<close>
     sharing type E.M.t = L.M.t
-    val init_data : (@{ParaT_args}, @{T_args} E.data L.t, @{T_args} E.init_data) E.move
+    val init_data : (@{ParaT_args} @{AllT_args} E.data L.t, @{AllT_args} E.init_data) E.move
   ) :
-    \<^eval>\<open>T_Args.suffix_Poly_nargs "ZIPPER" ^ "_MOVES"\<close>
-    where type @{T_args} container = @{T_args} E.init_data
-    where type @{T_args} zipper = @{T_args} E.data L.t
-    where type ('p1, 'a) M.t = ('p1, 'a) E.M.t
+    \<^eval>\<open>sfx_T_nargs "ZIPPER_MOVES"\<close>
+    where type @{AllT_args} container = @{AllT_args} E.init_data
+    where type @{AllT_args} zipper = @{AllT_args} E.data L.t
+    where type (@{ParaT_args} 'a) M.t = (@{ParaT_args} 'a) E.M.t
   =
-\<^eval>\<open>T_Args.suffix_Poly_nargs "Zipper" ^ "_Moves"\<close>(
+\<^eval>\<open>sfx_T_nargs "Zipper_Moves"\<close>(
   structure M = E
-  type @{T_args} container = @{T_args} E.init_data
-  type @{T_args} zipper = @{T_args} E.data L.t
+  type @{AllT_args} container = @{AllT_args} E.init_data
+  type @{AllT_args} zipper = @{AllT_args} E.data L.t
 
-  local structure SC = Semi_Category(E); structure A = Kleisli_Arrow(E.M) open SC A
+  local structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(E)
+    structure A = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow"\<close>(E.M) open SC A
   in
   fun zip x = x |> (E.First.move >>> arr (fn x => L.cons x L.empty))
   val unzip = init_data

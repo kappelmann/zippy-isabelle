@@ -1,31 +1,31 @@
 (*  Title:      HOCLP/replace_zipper_moves_container.ML
     Author:     Kevin Kappelmann
 *)
-functor Replace_Zipper_Moves_Container(
-    structure Z : \<^eval>\<open>T_Args.suffix_Poly_nargs "ZIPPER" ^ "_MOVES"\<close>
-    type @{T_args} ncontainer
-    val ncontainer : (@{ParaT_args}, @{T_args} Z.container, @{T_args} ncontainer) Z.move
-    val dest_ncontainer : (@{ParaT_args}, @{T_args} ncontainer, @{T_args} Z.container) Z.move
+functor \<^eval>\<open>sfx_T_nargs "Replace_Zipper_Moves_Container"\<close>(
+    structure Z : \<^eval>\<open>sfx_T_nargs "ZIPPER_MOVES"\<close>
+    type @{AllT_args} ncontainer
+    val ncontainer : (@{ParaT_args} @{AllT_args} Z.container, @{AllT_args} ncontainer) Z.move
+    val dest_ncontainer : (@{ParaT_args} @{AllT_args} ncontainer, @{AllT_args} Z.container) Z.move
   )
-  : \<^eval>\<open>T_Args.suffix_Poly_nargs "ZIPPER" ^ "_MOVES"\<close>
-    where type @{T_args} container = @{T_args} ncontainer
-    where type @{T_args} zipper = @{T_args} Z.zipper
-    where type ('p1, 'a) M.t = ('p1, 'a) Z.M.t
+  : \<^eval>\<open>sfx_T_nargs "ZIPPER_MOVES"\<close>
+    where type @{AllT_args} container = @{AllT_args} ncontainer
+    where type @{AllT_args} zipper = @{AllT_args} Z.zipper
+    where type (@{ParaT_args} 'a) M.t = (@{ParaT_args} 'a) Z.M.t
   =
-\<^eval>\<open>T_Args.suffix_Poly_nargs "Zipper" ^ "_Moves"\<close>(
+\<^eval>\<open>sfx_T_nargs "Zipper_Moves"\<close>(
   open Z
   structure M = Z
-  type @{T_args} container = @{T_args} ncontainer
+  type @{AllT_args} container = @{AllT_args} ncontainer
   structure Base = struct
-    type @{T_args} nfrom = @{T_args} ncontainer
-    type @{T_args} nto = @{T_args} ncontainer
+    type @{AllT_args} nfrom = @{AllT_args} ncontainer
+    type @{AllT_args} nto = @{AllT_args} ncontainer
     val dest_nfrom = dest_ncontainer
     val nto = ncontainer
   end
-  structure Zip = \<^eval>\<open>T_Args.suffix_Poly_nargs "Replace_Move" ^ "_From"\<close>(
+  structure Zip = \<^eval>\<open>sfx_T_nargs "Replace_Move_From"\<close>(
     open Base; structure M = Z.Zip)
   val zip = Zip.move
-  structure Unzip = \<^eval>\<open>T_Args.suffix_Poly_nargs "Replace_Move" ^ "_To"\<close>(
+  structure Unzip = \<^eval>\<open>sfx_T_nargs "Replace_Move_To"\<close>(
     open Base; structure M = Z.Unzip)
   val unzip = Unzip.move
   val up = Z.Up.move

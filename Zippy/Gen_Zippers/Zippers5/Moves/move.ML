@@ -1,42 +1,41 @@
 (*  Title:      HOCLP/move.ML
     Author:     Kevin Kappelmann
 
-See typeclass_base.ML in ML_Typeclasses for an explanation of the 'p1 type variables.
 *)
-signature \<^eval>\<open>T_Args.suffix_Poly_nargs "MOVE"\<close> =
+signature \<^eval>\<open>sfx_T_nargs "MOVE"\<close> =
 sig
-  include MOVE_BASE
-  type @{T_args} from
-  type @{T_args} to
-  val move : (@{ParaT_args}, @{T_args} from, @{T_args} to) move
+  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  type @{AllT_args} from
+  type @{AllT_args} to
+  val move : (@{ParaT_args} @{AllT_args} from, @{AllT_args} to) move
 end
 
-signature \<^eval>\<open>T_Args.suffix_Poly_nargs "HOM_MOVE"\<close> =
+signature \<^eval>\<open>sfx_T_nargs "HOM_MOVE"\<close> =
 sig
-  include \<^eval>\<open>T_Args.suffix_Poly_nargs "MOVE"\<close>
+  include \<^eval>\<open>sfx_T_nargs "MOVE"\<close>
   sharing type from = to
 end
 
-functor \<^eval>\<open>T_Args.suffix_Poly_nargs "Hom_Move"\<close>(
-    structure M : MOVE_BASE
-    type @{T_args} data
-    val move : (@{ParaT_args}, @{T_args} data) M.hom_move
-  ) : \<^eval>\<open>T_Args.suffix_Poly_nargs "HOM_MOVE"\<close> =
+functor \<^eval>\<open>sfx_T_nargs "Hom_Move"\<close>(
+    structure M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+    type @{AllT_args} data
+    val move : (@{ParaT_args} @{AllT_args} data) M.hom_move
+  ) : \<^eval>\<open>sfx_T_nargs "HOM_MOVE"\<close> =
 struct
 open M
-type @{T_args} from = @{T_args} data
-type @{T_args} to = @{T_args} data
+type @{AllT_args} from = @{AllT_args} data
+type @{AllT_args} to = @{AllT_args} data
 val move = move
 end
 
-functor \<^eval>\<open>T_Args.suffix_Poly_nargs "Instantiate_Move"\<close>(
-    \<^imap>\<open>\<open>{i}\<close> => \<open>type @{T_args} inst{i}\<close>\<close>
-    structure M : \<^eval>\<open>T_Args.suffix_Poly_nargs "MOVE"\<close>
+functor \<^eval>\<open>sfx_T_nargs "Instantiate_Move"\<close>(
+    \<^imap>\<open>\<open>{i}\<close> => \<open>type @{AllT_args} inst{i}\<close>\<close>
+    structure M : \<^eval>\<open>sfx_T_nargs "MOVE"\<close>
   ) :
-    \<^eval>\<open>T_Args.suffix_Poly_nargs "MOVE"\<close>
-    where type @{T_args} from = (@{ParaT_args},
-      \<^imap>\<open>\<open>{i}\<close> => \<open>@{T_args} inst{i}\<close> where sep = ","\<close>) M.from
-    where type @{T_args} to = (@{ParaT_args},
-      \<^imap>\<open>\<open>{i}\<close> => \<open>@{T_args} inst{i}\<close> where sep = ","\<close>) M.to
-    where type ('p1, 'a) K.M.t = ('p1, 'a) M.K.M.t
+    \<^eval>\<open>sfx_T_nargs "MOVE"\<close>
+    where type @{AllT_args} from = (@{ParaT_args}
+      \<^imap>\<open>\<open>{i}\<close> => \<open>@{AllT_args} inst{i}\<close> where sep = ","\<close>) M.from
+    where type @{AllT_args} to = (@{ParaT_args}
+      \<^imap>\<open>\<open>{i}\<close> => \<open>@{AllT_args} inst{i}\<close> where sep = ","\<close>) M.to
+    where type (@{ParaT_args} 'a) K.M.t = (@{ParaT_args} 'a) M.K.M.t
   = M

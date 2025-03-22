@@ -1,1 +1,1 @@
-# Haskell-Like Typeclasses in ML (for Isabelle)
+# Haskell-Like Typeclasses for Isabelle/ML

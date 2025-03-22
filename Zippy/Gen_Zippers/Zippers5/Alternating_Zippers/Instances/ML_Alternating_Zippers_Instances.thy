@@ -5,9 +5,9 @@ theory ML_Alternating_Zippers_Instances
     ML_Zipper_Instances
 begin
 
-ML_file'\<open>alternating_position_zippers.ML\<close>
-ML_file'\<open>alternating_depth_zippers.ML\<close>
+ML_gen_file\<open>alternating_position_zipper.ML\<close>
+ML_gen_file\<open>alternating_depth_zipper.ML\<close>
 
-ML_file'\<open>dfs_postorder_enumerable_alternating_zippers.ML\<close>
+ML_gen_file\<open>dfs_postorder_enumerable_alternating_zipper.ML\<close>
 
 end

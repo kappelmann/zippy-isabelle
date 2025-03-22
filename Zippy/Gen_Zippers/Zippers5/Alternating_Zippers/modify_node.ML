@@ -1,44 +1,44 @@
 (*  Title:      HOCLP/modify_node.ML
     Author:     Kevin Kappelmann
 *)
-functor \<^eval>\<open>T_Args.suffix_Poly_nargs "Instantiate_Node"\<close>(
-    structure N : \<^eval>\<open>T_Args.suffix_Poly_nargs "NODE"\<close>
-    \<^imap>\<open>\<open>{i}\<close> => \<open>type @{T_args} inst{i}\<close>\<close>
+functor \<^eval>\<open>sfx_T_nargs "Instantiate_Node"\<close>(
+    structure N : \<^eval>\<open>sfx_T_nargs "NODE"\<close>
+    \<^imap>\<open>\<open>{i}\<close> => \<open>type @{AllT_args} inst{i}\<close>\<close>
   ) :
-    \<^eval>\<open>T_Args.suffix_Poly_nargs "NODE"\<close>
-    where type @{T_args} content = (@{ParaT_args},
-      \<^imap>\<open>\<open>{i}\<close> => \<open>@{T_args} inst{i}\<close> where sep = ","\<close>) N.content
-    where type @{T_args} next = (@{ParaT_args},
-      \<^imap>\<open>\<open>{i}\<close> => \<open>@{T_args} inst{i}\<close> where sep = ","\<close>) N.next
-    where type @{T_args} node = (@{ParaT_args},
-      \<^imap>\<open>\<open>{i}\<close> => \<open>@{T_args} inst{i}\<close> where sep = ","\<close>) N.node
+    \<^eval>\<open>sfx_T_nargs "NODE"\<close>
+    where type @{AllT_args} content = (@{ParaT_args}
+      \<^imap>\<open>\<open>{i}\<close> => \<open>@{AllT_args} inst{i}\<close> where sep = ","\<close>) N.content
+    where type @{AllT_args} next = (@{ParaT_args}
+      \<^imap>\<open>\<open>{i}\<close> => \<open>@{AllT_args} inst{i}\<close> where sep = ","\<close>) N.next
+    where type @{AllT_args} node = (@{ParaT_args}
+      \<^imap>\<open>\<open>{i}\<close> => \<open>@{AllT_args} inst{i}\<close> where sep = ","\<close>) N.node
   = N
 
-functor \<^eval>\<open>T_Args.suffix_Poly_nargs "Replace_Node" ^ "_Content_Next"\<close>(
-    structure A : KLEISLI_ARROW_BASE
-    structure N : \<^eval>\<open>T_Args.suffix_Poly_nargs "NODE"\<close>
-    where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) A.cat
-    type @{T_args} ncontent
-    val ncontent : (@{ParaT_args}, @{T_args} N.content, @{T_args} ncontent) A.cat
-    val dest_ncontent : (@{ParaT_args}, @{T_args} ncontent, @{T_args} N.content) A.cat
-    type @{T_args} nnext val nnext : (@{ParaT_args}, @{T_args} N.next, @{T_args} nnext) A.cat
-    val dest_nnext : (@{ParaT_args}, @{T_args} nnext, @{T_args} N.next) A.cat
+functor \<^eval>\<open>sfx_T_nargs "Replace_Node_Content_Next"\<close>(
+    structure A : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_BASE"\<close>
+    structure N : \<^eval>\<open>sfx_T_nargs "NODE"\<close>
+    where type (@{ParaT_args} 'a, 'b) L.C.cat = (@{ParaT_args} 'a, 'b) A.cat
+    type @{AllT_args} ncontent
+    val ncontent : (@{ParaT_args} @{AllT_args} N.content, @{AllT_args} ncontent) A.cat
+    val dest_ncontent : (@{ParaT_args} @{AllT_args} ncontent, @{AllT_args} N.content) A.cat
+    type @{AllT_args} nnext val nnext : (@{ParaT_args} @{AllT_args} N.next, @{AllT_args} nnext) A.cat
+    val dest_nnext : (@{ParaT_args} @{AllT_args} nnext, @{AllT_args} N.next) A.cat
   ) :
-    \<^eval>\<open>T_Args.suffix_Poly_nargs "NODE"\<close>
-    where type @{T_args} content = @{T_args} ncontent
-    where type @{T_args} next = @{T_args} nnext
-    where type @{T_args} node = @{T_args} N.node
-    where type ('p1, 'a, 'b) L.C.cat = ('p1, 'a, 'b) N.L.C.cat
-    where type ('p1, 't, 'o, 's, 'i) L.lens = ('p1, 't, 'o, 's, 'i) N.L.lens
+    \<^eval>\<open>sfx_T_nargs "NODE"\<close>
+    where type @{AllT_args} content = @{AllT_args} ncontent
+    where type @{AllT_args} next = @{AllT_args} nnext
+    where type @{AllT_args} node = @{AllT_args} N.node
+    where type (@{ParaT_args} 'a, 'b) L.C.cat = (@{ParaT_args} 'a, 'b) N.L.C.cat
+    where type (@{ParaT_args} 't, 'o, 's, 'i) L.lens = (@{ParaT_args} 't, 'o, 's, 'i) N.L.lens
   =
 struct
 
 structure L = N.L
-type @{T_args} content = @{T_args} ncontent
-type @{T_args} next = @{T_args} nnext
-type @{T_args} node = @{T_args} N.node
+type @{AllT_args} content = @{AllT_args} ncontent
+type @{AllT_args} next = @{AllT_args} nnext
+type @{AllT_args} node = @{AllT_args} N.node
 
-structure SC = Semi_Category(A) open SC A
+structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(A) open SC A
 
 fun node x = x |> ((dest_ncontent *** dest_nnext) >>> N.node)
 

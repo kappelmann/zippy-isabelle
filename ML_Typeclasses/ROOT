@@ -1,10 +1,12 @@
 session ML_Typeclasses = "Pure" +
   sessions ML_Unification
   directories
-    Categories
-    Lenses
-    State
+    Antiquotations
+    Gen_Typeclasses
+    "Gen_Typeclasses/Typeclasses_1"
+    "Gen_Typeclasses/Typeclasses_1/Categories"
+    "Gen_Typeclasses/Typeclasses_1/Lenses"
+    "Gen_Typeclasses/Typeclasses_1/State"
   theories
     ML_Typeclasses
     ML_ITypeclasses
-

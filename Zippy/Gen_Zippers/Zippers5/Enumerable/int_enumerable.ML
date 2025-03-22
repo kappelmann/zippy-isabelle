@@ -1,19 +1,19 @@
 (*  Title:      HOCLP/int_enumerable.ML
     Author:     Kevin Kappelmann
 *)
-functor \<^eval>\<open>T_Args.suffix_Poly_nargs "Int_Enumerable"\<close>(
-    structure M : MOVE_BASE
-    type @{T_args} init_data
-    val first : (@{ParaT_args}, @{T_args} init_data, int) M.cat
+functor \<^eval>\<open>sfx_T_nargs "Int_Enumerable"\<close>(
+    structure M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+    type @{AllT_args} init_data
+    val first : (@{ParaT_args} @{AllT_args} init_data, int) M.cat
   ) :
-    \<^eval>\<open>T_Args.suffix_Poly_nargs "ENUMERABLE"\<close>
-    where type @{T_args} init_data = @{T_args} init_data
-    where type @{T_args} data = int
-    where type ('p1, 'a) M.t = ('p1, 'a) M.M.t
-  = \<^eval>\<open>T_Args.suffix_Poly_nargs "Enumerable"\<close>(
+    \<^eval>\<open>sfx_T_nargs "ENUMERABLE"\<close>
+    where type @{AllT_args} init_data = @{AllT_args} init_data
+    where type @{AllT_args} data = int
+    where type (@{ParaT_args} 'a) M.t = (@{ParaT_args} 'a) M.M.t
+  = \<^eval>\<open>sfx_T_nargs "Enumerable"\<close>(
   structure M = M
-  type @{T_args} init_data = @{T_args} init_data
-  type @{T_args} data = int
+  type @{AllT_args} init_data = @{AllT_args} init_data
+  type @{AllT_args} data = int
   val first = first
   fun next x = x |> M.arr (fn p => p + 1)
   fun prev x = x |> M.arr (fn p => p - 1)

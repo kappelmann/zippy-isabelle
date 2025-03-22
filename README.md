@@ -1,10 +1,10 @@
-# Higher-Order Logic Constraint Programming in Isabelle
+# Zippy - Generic White-Box Proof Search with Zippers
 
-A constraint logic programming tactic for Isabelle.
+The supplementary material for the submission
+"Zippy - Generic White-Box Proof Search with Zippers",
+The International Conference on Interactive Theorem Proving 2025.
 
-## Build
+## Connections Paper <--> Formalisation
 
-Requirements:
-1. The Isabelle development version
-2. The AFP development version 
-
+- All links are given in `Zippy/Zippy_Paper.thy`.
+  You can CTRL+click on each referenced theorem, definition, file, etc.
