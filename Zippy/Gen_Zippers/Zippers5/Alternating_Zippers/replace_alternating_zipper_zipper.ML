@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/replace_alternating_zipper_zipper.ML
+(*  Title:      Zippy/replace_alternating_zipper_zipper.ML
     Author:     Kevin Kappelmann
 *)
 functor \<^eval>\<open>mk_name ["Replace", pfx_sfx_nargs "Alternating_Zipper_Zipper"]\<close>(

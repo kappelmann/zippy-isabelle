@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_paction_data.ML
+(*  Title:      Zippy/zippy_paction_data.ML
     Author:     Kevin Kappelmann
 
 Data for actions with priorities.

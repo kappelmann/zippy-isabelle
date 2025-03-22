@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_goal_pos_update_util.ML
+(*  Title:      Zippy/zippy_goal_pos_update_util.ML
     Author:     Kevin Kappelmann
 *)
 signature ZIPPY_GPOS_UPDATE_UTIL =

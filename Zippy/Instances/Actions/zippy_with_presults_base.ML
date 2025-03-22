@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_with_presults_base.ML
+(*  Title:      Zippy/zippy_with_presults_base.ML
     Author:     Kevin Kappelmann
 
 Zippy with prioritised action results.

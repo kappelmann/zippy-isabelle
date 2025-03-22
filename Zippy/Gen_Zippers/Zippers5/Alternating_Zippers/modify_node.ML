@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/modify_node.ML
+(*  Title:      Zippy/modify_node.ML
     Author:     Kevin Kappelmann
 *)
 functor \<^eval>\<open>sfx_T_nargs "Instantiate_Node"\<close>(

@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/pair_zipper_moves.ML
+(*  Title:      Zippy/pair_zipper_moves.ML
     Author:     Kevin Kappelmann
 *)
 signature \<^eval>\<open>sfx_T_nargs "PAIR_ZIPPER_MOVES"\<close> =

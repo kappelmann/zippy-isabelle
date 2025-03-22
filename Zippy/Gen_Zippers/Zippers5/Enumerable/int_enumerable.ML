@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/int_enumerable.ML
+(*  Title:      Zippy/int_enumerable.ML
     Author:     Kevin Kappelmann
 *)
 functor \<^eval>\<open>sfx_T_nargs "Int_Enumerable"\<close>(

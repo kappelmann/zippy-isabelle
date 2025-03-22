@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_with_paction.ML
+(*  Title:      Zippy/zippy_with_paction.ML
     Author:     Kevin Kappelmann
 *)
 infix 3 \>

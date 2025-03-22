@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_prover_instance.ML
+(*  Title:      Zippy/zippy_prover_instance.ML
     Author:     Kevin Kappelmann
 *)
 signature ZIPPY_PROVER_INSTANCE =

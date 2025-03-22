@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/dfs_postorder_enumerable_zipper_moves.ML
+(*  Title:      Zippy/dfs_postorder_enumerable_zipper_moves.ML
     Author:     Kevin Kappelmann
 *)
 (*preconditions:

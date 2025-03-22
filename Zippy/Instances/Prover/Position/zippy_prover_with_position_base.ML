@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_prover_with_position_base.ML
+(*  Title:      Zippy/zippy_prover_with_position_base.ML
     Author:     Kevin Kappelmann
 *)
 signature ZIPPY_PROVER_WITH_POSITION_BASE =

@@ -1,4 +1,4 @@
-(*  Title:    HOCLP/pair_alternating_zipper.ML
+(*  Title:    Zippy/pair_alternating_zipper.ML
     Auor:     Kevin Kappelmann
 *)
 signature \<^eval>\<open>mk_name ["PAIR", pfx_sfx_nargs "ALTERNATING_ZIPPER"]\<close> =

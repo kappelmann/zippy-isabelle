@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/rotate_alternating_zipper.ML
+(*  Title:      Zippy/rotate_alternating_zipper.ML
     Author:     Kevin Kappelmann
 *)
 functor \<^eval>\<open>mk_name ["Rotate", pfx_sfx_nargs "Alternating_Zipper"]\<close>(

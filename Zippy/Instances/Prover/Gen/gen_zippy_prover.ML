@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/gen_zippy_prover.ML
+(*  Title:      Zippy/gen_zippy_prover.ML
     Author:     Kevin Kappelmann
 *)
 signature GEN_ZIPPY_PROVER =

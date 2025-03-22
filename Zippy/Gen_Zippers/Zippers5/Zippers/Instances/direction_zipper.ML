@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/direction_zipper.ML
+(*  Title:      Zippy/direction_zipper.ML
     Author:     Kevin Kappelmann
 *)
 functor \<^eval>\<open>sfx_T_nargs "Direction_Zipper"\<close>(

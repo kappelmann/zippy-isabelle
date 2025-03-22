@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_prio_data.ML
+(*  Title:      Zippy/zippy_prio_data.ML
     Author:     Kevin Kappelmann
 *)
 signature ZIPPY_PRIO_DATA =

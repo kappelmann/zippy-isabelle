@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_tactic_result.ML
+(*  Title:      Zippy/zippy_tactic_result.ML
     Author:     Kevin Kappelmann
 *)
 signature ZIPPY_TACTIC_RESULT =

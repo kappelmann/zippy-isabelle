@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/coroutine.ML
+(*  Title:      Zippy/coroutine.ML
     Author:     Kevin Kappelmann
 
 (Indexed) (alternating) coroutines.

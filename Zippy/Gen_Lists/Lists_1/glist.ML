@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/glist.ML
+(*  Title:      Zippy/glist.ML
     Author:     Kevin Kappelmann
 
 Generalised lists.

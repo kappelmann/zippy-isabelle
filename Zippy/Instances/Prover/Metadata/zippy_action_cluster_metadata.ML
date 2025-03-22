@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_action_cluster_metadata.ML
+(*  Title:      Zippy/zippy_action_cluster_metadata.ML
     Author:     Kevin Kappelmann
 *)
 signature ZIPPY_ACTION_CLUSTER_METADATA =

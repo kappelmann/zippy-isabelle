@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/modify_node_succ.ML
+(*  Title:      Zippy/modify_node_succ.ML
     Author:     Kevin Kappelmann
 *)
 functor \<^eval>\<open>sfx_T_nargs "Modify_Node_Succ"\<close>(

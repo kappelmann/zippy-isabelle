@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/alternating_zipper_nodes.ML
+(*  Title:      Zippy/alternating_zipper_nodes.ML
     Author:     Kevin Kappelmann
 *)
 signature \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER_NODES_BASE_ARGS"\<close> =

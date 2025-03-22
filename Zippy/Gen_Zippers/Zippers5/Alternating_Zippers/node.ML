@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/node.ML
+(*  Title:      Zippy/node.ML
     Author:     Kevin Kappelmann
 *)
 signature \<^eval>\<open>sfx_T_nargs "NODE"\<close> =

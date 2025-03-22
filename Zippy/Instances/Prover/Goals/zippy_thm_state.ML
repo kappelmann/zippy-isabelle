@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_thm_state.ML
+(*  Title:      Zippy/zippy_thm_state.ML
     Author:     Kevin Kappelmann
 *)
 signature ZIPPY_THM_STATE =

@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zipper_direction.ML
+(*  Title:      Zippy/zipper_direction.ML
     Author:     Kevin Kappelmann
 *)
 signature ZIPPER_DIRECTION =

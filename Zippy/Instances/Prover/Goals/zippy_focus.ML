@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_focus.ML
+(*  Title:      Zippy/zippy_focus.ML
     Author:     Kevin Kappelmann
 *)
 signature ZIPPY_FOCUS =

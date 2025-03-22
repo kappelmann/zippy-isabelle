@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/imperative_union_find.ML
+(*  Title:      Zippy/imperative_union_find.ML
     Author:     Kevin Kappelmann
 
 Adapted from https://github.com/standardml/cmlib, MIT license.

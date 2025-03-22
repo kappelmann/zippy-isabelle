@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/position_zipper.ML
+(*  Title:      Zippy/position_zipper.ML
     Author:     Kevin Kappelmann
 *)
 signature \<^eval>\<open>sfx_T_nargs "POSITION_ZIPPER"\<close> =

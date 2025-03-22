@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/replace_move_from_to.ML
+(*  Title:      Zippy/replace_move_from_to.ML
     Author:     Kevin Kappelmann
 *)
 functor \<^eval>\<open>sfx_T_nargs "Replace_Move_From"\<close>(

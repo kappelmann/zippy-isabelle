@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/move.ML
+(*  Title:      Zippy/move.ML
     Author:     Kevin Kappelmann
 
 *)

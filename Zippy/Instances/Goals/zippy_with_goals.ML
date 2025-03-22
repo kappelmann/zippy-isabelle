@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_with_goals.ML
+(*  Title:      Zippy/zippy_with_goals.ML
     Author:     Kevin Kappelmann
 *)
 signature ZIPPY_WITH_GOALS =

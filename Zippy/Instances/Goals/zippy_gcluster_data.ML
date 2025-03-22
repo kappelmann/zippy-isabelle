@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_gcluster_data.ML
+(*  Title:      Zippy/zippy_gcluster_data.ML
     Author:     Kevin Kappelmann
 *)
 signature ZIPPY_GCLUSTER_DATA =

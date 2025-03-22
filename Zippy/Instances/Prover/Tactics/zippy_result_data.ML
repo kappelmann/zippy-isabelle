@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_result_data.ML
+(*  Title:      Zippy/zippy_result_data.ML
     Author:     Kevin Kappelmann
 *)
 signature ZIPPY_RESULT_DATA =

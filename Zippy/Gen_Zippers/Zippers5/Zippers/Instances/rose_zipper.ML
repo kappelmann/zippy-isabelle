@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/rose_zipper.ML
+(*  Title:      Zippy/rose_zipper.ML
     Author:     Kevin Kappelmann
 *)
 signature \<^eval>\<open>sfx_T_nargs "ROSE_ZIPPER"\<close> =

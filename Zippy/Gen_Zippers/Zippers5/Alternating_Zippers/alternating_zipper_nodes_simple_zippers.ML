@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/alternating_zipper_nodes_simple_zippers.ML
+(*  Title:      Zippy/alternating_zipper_nodes_simple_zippers.ML
     Author:     Kevin Kappelmann
 *)
 functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Nodes_Base_Args_Simple_Zippers"\<close>(

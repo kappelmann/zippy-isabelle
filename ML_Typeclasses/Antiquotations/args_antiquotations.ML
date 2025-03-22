@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/args_antiquotations.ML
+(*  Title:      ML_Typeclasses/args_antiquotations.ML
     Author:     Kevin Kappelmann
 
 Antiquotation for lists of arguments.

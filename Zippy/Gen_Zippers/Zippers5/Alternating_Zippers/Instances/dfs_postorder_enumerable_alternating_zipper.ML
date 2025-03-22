@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/dfs_postorder_enumerable_alternating_zipper.ML
+(*  Title:      Zippy/dfs_postorder_enumerable_alternating_zipper.ML
     Author:     Kevin Kappelmann
 *)
 signature \<^eval>\<open>mk_name ["DFS_POSTORDER_ENUMERABLE", pfx_sfx_nargs "ALTERNATING_ZIPPER"]\<close> =

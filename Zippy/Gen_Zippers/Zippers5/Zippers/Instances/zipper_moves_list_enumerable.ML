@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zipper_moves_list_enumerable..ML
+(*  Title:      Zippy/zipper_moves_list_enumerable..ML
     Author:     Kevin Kappelmann
 *)
 functor \<^eval>\<open>sfx_T_nargs "Zipper_Moves_List_Enumerable"\<close>(

@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zipper_optics_zipper_data.ML
+(*  Title:      Zippy/zipper_optics_zipper_data.ML
     Author:     Kevin Kappelmann
 *)
 signature \<^eval>\<open>sfx_T_nargs "ZIPPER_OPTICS_ZIPPER_DATA"\<close> =

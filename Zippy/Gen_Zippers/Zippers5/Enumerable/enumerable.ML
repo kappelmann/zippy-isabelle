@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/enumerable.ML
+(*  Title:      Zippy/enumerable.ML
     Author:     Kevin Kappelmann
 *)
 signature \<^eval>\<open>sfx_T_nargs "ENUMERABLE"\<close> =

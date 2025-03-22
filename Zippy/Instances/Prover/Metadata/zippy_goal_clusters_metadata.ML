@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/zippy_goal_clusters_metadata.ML
+(*  Title:      Zippy/zippy_goal_clusters_metadata.ML
     Author:     Kevin Kappelmann
 *)
 signature ZIPPY_GOAL_CLUSTERS_METADATA =

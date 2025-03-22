@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/alternating_depth_zipper.ML
+(*  Title:      Zippy/alternating_depth_zipper.ML
     Author:     Kevin Kappelmann
 *)
 signature \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_DEPTH_ZIPPER"\<close> =

@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/extend_zipper5_context.ML
+(*  Title:      Zippy/extend_zipper5_context.ML
     Author:     Kevin Kappelmann
 *)
 signature \<^eval>\<open>sfx_T_nargs "EXTEND_ZIPPER_CONTEXT"\<close> =

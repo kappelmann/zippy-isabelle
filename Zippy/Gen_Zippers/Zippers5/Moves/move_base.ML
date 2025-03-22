@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/move_base.ML
+(*  Title:      Zippy/move_base.ML
     Author:     Kevin Kappelmann
 *)
 signature \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close> =

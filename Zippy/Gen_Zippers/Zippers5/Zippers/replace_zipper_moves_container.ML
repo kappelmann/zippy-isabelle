@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/replace_zipper_moves_container.ML
+(*  Title:      Zippy/replace_zipper_moves_container.ML
     Author:     Kevin Kappelmann
 *)
 functor \<^eval>\<open>sfx_T_nargs "Replace_Zipper_Moves_Container"\<close>(

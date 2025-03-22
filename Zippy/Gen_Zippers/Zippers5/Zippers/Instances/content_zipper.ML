@@ -1,4 +1,4 @@
-(*  Title:      HOCLP/content_zipper.ML
+(*  Title:      Zippy/content_zipper.ML
     Author:     Kevin Kappelmann
 *)
 functor \<^eval>\<open>sfx_T_nargs "Content_Zipper_Optics"\<close>(
