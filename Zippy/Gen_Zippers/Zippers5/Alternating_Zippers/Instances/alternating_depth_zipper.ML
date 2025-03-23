@@ -51,7 +51,7 @@ struct
     type @{AllT_args} to = int
     fun move x = x |> Z.id ()
   end\<close>\<close>
-  structure \<^eval>\<open>sfx_T_nargs "Down"\<close> =
+  structure \<^eval>\<open>"Down" ^ ML_Gen.ZipperT_nargs' ()\<close> =
   struct
     open Z
     type @{AllT_args} from = int

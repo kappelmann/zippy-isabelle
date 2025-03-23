@@ -33,8 +33,8 @@ session Zippy = "Pure" +
     Zippy_Prover
     Zippy_Prover_Instances
 
-session Zippy_Tests in Tests = "Zippy" +
+session Zippy_Examples in Examples = "Zippy" +
   options [quick_and_dirty]
   theories
-    Zippy_Tests
+    Zippy_Examples
 
