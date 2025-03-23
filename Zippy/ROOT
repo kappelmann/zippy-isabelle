@@ -1,4 +1,4 @@
-session Zippy = "Pure" +
+session Zippy = "HOL" +
   sessions
     ML_Unification
     ML_Typeclasses

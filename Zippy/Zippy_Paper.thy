@@ -92,6 +92,8 @@ text \<open>
     external provers, one for simplification actions, etc. This gives the search tree some more
     structure but is not strictly necessary (it is thus omitted in the paper).
 
+  \<^item> Example usages can be found here @{file "Examples/Zippy_Examples.thy"}.
+
   \<^item> Adding Actions @{file "Instances/Actions/zippy_with_paction_base.ML"}
     \<^item> Action nodes do not store a static priority and action but, more generally,
       a "priority action" (paction) that dynamically computes a priority and action pair.
@@ -139,8 +141,6 @@ text \<open>
     \<^item> Best-First Search @{ML Zippy.repeat_fold_run_max_paction_dfs}
 
   \<^item> Retrieving all theorems found by the zipper @{ML Zippy.finish_gclusters_oldest_first}
-
-  \<^item> Example usages @{file "Examples/Zippy_Examples.thy"}
 \<close>
 
 end
