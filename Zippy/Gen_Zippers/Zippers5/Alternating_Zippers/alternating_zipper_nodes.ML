@@ -11,8 +11,7 @@ sig
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   structure N{i} : \<^eval>\<open>sfx_T_nargs "NODE"\<close>
   where type @{AllT_args} next = (@{ParaT_args}
-    @{AllT_args} Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>ZM.container)
-    Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>M.t
+    @{AllT_args} Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>ZM.container) Z{i}.M.t
   where type (@{ParaT_args} 'a, 'b) L.C.cat = (@{ParaT_args} 'a, 'b) Z{i}.cat
   sharing type N{i}.node = Z{i}.ZO.content
   sharing type N{i}.L.lens = Z{i}.ZO.L.lens\<close>\<close>
@@ -32,8 +31,7 @@ sig
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   type @{AllT_args} zcontext{i}
   type @{AllT_args} pzipper{i}
-  type @{AllT_args} parent{i} = (@{ParaT_args} @{AllT_args} pzipper{i})
-    A.Z\<^eval>\<open>pred_mod_nzippers {i} ^ "."\<close>M.t\<close>\<close>
+  type @{AllT_args} parent{i} = (@{ParaT_args} @{AllT_args} pzipper{i}) A.Z{i}.M.t\<close>\<close>
 
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   val mk_zcontext{i} : (@{ParaT_args} @{AllT_args} A.Z{i}.ZO.zcontext *
@@ -100,8 +98,7 @@ withtype
 where sep = \<open>and\<close>\<close>
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-type @{AllT_args} parent{i} = (@{ParaT_args} @{AllT_args} pzipper{i})
-  A.Z\<^eval>\<open>pred_mod_nzippers {i} ^ "."\<close>M.t\<close>\<close>
+type @{AllT_args} parent{i} = (@{ParaT_args} @{AllT_args} pzipper{i}) A.Z{i}.M.t\<close>\<close>
 
 structure Base =
 struct

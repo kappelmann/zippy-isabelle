@@ -3,7 +3,7 @@
 *)
 signature ZIPPY_PROVER_WITH_POSITION_BASE =
 sig
-  structure ZPOS : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_POSITION_ZIPPER"\<close>
+  structure ZPOS : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_LOCAL_POSITION_ZIPPER"\<close>
   structure ZDEPTH : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_DEPTH_ZIPPER"\<close>
   sharing type ZDEPTH.M.t = ZPOS.M.t
   sharing type ZDEPTH.L.lens = ZPOS.L.lens
@@ -68,7 +68,7 @@ structure ZCORE = \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Nodes"\<close
     type @{AllT_args} ncontent{i} = @{ZipperT_arg \<open>{i} - 1\<close>}
     structure Z{i} = ZCOREAZ{i}\<close>\<close>)
   structure ZD = \<^eval>\<open>sfx_ParaT_nargs "Zipper_Data"\<close>)
-structure ZPOS = \<^eval>\<open>pfx_sfx_nargs "Alternating_Position_Zipper"\<close>(
+structure ZPOS = \<^eval>\<open>pfx_sfx_nargs "Alternating_Local_Position_Zipper"\<close>(
   \<^eval>\<open>sfx_T_nargs "Position_Zipper"\<close>(
     structure A = AA
     structure L = L
@@ -159,4 +159,3 @@ structure Base = struct \<^imap>\<open>\<open>{i}\<close> => \<open>type @{AllT_
 structure Z = Instantiate_Zippy_Prover(open Base; structure Z = Z)
 open Z
 end
-

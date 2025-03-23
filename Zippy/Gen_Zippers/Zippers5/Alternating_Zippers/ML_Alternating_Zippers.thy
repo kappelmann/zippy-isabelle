@@ -2,18 +2,14 @@
 section \<open>Alternating Zippers\<close>
 theory ML_Alternating_Zippers
   imports
-    ML_Zippers
+    ML_Linked_Zippers
 begin
 
 ML\<open>
   val pfx_sfx_nargs = ML_Gen.pfx_sfx_nargs
-  val mk_name = ML_Gen.mk_name
-  val succ_mod_nzippers = ML_Gen.succ_mod_nzippers'
-  val pred_mod_nzippers = ML_Gen.pred_mod_nzippers'
 \<close>
 
 ML_gen_file\<open>alternating_zipper_moves.ML\<close>
-
 ML_gen_file\<open>alternating_zipper.ML\<close>
 ML_gen_file\<open>pair_alternating_zipper.ML\<close>
 
@@ -25,13 +21,14 @@ ML_gen_file\<open>node.ML\<close>
 ML_gen_file\<open>modify_node.ML\<close>
 
 context
-  (*TODO: could also be made generic with some ML code*)
+  (*FIXME: could be made generic with ML programming*)
   notes [[AllT_args args = ['p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'a6]]]
   and [[imap stop = 6]]
 begin
 context
   notes [[ZipperT_args args = ['a1, 'a2, 'a3, 'a4, 'a5, 'a6]]]
 begin
+text \<open>Note: we reload the ML file @{file node.ML} again, just with different parameters.\<close>
 ML_gen_file\<open>node.ML\<close>
 ML\<open>
   val succ_node_sig = sfx_T_nargs "NODE"

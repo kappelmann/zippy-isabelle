@@ -3,25 +3,21 @@
 *)
 signature \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close> =
 sig
-  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
-  structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS"\<close>
-  where type (@{ParaT_args} 'a, 'b) C.cat = (@{ParaT_args} 'a, 'b) cat
-  \<^imap>\<open>\<open>{i}\<close> => \<open>
-  structure Z{i} : \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close>
-  sharing type Z{i}.ZO.L.lens = L.lens
-  sharing type Z{i}.M.t = M.t\<close>\<close>
+  include \<^eval>\<open>pfx_sfx_nargs "LINKED_ZIPPER"\<close>
 
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   structure Down{i} : \<^eval>\<open>sfx_T_nargs "MOVE"\<close>
   where type @{AllT_args} from = @{AllT_args} Z{i}.zipper
   where type @{AllT_args} to = @{AllT_args} Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>zipper
-  sharing type Down{i}.M.t = M.t\<close>\<close>
+  sharing type Down{i}.M.t = M.t\<close>
+  where start = \<open>ML_Gen.nzippers ()\<close>\<close>
 
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   structure Up{i} : \<^eval>\<open>sfx_T_nargs "MOVE"\<close>
   where type @{AllT_args} from = @{AllT_args} Z{i}.zipper
   where type @{AllT_args} to = @{AllT_args} Z\<^eval>\<open>pred_mod_nzippers {i} ^ "."\<close>zipper
-  sharing type Up{i}.M.t = M.t\<close>\<close>
+  sharing type Up{i}.M.t = M.t\<close>
+  where stop = 1\<close>
 end
 
 functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper"\<close>(
@@ -35,11 +31,11 @@ functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper"\<close>(
 struct
 
 open Z
-structure L = ZO1.L
-\<^imap>\<open>\<open>{i}\<close> => \<open>
-structure Z{i} = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
-  structure ZM = Z.Z{i}; structure ZO = ZO{i}
-)\<close>\<close>
+structure LZ = \<^eval>\<open>pfx_sfx_nargs "Linked_Zipper"\<close>(
+  structure Z = Z
+  \<^imap>\<open>\<open>{i}\<close> => \<open>
+  structure ZO{i} = ZO{i}\<close>\<close>)
+open LZ
 
 end
 

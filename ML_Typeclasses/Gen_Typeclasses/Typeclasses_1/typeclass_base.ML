@@ -3,13 +3,8 @@
 
 Basic typeclasses inspired by the Haskell Prelude, monad-transformers, and the mtl package.
 
-You might wonder: what are those 'pi type variables?
-They are here because many types (@{ParaT_args}...,'pn, 'a) t satisfy below laws for
-all @{ParaT_args}...,'pn. For example, ('a, 'b) either is a functor for all 'a. However, we cannot express
-this in Isabelle/ML. We can only say (t, 'b) either is a functor for each and every ground
-type g. We hence use additional 'pi type variables to allow such instances.
-
-More information can be found in the paper for "Zippy".
+For an explanation of the @{ParaT_args} arguments, see the paper
+"Zippy - Generic White-Box Proof Search with Zippers".
 *)
 infix 1 <*>
 infix 1 >>=

@@ -53,7 +53,7 @@ functor Zippy_Prover_Instance_Base(
     M : \<^eval>\<open>sfx_ParaT_nargs "MONAD_EXCEPTION_BASE"\<close>
     where type (@{ParaT_args} 'a) t = 'a option
     where type @{ParaT_args encl = "(" ")"} exn = unit
-  ) :> (*FIXME: abstraction of types only needed to speed up ML compiler*)
+  ) :> (*FIXME: opaque types only needed to speed up ML compiler*)
     ZIPPY_PROVER_INSTANCE_BASE
   =
 struct
@@ -62,9 +62,13 @@ structure ME = M
 structure MS = \<^eval>\<open>sfx_ParaT_nargs "IState_Trans"\<close>(
   structure M = ME
   structure SR = Pair_State_Result_Base)
-structure ME = \<^eval>\<open>sfx_ParaT_nargs "IMonad_Exception_State_Trans"\<close>(structure M = ME; structure S = MS)
+structure ME = \<^eval>\<open>sfx_ParaT_nargs "IMonad_Exception_State_Trans"\<close>(
+  structure M = ME
+  structure S = MS)
 structure ME : \<^eval>\<open>sfx_ParaT_nargs "MONAD_EXCEPTION_BASE"\<close> =
-  struct open ME type (@{ParaT_args} 'a) t = (unit, @{ParaT_arg 0}, @{ParaT_arg 0}, 'a) t end
+struct
+  open ME type (@{ParaT_args} 'a) t = (unit, @{ParaT_arg 0}, @{ParaT_arg 0}, 'a) t
+end
 structure AS = \<^eval>\<open>sfx_ParaT_nargs "IKleisli_Arrow_State"\<close>(MS)
 
 structure P = Prio

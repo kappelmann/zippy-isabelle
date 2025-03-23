@@ -1,7 +1,7 @@
-(*  Title:      Zippy/alternating_position_zipper.ML
+(*  Title:      Zippy/alternating_local_position_zipper.ML
     Author:     Kevin Kappelmann
 *)
-signature \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_POSITION_ZIPPER"\<close> =
+signature \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_LOCAL_POSITION_ZIPPER"\<close> =
 sig
   structure Z : \<^eval>\<open>sfx_T_nargs "POSITION_ZIPPER"\<close>
   include \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER_NODES"\<close>
@@ -13,9 +13,9 @@ sig
   where type (@{ParaT_args} 'a) M.t = (@{ParaT_args} 'a) Z.M.t
 end
 
-functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Position_Zipper"\<close>(
+functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Local_Position_Zipper"\<close>(
     Z : \<^eval>\<open>sfx_T_nargs "POSITION_ZIPPER"\<close>
-  ) : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_POSITION_ZIPPER"\<close> =
+  ) : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_LOCAL_POSITION_ZIPPER"\<close> =
 struct
 structure Z = Z
 structure AZN = \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Nodes"\<close>(

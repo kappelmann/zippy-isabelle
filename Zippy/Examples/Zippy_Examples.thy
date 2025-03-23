@@ -39,7 +39,7 @@ ML\<open>
       structure E{i} = \<^eval>\<open>sfx_T_nargs "DFS_Postorder_Enumerable_Zipper_Moves"\<close>(
         open Base; structure Z = Z.Z{i}.ZM)\<close>\<close>
       structure AE = AE)
-    fun halve_prio_co p = update_prio_co (fn _ => P.halve) (P.double p)
+    fun halve_prio_co p = update_prio_co (fn _ => P.halve) p
     (* val presults_from_tac = Z.presults_from_tac' @{context} *)
     fun cheat_tac prog ctxt = resolve_tac ctxt [@{thm cheat}]
       |> lift_all_goals_focus_tac (K (Zippy_Result_Metadata.metadata prog))
@@ -57,20 +57,30 @@ ML\<open>
       >>> arr snd
       >>> Down1.move
       >>> with_state (cheat_tac RMD.unclear #> add_tac amd P.HIGH (F.goals [2]))
-      (* >>> Up4.move >>> Up3.move *)
-      (* >>> with_state (cheat_tac RMD.promising #> add_tac amd P.LOW (F.goals [2])) *)
-      (* >>> Up4.move >>> Up3.move >>> Z2.ZM.Down.move
-      >>> with_state (cheat_tac RMD.unclear #> add_tac amd P.MEDIUM F.none)
+      (* >>> L.get (pos1 ()) *)
+      >>> Up4.move >>> Up3.move
+      >>> with_state (cheat_tac RMD.promising #> add_tac amd P.LOW (F.goals [2]))
       >>> Up4.move >>> Up3.move >>> Z2.ZM.Down.move
       >>> with_state (cheat_tac RMD.unclear #> add_tac amd P.MEDIUM F.none)
       >>> Up4.move >>> Up3.move >>> Z2.ZM.Down.move
-      >>> with_state (cheat_tac RMD.unclear #> add_tac amd P.MEDIUM F.none) *)
+      >>> with_state (cheat_tac RMD.unclear #> add_tac amd P.MEDIUM F.none)
+      >>> Up4.move >>> Up3.move >>> Z2.ZM.Down.move
+      >>> with_state (cheat_tac RMD.unclear #> add_tac amd P.MEDIUM F.none)
       >>> Up4.move >>> Up3.move >>> Up2.move >>> Z1.ZM.Unzip.move
       >>> repeat_fold_run_max_paction_dfs_halve_prio_depth NONE
       (* >>> Zippy_DFS.first3 *)
       (* >>> L.get (depth4 ()) *)
       (* >>> repeat_fold_run_max_paction_dfs_halve_prio_depth (SOME 1) *)
-      (* >>> Z1.ZM.Zip.move *)
+      >>> Z1.ZM.Zip.move
+      >>> Down1.move
+      >>> Z2.ZM.Down.move
+      >>> Down2.move
+      >>> Down3.move
+      >>> Down4.move
+      (* >>> Down5.move *)
+      (* >>> Down1.move  *)
+      (* >>> Z2.ZM.Down.move *)
+      >>> L.get (pos5 ())
       (* >>> Down1.move >>> Down2.move >>> Down3.move  *)
       (* >>> repeat_fold_run_max_paction_dfs_halve_prio_depth (SOME 1) *)
       (* >>> Z1.ZM.Unzip.move *)

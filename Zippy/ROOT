@@ -14,6 +14,7 @@ session Zippy = "Pure" +
     "Gen_Zippers/Zippers5/Alternating_Zippers"
     "Gen_Zippers/Zippers5/Alternating_Zippers/Instances"
     "Gen_Zippers/Zippers5/Enumerable"
+    "Gen_Zippers/Zippers5/Linked_Zippers"
     "Gen_Zippers/Zippers5/Moves"
     "Gen_Zippers/Zippers5/Zippers"
     "Gen_Zippers/Zippers5/Zippers/Instances"
@@ -30,6 +31,7 @@ session Zippy = "Pure" +
     "Instances/Prover/Position"
     "Instances/Prover/Tactics"
   theories
+    Zippy_Paper
     Zippy_Prover
     Zippy_Prover_Instances
 

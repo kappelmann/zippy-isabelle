@@ -132,7 +132,7 @@ fun list_container_zippers unzip first next = unzip >>> EU.list first next
 val fold_newest_first = LF.foldlM
 val fold_oldest_first = LF.foldrM
 
-(*TODO: add other enumerations*)
+(*TODO: add more enumerations*)
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 val first{i} = Z{i}.ZM.Zip.move
 val next{i} = Z{i}.ZM.Down.move

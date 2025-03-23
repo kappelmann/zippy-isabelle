@@ -60,7 +60,8 @@ struct
   val ZipperT_nargs' = ZipperT_nargs #> string_of_int
   fun sfx_T_nargs s = mk_name [s, ParaT_nargs (), ZipperT_nargs' ()]
   (*ML structure names may not begin with a digit; hence we add a "n" prefix*)
-  fun pfx_nzippers s = mk_name ["n" ^ nzippers' (), s]
+  val nprefix = prefix "n"
+  fun pfx_nzippers s = mk_name [nprefix (nzippers' ()), s]
   val pfx_sfx_nargs = pfx_nzippers #> sfx_T_nargs
 
   fun succ_mod_nzippers i = (i mod nzippers ()) + 1

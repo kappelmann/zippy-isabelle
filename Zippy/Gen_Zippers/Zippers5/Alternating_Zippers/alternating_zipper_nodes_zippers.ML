@@ -39,8 +39,7 @@ structure Base = struct structure A = A; structure L = Z1.ZO.L end
 structure N{i} = \<^eval>\<open>sfx_T_nargs "Node"\<close>(open Base
   type @{AllT_args} content = @{AllT_args} ncontent{i}
   type @{AllT_args} next = (@{ParaT_args}
-    @{AllT_args} Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>ZM.container)
-    Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>M.t
+    @{AllT_args} Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>ZM.container) Z{i}.M.t
 )\<close>\<close>
 structure Base = struct
   structure AF = \<^eval>\<open>sfx_ParaT_nargs "SArrow_Arrow_Apply" ^ ".A"\<close>

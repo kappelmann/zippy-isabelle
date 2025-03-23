@@ -1,7 +1,7 @@
 (*  Title:  state.ML
     Author: Kevin Kappelmann
 
-Indexed state monads adapted from Haskell's mtl package.
+Indexed state monads; adapted from Haskell's mtl package.
 *)
 signature \<^eval>\<open>sfx_ParaT_nargs "IMONAD_STATE_BASE"\<close> =
 sig
