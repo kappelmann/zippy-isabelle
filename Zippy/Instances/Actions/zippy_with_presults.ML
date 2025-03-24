@@ -54,10 +54,19 @@ sig
   val gen_update_result :
     (*init child node*)
     (prio -> 'res -> (@{ParaT_args} @{AllT_args} Z4.zipper, 'cud * 'ch) cat) ->
+    (*update child node*)
+    ('cud -> (@{ParaT_args} 'ch, 'z) cat) ->
+    prio -> 'res -> (@{ParaT_args} @{AllT_args} Z4.zipper, 'z) cat
+
+  val gen_update_result_copy_parent_actions :
+    (*init child node*)
+    (prio -> 'res -> (@{ParaT_args} @{AllT_args} Z4.zipper, 'cud * 'ch) cat) ->
     (*get parent actions*)
     (@{ParaT_args} 'ch, 'pas) cat ->
     (*copy parent actions*)
     ('cud -> 'pas -> (@{ParaT_args} 'ch, 'z) cat) ->
+    (*update child node*)
+    ('cud -> (@{ParaT_args} 'z) hom_move) ->
     prio -> 'res -> (@{ParaT_args} @{AllT_args} Z4.zipper, 'z) cat
 
   val update_tail_presults : @{AllT_args} presults -> (@{ParaT_args} @{AllT_args} Z4.zipper) hom_move
@@ -136,10 +145,13 @@ fun paction_from_presults e = gen_paction_from_presults (L.get (presults ()))
 fun gen_update_result_tail_presults update_result update_tail_presults (x, aco) prio =
   update_result prio x >>> update_tail_presults prio aco
 
-fun gen_update_result init_child get_parent_actions copy_parent_actions prio x = init_child prio x
-  >>> second (get_parent_actions &&& id ())
-  >>> arr (fn (cud, (pas, d)) => (copy_parent_actions cud pas, d))
-  >>> AA.app
+fun gen_update_result init_child update_child prio x = init_child prio x >>> uncurry update_child
+
+fun gen_update_result_copy_parent_actions init_child get_parent_actions copy_parent_actions
+  update_child =
+  gen_update_result init_child
+  (fn cud => fn z =>
+    get_parent_actions z >>= (fn pas => copy_parent_actions cud pas z) >>= update_child cud)
 
 fun update_tail_presults prs = (presults () |> L.set |> curry) prs
   >>> gen_inc_actiona_num (action_actiona_num () |> L.modify)

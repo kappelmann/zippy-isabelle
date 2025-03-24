@@ -5,6 +5,8 @@ theory Zippy_Examples
     Main
 begin
 
+declare [[ML_print_depth = 100]]
+
 text \<open>Some simple examples showcasing navigation in the zipper and the creation of theorems using
 the best-first search instantiation from the paper.\<close>
 
@@ -19,18 +21,22 @@ ML\<open>
   fun halve_prio_co p = update_prio_co (fn _ => P.halve) p
 
   (*add a tactic action whose results' priorites are halved after each pull*)
-  fun add_tac amd p focus tac z =
-    amd >>= (fn amd => cons_move_tac amd (halve_prio_co p) tac focus z)
+  fun add_tac amd p focus tac z = amd
+  >>= (fn amd => cons_move_tac amd (halve_prio_co p) tac
+    (fn _ => fn _ => id ()) (*you could add additional action children here after applying the tactic*)
+    focus z)
 
   (*tactic solving every goal*)
   fun cheat_tac prog ctxt = Skip_Proof.cheat_tac ctxt
     |> lift_all_goals_focus_tac (K (Zippy_Result_Metadata.metadata prog))
     T.single_goal_empty_target
 
+  (*tactic acting on goal, not necessarily solving it*)
+  fun zippy_tac prog tac = lift_every_goals_focus_tac (K (Zippy_Result_Metadata.metadata prog))
+    T.single_goal_moved_target tac
+
   (*resolution with theorems*)
-  fun zippy_resolve_tac prog thms ctxt = resolve_tac ctxt thms
-    |> lift_every_goals_focus_tac (K (Zippy_Result_Metadata.metadata prog))
-    T.single_goal_moved_target
+  fun zippy_resolve_tac prog thms ctxt = zippy_tac prog (resolve_tac ctxt thms)
 
   (*just some action metadata*)
   fun amd _ = AMD.metadata (@{binding "test action"}, "action description")
@@ -76,7 +82,47 @@ back
 back
 oops
 
-declare [[ML_print_depth = 100]]
+
+text \<open>Search tree akin to Figure 1 from the paper.\<close>
+
+lemma shows "A \<Longrightarrow> (B \<longrightarrow> C) \<or> (A \<and> A)"
+apply (tactic \<open>fn state =>
+  let
+    val amd = amd ()
+    val opt_statesq =
+      (*initialise the zipper*)
+      (init_state' mk_gcd_more state >>= arr snd
+      (*add the resolution tactics to the goal cluster*)
+      >>= Down1.move
+      (*one could, of course, also split each theorem into a separate action*)
+      >>= with_state (zippy_resolve_tac RMD.promising @{thms conjI impI disjI1 disjI2}
+          #> add_tac amd P.HIGH (F.goals [1]))
+      >>= Up4.move >>= Up3.move
+      (*add the assumption tactic to the goal cluster*)
+      >>= with_state (assume_tac #> zippy_tac RMD.promising #> add_tac amd P.HIGH (F.goals [1]))
+      >>= top4 >>= Z1.ZM.Unzip.move
+      (*repeat best-first-search until no more changes*)
+      >>= repeat_fold_run_max_paction_dfs NONE
+      (*get the theorems*)
+      >>= Z1.ZM.Zip.move >>= with_state finish_gclusters_oldest_first)
+      (*pass context to state monad*)
+      |> MS.eval @{context}
+  in
+    case opt_statesq of
+      NONE => Seq.empty
+    | SOME statesq =>
+        let val _ = Seq.list_of statesq |> @{make_string} |> writeln
+        in statesq end
+  end
+\<close>)
+(*you can backtrack with "back"*)
+back
+back (*solved branch*)
+back
+back
+back
+back (*etc.*)
+oops
 
 text \<open>Example with meta variable clusters, navigation, and printing.\<close>
 

@@ -79,7 +79,7 @@ fun lift_single_goal_tac target_goal tac i state = tac i state
   >>= arr (fn rd =>
     let
       val state' = RD.get_result rd
-      val ud =  Zippy_Thm_State.nprems_of state' - Zippy_Thm_State.nprems_of state
+      val ud =  Zippy_Thm_State.nprems_of state' - Zippy_Thm_State.nprems_of state + 1
         |> single_goal_update_data target_goal i
     in RUD.result_update_data (rd, ud) end)
 

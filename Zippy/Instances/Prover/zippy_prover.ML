@@ -67,23 +67,27 @@ sig
     (* foldM *)
     ((@{AllT_args} Z3.zipper -> (@{ParaT_args} @{AllT_args} Z1.zipper) hom_move) ->
       'zs -> (@{ParaT_args} @{AllT_args} Z1.zipper) hom_move) ->
+    (copy_update_data -> (@{ParaT_args} @{AllT_args} Z1.zipper) hom_move) ->
     prio -> result -> (@{ParaT_args} @{AllT_args} Z4.zipper, @{AllT_args} Z1.zipper) cat
 
   val update_result : @{AllT_args} rdd_more -> @{AllT_args} gcsd_more ->
-    (@{ParaT_args} gcluster, @{AllT_args} gcd_more) cat -> prio -> result ->
-    (@{ParaT_args} @{AllT_args} Z4.zipper, @{AllT_args} Z1.zipper) cat
+    (@{ParaT_args} gcluster, @{AllT_args} gcd_more) cat ->
+    (copy_update_data -> (@{ParaT_args} @{AllT_args} Z1.zipper) hom_move) ->
+    prio -> result -> (@{ParaT_args} @{AllT_args} Z4.zipper, @{AllT_args} Z1.zipper) cat
 
   (** action from presult **)
   val update_result_tail_presults : @{AllT_args} rdd_more -> @{AllT_args} gcsd_more ->
     (@{ParaT_args} gcluster, @{AllT_args} gcd_more) cat ->
+    (copy_update_data -> (@{ParaT_args} @{AllT_args} Z1.zipper) hom_move) ->
     (prio -> @{AllT_args} presults -> (@{ParaT_args} @{AllT_args} Z4.zipper) hom_move) ->
     result * @{AllT_args} presults -> @{AllT_args} action
 
   val cons_move_single_presults_action : @{AllT_args} rdd_more -> @{AllT_args} gcsd_more ->
     (@{ParaT_args} gcluster, @{AllT_args} gcd_more) cat ->
     @{AllT_args} cd_more -> @{AllT_args} action_fd_more ->
-    (focus -> (@{ParaT_args} @{AllT_args} Z2.zipper, @{AllT_args} presults) cat) -> focus ->
-    (@{ParaT_args} @{AllT_args} Z2.zipper, @{AllT_args} Z4.zipper) cat
+    (focus -> (@{ParaT_args} @{AllT_args} Z2.zipper, @{AllT_args} presults) cat) ->
+    (focus -> copy_update_data -> (@{ParaT_args} @{AllT_args} Z1.zipper) hom_move) ->
+    focus -> (@{ParaT_args} @{AllT_args} Z2.zipper, @{AllT_args} Z4.zipper) cat
 
   (* initialisation *)
   val init_state : (@{ParaT_args} @{AllT_args} ZCORE.N1.node, @{AllT_args} Z1.ZM.container) cat ->
@@ -178,7 +182,7 @@ fun cons_move_result_actiona_node rddm prio rud z =
   mk_result_actiona_node rddm prio rud z
   >>= (fn n => cons_move_actiona n z)
 
-fun update_result_fold_parents rddm gcsdm mk_gcdm get_zippers foldM = gen_update_result
+fun update_result_fold_parents rddm gcsdm mk_gcdm get_zippers foldM = gen_update_result_copy_parent_actions
   (fn prio => gen_init_result_update_data (cons_move_result_actiona_node rddm prio)
     (fn gcs => set_gclusters gcsdm gcs >>> Down5.move)
     (fn gcs => set_gcluster_list mk_gcdm gcs))
@@ -189,12 +193,12 @@ fun update_result rddm gcsdm mk_gcdm = update_result_fold_parents rddm gcsdm mk_
   list_container_zippers3 fold_oldest_first
 
 (** action from presult **)
-fun update_result_tail_presults rddm gcsdm mk_gcdm = gen_update_result_tail_presults
-  (fn p => fn r => update_result rddm gcsdm mk_gcdm p r >>> Up1.move >>> Up5.move)
+fun update_result_tail_presults rddm gcsdm mk_gcdm update_child = gen_update_result_tail_presults
+  (fn p => fn r => update_result rddm gcsdm mk_gcdm update_child p r >>> Up1.move >>> Up5.move)
 
 fun gen_cons_move_single_presults_action_copy cdm afdm mk_presults update_result_tail_presults copy focus
   z =
-  mk_presults focus z
+  mk_presults z
   >>= (fn presults => mk_actionc_node cdm copy
   >>= (fn n => cons_move_actionc n z)
   >>= (fn z => mk_presults_action_node afdm focus init_actiona_num presults
@@ -209,12 +213,14 @@ fun gen_cons_move_single_presults_action cdm afdm mk_presults update_result_tail
       >>> Up2.move
     val copy = copy_update_focus init_copy focus
   in
-    gen_cons_move_single_presults_action_copy cdm afdm mk_presults update_result_tail_presults copy focus
+    gen_cons_move_single_presults_action_copy cdm afdm (mk_presults focus)
+      (update_result_tail_presults focus) copy focus
   end
 
-fun cons_move_single_presults_action rddm gcsdm mk_gcdm cdm afdm mk_presults =
+fun cons_move_single_presults_action rddm gcsdm mk_gcdm cdm afdm mk_presults update_child =
   gen_cons_move_single_presults_action cdm afdm mk_presults
-    (update_result_tail_presults rddm gcsdm mk_gcdm (Library.K update_tail_presults))
+    (fn focus => update_result_tail_presults rddm gcsdm mk_gcdm (update_child focus)
+      (Library.K update_tail_presults))
 
 (* initialisation *)
 fun init_state mk_container gcsdm mk_gcdm state = gen_init_result_update_data

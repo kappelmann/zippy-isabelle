@@ -65,14 +65,16 @@ sig
   (* actions *)
   (** action from presult **)
   val cons_move_single_presults_action' : AMD.metadata ->
-    (focus -> (@{ParaT_args} @{AllT_args} Z2.zipper, @{AllT_args} presults) cat) -> focus ->
-    (@{ParaT_args} @{AllT_args} Z2.zipper, @{AllT_args} Z4.zipper) cat
+    (focus -> (@{ParaT_args} @{AllT_args} Z2.zipper, @{AllT_args} presults) cat) ->
+    (focus -> copy_update_data -> (@{ParaT_args} @{AllT_args} Z1.zipper) hom_move) ->
+    focus -> (@{ParaT_args} @{AllT_args} Z2.zipper, @{AllT_args} Z4.zipper) cat
 
   (** actions from tactics **)
   val cons_move_tac : AMD.metadata ->
     (@{ParaT_args} @{AllT_args} Z4.zipper * result Seq.seq, prio * result Seq.seq) CO.coroutine ->
-    (F.focus -> RMD.metadata T.zippy_tactic) -> F.focus ->
-    (@{ParaT_args} @{AllT_args} Z2.zipper, @{AllT_args} Z4.zipper) cat
+    (F.focus -> RMD.metadata T.zippy_tactic) ->
+    (focus -> copy_update_data -> (@{ParaT_args} @{AllT_args} Z1.zipper) hom_move) ->
+    F.focus -> (@{ParaT_args} @{AllT_args} Z2.zipper, @{AllT_args} Z4.zipper) cat
 
   (** fold and run actions **)
   val fold_max_paction_dfs : (@{ParaT_args}
@@ -202,7 +204,7 @@ fun presults_from_tac' mk_prio_sq_c tac f = presults_from_tac mk_prio_sq_c (tac 
 (** action from presult **)
 local structure ID = Zippy_Identifier
 in
-fun cons_move_single_presults_action' amdm mk_presults f z =
+fun cons_move_single_presults_action' amdm mk_presults update_child f z =
   GCSMD.metadata false
   >>= mk_gcsd_more
   >>= (fn gcsdm => AMD.get_id amdm
@@ -214,12 +216,12 @@ fun cons_move_single_presults_action' amdm mk_presults f z =
   >>= mk_cd_more
   >>= (fn cdm => mk_action_fd_more amdm
   >>= (fn afdm => cons_move_single_presults_action mk_rdd_more gcsdm mk_gcd_more cdm afdm
-    mk_presults f z)))
+    mk_presults update_child f z)))
 end
 
 (** actions from tactics **)
-fun cons_move_tac amd mk_prio_sq_c tac =
-  cons_move_single_presults_action' amd (presults_from_tac' mk_prio_sq_c tac)
+fun cons_move_tac amd mk_prio_sq_c tac update_child =
+  cons_move_single_presults_action' amd (presults_from_tac' mk_prio_sq_c tac) update_child
 
 (** fold and run actions **)
 local
