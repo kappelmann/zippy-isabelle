@@ -1,15 +1,14 @@
 # Zippy - Generic White-Box Proof Search with Zippers
 
-The supplementary material for the submission
+The supplementary material for the article
 "Zippy - Generic White-Box Proof Search with Zippers",
-The International Conference on Interactive Theorem Proving, ITP 2025.
 
 ## Requirements
 
 - Isabelle2025 (March 2025) release candidate
-  - At the time of submission (23 March, 2025), obtainable from the official website: https://isabelle.in.tum.de
+  - At the time of writing, obtainable from the official website: https://isabelle.in.tum.de
 - AFP (March 2025) release candidate
-  - At the time of submission (23 March, 2025), obtainable from the official website: https://www.isa-afp.org/download/
+  - At the time of writing, obtainable from the official website: https://www.isa-afp.org/download/
   - You have to add the AFP to Isabelle as a component. Instructions are here: https://www.isa-afp.org/help/
 
 ## Connections Paper <--> Formalisation
