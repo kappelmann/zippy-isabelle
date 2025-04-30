@@ -4,6 +4,7 @@ theory ML_Zipper_Instances
     ML_Enumerable
     ML_Lists
     ML_Zippers
+    ML_Zipper_Directions
 begin
 
 ML_gen_file\<open>content_zipper.ML\<close>

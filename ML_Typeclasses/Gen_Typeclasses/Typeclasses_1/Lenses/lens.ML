@@ -11,6 +11,7 @@ sig
   (*Abstract lens datatype. The getter and modifier work in some category.
   The type of the value pointed to might change, thereby changing the type of the outer structure.*)
   type (@{ParaT_args} 't, 'o, 's, 'i) lens
+  (*simple lens*)
   type (@{ParaT_args} 's, 'i) slens = (@{ParaT_args} 's, 'i, 's, 'i) lens
 
   type (@{ParaT_args} 's, 'i) getter = (@{ParaT_args} 's, 'i) C.cat
@@ -18,7 +19,7 @@ sig
     (@{ParaT_args} (@{ParaT_args} 'i, 'o) C.cat * 's, 't) C.cat
   type (@{ParaT_args} 's, 'i) smodifier = (@{ParaT_args} 's, 'i, 's, 'i) modifier
 
-  val lens : (@{ParaT_args} 's, 'i) getter -> (@{ParaT_args} 't, 'o, 's, 'i) modifier ->
+  val mk_lens : (@{ParaT_args} 's, 'i) getter -> (@{ParaT_args} 't, 'o, 's, 'i) modifier ->
     (@{ParaT_args} 't, 'o, 's, 'i) lens
 
   val get : (@{ParaT_args} 't, 'o, 's, 'i) lens -> (@{ParaT_args} 's, 'i) getter
@@ -48,14 +49,14 @@ datatype (@{ParaT_args} 't, 'o, 's, 'i) lens = Lens of {
 }
 type (@{ParaT_args} 's, 'i) slens = (@{ParaT_args} 's, 'i, 's, 'i) lens
 
-fun lens get modify = Lens {get = get, modify = modify}
+fun mk_lens get modify = Lens {get = get, modify = modify}
 
 fun get (Lens {get, ...}) = get
 fun modify (Lens {modify, ...}) = modify
 
 type (@{ParaT_args} 'i, 'j, 'a, 'b) cat = (@{ParaT_args} 'i, 'j, 'a, 'b) lens
 
-fun id _ = lens (A.id ()) AA.app
+fun id _ = mk_lens (A.id ()) AA.app
 
 fun comp_modify m1 m2 = AA.uncurry (A.curry m2 o A.curry m1)
 
@@ -65,7 +66,7 @@ fun comp l1 l2 =
     val m1 = modify l1
     val g2 = get l2
     val m2 = modify l2
-  in lens (A.comp g1 g2) (comp_modify m1 m2) end
+  in mk_lens (A.comp g1 g2) (comp_modify m1 m2) end
 
 end
 
@@ -118,11 +119,11 @@ fun set_modify m = C.comp m (A.first (A.arr A.K))
 fun set l = set_modify (modify l)
 
 fun lens_get f =
-  L.lens (L.id () |> L.get |> L.C.comp f) (A.second f |> L.C.comp (L.modify (L.id ())))
+  L.mk_lens (L.id () |> L.get |> L.C.comp f) (A.second f |> L.C.comp (L.modify (L.id ())))
 
 fun lens_mk f =
   let val id = L.id ()
-  in L.lens (L.get id) (L.C.comp f (L.modify id)) end
+  in L.mk_lens (L.get id) (L.C.comp f (L.modify id)) end
 
 fun lens_get_mk get modify = lens_get get |> comp (lens_mk modify)
 
@@ -132,12 +133,12 @@ fun get_snd f = C.comp (A.arr snd) f
 fun modify_fst f = C.comp f (A.first (A.arr A.first))
 fun modify_snd f = C.comp f (A.first (A.arr A.second))
 
-fun lens_fst l = lens (get_fst (get l)) (modify_fst (modify l))
-fun lens_snd l = lens (get_snd (get l)) (modify_snd (modify l))
+fun lens_fst l = mk_lens (get_fst (get l)) (modify_fst (modify l))
+fun lens_snd l = mk_lens (get_snd (get l)) (modify_snd (modify l))
 
 local open A in
 fun modify_K m = C.comp m (first (arr (C.comp (arr K))))
-fun lens_K l = lens (get l) (modify_K (modify l))
+fun lens_K l = mk_lens (get l) (modify_K (modify l))
 end
 
 end
@@ -180,7 +181,7 @@ fun modify_pair g m1 m2 =
 
 fun lens_pair l1 l2 =
   let val g = get_pair (L.get l1) (L.get l2)
-  in L.lens g (modify_pair g (L.modify l1) (L.modify l2)) end
+  in L.mk_lens g (modify_pair g (L.modify l1) (L.modify l2)) end
 end
 
 end
@@ -217,7 +218,7 @@ local structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(A) o
 in
 fun get_app x = C.comp (AA.app' x)
 fun modify_app x m = first (arr (fn m' => AA.app' x >>> m')) >>> m
-fun lens_app x l = lens (get_app x (get l)) (modify_app x (modify l))
+fun lens_app x l = mk_lens (get_app x (get l)) (modify_app x (modify l))
 
 fun modify_app_K x m = modify_K (modify_app x m)
 fun lens_app_K x l = lens_K (lens_app x l)
@@ -227,35 +228,38 @@ end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close> =
 sig
-  include \<^eval>\<open>sfx_ParaT_nargs "LENS"\<close>
   structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
+  include \<^eval>\<open>sfx_ParaT_nargs "LENS"\<close>
+  where type (@{ParaT_args} 'a, 'b) C.cat = (@{ParaT_args} 'a, 'b) K.kleisli
   val get_monad : (@{ParaT_args} 's, (@{ParaT_args} 'i) K.M.t) getter -> (@{ParaT_args} 's, 'i) getter
-  val modify_monad : (@{ParaT_args} 't, (@{ParaT_args} 'o) K.M.t, 's, (@{ParaT_args} 'i) K.M.t) modifier ->
+  val modify_monad :
+    (@{ParaT_args} 't, (@{ParaT_args} 'o) K.M.t, 's, (@{ParaT_args} 'i) K.M.t) modifier ->
     (@{ParaT_args} 't, 'o, 's, 'i) modifier
-  val lens_monad : (@{ParaT_args} 't, (@{ParaT_args} 'o) K.M.t, 's, (@{ParaT_args} 'i) K.M.t) lens ->
+  val lens_monad :
+    (@{ParaT_args} 't, (@{ParaT_args} 'o) K.M.t, 's, (@{ParaT_args} 'i) K.M.t) lens ->
     (@{ParaT_args} 't, 'o, 's, 'i) lens
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Lens_Kleisli"\<close>(
-    structure A : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_BASE"\<close>
+    structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
     structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS"\<close>
-    where type (@{ParaT_args} 'a, 'b) C.cat = (@{ParaT_args} 'a, 'b) A.cat
+    where type (@{ParaT_args} 'a, 'b) C.cat = (@{ParaT_args} 'a, 'b) K.kleisli
   ) : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close> =
 struct
 
 open L
-structure K = A.K
+structure K = K
 
 fun get_monad f = (fn x => K.M.bind (f x) I)
 fun modify_monad f = apfst K.M.map #> f
-fun lens_monad l = L.lens (get_monad (L.get l)) (modify_monad (L.modify l))
+fun lens_monad l = L.mk_lens (get_monad (L.get l)) (modify_monad (L.modify l))
 
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI_EXCEPTION"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
-  val set_safe : (@{ParaT_args} 't, 'o, 's, (@{ParaT_args} 'i) K.M.t) lens ->
+  val set_safe : (@{ParaT_args} 't, 'o, 's, (@{ParaT_args} 'i) K.M.t) modifier ->
     (@{ParaT_args} 't, 'o, 's) setter
 end
 
@@ -266,13 +270,15 @@ functor \<^eval>\<open>sfx_ParaT_nargs "Lens_Kleisli_Exception"\<close>(
   ) : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI_EXCEPTION"\<close> =
 struct
 
-structure LK = \<^eval>\<open>sfx_ParaT_nargs "Lens_Kleisli"\<close>(structure A = AE; structure L = L)
+structure LK = \<^eval>\<open>sfx_ParaT_nargs "Lens_Kleisli"\<close>(structure K = AE.K; structure L = L)
 open LK
 
-local structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(AE)
-  structure A = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow"\<close>(K.M) open SC
+local
+  structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(AE)
+  structure A = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow"\<close>(K.M)
+  open SC
 in
-fun set_safe l = apfst (fn x => AE.catch' (K.M.map (Library.K x)) (A.K x)) #> modify l
+fun set_safe l = apfst (fn x => AE.catch' (K.M.map (Library.K x)) (A.K x)) #> l
 end
 
 end

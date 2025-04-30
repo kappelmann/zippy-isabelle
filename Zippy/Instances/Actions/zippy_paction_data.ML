@@ -39,8 +39,8 @@ fun get_more (PAction_Data {more,...}) = more
 fun map_paction (f, (PAction_Data {paction, more})) = PAction_Data {paction = f paction, more = more}
 fun map_more (f, (PAction_Data {paction, more})) = PAction_Data {paction = paction, more = f more}
 
-fun paction _ = L.lens get_paction map_paction
-fun more _ = L.lens get_more map_more
+fun paction _ = L.mk_lens get_paction map_paction
+fun more _ = L.mk_lens get_more map_more
 
 end
 
@@ -59,7 +59,7 @@ sig
 end
 
 functor Lift_Zippy_PAction_Data(
-    include LIFT_DATA_BASE
+    include \<^eval>\<open>sfx_ParaT_nargs "LIFT_DATA_BASE"\<close>
     structure PAD : ZIPPY_PACTION_DATA
     sharing type PAD.L.C.cat = AF.cat
   ) : LIFT_ZIPPY_PACTION_DATA =

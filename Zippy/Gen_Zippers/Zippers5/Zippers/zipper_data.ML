@@ -1,43 +1,83 @@
 (*  Title:      Zippy/zipper_data.ML
     Author:     Kevin Kappelmann
 *)
-signature \<^eval>\<open>sfx_ParaT_nargs "ZIPPER_DATA"\<close> =
+signature \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close> =
 sig
-  type ('c, 'zctxt) zipper
+  structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
+  type @{AllT_args} zipper
+  type @{AllT_args} content
+  type @{AllT_args} zcontext
 
-  val zipper : 'c -> 'zctxt -> ('c, 'zctxt) zipper
-  val dest_zipper : ('c, 'zctxt) zipper -> {content : 'c, zcontext : 'zctxt}
+  val zipper :
+    (@{ParaT_args} @{AllT_args} content * @{AllT_args} zcontext, @{AllT_args} zipper) L.C.cat
 
-  val content : unit -> (@{ParaT_args} ('c2, 'zctxt) zipper, 'c2, ('c1, 'zctxt) zipper, 'c1)
-    \<^eval>\<open>sfx_ParaT_nargs "SLens" ^ ".lens"\<close>
-  val zcontext : unit -> (@{ParaT_args} ('c, 'zctxt2) zipper, 'zctxt2, ('c, 'zctxt1) zipper, 'zctxt1)
-    \<^eval>\<open>sfx_ParaT_nargs "SLens" ^ ".lens"\<close>
-  val get_content : ('c, 'zctxt) zipper -> 'c
-  val get_zcontext : ('c, 'zctxt) zipper -> 'zctxt
-  val map_content : ('c1 -> 'c2) -> ('c1, 'zctxt) zipper -> ('c2, 'zctxt) zipper
-  val map_zcontext : ('zctxt1 -> 'zctxt2) -> ('c, 'zctxt1) zipper -> ('c, 'zctxt2) zipper
+  structure CO : \<^eval>\<open>sfx_T_nargs "STRUCTURED_LENS"\<close>
+  where type @{AllT_args} container = @{AllT_args} zipper
+  where type @{AllT_args} data = @{AllT_args} content
+  sharing type CO.lens = L.lens
+  sharing type CO.K.M.t = L.K.M.t
+
+  structure ZCTXT : \<^eval>\<open>sfx_T_nargs "STRUCTURED_LENS"\<close>
+  where type @{AllT_args} container = @{AllT_args} zipper
+  where type @{AllT_args} data = @{AllT_args} zcontext
+  sharing type ZCTXT.lens = L.lens
+  sharing type ZCTXT.K.M.t = L.K.M.t
 end
 
-structure \<^eval>\<open>sfx_ParaT_nargs "Zipper_Data"\<close> : \<^eval>\<open>sfx_ParaT_nargs "ZIPPER_DATA"\<close> =
+functor \<^eval>\<open>sfx_T_nargs "Zipper_Data"\<close>(
+    structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
+    type @{AllT_args} content
+    type @{AllT_args} zcontext
+  ) : \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close>
+  =
 struct
 
-datatype ('c, 'zctxt) zipper = Zipper of {
-  content : 'c,
-  zcontext : 'zctxt
-}
+structure L = L
 
-fun zipper content zcontext = Zipper {content = content, zcontext = zcontext}
-fun dest_zipper (Zipper zipper) = zipper
+type @{AllT_args} content = @{AllT_args} content
+type @{AllT_args} zcontext = @{AllT_args} zcontext
+datatype @{AllT_args} zipper = Zipper of
+  {content : @{AllT_args} content, zcontext : @{AllT_args} zcontext}
 
-fun get_content (Zipper {content, ...}) = content
-fun get_zcontext (Zipper {zcontext, ...}) = zcontext
+local open L.K.M
+in
 
-fun map_content f (Zipper {content, zcontext}) = Zipper {content = f content, zcontext = zcontext}
-fun map_zcontext f (Zipper {content, zcontext}) = Zipper {content = content, zcontext = f zcontext}
+fun zipper (content, zcontext) = pure (Zipper {content = content, zcontext = zcontext})
 
-structure SLens = \<^eval>\<open>sfx_ParaT_nargs "SLens"\<close>
+structure Base = struct open L; type @{AllT_args} container = @{AllT_args} zipper end
+structure CO =
+struct
+  open Base
+  type @{AllT_args} data = @{AllT_args} content
+  fun getter (Zipper {content,...}) = pure content
+  fun modifier (f, Zipper {content, zcontext}) = bind (f content)
+    (fn content => zipper (content, zcontext))
+  fun lens _ = L.mk_lens getter modifier
+end
 
-fun content _ = SLens.lens get_content (uncurry map_content)
-fun zcontext _ = SLens.lens get_zcontext (uncurry map_zcontext)
+structure ZCTXT =
+struct
+  open Base
+  type @{AllT_args} data = @{AllT_args} zcontext
+  fun getter (Zipper {zcontext,...}) = pure zcontext
+  fun modifier (f, Zipper {content, zcontext}) = bind (f zcontext)
+    (fn zcontext => zipper (content, zcontext))
+  fun lens _ = L.mk_lens getter modifier
+end
+end
 
 end
+
+\<^imap>\<open>\<open>{i}\<close> => \<open>
+functor \<^eval>\<open>sfx_inst_T_nargs "Instantiate_Zipper_Data" {i}\<close>(
+    type @{AllT_args} inst
+    structure Z : \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close>
+  ) :
+    \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close>
+    where type @{AllT_args} content = (@{ParaT_args}
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.content
+    where type @{AllT_args} zcontext = (@{ParaT_args}
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.zcontext
+    where type @{AllT_args} zipper = (@{ParaT_args}
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.zipper
+  = Z\<close>\<close>

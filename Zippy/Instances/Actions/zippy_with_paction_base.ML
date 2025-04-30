@@ -1,10 +1,11 @@
 (*  Title:      Zippy/zippy_with_paction_base.ML
     Author:     Kevin Kappelmann
 
-Zippy with prioritised actions.
+Zippy with prioritised actions and copy mechanism.
 *)
 signature ZIPPY_WITH_PACTION_BASE =
 sig
+  (*required data when copying a zipper to a new location*)
   type copy_update_data
   type prio
 
@@ -14,11 +15,12 @@ sig
   where type (@{ParaT_args} 'a, 'b) L.C.cat = (@{ParaT_args} 'a, 'b) CD.L.C.cat
   sharing type PAD.L.lens = CD.L.lens
   type @{AllT_args} pad_more
-  structure PD : ZIPPY_PRIO_DATA
+  (* structure PD : ZIPPY_PRIO_DATA
   where type (@{ParaT_args} 'a, 'b) L.C.cat = (@{ParaT_args} 'a, 'b) CD.L.C.cat
   sharing type PD.L.lens = CD.L.lens
-  type @{AllT_args} pd_more
+  type @{AllT_args} pd_more *)
 
+  (*prioritised actions*)
   type @{AllT_args} paction
   type @{AllT_args} copy
 
@@ -27,7 +29,7 @@ sig
   where type @{AllT_args} N3.content = (@{AllT_args} copy, @{AllT_args} cd_more) CD.copy_data
   where type @{AllT_args} N4.content =
     (@{AllT_args} paction, @{AllT_args} pad_more) PAD.paction_data
-  where type @{AllT_args} N5.content = (prio, @{AllT_args} pd_more) PD.prio_data
+  (* where type @{AllT_args} N5.content = (prio, @{AllT_args} pd_more) PD.prio_data *)
   where type (@{ParaT_args} 'a) M.t = (@{ParaT_args} 'a) CD.K.M.t
   sharing type ZCORE.L.lens = CD.L.lens
 
@@ -38,7 +40,7 @@ sig
   (*lenses for core data*)
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   val zcore_content{i} : unit ->
-    (@{ParaT_args} @{AllT_args} Z{i}.ZO.content, @{AllT_args} ZCORE.Z{i}.ZO.content) L.slens\<close>\<close>
+    (@{ParaT_args} @{AllT_args} Z{i}.ZD.content, @{AllT_args} ZCORE.Z{i}.ZD.content) L.slens\<close>\<close>
 
   val mk_copy : (copy_update_data -> @{AllT_args} Z3.zipper ->
     (@{ParaT_args} @{AllT_args} Z1.zipper) hom_move) -> @{AllT_args} copy
@@ -80,7 +82,7 @@ functor Zippy_With_PAction_Base(
 
     \<^imap>\<open>\<open>{i}\<close> => \<open>
     val zcore_content{i} : unit ->
-      (@{ParaT_args} @{AllT_args} Z.Z{i}.ZO.content, @{AllT_args} ZCORE.Z{i}.ZO.content) Z.L.slens\<close>\<close>
+      (@{ParaT_args} @{AllT_args} Z.Z{i}.ZD.content, @{AllT_args} ZCORE.Z{i}.ZD.content) Z.L.slens\<close>\<close>
   ) : ZIPPY_WITH_PACTION_BASE =
 struct
 
@@ -100,71 +102,81 @@ open Z
 val zcore_content{i} = zcore_content{i}\<close>\<close>
 
 (* paction *)
-datatype (@{AllT_args encl = "" ""}, 'padm) paction = PAction of
-  (@{ParaT_args} (@{AllT_args encl = "" ""}, 'padm) zipper4, prio *
-    (prio -> (@{ParaT_args} (@{AllT_args encl = "" ""}, 'padm) zipper4) hom_move)) cat
+datatype (@{AllT_args encl = "" ","} 'padm) paction = PAction of
+  (@{ParaT_args} (@{AllT_args encl = "" ","} 'padm) zipper4,
+    prio * (prio -> (@{ParaT_args} (@{AllT_args encl = "" ","} 'padm) zipper4) hom_move)) cat
 withtype \<^imap>\<open>\<open>{i}\<close> => \<open>
-(@{AllT_args encl = "" ""}, 'padm) zipper{i} = (@{ParaT_args} @{ZipperT_args stop = 2},
-  ((@{AllT_args encl = "" ""}, 'padm) paction, 'padm) PAD.paction_data, @{ZipperT_arg 4}) Z{i}.zipper\<close>
+(@{AllT_args encl = "" ","} 'padm) zipper{i} = (@{ParaT_args} @{ZipperT_args stop = 2},
+  ((@{AllT_args encl = "" ","} 'padm) paction, 'padm) PAD.paction_data, @{ZipperT_arg 4}) Z{i}.zipper\<close>
 where sep = "and"\<close>
 
 fun mk_paction paction = PAction paction
 fun dest_paction (PAction paction) = paction
 
 (* copy *)
-datatype (@{AllT_args encl = "" ""}, 'padm, 'cdm) copy = Copy of copy_update_data ->
-  (@{AllT_args encl = "" ""}, 'padm, 'cdm) zipper3 -> (@{ParaT_args}
-    (@{AllT_args encl = "" ""}, 'padm, 'cdm) zipper1) hom_move
+datatype (@{AllT_args encl = "" ","} 'padm, 'cdm) copy = Copy of copy_update_data ->
+  (@{AllT_args encl = "" ","} 'padm, 'cdm) zipper3 -> (@{ParaT_args}
+    (@{AllT_args encl = "" ","} 'padm, 'cdm) zipper1) hom_move
 withtype
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-(@{AllT_args encl = "" ""}, 'padm, 'cdm) zipper{i} = (@{ParaT_args} @{ZipperT_args stop = 1},
-  ((@{AllT_args encl = "" ""}, 'padm, 'cdm) copy, 'cdm) CD.copy_data,
-  @{ZipperT_args start = 3 and stop = 4}, 'padm) zipper{i}\<close>
+(@{AllT_args encl = "" ","} 'padm, 'cdm) zipper{i} = (@{ParaT_args} @{ZipperT_args stop = 1},
+  ((@{AllT_args encl = "" ","} 'padm, 'cdm) copy, 'cdm) CD.copy_data,
+  @{ZipperT_args start = 3}, 'padm) zipper{i}\<close>
 where sep = "and"\<close>
-and (@{AllT_args encl = "" ""}, 'padm, 'cdm) paction = (@{ParaT_args} @{ZipperT_args stop = 1},
-  ((@{AllT_args encl = "" ""}, 'padm, 'cdm) copy, 'cdm) CD.copy_data,
-  @{ZipperT_args start = 3 and stop = 4}, 'padm) paction
+and (@{AllT_args encl = "" ","} 'padm, 'cdm) paction = (@{ParaT_args} @{ZipperT_args stop = 1},
+  ((@{AllT_args encl = "" ","} 'padm, 'cdm) copy, 'cdm) CD.copy_data,
+  @{ZipperT_args start = 3}, 'padm) paction
 
 fun mk_copy copy = Copy copy
 fun dest_copy (Copy copy) = copy
 
-type \<^imap>\<open>\<open>{i}\<close> => \<open>
-(@{AllT_args encl = "" ""}, 'padm, 'cdm, 'pdm) zipper{i} =
+(* priority *)
+(* type \<^imap>\<open>\<open>{i}\<close> => \<open>
+(@{AllT_args encl = "" ","} 'padm, 'cdm, 'pdm) zipper{i} =
   (@{ParaT_args} @{ZipperT_args stop = 3}, (prio, 'pdm) PD.prio_data, 'padm, 'cdm) zipper{i}\<close>
 where sep = "and"\<close>
-and (@{AllT_args encl = "" ""}, 'padm, 'cdm, 'pdm) paction =
+and (@{AllT_args encl = "" ","} 'padm, 'cdm, 'pdm) paction =
   (@{ParaT_args} @{ZipperT_args stop = 3}, (prio, 'pdm) PD.prio_data, 'padm, 'cdm) paction
-and (@{AllT_args encl = "" ""}, 'padm, 'cdm, 'pdm) copy =
-  (@{ParaT_args} @{ZipperT_args stop = 3}, (prio, 'pdm) PD.prio_data, 'padm, 'cdm) copy
+and (@{AllT_args encl = "" ","} 'padm, 'cdm, 'pdm) copy =
+  (@{ParaT_args} @{ZipperT_args stop = 3}, (prio, 'pdm) PD.prio_data, 'padm, 'cdm) copy *)
 
 type \<^imap>\<open>\<open>{i}\<close> => \<open>
-@{AllT_args} zipper{i} = (@{AllT_args encl = "" ""},
-  @{AllT_args} pad_more, @{AllT_args} cd_more, @{AllT_args} pd_more) zipper{i}\<close>
+@{AllT_args} zipper{i} = (@{AllT_args encl = "" ","}
+  @{AllT_args} pad_more, @{AllT_args} cd_more) zipper{i}\<close>
 where sep = "and"\<close>
-and @{AllT_args} paction = (@{AllT_args encl = "" ""},
-  @{AllT_args} pad_more, @{AllT_args} cd_more, @{AllT_args} pd_more) paction
-and @{AllT_args} copy = (@{AllT_args encl = "" ""},
-  @{AllT_args} pad_more, @{AllT_args} cd_more, @{AllT_args} pd_more) copy
+and @{AllT_args} paction = (@{AllT_args encl = "" ","}
+  @{AllT_args} pad_more, @{AllT_args} cd_more) paction
+and @{AllT_args} copy = (@{AllT_args encl = "" ","}
+  @{AllT_args} pad_more, @{AllT_args} cd_more) copy
 
 type @{AllT_args} action = prio -> (@{ParaT_args} @{AllT_args} zipper4) hom_move
 
 structure Base =
-struct
-  \<^imap>\<open>\<open>{i}\<close> => \<open>
-  type @{AllT_args} inst{i} = @{ZipperT_arg \<open>{i} - 1\<close>}\<close>\<close>
-  type @{AllT_args} inst3 = (@{AllT_args} copy, @{AllT_args} cd_more) CD.copy_data
-  type @{AllT_args} inst4 = (@{AllT_args} paction, @{AllT_args} pad_more) PAD.paction_data
-  type @{AllT_args} inst5 = (prio, @{AllT_args} pd_more) PD.prio_data
-end
-structure ZCORE = \<^eval>\<open>mk_name ["Instantiate", pfx_sfx_nargs "Alternating_Zipper_Nodes"]\<close>(
+struct type @{AllT_args} inst = (@{AllT_args} copy, @{AllT_args} cd_more) CD.copy_data end
+structure ZCORE = \<^eval>\<open>mk_name ["Instantiate", pfx_sfx_inst_nargs "Alternating_Zipper_Nodes" 3]\<close>(
   open Base; structure Z = ZCORE)
-structure Z = \<^eval>\<open>mk_name ["Instantiate", pfx_sfx_nargs "Alternating_Zipper"]\<close>(
+structure Z = \<^eval>\<open>mk_name ["Instantiate", pfx_sfx_inst_nargs "Alternating_Zipper" 3]\<close>(
   open Base; structure Z = Z)
+
+structure Base =
+struct type @{AllT_args} inst = (@{AllT_args} paction, @{AllT_args} pad_more) PAD.paction_data end
+structure ZCORE = \<^eval>\<open>mk_name ["Instantiate", pfx_sfx_inst_nargs "Alternating_Zipper_Nodes" 4]\<close>(
+  open Base; structure Z = ZCORE)
+structure Z = \<^eval>\<open>mk_name ["Instantiate", pfx_sfx_inst_nargs "Alternating_Zipper" 4]\<close>(
+  open Base; structure Z = Z)
+
+(* structure Base =
+struct type @{AllT_args} inst = (prio, @{AllT_args} pd_more) PD.prio_data end
+structure ZCORE = \<^eval>\<open>mk_name ["Instantiate", pfx_sfx_inst_nargs "Alternating_Zipper_Nodes" 5]\<close>(
+  open Base; structure Z = ZCORE)
+structure Z = \<^eval>\<open>mk_name ["Instantiate", pfx_sfx_inst_nargs "Alternating_Zipper" 5]\<close>(
+  open Base; structure Z = Z) *)
+
 open Z
 
 end
 
-functor Instantiate_Zippy_With_PAction_Base(
+(* functor Instantiate_Zippy_With_PAction_Base(
     \<^imap>\<open>\<open>{i}\<close> => \<open>type @{AllT_args} inst{i}\<close>\<close>
     structure Z : ZIPPY_WITH_PACTION_BASE
   ) :
@@ -172,10 +184,10 @@ functor Instantiate_Zippy_With_PAction_Base(
     \<^imap>\<open>\<open>{i}\<close> => \<open>
     where type @{AllT_args} ZCORE.A.Z{i}.ZM.container = (@{ParaT_args}
       \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> where sep = ","\<close>) Z.ZCORE.A.Z{i}.ZM.container
-    where type @{AllT_args} ZCORE.A.Z{i}.ZO.content = (@{ParaT_args}
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> where sep = ","\<close>) Z.ZCORE.A.Z{i}.ZO.content
-    where type @{AllT_args} ZCORE.A.Z{i}.ZO.zcontext = (@{ParaT_args}
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> where sep = ","\<close>) Z.ZCORE.A.Z{i}.ZO.zcontext
+    where type @{AllT_args} ZCORE.A.Z{i}.ZD.content = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> where sep = ","\<close>) Z.ZCORE.A.Z{i}.ZD.content
+    where type @{AllT_args} ZCORE.A.Z{i}.ZD.zcontext = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> where sep = ","\<close>) Z.ZCORE.A.Z{i}.ZD.zcontext
     where type @{AllT_args} ZCORE.A.Z{i}.zipper = (@{ParaT_args}
       \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> where sep = ","\<close>) Z.ZCORE.A.Z{i}.zipper\<close>\<close>
     where type (@{ParaT_args} 'a) M.t = (@{ParaT_args} 'a) Z.M.t
@@ -191,10 +203,10 @@ functor Instantiate_Zippy_With_PAction_Base(
     \<^imap>\<open>\<open>{i}\<close> => \<open>
     where type @{AllT_args} Z{i}.ZM.container = (@{ParaT_args}
       \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> where sep = ","\<close>) Z.Z{i}.ZM.container
-    where type @{AllT_args} Z{i}.ZO.content = (@{ParaT_args}
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> where sep = ","\<close>) Z.Z{i}.ZO.content
-    where type @{AllT_args} Z{i}.ZO.zcontext = (@{ParaT_args}
-      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> where sep = ","\<close>) Z.Z{i}.ZO.zcontext
+    where type @{AllT_args} Z{i}.ZD.content = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> where sep = ","\<close>) Z.Z{i}.ZD.content
+    where type @{AllT_args} Z{i}.ZD.zcontext = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> where sep = ","\<close>) Z.Z{i}.ZD.zcontext
     where type @{AllT_args} Z{i}.zipper = (@{ParaT_args}
       \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> where sep = ","\<close>) Z.Z{i}.zipper\<close>\<close>
     where type @{AllT_args} cd_more = (@{ParaT_args}
@@ -215,4 +227,4 @@ structure ZCORE = \<^eval>\<open>mk_name ["Instantiate", pfx_sfx_nargs "Alternat
 structure Z = \<^eval>\<open>mk_name ["Instantiate", pfx_sfx_nargs "Alternating_Zipper"]\<close>(
   open Base; structure Z = Z)
 open Z
-end
+end *)

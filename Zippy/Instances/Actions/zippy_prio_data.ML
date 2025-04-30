@@ -33,11 +33,11 @@ fun prio_data (prio, more) = Prio_Data {prio = prio, more = more}
 
 fun get_prio (Prio_Data {prio,...}) = prio
 fun map_prio (f, (Prio_Data {prio, more})) = Prio_Data {prio = f prio, more = more}
-fun prio _ = L.lens get_prio map_prio
+fun prio _ = L.mk_lens get_prio map_prio
 
 fun get_more (Prio_Data {more,...}) = more
 fun map_more (f, (Prio_Data {prio, more})) = Prio_Data {prio = prio, more = f more}
-fun more _ = L.lens get_more map_more
+fun more _ = L.mk_lens get_more map_more
 
 end
 
@@ -56,7 +56,7 @@ sig
 end
 
 functor Lift_Zippy_Prio_Data(
-    include LIFT_DATA_BASE
+    include \<^eval>\<open>sfx_ParaT_nargs "LIFT_DATA_BASE"\<close>
     structure PD : ZIPPY_PRIO_DATA
     sharing type PD.L.C.cat = AF.cat
   ) : LIFT_ZIPPY_PRIO_DATA =

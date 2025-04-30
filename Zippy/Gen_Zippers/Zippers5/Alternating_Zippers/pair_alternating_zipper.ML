@@ -11,13 +11,14 @@ sig
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   where type @{AllT_args} Z{i}.ZM.container =
     @{AllT_args} AZ1.Z{i}.ZM.container * @{AllT_args} AZ2.Z{i}.ZM.container
-  where type @{AllT_args} Z{i}.ZO.content =
-    @{AllT_args} AZ1.Z{i}.ZO.content * @{AllT_args} AZ2.Z{i}.ZO.content
-  where type @{AllT_args} Z{i}.ZO.zcontext =
-    @{AllT_args} AZ1.Z{i}.ZO.zcontext * @{AllT_args} AZ2.Z{i}.ZO.zcontext
+  where type @{AllT_args} Z{i}.ZD.content =
+    @{AllT_args} AZ1.Z{i}.ZD.content * @{AllT_args} AZ2.Z{i}.ZD.content
+  where type @{AllT_args} Z{i}.ZD.zcontext =
+    @{AllT_args} AZ1.Z{i}.ZD.zcontext * @{AllT_args} AZ2.Z{i}.ZD.zcontext
   where type @{AllT_args} Z{i}.zipper =
-    @{AllT_args} AZ1.Z{i}.zipper * @{AllT_args} AZ2.Z{i}.zipper
-  where type (@{ParaT_args} 'a) Z{i}.M.t = (@{ParaT_args} 'a) AZ1.Z{i}.M.t\<close>\<close>
+    @{AllT_args} AZ1.Z{i}.zipper * @{AllT_args} AZ2.Z{i}.zipper\<close>\<close>
+  sharing type M.t = AZ1.M.t
+  sharing type L.lens = AZ1.L.lens
 end
 
 functor \<^eval>\<open>mk_name ["Pair", pfx_sfx_nargs "Alternating_Zipper"]\<close>(

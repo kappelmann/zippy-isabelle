@@ -12,7 +12,7 @@ ML\<open>
     and more_args = \<open>val init_args = {
       args = SOME ["'p1"],
       sep = SOME ", ",
-      encl = SOME ("", ", "),
+      encl = SOME ("", ""),
       encl_arg = SOME ("", ""),
       start = SOME 0,
       stop = SOME NONE
@@ -22,6 +22,7 @@ local_setup \<open>Para_Type_Args_Antiquotations.setup_args_attribute
   (SOME "set parameter type args antiquotation arguments")\<close>
 setup \<open>Para_Type_Args_Antiquotations.setup_args_antiquotation\<close>
 setup \<open>Para_Type_Args_Antiquotations.setup_arg_antiquotation\<close>
+
 
 (*functions to create type generic ML code*)
 ML\<open>

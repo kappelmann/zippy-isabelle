@@ -72,9 +72,7 @@ val args_arg_parsers = {
   encl_arg = SOME encl_parser,
   start = SOME (nonneg_n_parser (K "start index must not be empty")
       (K "start index must be non-negative")),
-  stop = SOME (nonneg_n_parser (K "stop index must not be empty")
-      (K "stop index must be non-negative")
-    |> PU.option')
+  stop = SOME (PU.ML_int (K "stop index must not be empty") |> PU.option')
 }
 
 val arg_arg_parsers = {

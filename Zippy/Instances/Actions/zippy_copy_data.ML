@@ -34,11 +34,11 @@ fun copy_data (copy, more) =
 
 fun get_copy (Copy_Data {copy,...}) = copy
 fun map_copy (f, (Copy_Data {copy, more})) = Copy_Data {copy = f copy, more = more}
-fun copy _ = L.lens get_copy map_copy
+fun copy _ = L.mk_lens get_copy map_copy
 
 fun get_more (Copy_Data {more,...}) = more
 fun map_more (f, (Copy_Data {copy, more})) = Copy_Data {copy = copy, more = f more}
-fun more _ = L.lens get_more map_more
+fun more _ = L.mk_lens get_more map_more
 
 end
 
@@ -57,7 +57,7 @@ sig
 end
 
 functor Lift_Zippy_Copy_Data(
-    include LIFT_DATA_BASE
+    include \<^eval>\<open>sfx_ParaT_nargs "LIFT_DATA_BASE"\<close>
     structure CD : ZIPPY_COPY_DATA
     sharing type CD.L.C.cat = AF.cat
   ) : LIFT_ZIPPY_COPY_DATA =

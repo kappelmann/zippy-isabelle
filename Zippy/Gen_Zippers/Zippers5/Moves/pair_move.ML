@@ -10,8 +10,7 @@ sig
   include \<^eval>\<open>sfx_T_nargs "MOVE"\<close>
   where type @{AllT_args} from = @{AllT_args} M1.from * @{AllT_args} M2.from
   where type @{AllT_args} to = @{AllT_args} M1.to * @{AllT_args} M2.to
-  sharing type M1.M.t = M.t
-  sharing type M2.M.t = M.t
+  sharing type M.t = M1.M.t
 end
 
 functor \<^eval>\<open>sfx_T_nargs "Pair_Move"\<close>(

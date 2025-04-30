@@ -10,15 +10,16 @@ functor \<^eval>\<open>sfx_T_nargs "Zipper_Moves_List_Enumerable"\<close>(
     \<^eval>\<open>sfx_T_nargs "ZIPPER_MOVES"\<close>
     where type @{AllT_args} container = @{AllT_args} E.init_data
     where type @{AllT_args} zipper = @{AllT_args} E.data L.t
-    where type (@{ParaT_args} 'a) M.t = (@{ParaT_args} 'a) E.M.t
   =
 \<^eval>\<open>sfx_T_nargs "Zipper_Moves"\<close>(
   structure M = E
   type @{AllT_args} container = @{AllT_args} E.init_data
   type @{AllT_args} zipper = @{AllT_args} E.data L.t
 
-  local structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(E)
-    structure A = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow"\<close>(E.M) open SC A
+  local
+    structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(E)
+    structure A = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow"\<close>(E.M)
+     open SC A
   in
   fun zip x = x |> (E.First.move >>> arr (fn x => L.cons x L.empty))
   val unzip = init_data

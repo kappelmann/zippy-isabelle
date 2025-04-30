@@ -10,15 +10,13 @@ sig
 
   include \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close>
   where type @{AllT_args} ZM.container = unit
-  where type @{AllT_args} ZO.content = position
+  where type @{AllT_args} ZD.content = position
 end
 
 functor \<^eval>\<open>sfx_T_nargs "Position_Zipper"\<close>(
-    structure A : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_ARROW_APPLY"\<close>
-    structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS"\<close>
-    where type (@{ParaT_args} 'a, 'b) C.cat = (@{ParaT_args} 'a, 'b) A.A.cat
+    structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
     structure LI : \<^eval>\<open>sfx_ParaT_nargs "GLIST"\<close>
-    sharing type LI.M.t = A.K.M.t
+    sharing type LI.M.t = L.K.M.t
   ) : \<^eval>\<open>sfx_T_nargs "POSITION_ZIPPER"\<close> =
 struct
 
@@ -26,7 +24,7 @@ structure LI = LI
 type position = int LI.t
 val init_x = 0
 
-structure M = A.K.M
+structure M = L.K.M
 open M
 structure Z = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
   structure ZM = \<^eval>\<open>sfx_T_nargs "Zipper_Moves_List_Enumerable"\<close>(
@@ -37,8 +35,7 @@ structure Z = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
       type @{AllT_args} init_data = unit
       fun first _ = pure init_x
     ))
-  structure ZO = \<^eval>\<open>sfx_T_nargs "Content_Zipper_Optics"\<close>(
-    structure A = A
+  structure ZD = \<^eval>\<open>sfx_T_nargs "Content_Zipper_Data"\<close>(
     structure L = L
     type @{AllT_args} content = @{AllT_args} ZM.zipper))
 open Z

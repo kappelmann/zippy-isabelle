@@ -43,4 +43,3 @@ structure Right = \<^eval>\<open>sfx_T_nargs "Pair_Move"\<close>(
   structure M1 = Z1.Right; structure M2 = Z2.Right)
 
 end
-

@@ -3,84 +3,81 @@
 *)
 signature \<^eval>\<open>sfx_T_nargs "NODE"\<close> =
 sig
-  structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS"\<close>
+  structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
+  type @{AllT_args} node
   type @{AllT_args} content
   type @{AllT_args} next
-  type @{AllT_args} node
 
-  val node : (@{ParaT_args} @{AllT_args} content * @{AllT_args} next, @{AllT_args} node) L.C.cat
+  val node :
+    (@{ParaT_args} @{AllT_args} content * @{AllT_args} next, @{AllT_args} node) L.C.cat
 
-  val content : unit -> (@{ParaT_args} @{AllT_args} node, @{AllT_args} content) L.slens
-  val next : unit -> (@{ParaT_args} @{AllT_args} node, @{AllT_args} next) L.slens
-  val get_content : (@{ParaT_args} @{AllT_args} node, @{AllT_args} content) L.getter
-  val get_next : (@{ParaT_args} @{AllT_args} node, @{AllT_args} next) L.getter
-  val map_content : (@{ParaT_args} @{AllT_args} node, @{AllT_args} content) L.smodifier
-  val map_next : (@{ParaT_args} @{AllT_args} node, @{AllT_args} next) L.smodifier
+  structure CO : \<^eval>\<open>sfx_T_nargs "STRUCTURED_LENS"\<close>
+  where type @{AllT_args} container = @{AllT_args} node
+  where type @{AllT_args} data = @{AllT_args} content
+  sharing type CO.lens = L.lens
+  sharing type CO.K.M.t = L.K.M.t
+
+  structure NEXT : \<^eval>\<open>sfx_T_nargs "STRUCTURED_LENS"\<close>
+  where type @{AllT_args} container = @{AllT_args} node
+  where type @{AllT_args} data = @{AllT_args} next
+  sharing type NEXT.lens = L.lens
+  sharing type NEXT.K.M.t = L.K.M.t
 end
 
 functor \<^eval>\<open>sfx_T_nargs "Node"\<close>(
+    structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
     type @{AllT_args} content
     type @{AllT_args} next
-  ) :
-    \<^eval>\<open>sfx_T_nargs "NODE"\<close>
-    where type (@{ParaT_args} 'a, 'b) L.C.cat =
-      (@{ParaT_args} 'a, 'b) \<^eval>\<open>sfx_ParaT_nargs "SLens" ^ ".C.cat"\<close> =
+  ) : \<^eval>\<open>sfx_T_nargs "NODE"\<close>
+  =
 struct
 
-structure L = \<^eval>\<open>sfx_ParaT_nargs "SLens"\<close>
+structure L = L
 
 type @{AllT_args} content = @{AllT_args} content
 type @{AllT_args} next = @{AllT_args} next
-datatype @{AllT_args} node = Node of
-  {content : @{AllT_args} content, next : @{AllT_args} next}
+datatype @{AllT_args} node = Node of {content : @{AllT_args} content, next : @{AllT_args} next}
 
-fun node (content, next) = Node {content = content, next = next}
+local open L.K.M
+in
 
-fun get_content (Node {content,...}) = content
-fun get_next (Node {next,...}) = next
+fun node (content, next) = pure (Node {content = content, next = next})
 
-fun map_content (f, Node {content, next}) = Node {content = f content, next = next}
-fun map_next (f, Node {content, next}) = Node {content = content, next = f next}
-
-fun content _ = L.lens get_content map_content
-fun next _ = L.lens get_next map_next
-
-end
-
-signature \<^eval>\<open>sfx_T_nargs "LIFT_NODE"\<close> =
-sig
-  structure N : \<^eval>\<open>sfx_T_nargs "NODE"\<close>
-  include \<^eval>\<open>sfx_T_nargs "NODE"\<close>
-  where type @{AllT_args} content = @{AllT_args} N.content
-  where type @{AllT_args} next = @{AllT_args} N.next
-  where type @{AllT_args} node = @{AllT_args} N.node
-end
-
-functor \<^eval>\<open>sfx_T_nargs "Lift_Node"\<close>(
-    structure AF : \<^eval>\<open>sfx_ParaT_nargs "ARROW"\<close>
-    structure N : \<^eval>\<open>sfx_T_nargs "NODE"\<close>
-    sharing type N.L.C.cat = AF.cat
-    structure AT : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_BASE"\<close>
-    structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS"\<close>
-    where type (@{ParaT_args} 'a, 'b) C.cat = (@{ParaT_args} 'a, 'b) AT.cat
-    val lift : (@{ParaT_args} 'a, 'b) AF.cat -> (@{ParaT_args} 'a, 'b) AT.cat
-  ) : \<^eval>\<open>sfx_T_nargs "LIFT_NODE"\<close> =
+structure Base = struct open L; type @{AllT_args} container = @{AllT_args} node end
+structure CO =
 struct
+  open Base
+  type @{AllT_args} data = @{AllT_args} content
+  fun getter (Node {content,...}) = pure content
+  fun modifier (f, Node {content, next}) = bind (f content)
+    (fn content => node (content, next))
+  fun lens _ = L.mk_lens getter modifier
+end
 
-structure N = N
-structure L = L
-
-type @{AllT_args} content = @{AllT_args} N.content
-type @{AllT_args} next = @{AllT_args} N.next
-type @{AllT_args} node = @{AllT_args} N.node
-
-fun node x = x |> lift N.node
-fun node_lens _ = L.lens_get_mk (lift (AF.&&& (N.get_content, N.get_next))) node
-fun content _ = L.lens_fst (node_lens ())
-fun next _ = L.lens_snd (node_lens ())
-fun get_content x = x |> L.get (content ())
-fun map_content x = x |> L.modify (content ())
-fun get_next x = x |> L.get (next ())
-fun map_next x = x |> L.modify (next ())
+structure NEXT =
+struct
+  open Base
+  type @{AllT_args} data = @{AllT_args} next
+  fun getter (Node {next,...}) = pure next
+  fun modifier (f, Node {content, next}) = bind (f next)
+    (fn next => node (content, next))
+  fun lens _ = L.mk_lens getter modifier
+end
+end
 
 end
+
+\<^imap>\<open>\<open>{i}\<close> => \<open>
+functor \<^eval>\<open>sfx_inst_T_nargs "Instantiate_Node" {i}\<close>(
+    type @{AllT_args} inst
+    structure Z : \<^eval>\<open>sfx_T_nargs "NODE"\<close>
+  ) :
+    \<^eval>\<open>sfx_T_nargs "NODE"\<close>
+    where type @{AllT_args} content = (@{ParaT_args}
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.content
+    where type @{AllT_args} next = (@{ParaT_args}
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.next
+    where type @{AllT_args} node = (@{ParaT_args}
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.node
+  = Z\<close>\<close>
+

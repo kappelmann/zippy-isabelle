@@ -1,6 +1,5 @@
 (*  Title:      Zippy/move.ML
     Author:     Kevin Kappelmann
-
 *)
 signature \<^eval>\<open>sfx_T_nargs "MOVE"\<close> =
 sig
@@ -28,14 +27,14 @@ type @{AllT_args} to = @{AllT_args} data
 val move = move
 end
 
-functor \<^eval>\<open>sfx_T_nargs "Instantiate_Move"\<close>(
-    \<^imap>\<open>\<open>{i}\<close> => \<open>type @{AllT_args} inst{i}\<close>\<close>
+\<^imap>\<open>\<open>{i}\<close> => \<open>
+functor \<^eval>\<open>sfx_inst_T_nargs "Instantiate_Move" {i}\<close>(
+    type @{AllT_args} inst
     structure M : \<^eval>\<open>sfx_T_nargs "MOVE"\<close>
   ) :
     \<^eval>\<open>sfx_T_nargs "MOVE"\<close>
     where type @{AllT_args} from = (@{ParaT_args}
-      \<^imap>\<open>\<open>{i}\<close> => \<open>@{AllT_args} inst{i}\<close> where sep = ","\<close>) M.from
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) M.from
     where type @{AllT_args} to = (@{ParaT_args}
-      \<^imap>\<open>\<open>{i}\<close> => \<open>@{AllT_args} inst{i}\<close> where sep = ","\<close>) M.to
-    where type (@{ParaT_args} 'a) K.M.t = (@{ParaT_args} 'a) M.K.M.t
-  = M
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) M.to
+  = M\<close>\<close>
