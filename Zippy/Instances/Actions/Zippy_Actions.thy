@@ -1,9 +1,9 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory Zippy_Actions
   imports
-    Zippy_Base
     ML_Order_Utils
     SpecCheck.SpecCheck_Show
+    Zippy_Base
 begin
 
 ML_file\<open>zippy_paction_mixin_base.ML\<close>

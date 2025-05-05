@@ -1,9 +1,9 @@
-(*  Title:      Zippy/zippy_base_base.ML
+(*  Title:      Zippy/zippy_node_base.ML
     Author:     Kevin Kappelmann
 *)
-signature ZIPPY_BASE_BASE =
+signature ZIPPY_NODE_BASE =
 sig
-  include \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close>
+  include ZIPPY_BASE_BASE
 
   (*zipper containing the core data*)
   structure ZCORE : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER_NODES"\<close>
@@ -20,11 +20,11 @@ sig
 end
 
 \<^imap>\<open>\<open>{j}\<close> => \<open>
-functor Instantiate_Zippy_Base_Base(
+functor Instantiate_Zippy_Node_Base(
     type @{AllT_args} inst
-    structure Z : ZIPPY_BASE_BASE
+    structure Z : ZIPPY_NODE_BASE
   ) :
-    ZIPPY_BASE_BASE
+    ZIPPY_NODE_BASE
     \<^imap>\<open>\<open>{i}\<close> => \<open>
     where type @{AllT_args} ZCORE.A.Z{i}.ZM.container = (@{ParaT_args}
       \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCORE.A.Z{i}.ZM.container

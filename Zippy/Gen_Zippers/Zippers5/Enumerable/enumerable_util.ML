@@ -12,7 +12,7 @@ sig
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Enumerable_Util"\<close>(
-    structure CO : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL_APPLY"\<close>
+    CO : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL_APPLY"\<close>
   ) : \<^eval>\<open>sfx_ParaT_nargs "ENUMERABLE_UTIL"\<close> =
 struct
 

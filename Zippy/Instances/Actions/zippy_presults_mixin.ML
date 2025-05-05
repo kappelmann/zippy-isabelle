@@ -4,10 +4,7 @@
 signature ZIPPY_PRESULTS_MIXIN =
 sig
   include ZIPPY_PRESULTS_MIXIN_BASE
-  structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION_REC"\<close>
-  sharing type AE.K.M.t = M.t
 
-  (* presults *)
   val gen_presults_from_sq :
     (*coroutine in case of an empty sequence*)
     (@{ParaT_args} @{AllT_args} zipper, result, prio) CO.acoroutine ->
@@ -15,7 +12,7 @@ sig
     (@{ParaT_args} @{AllT_args} zipper * result Seq.seq, prio * result Seq.seq) CO.coroutine ->
     result Seq.seq -> @{AllT_args} presults
 
-  val presults_from_sq : @{ParaT_args encl = "(" ")"} AE.exn ->
+  val presults_from_sq : @{ParaT_args encl = "(" ")"} CO.AE.exn ->
     (@{ParaT_args} @{AllT_args} zipper * result Seq.seq, prio * result Seq.seq) CO.coroutine ->
     result Seq.seq -> @{AllT_args} presults
 
@@ -25,21 +22,15 @@ sig
 end
 
 functor Zippy_Presults_Mixin(
-    structure Z : ZIPPY_BASE
-    structure PRESULTS : ZIPPY_PRESULTS_MIXIN_BASE
-    sharing type PRESULTS.zipper = Z.Z4.zipper
-    sharing type PRESULTS.M.t = Z.M.t
-    sharing type PRESULTS.L.lens = Z.L.lens
-    sharing type PRESULTS.CO.acoroutine = Z.CO.acoroutine
-    sharing type PRESULTS.CO.AE.exn = Z.CO.AE.exn
+    PRESULTS : ZIPPY_PRESULTS_MIXIN_BASE
   ) : ZIPPY_PRESULTS_MIXIN =
 struct
 
-open Z PRESULTS
+open PRESULTS
+structure U = Zippy_Monad_Util(L.K.M); open U
 
 local open SC MO A
 in
-(* presults *)
 fun gen_presults_from_sq aco_empty_sq mk_prio_sq_c sq =
   let
     fun update mk_prio_sq_c sq =
@@ -54,7 +45,7 @@ fun gen_presults_from_sq aco_empty_sq mk_prio_sq_c sq =
     |> CO.acoroutine |> presults
   end
 
-fun presults_from_sq e = gen_presults_from_sq (empty_aco e)
+fun presults_from_sq e = gen_presults_from_sq (CO.throw e)
 
 fun update_prio_co prio_co p =
   (fn (z, sq) => CO.resume prio_co (z, p)
@@ -63,4 +54,3 @@ fun update_prio_co prio_co p =
 end
 
 end
-

@@ -19,13 +19,18 @@ session Zippy = "HOL" +
     "Gen_Zippers/Zippers5/Structured_Lenses"
     "Gen_Zippers/Zippers5/Zippers"
     "Gen_Zippers/Zippers5/Zippers/Instances"
-    "Union_Find"
     "Instances"
     "Instances/Actions"
+    "Instances/Actions/Lists"
+    "Instances/Base"
+    "Instances/Base/Lists"
     "Instances/Goals"
+    "Instances/Goals/Lists"
     "Instances/Tactics"
     "Instances/Tactics/Lists"
     "Instances/Identifiers"
+    "Instances/Position"
+    "Instances/Position/Lists"
     "Instances/Prover"
     "Instances/Prover/Gen"
     "Instances/Prover/Goals"
@@ -33,6 +38,7 @@ session Zippy = "HOL" +
     "Instances/Prover/Metadata"
     "Instances/Prover/Position"
     "Instances/Prover/Tactics"
+    "Union_Find"
   theories
     Zippy_Paper
     Zippy_Prover

@@ -17,6 +17,8 @@ ML_file\<open>zippy_goal_clusters_mixin.ML\<close>
 ML_file\<open>zippy_goal_cluster_mixin_base.ML\<close>
 ML_file\<open>zippy_goal_cluster_mixin.ML\<close>
 
+ML_file\<open>zippy_goals_mixin_base.ML\<close>
+
 ML_file\<open>zippy_goal_focus_mixin_base.ML\<close>
 
 end

@@ -7,6 +7,6 @@ sig
 
   structure COPY : ZIPPY_COPY_MIXIN_BASE
   where type copy_update_data = TAC.GPU.F.focus -> (GCS.GCS.cluster_pos * TAC.GPU.F.focus) list
-  sharing type COPY.M.t = M.t
+  sharing type COPY.M.t = GCS.L.K.M.t
   sharing type COPY.L.lens = GCS.L.lens
 end

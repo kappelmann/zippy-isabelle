@@ -7,7 +7,10 @@ signature \<^eval>\<open>sfx_T_nargs "STRUCTURED_LENS"\<close> =
 sig
   (*we stick to Kleisli lenses such that getters and modifers can be typed polymorphically without
   using a unit argument (as needed for the lens)*)
-  include \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
+  include \<^eval>\<open>sfx_ParaT_nargs "LENS"\<close>
+  where type (@{ParaT_args} 'a, 'b) C.cat = 'a -> 'b
+  where type (@{ParaT_args} 't, 'o, 's, 'i) lens =
+    (@{ParaT_args} 't, 'o, 's, 'i) \<^eval>\<open>sfx_ParaT_nargs "SLens" ^ ".lens"\<close>
 
   type @{AllT_args} container
   type @{AllT_args} data
@@ -18,10 +21,10 @@ sig
 end
 
 functor \<^eval>\<open>sfx_T_nargs "Structured_Lens"\<close>(
-    structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
     type @{AllT_args} container
     type @{AllT_args} data
-    val lens : unit -> (@{ParaT_args} @{AllT_args} container, @{AllT_args} data) L.slens
+    val lens : unit -> (@{ParaT_args} @{AllT_args} container, @{AllT_args} data)
+      \<^eval>\<open>sfx_ParaT_nargs "SLens" ^ ".slens"\<close>
   ) :
     \<^eval>\<open>sfx_T_nargs "STRUCTURED_LENS"\<close>
     where type @{AllT_args} container = @{AllT_args} container
@@ -29,7 +32,7 @@ functor \<^eval>\<open>sfx_T_nargs "Structured_Lens"\<close>(
   =
 struct
 
-open L
+open \<^eval>\<open>sfx_ParaT_nargs "SLens"\<close>
 type @{AllT_args} container = @{AllT_args} container
 type @{AllT_args} data = @{AllT_args} data
 

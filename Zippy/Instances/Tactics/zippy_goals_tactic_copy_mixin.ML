@@ -4,6 +4,7 @@
 signature ZIPPY_GOALS_TACTIC_COPY_MIXIN =
 sig
   include ZIPPY_GOALS_TACTIC_COPY_MIXIN_BASE
+  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
 
   val gen_copy_cpos_focus :
     (*move to cluster position*)
@@ -23,20 +24,16 @@ sig
 end
 
 functor Zippy_Goals_Tactic_Copy_Mixin(
-    structure Z : ZIPPY_BASE
     structure GOALS_TAC_COPY : ZIPPY_GOALS_TACTIC_COPY_MIXIN_BASE
-    sharing type GOALS_TAC_COPY.GCS.zipper = Z.Z1.zipper
-    sharing type GOALS_TAC_COPY.GC.zipper = Z.Z2.zipper
-    sharing type GOALS_TAC_COPY.COPY.zipper_from = Z.Z3.zipper
-    sharing type GOALS_TAC_COPY.COPY.zipper_to = Z.Z1.zipper
-    sharing type GOALS_TAC_COPY.M.t = Z.M.t
-    sharing type GOALS_TAC_COPY.GCS.L.lens = Z.L.lens
+    structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
+    sharing type AE.K.M.t = GOALS_TAC_COPY.GCS.L.K.M.t
   ) : ZIPPY_GOALS_TACTIC_COPY_MIXIN =
 struct
 
-open Z GOALS_TAC_COPY
+open GOALS_TAC_COPY
+structure MB = \<^eval>\<open>sfx_ParaT_nargs "Move_Base"\<close>(GCS.L.K.M); open MB
 
-local open SC MO A
+local structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(MB); open SC
 in
 
 fun gen_copy_cpos_focus move_cpos init_copy (cpos, focus) zipper =
@@ -48,11 +45,12 @@ local
       \<^eval>\<open>sfx_ParaT_nargs "Identity_Foldable"\<close>)
     structure M = M)
 in
-fun gen_copy_cpos_focus_list copy_cpfocus cpfs x =
-  LF.foldlM (fn cpf => AE.try (copy_cpfocus cpf x)) cpfs
+fun gen_copy_cpos_focus_list copy_cpos_focus cpfs x =
+  LF.foldlM (fn cpf => AE.try (copy_cpos_focus cpf x)) cpfs
 end
 
-fun gen_copy_update_focus copy_cpfocuss focus = (fn cud => copy_cpfocuss (cud focus)) |> COPY.copy
+fun gen_copy_update_focus copy_cpos_focuss focus =
+  (fn cud => copy_cpos_focuss (cud focus)) |> COPY.copy
 end
 
 end

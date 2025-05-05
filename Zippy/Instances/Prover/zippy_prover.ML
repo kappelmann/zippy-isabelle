@@ -129,7 +129,7 @@ in
 
 (*TODO: generalise enumeration of zipper; double check foldlM or foldrM*)
 (* containers *)
-structure EU = \<^eval>\<open>sfx_ParaT_nargs "Enumerable_Util"\<close>(structure CO = CO)
+structure EU = \<^eval>\<open>sfx_ParaT_nargs "Enumerable_Util"\<close>(CO)
 
 fun list_container_zippers unzip first next = unzip >>> EU.list first next
 (*invariant: operations add new node to the front of the lists*)

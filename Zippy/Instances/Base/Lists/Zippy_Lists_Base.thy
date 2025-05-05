@@ -6,7 +6,7 @@ theory Zippy_Lists_Base
     Zippy_Base
 begin
 
-ML_file\<open>zippy_lists_base_base.ML\<close>
 ML_file\<open>zippy_lists_base.ML\<close>
+ML_file\<open>zippy_lists.ML\<close>
 
 end

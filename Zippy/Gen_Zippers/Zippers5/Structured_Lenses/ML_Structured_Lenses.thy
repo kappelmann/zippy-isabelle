@@ -5,10 +5,10 @@ theory ML_Structured_Lenses
     ML_Gen_Zippers_Setup
 begin
 
-ML_gen_file\<open>structured_lens.ML\<close>
-ML_gen_file\<open>comp_structured_lens.ML\<close>
-ML_gen_file\<open>modify_structured_lens.ML\<close>
-ML_gen_file\<open>pair_structured_lens.ML\<close>
+ML_file\<open>structured_lens.ML\<close>
+ML_file\<open>comp_structured_lens.ML\<close>
+ML_file\<open>modify_structured_lens.ML\<close>
+ML_file\<open>pair_structured_lens.ML\<close>
 
 context
   (*FIXME: could be made generic with ML programming*)

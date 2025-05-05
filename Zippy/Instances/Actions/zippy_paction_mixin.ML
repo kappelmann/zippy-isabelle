@@ -9,7 +9,6 @@ sig
   structure AF : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_FOLD"\<close>
   sharing type AF.K.M.t = M.t
 
-  (* actions *)
   val no_action : @{ParaT_args encl = "(" ")"} AE.exn -> @{AllT_args} action
   val no_paction : @{ParaT_args encl = "(" ")"} AE.exn -> @{AllT_args} paction
   val disable_paction : @{ParaT_args encl = "(" ")"} AE.exn ->
@@ -18,7 +17,7 @@ sig
   val get_run_paction : (@{ParaT_args} @{AllT_args} zipper, prio * @{AllT_args} action) cat
   val run_action : prio * @{AllT_args} action -> (@{ParaT_args} @{AllT_args} zipper) hom_move
 
-  (** find action candidates **)
+  (*find action candidates*)
   val gen_fold_pactions :
     (*next zipper*)
     (@{ParaT_args} @{AllT_args} zipper) hom_move ->
@@ -44,17 +43,17 @@ sig
 end
 
 functor Zippy_PAction_Mixin(
-    structure Z : ZIPPY_BASE
     structure PACTION : ZIPPY_PACTION_MIXIN_BASE
-    sharing type PACTION.zipper = Z.Z4.zipper
-    sharing type PACTION.M.t = Z.M.t
-    sharing type PACTION.L.lens = Z.L.lens
+    structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION_REC"\<close>
+    sharing type AE.K.M.t = PACTION.M.t
   ) : ZIPPY_PACTION_MIXIN =
 struct
 
-open Z PACTION
+open PACTION
+structure U = Zippy_Monad_Util(M); open U
+structure AE = AE
+structure AF = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Fold_Exception_Rec"\<close>(AE)
 
-(* actions *)
 fun no_action e _ = AE.throw' e
 fun no_paction e = AE.throw' e |> PACTION.paction
 
@@ -67,7 +66,6 @@ fun get_run_paction x = L.getter x
   >>= (fn paction => PACTION.run_paction paction x)
 fun run_action (p, action) = action p
 
-(** find action candidates **)
 fun gen_fold_pactions_mk_res x = x |> (get_run_paction &&& id ())
 
 fun gen_fold_pactions next update = AF.fold_init next
