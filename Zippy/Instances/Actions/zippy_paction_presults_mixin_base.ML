@@ -3,11 +3,10 @@
 *)
 signature ZIPPY_PACTION_PRESULTS_MIXIN_BASE =
 sig
-  structure PACTION : ZIPPY_PACTION_MIXIN_BASE
+  structure PAction : ZIPPY_PACTION_MIXIN_BASE
 
-  structure PRESULTS : ZIPPY_PRESULTS_MIXIN_BASE
-  sharing type PRESULTS.zipper = PACTION.zipper
-  sharing type PRESULTS.L.K.M.t = PACTION.M.t
-  sharing type PRESULTS.prio = PACTION.prio
-  sharing type PRESULTS.L.lens = PACTION.L.lens
+  structure PResults : ZIPPY_PRESULTS_MIXIN_BASE
+  where type (@{ParaT_args} 'a, 'b) Co.C.cat = (@{ParaT_args} 'a, 'b) PAction.cat
+  sharing type PResults.zipper = PAction.zipper
+  sharing type PResults.prio = PAction.prio
 end

@@ -13,14 +13,12 @@ sig
   where type @{AllT_args} ZD.zcontext = @{AllT_args} Z1.ZD.zcontext * @{AllT_args} Z2.ZD.zcontext
   where type @{AllT_args} ZD.zipper = @{AllT_args} Z1.zipper * @{AllT_args} Z2.zipper
   sharing type M.t = Z1.M.t
-  sharing type ZD.L.lens = Z1.ZD.L.lens
 end
 
 functor \<^eval>\<open>sfx_T_nargs "Pair_Zipper"\<close>(
     structure Z1 : \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close>
     structure Z2 : \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close>
     sharing type Z2.M.t = Z1.M.t
-    sharing type Z2.ZD.L.lens = Z1.ZD.L.lens
   ) : \<^eval>\<open>sfx_T_nargs "PAIR_ZIPPER"\<close> =
 struct
 

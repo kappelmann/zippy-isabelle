@@ -11,15 +11,14 @@ sig
 end
 
 functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Depth_Zipper"\<close>(
-    L : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
+    M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
   ) : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_DEPTH_ZIPPER"\<close> =
 struct
 
 val init_depth = 0
 
 structure Z = \<^eval>\<open>sfx_T_nargs "Content_Zipper"\<close>(
-  structure M = \<^eval>\<open>sfx_ParaT_nargs "Move_Base"\<close>(L.K.M)
-  structure L = L
+  structure M = M
   type @{AllT_args} container = int
   type @{AllT_args} content = int
   fun zip x = x |> M.id ()
@@ -32,7 +31,7 @@ structure Z = \<^eval>\<open>sfx_T_nargs "Content_Zipper"\<close>(
 structure AZ : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close> =
 struct
   open Z
-  structure L = L
+  structure L = \<^eval>\<open>sfx_ParaT_nargs "SLens"\<close>
   structure Base = struct open Z; type @{AllT_args} from = int; type @{AllT_args} to = int end
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   structure Z{i} = Z
@@ -49,12 +48,12 @@ struct
   structure \<^eval>\<open>"Down" ^ ML_Gen.ZipperT_nargs' ()\<close> =
   struct
     open Base
-    fun move x = (x + 1) |> Z.id ()
+    fun move x = x + 1 |> Z.id ()
   end
   structure Up1 =
   struct
     open Base
-    fun move x = (x - 1) |> Z.id ()
+    fun move x = x - 1 |> Z.id ()
   end
 end
 open AZ

@@ -3,11 +3,9 @@
 *)
 signature ZIPPY_GOALS_MIXIN_BASE =
 sig
-  structure GCS : ZIPPY_GOAL_CLUSTERS_MIXIN_BASE
+  structure GClusters : ZIPPY_GOAL_CLUSTERS_MIXIN_BASE
 
-  structure GC : ZIPPY_GOAL_CLUSTER_MIXIN_BASE
-  sharing type GC.L.K.M.t = GCS.L.K.M.t
-  sharing type GC.L.lens = GCS.L.lens
-  sharing type GC.GC.GCS.gcpos = GCS.GCS.gcpos
-  sharing type GC.GC.GCS.gclusters = GCS.GCS.gclusters
+  structure GCluster : ZIPPY_GOAL_CLUSTER_MIXIN_BASE
+  sharing type GCluster.GC.GCS.gcpos = GClusters.GCS.gcpos
+  sharing type GCluster.GC.GCS.gclusters = GClusters.GCS.gclusters
 end

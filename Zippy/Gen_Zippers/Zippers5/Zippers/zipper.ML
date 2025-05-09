@@ -10,14 +10,12 @@ sig
   sharing type ZM.M.t = M.t
   structure ZD : \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close>
   sharing type ZD.zipper = zipper
-  sharing type ZD.L.K.M.t = M.t
 end
 
 functor \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
     structure ZM : \<^eval>\<open>sfx_T_nargs "ZIPPER_MOVES"\<close>
     structure ZD : \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close>
     sharing type ZD.zipper = ZM.zipper
-    sharing type ZD.L.K.M.t = ZM.M.t
   ) : \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close> =
 struct
 structure ZM = ZM

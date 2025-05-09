@@ -6,42 +6,39 @@ sig
   include ZIPPY_BASE_BASE
 
   (*zipper containing the core data*)
-  structure ZCORE : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER_NODES"\<close>
-  sharing type ZCORE.M.t = M.t
-  sharing type ZCORE.L.lens = L.lens
+  structure ZCore : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER_NODES"\<close>
+  sharing type ZCore.M.t = M.t
 
   (*lenses for core data*)
   \<^imap>\<open>\<open>{i}\<close> => \<open>
-  structure ZCORE_CO{i} : \<^eval>\<open>sfx_T_nargs "STRUCTURED_LENS"\<close>
-  sharing type ZCORE_CO{i}.container = Z{i}.ZD.content
-  sharing type ZCORE_CO{i}.data = ZCORE.Z{i}.ZD.content
-  sharing type ZCORE_CO{i}.lens = L.lens
-  sharing type ZCORE_CO{i}.K.M.t = M.t\<close>\<close>
+  structure ZCore_Co{i} : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
+  sharing type ZCore_Co{i}.container = Z{i}.ZD.content
+  sharing type ZCore_Co{i}.data = ZCore.Z{i}.ZD.content\<close>\<close>
 end
 
 \<^imap>\<open>\<open>{j}\<close> => \<open>
-functor Instantiate_Zippy_Node_Base(
+functor Instantiate_Zippy_Node_Base_{j}(
     type @{AllT_args} inst
     structure Z : ZIPPY_NODE_BASE
   ) :
     ZIPPY_NODE_BASE
     \<^imap>\<open>\<open>{i}\<close> => \<open>
-    where type @{AllT_args} ZCORE.A.Z{i}.ZM.container = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCORE.A.Z{i}.ZM.container
-    where type @{AllT_args} ZCORE.A.Z{i}.ZD.content = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCORE.A.Z{i}.ZD.content
-    where type @{AllT_args} ZCORE.A.Z{i}.ZD.zcontext = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCORE.A.Z{i}.ZD.zcontext
-    where type @{AllT_args} ZCORE.A.Z{i}.zipper = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCORE.A.Z{i}.zipper
-    where type @{AllT_args} ZCORE.A.N{i}.content = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCORE.A.N{i}.content
-    where type @{AllT_args} ZCORE.Z{i}.zipper = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCORE.Z{i}.zipper
-    where type @{AllT_args} ZCORE.zcontext{i} = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCORE.zcontext{i}
-    where type @{AllT_args} ZCORE.pzipper{i} = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCORE.pzipper{i}
+    where type @{AllT_args} ZCore.A.Z{i}.ZM.container = (@{ParaT_args}
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCore.A.Z{i}.ZM.container
+    where type @{AllT_args} ZCore.A.Z{i}.ZD.content = (@{ParaT_args}
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCore.A.Z{i}.ZD.content
+    where type @{AllT_args} ZCore.A.Z{i}.ZD.zcontext = (@{ParaT_args}
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCore.A.Z{i}.ZD.zcontext
+    where type @{AllT_args} ZCore.A.Z{i}.zipper = (@{ParaT_args}
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCore.A.Z{i}.zipper
+    where type @{AllT_args} ZCore.A.N{i}.content = (@{ParaT_args}
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCore.A.N{i}.content
+    where type @{AllT_args} ZCore.Z{i}.zipper = (@{ParaT_args}
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCore.Z{i}.zipper
+    where type @{AllT_args} ZCore.zcontext{i} = (@{ParaT_args}
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCore.zcontext{i}
+    where type @{AllT_args} ZCore.pzipper{i} = (@{ParaT_args}
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.ZCore.pzipper{i}
     where type @{AllT_args} Z{i}.ZM.container = (@{ParaT_args}
       \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.Z{i}.ZM.container
     where type @{AllT_args} Z{i}.ZD.content = (@{ParaT_args}

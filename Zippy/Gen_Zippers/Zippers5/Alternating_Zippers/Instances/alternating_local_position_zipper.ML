@@ -11,7 +11,6 @@ sig
   where type @{AllT_args} A.Z{i}.ZD.zcontext = @{AllT_args} Z.ZD.zcontext
   where type @{AllT_args} A.Z{i}.zipper = @{AllT_args} Z.zipper\<close>\<close>
   sharing type M.t = Z.M.t
-  sharing type L.lens = Z.ZD.L.lens
 end
 
 functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Local_Position_Zipper"\<close>(
@@ -24,9 +23,9 @@ structure AZN = \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Nodes"\<close>(
     \<^imap>\<open>\<open>{i}\<close> => \<open>
     structure Z{i} = Z
     type @{AllT_args} ncontent{i} = @{AllT_args} Z{i}.ZD.content
-    fun ncontent{i} x = Z.id () x
-    fun next{i} _ = Z.M.pure (Z.M.pure ())
-    fun content{i} x _ = Z.M.pure x
+    fun ncontent{i} x = x
+    fun next{i} _ = Z.M.pure ()
+    fun content{i} x _ = x
     \<close>\<close>))
 open AZN
 end

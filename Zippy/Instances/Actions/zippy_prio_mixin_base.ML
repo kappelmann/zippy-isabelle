@@ -1,26 +1,29 @@
-(*  Title:      Zippy/zippy_goal_focus_mixin_base.ML
+(*  Title:      Zippy/zippy_prio_mixin_base.ML
     Author:     Kevin Kappelmann
+
+Priorities
 *)
-signature ZIPPY_GOAL_FOCUS_MIXIN_BASE =
+signature ZIPPY_PRIO_MIXIN_BASE =
 sig
-  structure F : ZIPPY_GOAL_FOCUS
+  type prio
 
   structure L : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-  where type @{AllT_args} data = F.focus
+  where type @{AllT_args} data = prio
 end
 
-functor Zippy_Goal_Focus_Mixin_Base(
-    L : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} data = @{ZipperT_arg 3}
+functor Zippy_Prio_Mixin_Base(
+    type prio
+    structure L : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
+    where type @{AllT_args} data = @{ZipperT_arg 4}
   ) :
   sig
     structure DataM : \<^eval>\<open>sfx_T_nargs "DATA_MORE"\<close>
-    where type @{AllT_args} data = Standard_Zippy_Goal_Focus.focus
+    where type @{AllT_args} data = prio
     where type @{AllT_args} more = @{AllT_args} L.data
 
-    include ZIPPY_GOAL_FOCUS_MIXIN_BASE
+    include ZIPPY_PRIO_MIXIN_BASE
     where type @{AllT_args} L.container = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT (ML_Gen.AllT_args () ^ " DataM.data_more") 4\<close>) L.container
+      \<^eval>\<open>ML_Gen.inst_zipperT (ML_Gen.AllT_args () ^ " DataM.data_more") 5\<close>) L.container
     structure DataM_More : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
     where type @{AllT_args} container = @{AllT_args} L.container
     where type @{AllT_args} data = @{AllT_args} DataM.more
@@ -28,15 +31,14 @@ functor Zippy_Goal_Focus_Mixin_Base(
   =
 struct
 
-structure F = Standard_Zippy_Goal_Focus
+type prio = prio
 
 type @{AllT_args} container = (@{ParaT_args}
-  @{ZipperT_args stop = 2},
-  (F.focus, @{ZipperT_arg 3}) Data_MoreT.data_more,
-  @{ZipperT_args start = 4}) L.container
+  @{ZipperT_args stop = 3},
+  (prio, @{ZipperT_arg 4}) Data_MoreT.data_more) L.container
 
 structure DataM = \<^eval>\<open>sfx_T_nargs "Data_More"\<close>(
-  type @{AllT_args} data = F.focus
+  type @{AllT_args} data = prio
   type @{AllT_args} more = @{AllT_args} L.data)
 
 structure Base =
@@ -56,11 +58,11 @@ structure DataM_More = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(
 end
 
 \<^imap>\<open>\<open>{j}\<close> => \<open>
-functor Instantiate_Zippy_Goal_Focus_Mixin_Base_{j}(
+functor Instantiate_Zippy_Prio_Mixin_Base_{j}(
     type @{AllT_args} inst
-    structure GFocus : ZIPPY_GOAL_FOCUS_MIXIN_BASE
+    structure Prio : ZIPPY_PRIO_MIXIN_BASE
   ) :
-    ZIPPY_GOAL_FOCUS_MIXIN_BASE
+    ZIPPY_PRIO_MIXIN_BASE
     where type @{AllT_args} L.container = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) GFocus.L.container
-  =  GFocus\<close>\<close>
+      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Prio.L.container
+  =  Prio\<close>\<close>

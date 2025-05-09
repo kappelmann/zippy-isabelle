@@ -2,7 +2,6 @@
     Author:     Kevin Kappelmann
 *)
 functor \<^eval>\<open>sfx_T_nargs "Content_Zipper_Data"\<close>(
-    structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
     type @{AllT_args} content
   ) :
     \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close>
@@ -12,32 +11,32 @@ functor \<^eval>\<open>sfx_T_nargs "Content_Zipper_Data"\<close>(
   =
 struct
 
-structure L = L
+structure L = \<^eval>\<open>sfx_ParaT_nargs "SLens_Kleisli_Identity"\<close>
 type @{AllT_args} content = @{AllT_args} content
 type @{AllT_args} zcontext = unit
 type @{AllT_args} zipper = @{AllT_args} content
 
 local
   structure A = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Arrow_Apply"\<close>(L.K.M)
-  open A A.A
+  open A
 in
-fun zipper x = x |> arr fst
+fun zipper x = fst x
 
 structure Base = struct open L; type @{AllT_args} container = @{AllT_args} zipper end
-structure CO =
+structure Co =
 struct
   open Base
   type @{AllT_args} data = @{AllT_args} content
-  fun getter x = x |> A.id ()
+  fun getter x = x
   val modifier = AA.app
   fun lens _ = L.mk_lens getter modifier
 end
-structure ZCTXT =
+structure ZCtxt =
 struct
   open Base
   type @{AllT_args} data = @{AllT_args} zcontext
-  fun getter x = x |> A.K ()
-  fun modifier x = x |> A.arr snd
+  fun getter _ = ()
+  fun modifier x = snd x
   fun lens _ = L.mk_lens getter modifier
 end
 end
@@ -83,8 +82,6 @@ end
 
 functor \<^eval>\<open>sfx_T_nargs "Content_Zipper"\<close>(
     structure M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
-    structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
-    sharing type L.K.M.t = M.M.t
     type @{AllT_args} container
     type @{AllT_args} content
     val zip : (@{ParaT_args} @{AllT_args} container, @{AllT_args} content) M.move
@@ -100,7 +97,6 @@ type @{AllT_args} container = @{AllT_args} container
 type @{AllT_args} content = @{AllT_args} content
 structure Z = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
   structure ZD = \<^eval>\<open>sfx_T_nargs "Content_Zipper_Data"\<close>(
-    structure L = L
     type @{AllT_args} content = @{AllT_args} content)
   structure ZM = \<^eval>\<open>sfx_T_nargs "Content_Zipper_Moves"\<close>(
     structure M = M
@@ -134,8 +130,6 @@ signature \<^eval>\<open>sfx_T_nargs "SINGLE_CONTENT_ZIPPER"\<close> = \<^eval>\
 functor \<^eval>\<open>sfx_T_nargs "Single_Content_Zipper"\<close>(
     structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
     where type @{ParaT_args encl = "(" ")"} exn = unit
-    structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
-    sharing type L.K.M.t = AE.K.M.t
     type @{AllT_args} container
     type @{AllT_args} content
     val zip : (@{ParaT_args} @{AllT_args} container, @{AllT_args} content) AE.cat
@@ -143,7 +137,6 @@ functor \<^eval>\<open>sfx_T_nargs "Single_Content_Zipper"\<close>(
   ) : \<^eval>\<open>sfx_T_nargs "SINGLE_CONTENT_ZIPPER"\<close> =
 \<^eval>\<open>sfx_T_nargs "Content_Zipper"\<close>(
   structure M = \<^eval>\<open>sfx_ParaT_nargs "Move_Base"\<close>(AE.K.M)
-  structure L = L
   type @{AllT_args} container = @{AllT_args} container
   type @{AllT_args} content = @{AllT_args} content
   open AE

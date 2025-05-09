@@ -12,12 +12,19 @@ sig
   sharing type ZP.Z{i}.ZD.zcontext = Z{i}.ZD.zcontext
   sharing type ZP.Z{i}.zipper = Z{i}.zipper\<close>\<close>
   sharing type ZP.M.t = M.t
-  sharing type ZP.L.lens = L.lens
 end
 
 functor Zippy_Lists_Position_Mixin_Base(
     Z : ZIPPY_LISTS_BASE
-  ) : ZIPPY_LISTS_POSITION_MIXIN_BASE
+  ) :
+  sig
+    include ZIPPY_LISTS_POSITION_MIXIN_BASE
+    \<^imap>\<open>\<open>{i}\<close> => \<open>
+    val container{i} : @{AllT_args} ZP.ZPos.Z{i}.ZM.container ->
+      @{AllT_args} ZP.ZDepth.Z{i}.ZM.container ->
+      @{AllT_args} Z.Z{i}.ZM.container -> @{AllT_args} Z{i}.ZM.container
+    val init_container{i} : @{AllT_args} Z.Z{i}.ZM.container -> @{AllT_args} Z{i}.ZM.container\<close>\<close>
+  end
   =
 struct
 open Z

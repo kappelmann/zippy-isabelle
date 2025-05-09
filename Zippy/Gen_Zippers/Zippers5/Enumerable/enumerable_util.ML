@@ -3,26 +3,26 @@
 *)
 signature \<^eval>\<open>sfx_ParaT_nargs "ENUMERABLE_UTIL"\<close> =
 sig
-  structure CO : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL_APPLY"\<close>
+  structure Co : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL_APPLY"\<close>
 
-  val enum : (@{ParaT_args} 'zs, 'z) CO.C.cat -> (@{ParaT_args} 'z, 'z) CO.C.cat ->
-    (@{ParaT_args} 'zs, (@{ParaT_args} 'a, 'z) CO.coroutine) CO.C.cat
-  val list : (@{ParaT_args} 'zs, 'z) CO.C.cat -> (@{ParaT_args} 'z, 'z) CO.C.cat ->
-    (@{ParaT_args} 'zs, 'z list) CO.C.cat
+  val enum : (@{ParaT_args} 'zs, 'z) Co.C.cat -> (@{ParaT_args} 'z, 'z) Co.C.cat ->
+    (@{ParaT_args} 'zs, (@{ParaT_args} 'a, 'z) Co.coroutine) Co.C.cat
+  val list : (@{ParaT_args} 'zs, 'z) Co.C.cat -> (@{ParaT_args} 'z, 'z) Co.C.cat ->
+    (@{ParaT_args} 'zs, 'z list) Co.C.cat
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Enumerable_Util"\<close>(
-    CO : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL_APPLY"\<close>
+    Co : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL_APPLY"\<close>
   ) : \<^eval>\<open>sfx_ParaT_nargs "ENUMERABLE_UTIL"\<close> =
 struct
 
-structure CO = CO
+structure Co = Co
 
-local structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(CO.C)
-  structure A = \<^eval>\<open>sfx_ParaT_nargs "Arrow"\<close>(CO.AA) open SC A
+local structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(Co.C)
+  structure A = \<^eval>\<open>sfx_ParaT_nargs "Arrow"\<close>(Co.AA) open SC A
 in
-fun enum first next = first >>> arr (fn x => CO.cons (K x) (CO.enum next x))
-fun list first next = enum first next >>> arr CO.list_of >>> CO.AA.app' ()
+fun enum first next = first >>> arr (fn x => Co.cons (K x) (Co.enum next x))
+fun list first next = enum first next >>> arr Co.list_of >>> Co.AA.app' ()
 end
 
 end

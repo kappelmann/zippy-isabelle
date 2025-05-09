@@ -4,8 +4,8 @@
 functor \<^eval>\<open>sfx_T_nargs "Modify_Node_Content"\<close>(
     structure N : \<^eval>\<open>sfx_T_nargs "NODE"\<close>
     type @{AllT_args} ncontent
-    val ncontent : (@{ParaT_args} @{AllT_args} N.content, @{AllT_args} ncontent) N.L.C.cat
-    val dest_ncontent : (@{ParaT_args} @{AllT_args} ncontent, @{AllT_args} N.content) N.L.C.cat
+    val ncontent : @{AllT_args} N.content -> @{AllT_args} ncontent
+    val dest_ncontent : @{AllT_args} ncontent -> @{AllT_args} N.content
   ) :
     \<^eval>\<open>sfx_T_nargs "NODE"\<close>
     where type @{AllT_args} content = @{AllT_args} ncontent
@@ -17,15 +17,15 @@ struct
 open N
 
 type @{AllT_args} content = @{AllT_args} ncontent
-local structure A = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow"\<close>(L.K.M) open A
+local structure A = \<^eval>\<open>sfx_ParaT_nargs "SArrow_Arrow_Apply"\<close> open A.A
 in
 fun node x = x |> (comp N.node (first dest_ncontent))
 end
 
-structure CO = \<^eval>\<open>sfx_T_nargs "Modify_Structured_Lens_Data"\<close>(
+structure Co = \<^eval>\<open>sfx_T_nargs "Modify_Structured_Lens_Data"\<close>(
   type @{AllT_args} ndata = @{AllT_args} ncontent
   val ndata = ncontent
   val dest_ndata = dest_ncontent
-  structure L = CO)
+  structure L = Co)
 
 end

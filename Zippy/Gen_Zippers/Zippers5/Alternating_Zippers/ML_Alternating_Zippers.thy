@@ -14,8 +14,6 @@ ML\<open>
 
 ML_gen_file\<open>alternating_zipper_moves.ML\<close>
 ML_gen_file\<open>alternating_zipper.ML\<close>
-(*TODO*)
-(* ML_gen_file\<open>modify_alternating_zipper_zipper.ML\<close> *)
 ML_gen_file\<open>pair_alternating_zipper.ML\<close>
 ML_gen_file\<open>rotate_alternating_zipper.ML\<close>
 

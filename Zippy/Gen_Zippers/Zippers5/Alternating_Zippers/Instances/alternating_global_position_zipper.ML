@@ -5,6 +5,7 @@
 signature \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_GLOBAL_POSITION_ZIPPER"\<close> =
 sig
   type path = int list list
+  val init_path : path
   include \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close>
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   where type @{AllT_args} Z{i}.ZM.container = path
@@ -14,15 +15,17 @@ sig
 end
 
 functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Global_Position_Zipper"\<close>(
-    L : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
+    M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
   ) : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_GLOBAL_POSITION_ZIPPER"\<close> =
 struct
 
 type path = int list list
+val init_path = []
 
-structure L = L
-structure MB = \<^eval>\<open>sfx_ParaT_nargs "Move_Base"\<close>(L.K.M)
-open MB
+structure L = \<^eval>\<open>sfx_ParaT_nargs "SLens"\<close>
+structure MB = M
+structure M = MB
+open M
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 structure Z{i} = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
@@ -38,7 +41,6 @@ structure Z{i} = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
     fun left ((p :: ps) :: pss) = pure ((p + 1 :: ps) :: pss)
     fun right ((p :: ps) :: pss) = pure ((p - 1 :: ps) :: pss))
   structure ZD = \<^eval>\<open>sfx_T_nargs "Content_Zipper_Data"\<close>(
-    structure L = L
     type @{AllT_args} content = path))\<close>\<close>
 
 structure Base =

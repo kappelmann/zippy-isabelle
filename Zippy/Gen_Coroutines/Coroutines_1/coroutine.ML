@@ -51,12 +51,12 @@ end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Coroutine_Util"\<close>(
     structure AE : \<^eval>\<open>sfx_ParaT_nargs "ARROW_EXCEPTION"\<close>
-    structure CO : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE"\<close>
-    sharing type CO.C.cat = AE.cat
+    structure Co : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE"\<close>
+    sharing type Co.C.cat = AE.cat
   ) : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL"\<close> =
 struct
 
-open CO
+open Co
 structure AE = AE
 
 local structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(AE) open SC
@@ -87,13 +87,13 @@ end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Coroutine_Util_Apply"\<close>(
     structure A : \<^eval>\<open>sfx_ParaT_nargs "ARROW_ARROW_APPLY"\<close>
-    structure CO : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL"\<close>
-    sharing type CO.C.cat = A.A.cat
+    structure Co : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL"\<close>
+    sharing type Co.C.cat = A.A.cat
   ) : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL_APPLY"\<close> =
 struct
 
 structure AA = A.AA
-open CO
+open Co
 
 local structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(AE) open SC A.A
 in
@@ -152,12 +152,12 @@ end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "ICoroutine_Util"\<close>(
     structure AE : \<^eval>\<open>sfx_ParaT_nargs "IARROW_EXCEPTION"\<close>
-    structure CO : \<^eval>\<open>sfx_ParaT_nargs "ICOROUTINE"\<close>
-    sharing type CO.C.cat = AE.cat
+    structure Co : \<^eval>\<open>sfx_ParaT_nargs "ICOROUTINE"\<close>
+    sharing type Co.C.cat = AE.cat
   ) : \<^eval>\<open>sfx_ParaT_nargs "ICOROUTINE_UTIL"\<close> =
 struct
 
-open CO
+open Co
 structure AE = AE
 
 local structure SC = \<^eval>\<open>sfx_ParaT_nargs "ISemi_Category"\<close>(AE) open SC

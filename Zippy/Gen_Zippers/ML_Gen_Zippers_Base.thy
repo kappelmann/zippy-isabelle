@@ -57,6 +57,8 @@ ML\<open>
 structure ML_Gen =
 struct
   open ML_Gen
+  structure ZipperT = Zipper_Type_Args_Antiquotations
+  structure AllT = All_Type_Args_Antiquotations
   val nzippers_config = Attrib.setup_config_int @{binding "nzippers"} (K 0)
   fun nzippers _ = Config.get_generic (Context.the_generic_context ()) nzippers_config
   val nzippers' = nzippers #> string_of_int
@@ -71,7 +73,7 @@ struct
   val succ_mod_nzippers' = succ_mod_nzippers #> string_of_int
   val pred_mod_nzippers' = pred_mod_nzippers #> string_of_int
 
-  val ZipperT_nargs = Context.the_generic_context #> Zipper_Type_Args_Antiquotations.nargs
+  val ZipperT_nargs = Context.the_generic_context #> ZipperT.nargs
   val ZipperT_nargs' = ZipperT_nargs #> string_of_int
   fun sfx_T_nargs s = mk_name [s, ParaT_nargs (), ZipperT_nargs' ()]
 
@@ -84,9 +86,14 @@ struct
   val pfx_sfx_inst_nargs = pfx_nzippers #> sfx_inst_T_nargs
 
   fun inst_zipperT instT i =
-    1 upto ZipperT_nargs ()
-    |> map (fn j => if i = j then instT else implode ["@{ZipperT_arg ", string_of_int (j - 1), "}"])
-    |> commas
+    let val ctxt = Context.the_local_context ()
+    in
+      1 upto ZipperT_nargs ()
+      |> map (fn j => if i = j then instT else ZipperT.mk_arg_code (j - 1) ctxt)
+      |> commas
+    end
+
+  fun AllT_args _ = AllT.mk_args_code (Context.the_local_context ())
 end
 \<close>
 

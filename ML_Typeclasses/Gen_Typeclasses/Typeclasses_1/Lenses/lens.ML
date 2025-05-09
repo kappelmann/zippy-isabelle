@@ -8,16 +8,16 @@ signature \<^eval>\<open>sfx_ParaT_nargs "LENS_BASE"\<close> =
 sig
   structure C : \<^eval>\<open>sfx_ParaT_nargs "CATEGORY_BASE"\<close>
 
+  type (@{ParaT_args} 's, 'i) getter = (@{ParaT_args} 's, 'i) C.cat
+  type (@{ParaT_args} 't, 'o, 's, 'i) modifier =
+    (@{ParaT_args} (@{ParaT_args} 'i, 'o) C.cat * 's, 't) C.cat
+  type (@{ParaT_args} 's, 'i) smodifier = (@{ParaT_args} 's, 'i, 's, 'i) modifier
+
   (*Abstract lens datatype. The getter and modifier work in some category.
   The type of the value pointed to might change, thereby changing the type of the outer structure.*)
   type (@{ParaT_args} 't, 'o, 's, 'i) lens
   (*simple lens*)
   type (@{ParaT_args} 's, 'i) slens = (@{ParaT_args} 's, 'i, 's, 'i) lens
-
-  type (@{ParaT_args} 's, 'i) getter = (@{ParaT_args} 's, 'i) C.cat
-  type (@{ParaT_args} 't, 'o, 's, 'i) modifier =
-    (@{ParaT_args} (@{ParaT_args} 'i, 'o) C.cat * 's, 't) C.cat
-  type (@{ParaT_args} 's, 'i) smodifier = (@{ParaT_args} 's, 'i, 's, 'i) modifier
 
   val mk_lens : (@{ParaT_args} 's, 'i) getter -> (@{ParaT_args} 't, 'o, 's, 'i) modifier ->
     (@{ParaT_args} 't, 'o, 's, 'i) lens
@@ -255,31 +255,3 @@ fun modify_monad f = apfst K.M.map #> f
 fun lens_monad l = L.mk_lens (get_monad (L.get l)) (modify_monad (L.modify l))
 
 end
-
-signature \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI_EXCEPTION"\<close> =
-sig
-  include \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
-  val set_safe : (@{ParaT_args} 't, 'o, 's, (@{ParaT_args} 'i) K.M.t) modifier ->
-    (@{ParaT_args} 't, 'o, 's) setter
-end
-
-functor \<^eval>\<open>sfx_ParaT_nargs "Lens_Kleisli_Exception"\<close>(
-    structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
-    structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS"\<close>
-    where type (@{ParaT_args} 'a, 'b) C.cat = (@{ParaT_args} 'a, 'b) AE.cat
-  ) : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI_EXCEPTION"\<close> =
-struct
-
-structure LK = \<^eval>\<open>sfx_ParaT_nargs "Lens_Kleisli"\<close>(structure K = AE.K; structure L = L)
-open LK
-
-local
-  structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(AE)
-  structure A = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow"\<close>(K.M)
-  open SC
-in
-fun set_safe l = apfst (fn x => AE.catch' (K.M.map (Library.K x)) (A.K x)) #> l
-end
-
-end
-

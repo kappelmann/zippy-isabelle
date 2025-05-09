@@ -8,43 +8,42 @@ sig
 
   (* finish *)
   val finish_gclusters_fold :
-    (@{ParaT_args} @{AllT_args} GC.L.container, @{AllT_args} GCS.L.container list) cat ->
-    ((@{ParaT_args} @{AllT_args} GCS.L.container, thm Seq.seq) cat ->
-      @{AllT_args} GCS.L.container list -> (@{ParaT_args} thm Seq.seq) hom_move) ->
-    Proof.context -> (@{ParaT_args} @{AllT_args} GCS.L.container, thm Seq.seq) cat
+    (@{ParaT_args} @{AllT_args} GCluster.L.container, @{AllT_args} GClusters.L.container list) cat ->
+    ((@{ParaT_args} @{AllT_args} GClusters.L.container, thm Seq.seq) cat ->
+      @{AllT_args} GClusters.L.container list -> (@{ParaT_args} thm Seq.seq) hom_move) ->
+    Proof.context -> (@{ParaT_args} @{AllT_args} GClusters.L.container, thm Seq.seq) cat
 
   val finish_gclusters_oldest_first : Proof.context ->
-    (@{ParaT_args} @{AllT_args} GCS.L.container, thm Seq.seq) cat
+    (@{ParaT_args} @{AllT_args} GClusters.L.container, thm Seq.seq) cat
   val finish_gclusters_newest_first : Proof.context ->
-    (@{ParaT_args} @{AllT_args} GCS.L.container, thm Seq.seq) cat
+    (@{ParaT_args} @{AllT_args} GClusters.L.container, thm Seq.seq) cat
 end
 
-functor Zippy_Lists_Copy_Mixin(
+functor Zippy_Lists_Goals_Mixin(
     structure Z : ZIPPY_LISTS
-    structure GOALS : ZIPPY_GOALS_MIXIN_BASE
-    sharing type GOALS.GCS.L.container = Z.Z1.zipper
-    sharing type GOALS.GC.L.container = Z.Z2.zipper
-    sharing type GOALS.GCS.L.K.M.t = Z.M.t
-    sharing type GOALS.GCS.L.lens = Z.L.lens
+    structure Goals : ZIPPY_GOALS_MIXIN_BASE
+    sharing type Goals.GClusters.L.container = Z.Z1.zipper
+    sharing type Goals.GCluster.L.container = Z.Z2.zipper
   ) : ZIPPY_LISTS_GOALS_MIXIN =
 struct
 
-open Z GOALS
+open Z Goals
 structure U = Zippy_Monad_Util(M); open U
+structure AE = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Exception_Rec"\<close>(open Z Co.AE)
 structure ZB = Zippy_Base(structure Z = Z; structure AE = AE)
-structure ZG = Zippy_Goal_Cluster_Mixin(GOALS.GC)
+structure ZG = Zippy_Goal_Cluster_Mixin(Goals.GCluster)
 
-local open SC A MO
+local open SC A Mo
 in
 (* finish *)
 local
 fun gen_finish_gclusters get_gcluster_list_statesq ctxt =
-  AE.catch' get_gcluster_list_statesq (K Seq.empty) &&& GCS.L.getter
+  AE.catch' get_gcluster_list_statesq (K Seq.empty) &&& arr GClusters.L.getter
   >>> arr (fn (gcluster_statesq, gcs) =>
-    Seq.maps (fn gcluster_states => GCS.GCS.finish_cluster_states ctxt gcluster_states gcs)
+    Seq.maps (fn gcluster_states => GClusters.GCS.finish_cluster_states ctxt gcluster_states gcs)
       gcluster_statesq
     (*base case: no more subgoals*)
-    |> GCS.GCS.is_finished gcs ? Seq.cons (GCS.GCS.get_state gcs))
+    |> GClusters.GCS.is_finished gcs ? Seq.cons (GClusters.GCS.get_state gcs))
 
 fun gen_get_gcluster_list_statesq finish_gcluster_list =
   Down1.move >>> list_container_zippers2 >>> finish_gcluster_list
@@ -61,8 +60,7 @@ end
 fun gen_finish_gcluster list_gclusters_children fold_append finish_gclusters z =
   AE.catch' list_gclusters_children (K []) z
   >>= (fn gcs => fold_append finish_gclusters gcs Seq.empty)
-  >>= (fn gcs_statesq => ZG.get_gcluster_state z
-  >>= arr (ZB.seq_snoc gcs_statesq))
+  >>= arr (fn gcs_statesq => ZG.get_gcluster_state z |> ZB.seq_snoc gcs_statesq)
 in
 (*tying the knot*)
 fun finish_gclusters_fold list_gclusters_children fold_append ctxt x = x |>

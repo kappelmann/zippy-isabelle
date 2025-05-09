@@ -8,18 +8,12 @@ sig
 end
 
 functor Zippy_Goal_Cluster_Mixin(
-    GC : ZIPPY_GOAL_CLUSTER_MIXIN_BASE
+    GCluster : ZIPPY_GOAL_CLUSTER_MIXIN_BASE
   ) : ZIPPY_GOAL_CLUSTER_MIXIN =
 struct
 
-open GC
+open GCluster
 
-local
-  structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(L.C)
-  structure A = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow"\<close>(L.K.M)
-  open SC A
-in
-fun get_gcluster_state x = x |> (L.getter >>> arr GC.get_state)
-end
+fun get_gcluster_state x = x |> (L.getter #> GC.get_state)
 
 end

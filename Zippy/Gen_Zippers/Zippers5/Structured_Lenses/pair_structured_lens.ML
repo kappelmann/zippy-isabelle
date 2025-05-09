@@ -41,3 +41,4 @@ fun getter x = LP.get_pair L1.getter L2.getter x
 fun modifier x = LP.modify_pair getter L1.modifier L2.modifier x
 fun lens _ = mk_lens getter modifier
 end
+

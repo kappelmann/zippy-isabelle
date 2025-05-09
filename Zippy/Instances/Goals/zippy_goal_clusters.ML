@@ -129,3 +129,5 @@ fun finish_cluster_states ctxt cluster_thms = get_clustered_state
   #> RANGE (map (fn cluster_thm => finish_cluster_state_tac cluster_thm ctxt) cluster_thms) 1
 
 end
+
+structure Standard_Zippy_Goal_Clusters = Zippy_Goal_Clusters(Imperative_Union_Find)

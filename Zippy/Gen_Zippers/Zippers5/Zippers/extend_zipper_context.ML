@@ -9,34 +9,28 @@ sig
   include \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close>
   where type @{AllT_args} ZM.container = @{AllT_args} Zbase.ZM.container * @{AllT_args} new_zcontext
   sharing type ZD.content = Zbase.ZD.content
-  sharing type ZD.L.lens = Zbase.ZD.L.lens
   sharing type M.t = Zbase.M.t
 
-  val mk_zcontext : (@{ParaT_args} @{AllT_args} Zbase.ZD.zcontext * @{AllT_args} new_zcontext,
-    @{AllT_args} ZD.zcontext) cat
+  val mk_zcontext : @{AllT_args} Zbase.ZD.zcontext * @{AllT_args} new_zcontext ->
+    @{AllT_args} ZD.zcontext
 
-  val get_base_zcontext : (@{ParaT_args} @{AllT_args} ZD.zcontext,
-    @{AllT_args} Zbase.ZD.zcontext) ZD.L.getter
-  val get_new_zcontext : (@{ParaT_args} @{AllT_args} ZD.zcontext, @{AllT_args} new_zcontext) ZD.L.getter
+  val get_base_zcontext : @{AllT_args} ZD.zcontext -> @{AllT_args} Zbase.ZD.zcontext
+  val get_new_zcontext : @{AllT_args} ZD.zcontext -> @{AllT_args} new_zcontext
 
-  val zipper_from_base_zipper : (@{ParaT_args} @{AllT_args} Zbase.zipper * @{AllT_args} new_zcontext,
-    @{AllT_args} zipper) cat
-  val base_zipper_from_zipper : (@{ParaT_args} @{AllT_args} zipper, @{AllT_args} Zbase.zipper) cat
+  val zipper_from_base_zipper : @{AllT_args} Zbase.zipper * @{AllT_args} new_zcontext ->
+    @{AllT_args} zipper
+  val base_zipper_from_zipper : @{AllT_args} zipper -> @{AllT_args} Zbase.zipper
 end
 
 functor \<^eval>\<open>sfx_T_nargs "Extend_Zipper_Context"\<close>(
     structure Z : \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close>
     structure ZD : \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close>
     sharing type ZD.content = Z.ZD.content
-    sharing type ZD.L.lens = Z.ZD.L.lens
-    sharing type ZD.L.K.M.t = Z.M.t
     type @{AllT_args} new_zcontext
-    val mk_zcontext : (@{ParaT_args} @{AllT_args} Z.ZD.zcontext * @{AllT_args} new_zcontext,
-      @{AllT_args} ZD.zcontext) Z.cat
-    val get_base_zcontext : (@{ParaT_args} @{AllT_args} ZD.zcontext,
-      @{AllT_args} Z.ZD.zcontext) Z.ZD.L.getter
-    val get_new_zcontext : (@{ParaT_args} @{AllT_args} ZD.zcontext,
-      @{AllT_args} new_zcontext) Z.ZD.L.getter
+    val mk_zcontext : @{AllT_args} Z.ZD.zcontext * @{AllT_args} new_zcontext ->
+      @{AllT_args} ZD.zcontext
+    val get_base_zcontext : @{AllT_args} ZD.zcontext -> @{AllT_args} Z.ZD.zcontext
+    val get_new_zcontext : @{AllT_args} ZD.zcontext -> @{AllT_args} new_zcontext
   ) :
     \<^eval>\<open>sfx_T_nargs "EXTEND_ZIPPER_CONTEXT"\<close>
     where type @{AllT_args} zipper = @{AllT_args} ZD.zipper
@@ -49,22 +43,20 @@ val mk_zcontext = mk_zcontext
 val get_base_zcontext = get_base_zcontext
 val get_new_zcontext = get_new_zcontext
 
+fun zipper_from_base_zipper (x, new_zctxt) =
+  let
+    val content = Z.ZD.Co.getter x
+    val base_zctxt = Z.ZD.ZCtxt.getter x
+  in ZD.zipper (content, mk_zcontext (base_zctxt, new_zctxt)) end
+
+fun base_zipper_from_zipper x =
+  Z.ZD.zipper (ZD.Co.getter x, ZD.ZCtxt.getter x |> get_base_zcontext)
+
 local
-  structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(Z)
   structure A = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow"\<close>(Z.M)
+  structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(A)
   open SC A
 in
-
-fun zipper_from_base_zipper x = x |>
-  (first (Z.ZD.CO.getter &&& Z.ZD.ZCTXT.getter)
-  >>> arr (fn ((content, base_zctxt), new_zctxt) => (content, (base_zctxt, new_zctxt)))
-  >>> second mk_zcontext
-  >>> ZD.zipper)
-
-fun base_zipper_from_zipper x = x |>
-  (ZD.CO.getter &&& (ZD.ZCTXT.getter >>> get_base_zcontext)
-  >>> Z.ZD.zipper)
-
 structure Z = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
   structure ZD = ZD
   structure ZM = \<^eval>\<open>sfx_T_nargs "Zipper_Moves"\<close>(
@@ -74,19 +66,18 @@ structure Z = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
     structure ZM = Z.ZM
     structure M = ZM
     type @{AllT_args} container = @{AllT_args} ZM.container * @{AllT_args} new_zcontext
-    fun zip x = x |> (first ZM.Zip.move >>> zipper_from_base_zipper)
+    fun zip x = x |> (first ZM.Zip.move >>> arr zipper_from_base_zipper)
     fun unzip x = x |>
-      ((base_zipper_from_zipper >>> ZM.Unzip.move) &&& (ZD.ZCTXT.getter >>> get_new_zcontext))
+      ((arr base_zipper_from_zipper >>> ZM.Unzip.move) &&& (arr (ZD.ZCtxt.getter #> get_new_zcontext)))
     fun lift_move move =
-      (base_zipper_from_zipper >>> move) &&& (ZD.ZCTXT.getter >>> get_new_zcontext)
-      >>> zipper_from_base_zipper
+      (arr base_zipper_from_zipper >>> move) &&& (arr (ZD.ZCtxt.getter #> get_new_zcontext))
+      >>> arr zipper_from_base_zipper
     fun up x = x |> lift_move ZM.Up.move
     fun down x = x |> lift_move ZM.Down.move
     fun left x = x |> lift_move ZM.Left.move
     fun right x = x |> lift_move ZM.Right.move)
 )
 open Z
-
 end
 
 end

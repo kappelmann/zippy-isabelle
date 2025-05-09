@@ -26,3 +26,5 @@ fun pretty (Goals xs) = Pretty.block [Pretty.str "Goals ", Pretty.block [Show.li
   | pretty None = Pretty.str "None"
 
 end
+
+structure Standard_Zippy_Goal_Focus = Zippy_Goal_Focus(Standard_Zippy_Goal_Clusters)

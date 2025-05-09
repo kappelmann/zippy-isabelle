@@ -24,9 +24,7 @@ functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper"\<close>(
     structure Z : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER_MOVES"\<close>
     \<^imap>\<open>\<open>{i}\<close> => \<open>
     structure ZD{i} : \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close>
-    sharing type ZD{i}.zipper = Z.Z{i}.zipper
-    sharing type ZD{i}.L.K.M.t = Z.M.t
-    sharing type ZD{i}.L.lens = ZD1.L.lens\<close>\<close>
+    sharing type ZD{i}.zipper = Z.Z{i}.zipper\<close>\<close>
   ) : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close> =
 struct
 

@@ -5,11 +5,10 @@
 signature \<^eval>\<open>mk_name [ML_Gen.nprefix "{i}", sfx_T_nargs "LINKED_ZIPPER"]\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
-  structure L : \<^eval>\<open>sfx_ParaT_nargs "LENS_KLEISLI"\<close>
-  sharing type L.K.M.t = M.t
+  structure L : \<^eval>\<open>sfx_ParaT_nargs "SLENS"\<close>
+
   \<^imap>\<open>\<open>{j}\<close> => \<open>
   structure Z{j} : \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close>
-  sharing type Z{j}.ZD.L.lens = L.lens
   sharing type Z{j}.M.t = M.t\<close>
   where stop = {i}\<close>
 
@@ -32,15 +31,13 @@ functor \<^eval>\<open>mk_name [ML_Gen.nprefix "{i}", sfx_T_nargs "Linked_Zipper
     structure Z : \<^eval>\<open>mk_name [ML_Gen.nprefix "{i}", sfx_T_nargs "LINKED_ZIPPER_MOVES"]\<close>
     \<^imap>\<open>\<open>{j}\<close> => \<open>
     structure ZD{j} : \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close>
-    sharing type ZD{j}.zipper = Z.Z{j}.zipper
-    sharing type ZD{j}.L.lens = ZD1.L.lens
-    sharing type ZD{j}.L.K.M.t = Z.M.t\<close>
+    sharing type ZD{j}.zipper = Z.Z{j}.zipper\<close>
     where stop = {i}\<close>
   ) : \<^eval>\<open>mk_name [ML_Gen.nprefix "{i}", sfx_T_nargs "LINKED_ZIPPER"]\<close> =
 struct
 
 open Z
-structure L = ZD1.L
+structure L = \<^eval>\<open>sfx_ParaT_nargs "SLens"\<close>
 \<^imap>\<open>\<open>{j}\<close> => \<open>
 structure Z{j} = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(structure ZM = Z.Z{j}; structure ZD = ZD{j})\<close>
 where stop = {i}\<close>

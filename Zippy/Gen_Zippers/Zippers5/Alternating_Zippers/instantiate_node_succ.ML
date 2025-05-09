@@ -45,14 +45,14 @@ type @{AllT_args} node = (@{ParaT_args}
   @{ZipperT_args start = \<open>{k} - 1\<close> and sep = "" and encl_arg = "," ""}) N.node
 
 structure Base = struct type @{AllT_args} container = @{AllT_args} node end
-structure CO =
+structure Co =
 struct
-  open CO Base
+  open Co Base
   type @{AllT_args} data = @{AllT_args} content
 end
-structure NEXT =
+structure Next =
 struct
-  open NEXT Base
+  open Next Base
   type @{AllT_args} data = @{AllT_args} next
 end
 end\<close>\<close>

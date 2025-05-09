@@ -4,8 +4,8 @@
 functor \<^eval>\<open>sfx_T_nargs "Modify_Zipper_Content"\<close>(
     structure Z : \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close>
     type @{AllT_args} ncontent
-    val ncontent : (@{ParaT_args} @{AllT_args} Z.ZD.content, @{AllT_args} ncontent) Z.cat
-    val dest_ncontent : (@{ParaT_args} @{AllT_args} ncontent, @{AllT_args} Z.ZD.content) Z.cat
+    val ncontent : @{AllT_args} Z.ZD.content -> @{AllT_args} ncontent
+    val dest_ncontent : @{AllT_args} ncontent -> @{AllT_args} Z.ZD.content
   ) :
     \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close>
     where type @{AllT_args} ZM.container = @{AllT_args} Z.ZM.container

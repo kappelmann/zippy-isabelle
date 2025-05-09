@@ -47,3 +47,5 @@ fun init_state state =
   in (gclusters, init (gclusters, map snd classes)) end
 
 end
+
+structure Standard_Zippy_Goal_Cluster = Zippy_Goal_Cluster(Standard_Zippy_Goal_Clusters)

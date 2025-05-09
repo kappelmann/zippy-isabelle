@@ -4,8 +4,8 @@
 functor \<^eval>\<open>sfx_T_nargs "Modify_Zipper_Zipper"\<close>(
     structure Z : \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close>
     type @{AllT_args} nzipper
-    val nzipper : (@{ParaT_args} @{AllT_args} Z.zipper, @{AllT_args} nzipper) Z.cat
-    val dest_nzipper : (@{ParaT_args} @{AllT_args} nzipper, @{AllT_args} Z.zipper) Z.cat
+    val nzipper : @{AllT_args} Z.zipper -> @{AllT_args} nzipper
+    val dest_nzipper : @{AllT_args} nzipper -> @{AllT_args} Z.zipper
   ) :
     \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close>
     where type @{AllT_args} ZM.container = @{AllT_args} Z.ZM.container
@@ -20,6 +20,10 @@ functor \<^eval>\<open>sfx_T_nargs "Modify_Zipper_Zipper"\<close>(
     val nzipper = nzipper
     val dest_nzipper = dest_nzipper
   end
-  structure ZM = \<^eval>\<open>sfx_T_nargs "Modify_Zipper_Moves_Zipper"\<close>(open Base; structure Z = Z.ZM)
+  structure ZM = \<^eval>\<open>sfx_T_nargs "Modify_Zipper_Moves_Zipper"\<close>(
+    open Base;
+    fun nzipper x = Z.arr Base.nzipper x
+    fun dest_nzipper x = Z.arr Base.dest_nzipper x
+    structure Z = Z.ZM)
   structure ZD = \<^eval>\<open>sfx_T_nargs "Modify_Zipper_Data_Zipper"\<close>(open Base; structure Z = Z.ZD)
 )

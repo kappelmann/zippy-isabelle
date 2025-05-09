@@ -18,14 +18,12 @@ sig
   where type @{AllT_args} Z{i}.zipper =
     @{AllT_args} AZ1.Z{i}.zipper * @{AllT_args} AZ2.Z{i}.zipper\<close>\<close>
   sharing type M.t = AZ1.M.t
-  sharing type L.lens = AZ1.L.lens
 end
 
 functor \<^eval>\<open>mk_name ["Pair", pfx_sfx_nargs "Alternating_Zipper"]\<close>(
     structure AZ1 : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close>
     structure AZ2 : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close>
     sharing type AZ2.M.t = AZ1.M.t
-    sharing type AZ2.L.lens = AZ1.L.lens
   ) : \<^eval>\<open>mk_name ["PAIR", pfx_sfx_nargs "ALTERNATING_ZIPPER"]\<close>
   =
 struct

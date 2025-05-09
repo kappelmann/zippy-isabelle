@@ -13,21 +13,16 @@ sig
 end
 
 functor Zippy_Copy_Mixin(
-    structure COPY : ZIPPY_COPY_MIXIN_BASE
+    structure Copy : ZIPPY_COPY_MIXIN_BASE
     structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
-    sharing type AE.K.M.t = COPY.M.t
+    sharing type AE.K.M.t = Copy.M.t
   ) : ZIPPY_COPY_MIXIN =
 struct
 
-open COPY
-structure U = Zippy_Monad_Util(M); open U
+open Copy
 
-local open SC MO
-in
-fun get_run_copy cud z3 z1 = L.getter z3 >>= (run_copy #> (fn copy => copy cud z3 z1))
-
+fun get_run_copy cud z3 z1 = L.getter z3 |> (run_copy #> (fn copy => copy cud z3 z1))
 fun get_run_copy_safe cud z3 = AE.try (get_run_copy cud z3)
-end
 
 end
 
