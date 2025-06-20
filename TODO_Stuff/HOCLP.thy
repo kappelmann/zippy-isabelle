@@ -16,13 +16,6 @@ theory HOCLP
     Main
 begin
 
-(*
-Arrows:
-https://www.sciencedirect.com/science/article/pii/S0167642399000234?ref=pdf_download&fr=RR-2&rr=8da1f2486fc3bbb0
-Arrow Loop:
-https://www.staff.city.ac.uk/~ross/papers/notation.pdf
-*)
-
 paragraph \<open>Summary\<close>
 text \<open>A higher-order constraint logic programming tactic.\<close>
 
@@ -38,7 +31,7 @@ ML\<open>
     structure M : MONAD_EXCEPTION_BASE = struct open M type ('p1, 'a) t = (unit, 'p1, 'p1, 'a) t end
     structure A =
     struct
-      structure AE : KLEISLI_ARROW_EXCEPTION_REC = Kleisli_Arrow_Exception_Rec(
+      structure AE : KLEISLI_ARROW_EXCEPTION_REPEAT = Kleisli_Arrow_Exception_Repeat(
       struct
         structure AE = Kleisli_Arrow_Exception_Base(M); open AE
         structure A = Arrow_Exception(AE); open A

@@ -38,15 +38,3 @@ fun getter x = get (lens ()) x
 fun modifier x = modify (lens ()) x
 
 end
-
-\<^imap>\<open>\<open>{i}\<close> => \<open>
-functor \<^eval>\<open>sfx_inst_T_nargs "Instantiate_Structured_Lens" {i}\<close>(
-    type @{AllT_args} inst
-    structure L : \<^eval>\<open>sfx_T_nargs "STRUCTURED_LENS"\<close>
-  ) :
-    \<^eval>\<open>sfx_T_nargs "STRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) L.container
-    where type @{AllT_args} data = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) L.data
-  = L\<close>\<close>

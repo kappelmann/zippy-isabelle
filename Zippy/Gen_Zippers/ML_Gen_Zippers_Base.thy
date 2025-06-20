@@ -68,10 +68,14 @@ struct
   fun pfx_nzippers s = mk_name [nprefix (nzippers' ()), s]
 
   (*modular arithmetic for domain [1,...,nzippers]*)
-  fun succ_mod_nzippers i = (i mod nzippers ()) + 1
-  fun pred_mod_nzippers i = ((i - 2) mod nzippers ()) + 1
-  val succ_mod_nzippers' = succ_mod_nzippers #> string_of_int
-  val pred_mod_nzippers' = pred_mod_nzippers #> string_of_int
+  fun add_mod_nzippers i j = ((i + j - 1) mod nzippers ()) + 1
+  fun add_mod_nzippers' i = add_mod_nzippers i #> string_of_int
+  fun sub_mod_nzippers i j = ((i - j - 1) mod nzippers ()) + 1
+  fun sub_mod_nzippers' i = sub_mod_nzippers i #> string_of_int
+  val succ_mod_nzippers = add_mod_nzippers 1
+  val succ_mod_nzippers' = add_mod_nzippers' 1
+  fun pred_mod_nzippers i = sub_mod_nzippers i 1
+  fun pred_mod_nzippers' i = sub_mod_nzippers' i 1
 
   val ZipperT_nargs = Context.the_generic_context #> ZipperT.nargs
   val ZipperT_nargs' = ZipperT_nargs #> string_of_int

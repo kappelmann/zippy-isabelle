@@ -1,0 +1,76 @@
+(*  Title:      Zippy/zippy_lists_goals_tactic_copy_paction_mixin.ML
+    Author:     Kevin Kappelmann
+*)
+signature ZIPPY_LISTS_GOALS_TACTIC_COPY_PACTION_MIXIN =
+sig
+  include ZIPPY_GOALS_TACTIC_COPY_PACTION_MIXIN_BASE
+  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+
+  structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION_REPEAT"\<close>
+  sharing type AE.K.M.t = M.t
+
+  (* add actions *)
+  val add_actions :
+    ((@{ParaT_args} @{AllT_args} Copy.zipper_from, @{AllT_args} PAction.zipper) cat) list ->
+    (@{ParaT_args} @{AllT_args} Copy.zipper_from) hom_move
+
+  (* add action clusters *)
+  val add_action_clusters :
+    ('a -> (@{ParaT_args} @{AllT_args} GCluster.L.container, @{AllT_args} Copy.zipper_from) cat) ->
+    (GClusters.GCS.cluster_pos * 'a) list ->
+    (@{ParaT_args} @{AllT_args} GClusters.L.container) hom_move
+
+  type @{AllT_args} node_co
+  val cons_action_cluster : @{ParaT_args encl = "(" ")"} AE.exn ->
+    (*create node content*)
+    (@{AllT_args} Copy.copy -> @{AllT_args} node_co) ->
+    (*list of pairs of actions to add and initial focus*)
+    ((Tac.GPU.F.focus ->
+      (@{ParaT_args} @{AllT_args} Copy.zipper_from, @{AllT_args} PAction.zipper) cat)
+      * Tac.GPU.F.focus) list ->
+    (@{ParaT_args} @{AllT_args} GCluster.L.container, @{AllT_args} Copy.zipper_from) cat
+end
+
+functor Zippy_Lists_Goals_Tactic_Copy_PAction_Mixin(
+    structure Z : ZIPPY_LISTS
+    structure GTCP : ZIPPY_GOALS_TACTIC_COPY_PACTION_MIXIN_BASE
+    sharing type GTCP.GClusters.L.container = Z.Z1.zipper
+    sharing type GTCP.GCluster.L.container = Z.Z2.zipper
+    sharing type GTCP.Copy.zipper_from = Z.Z3.zipper
+    sharing type GTCP.Copy.zipper_to = Z.Z1.zipper
+    sharing type GTCP.PAction.zipper = Z.Z4.zipper
+    sharing type GTCP.Copy.M.t = Z.M.t
+  ) : ZIPPY_LISTS_GOALS_TACTIC_COPY_PACTION_MIXIN =
+struct
+
+open Z GTCP
+structure MU = Zippy_Monad_Util(M); open MU
+structure ZLG = Zippy_Lists_Goals_Mixin(structure Z = Z; structure Goals = GTCP)
+structure ZB = Zippy_Base(structure Z = Z; structure AE = AE)
+structure GTC = Zippy_Goals_Tactic_Copy_Mixin(GTCP)
+
+local open SC ZB
+in
+(* add actions *)
+fun add_actions add_actions =
+  LF.foldlM (fn add_action => AE.try (add_action >>> Z.Up4.move)) add_actions
+
+(* add action clusters *)
+fun add_action_clusters add_action_cluster = LF.foldlM
+  (fn (cpos, x) => ZLG.move_cpos cpos
+    >>> AE.try (add_action_cluster x >>> Up3.move)
+    >>> Up2.move)
+
+type @{AllT_args} node_co = @{AllT_args} ZN.N3.content
+fun cons_action_cluster exn mk_node add_action_focus_list =
+  let
+    fun init_copy cud _ = GTC.apply_copy_update_data_focus_list cud add_action_focus_list
+      |> add_action_clusters (cons_action_cluster exn mk_node)
+    val copy = Copy.copy init_copy
+    val add_actions = add_actions (List.map (fn (f, x) => f x) add_action_focus_list)
+  in cons_content_move_safe2 exn (mk_node copy) >>> add_actions end
+
+end
+
+end
+

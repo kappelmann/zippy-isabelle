@@ -1,46 +1,13 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory Zippy_Examples
   imports
-    Zippy.Zippy_Prover_Instances
+    Zippy.ML_Priority_Queues
+    Zippy.Zippy_Instance
     Main
 begin
 
-declare [[ML_print_depth = 100]]
-
 text \<open>Some simple examples showcasing navigation in the zipper and the creation of theorems using
-the best-first search instantiation from the paper.\<close>
-
-ML\<open>
-  (*syntax setup for monads and arrows*)
-  structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(Zippy)
-  structure C = \<^eval>\<open>sfx_ParaT_nargs "Category"\<close>(Zippy)
-  structure M = \<^eval>\<open>sfx_ParaT_nargs "Monad"\<close>(Zippy.M)
-  open SC Zippy M
-
-  (*halves the priorities at each pull of an action's result sequence*)
-  fun halve_prio_co p = update_prio_co (fn _ => P.halve) p
-
-  (*add a tactic action whose results' priorites are halved after each pull*)
-  fun add_tac amd p focus tac z = amd
-  >>= (fn amd => cons_move_tac amd (halve_prio_co p) tac
-    (fn _ => fn _ => id ()) (*you could add additional action children here after applying the tactic*)
-    focus z)
-
-  (*tactic solving every goal*)
-  fun cheat_tac prog ctxt = Skip_Proof.cheat_tac ctxt
-    |> lift_all_goals_focus_tac (K (Zippy_Result_Metadata.metadata prog))
-    T.single_goal_empty_target
-
-  (*tactic acting on goal, not necessarily solving it*)
-  fun zippy_tac prog tac = lift_every_goals_focus_tac (K (Zippy_Result_Metadata.metadata prog))
-    T.single_goal_moved_target tac
-
-  (*resolution with theorems*)
-  fun zippy_resolve_tac prog thms ctxt = zippy_tac prog (resolve_tac ctxt thms)
-
-  (*just some action metadata*)
-  fun amd _ = AMD.metadata (@{binding "test action"}, "action description")
-\<close>
+the best-first search presented in the Zippy paper.\<close>
 
 text \<open>Figure 6 from the paper.
 
@@ -48,40 +15,99 @@ Exhaustively run all rules and apply as tactic. Of course, this is only to show 
 works and not meant for production. When used in practice, one should return results as soon as
 there are no more subgoals in one of the tree's branches.\<close>
 
-lemma shows "A \<and> B" "C \<and> D"
+ML\<open>
+local
+  open Zippy
+  open MU MEU
+  open SC Mo A
+in
+end
+\<close>
+
+lemma silly: "A \<Longrightarrow> B" sorry
+lemma cheat : "A" sorry
+
+declare[[ML_print_depth=100]]
+schematic_goal shows "?A \<and> B" "C \<and> D"
+ML_prf\<open>open Zippy Zippy.MU.Mo\<close>
 apply (tactic \<open>fn state =>
   let
-    val amd = amd ()
-    val opt_statesq =
+    fun opt_statesq _ =
       (*initialise the zipper*)
-      (init_state' mk_gcd_more state >>= arr snd
-      (*add the conjunction tactic to the first goal cluster*)
+      (Util.init_thm_state state
+      (*add actions*)
       >>= Down1.move
-      >>= with_state (zippy_resolve_tac RMD.promising @{thms conjI} #> add_tac amd P.HIGH (F.goals [1]))
-      (*add the conjunction tactic to the second goal cluster*)
-      >>= Up4.move >>= Up3.move >>= Z2.ZM.Down.move
-      >>= with_state (zippy_resolve_tac RMD.promising @{thms conjI} #> add_tac amd P.HIGH (F.goals [1]))
-      >>= top4 >>= Z1.ZM.Unzip.move
-      (*repeat best-first-search until no more changes (instead of NONE, you can pass in SOME fuel); cf. below*)
-      >>= repeat_fold_run_max_paction_dfs NONE
+      >>= Tac_Util.cons_single_ztactic_action_cluster
+        (NCo3.Meta.Meta.empty @{binding cluster1})
+        (Util.result_tail_presults_action I)
+        (NCo4.Meta.Meta.empty @{binding action1})
+        (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
+        (ZS.with_state I
+          (Tac_Util.resolve_moved_tac Zippy_Tactic_Result_Progress.promising @{thms cheat silly} #> arr))
+        (Tac.GPU.F.Goals [1])
+      >>= Up3.move
+      >>= Tac_Util.cons_single_ztactic_action_cluster
+        (NCo3.Meta.Meta.empty @{binding cluster2})
+        (Util.result_tail_presults_action I)
+        (NCo4.Meta.Meta.empty @{binding action2})
+        (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
+        (ZS.with_state I (Tac_Util.cheat_tac #> arr))
+        (Tac.GPU.F.Goals [1])
+      >>= Up3.move
+      >>= Z2.ZM.Down.move
+      >>= Tac_Util.cons_single_ztactic_action_cluster
+        (NCo3.Meta.Meta.empty @{binding cluster3})
+        (Util.result_tail_presults_action I)
+        (NCo4.Meta.Meta.empty @{binding action3})
+        (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
+        (ZS.with_state I (Tac_Util.cheat_tac #> arr))
+        (Tac.GPU.F.Goals [1])
+      >>= ZB.top3
+      >>= Z1.ZM.Unzip.move
       (*get the theorems*)
-      >>= Z1.ZM.Zip.move >>= with_state finish_gclusters_oldest_first)
-      (*pass context to state monad*)
-      |> MS.eval @{context}
+      (* >>= Z1.ZM.Zip.move *)
+      (* >>= Util.with_state Util.finish_promising_gclusters_oldest_first *)
+      (*run best-first-search*)
+      >>= SRuns.init_repeat_step_queue I (SOME 1000)
+      )
+      |> SRuns.seq_from_monad @{context}
+      |> Seq.pull |> (fn sq => Seq.make (fn _ => sq))
+    val (time, opt_statesq) = Timing.timing opt_statesq () |> apfst @{print}
   in
-    case opt_statesq of
-      NONE => Seq.empty
-    | SOME statesq =>
-        let val _ = Seq.list_of statesq |> @{make_string} |> writeln
-        in statesq end
+    let val _ =
+      (* Seq.list_of statesq  *)
+      (* |> List.map (snd #> fst #> fst #> Zippy.ZN.ZCore.N1.Co.getter
+        #> Zippy.NCo1.CB.get_results
+        #> Zippy.NCo1.Results.R.get_states
+        #> Seq.list_of)  *)
+      (* |> @{print} *)
+      ()
+    in Seq.map fst opt_statesq end
   end
 \<close>)
 (*you can backtrack with "back"*)
 back
 back
 back
+back
+back
+back
+back
+back
+back
+back
+back
+back
+back
+back
+back
+back
+back
+back
+back
+back
+back
 oops
-
 
 text \<open>Search tree akin to Figure 1 from the paper.\<close>
 
@@ -91,7 +117,7 @@ apply (tactic \<open>fn state =>
     val amd = amd ()
     val opt_statesq =
       (*initialise the zipper*)
-      (init_state' mk_gcd_more state >>= arr snd
+      (init_thm_state' mk_gcd_more state >>= arr snd
       (*add the resolution tactics to the goal cluster*)
       >>= Down1.move
       (*one could, of course, also split each theorem into a separate action*)
@@ -102,7 +128,7 @@ apply (tactic \<open>fn state =>
       >>= with_state (assume_tac #> zippy_tac RMD.promising #> add_tac amd P.HIGH (F.goals [1]))
       >>= top4 >>= Z1.ZM.Unzip.move
       (*repeat best-first-search until no more changes*)
-      >>= repeat_fold_run_max_paction_dfs NONE
+      >>= repeat_fold_pactions_max_df NONE
       (*get the theorems*)
       >>= Z1.ZM.Zip.move >>= with_state finish_gclusters_oldest_first)
       (*pass context to state monad*)
@@ -132,7 +158,7 @@ val amd = amd ()
 val state = @{Isar.goal} |> #goal
 val opt_statesq =
   (*initialise the zipper*)
-  (init_state' mk_gcd_more state >>= arr snd
+  (init_thm_state' mk_gcd_more state >>= arr snd
   (*print the goal clusters*)
   >>= (fn z => with_state pretty_gcs z >>= arr Pretty.writeln >>= arr (K z))
   >>= Down1.move
@@ -158,7 +184,7 @@ val opt_statesq =
   >>= (fn z => pretty_action z >>= arr Pretty.writeln >>= arr (K z))
   >>= top4 >>= Z1.ZM.Unzip.move
   (*repeat best-first-search for 4 steps*)
-  >>= repeat_fold_run_max_paction_dfs (SOME 4)
+  >>= repeat_fold_pactions_max_df (SOME 4)
   (*get the theorems*)
   >>= Z1.ZM.Zip.move >>= with_state finish_gclusters_oldest_first >>= arr Seq.list_of
   ) |> MS.eval @{context} (*pass context to state monad*)

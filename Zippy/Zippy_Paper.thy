@@ -134,11 +134,11 @@ text \<open>
 
   \<^item> Running a Best-First Search
     \<^item> Postorder Depth-First Enumeration for Zippers
-      @{file "Gen_Zippers/Zippers5/Zippers/Instances/dfs_postorder_enumerable_zipper_moves.ML"}
+      @{file "Gen_Zippers/Zippers5/Zippers/Instances/df_postorder_enumerable_zipper_moves.ML"}
     \<^item> Postorder Depth-First Enumeration for Alternating Zippers
-      @{file "Gen_Zippers/Zippers5/Alternating_Zippers/Instances/dfs_postorder_enumerable_alternating_zipper.ML"}
+      @{file "Gen_Zippers/Zippers5/Alternating_Zippers/Instances/df_postorder_enumerable_alternating_zipper.ML"}
     \<^item> Folding the Highest-Scoring Action @{ML Zippy.gen_fold_pactions}
-    \<^item> Best-First Search @{ML Zippy.repeat_fold_run_max_paction_dfs}
+    \<^item> Best-First Search @{ML Zippy.repeat_fold_run_max_paction_dfs}df
 
   \<^item> Retrieving all theorems found by the zipper @{ML Zippy.finish_gclusters_oldest_first}
 \<close>

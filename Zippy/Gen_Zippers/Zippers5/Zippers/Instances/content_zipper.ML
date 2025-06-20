@@ -10,7 +10,6 @@ functor \<^eval>\<open>sfx_T_nargs "Content_Zipper_Data"\<close>(
     where type @{AllT_args} zipper = @{AllT_args} content
   =
 struct
-
 structure L = \<^eval>\<open>sfx_ParaT_nargs "SLens_Kleisli_Identity"\<close>
 type @{AllT_args} content = @{AllT_args} content
 type @{AllT_args} zcontext = unit
@@ -40,7 +39,6 @@ struct
   fun lens _ = L.mk_lens getter modifier
 end
 end
-
 end
 
 functor \<^eval>\<open>sfx_T_nargs "Content_Zipper_Moves"\<close>(
@@ -112,18 +110,6 @@ structure Z = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
 open Z
 
 end
-
-\<^imap>\<open>\<open>{i}\<close> => \<open>
-functor \<^eval>\<open>sfx_inst_T_nargs "Instantiate_Content_Zipper" {i}\<close>(
-    type @{AllT_args} inst
-    structure Z : \<^eval>\<open>sfx_T_nargs "CONTENT_ZIPPER"\<close>
-  ) :
-    \<^eval>\<open>sfx_T_nargs "CONTENT_ZIPPER"\<close>
-    where type @{AllT_args} container = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.container
-    where type @{AllT_args} content = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.content
-  = Z\<close>\<close>
 
 signature \<^eval>\<open>sfx_T_nargs "SINGLE_CONTENT_ZIPPER"\<close> = \<^eval>\<open>sfx_T_nargs "CONTENT_ZIPPER"\<close>
 

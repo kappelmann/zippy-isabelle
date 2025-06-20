@@ -3,21 +3,26 @@
 *)
 signature \<^eval>\<open>mk_name ["PAIR", pfx_sfx_nargs "ALTERNATING_ZIPPER"]\<close> =
 sig
-  structure AZ1 : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close>
-  structure AZ2 : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close>
-  sharing type AZ2.M.t = AZ1.M.t
+  structure SZ1 : \<^eval>\<open>pfx_sfx_nargs "SUB_ALTERNATING_ZIPPER"\<close>
+  structure SZ2 : \<^eval>\<open>pfx_sfx_nargs "SUB_ALTERNATING_ZIPPER"\<close>
+  \<^imap>\<open>\<open>{i}\<close> => \<open>
+  sharing type SZ2.Z.Z{i}.zipper = SZ1.Z.Z{i}.zipper
+  sharing type SZ2.Z.Z{i}.ZM.container = SZ1.Z.Z{i}.ZM.container
+  sharing type SZ2.Z.Z{i}.ZD.content = SZ1.Z.Z{i}.ZD.content
+  sharing type SZ2.Z.Z{i}.ZD.zcontext = SZ1.Z.Z{i}.ZD.zcontext\<close>\<close>
+  sharing type SZ2.Z.M.t = SZ1.Z.M.t
 
   include \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close>
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   where type @{AllT_args} Z{i}.ZM.container =
-    @{AllT_args} AZ1.Z{i}.ZM.container * @{AllT_args} AZ2.Z{i}.ZM.container
+    @{AllT_args} SZ1.ZSub.Z{i}.ZM.container * @{AllT_args} SZ2.ZSub.Z{i}.ZM.container
   where type @{AllT_args} Z{i}.ZD.content =
-    @{AllT_args} AZ1.Z{i}.ZD.content * @{AllT_args} AZ2.Z{i}.ZD.content
+    @{AllT_args} SZ1.ZSub.Z{i}.ZD.content * @{AllT_args} SZ2.ZSub.Z{i}.ZD.content
   where type @{AllT_args} Z{i}.ZD.zcontext =
-    @{AllT_args} AZ1.Z{i}.ZD.zcontext * @{AllT_args} AZ2.Z{i}.ZD.zcontext
+    @{AllT_args} SZ1.ZSub.Z{i}.ZD.zcontext * @{AllT_args} SZ2.ZSub.Z{i}.ZD.zcontext
   where type @{AllT_args} Z{i}.zipper =
-    @{AllT_args} AZ1.Z{i}.zipper * @{AllT_args} AZ2.Z{i}.zipper\<close>\<close>
-  sharing type M.t = AZ1.M.t
+    @{AllT_args} SZ1.ZSub.Z{i}.zipper * @{AllT_args} SZ2.ZSub.Z{i}.zipper\<close>\<close>
+  sharing type M.t = SZ1.Z.M.t
 end
 
 functor \<^eval>\<open>mk_name ["Pair", pfx_sfx_nargs "Alternating_Zipper"]\<close>(
@@ -28,28 +33,39 @@ functor \<^eval>\<open>mk_name ["Pair", pfx_sfx_nargs "Alternating_Zipper"]\<clo
   =
 struct
 
-structure AZ1 = AZ1
-structure AZ2 = AZ2
-structure M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close> = AZ1
-open M
-structure L = AZ1.L
+structure Z =
+struct
+  structure M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close> = AZ1
+  open M
+  structure L = AZ1.L
+  \<^imap>\<open>\<open>{i}\<close> => \<open>
+  structure Z{i} = \<^eval>\<open>sfx_T_nargs "Pair_Zipper"\<close>(
+    structure Z1 = AZ1.Z{i}
+    structure Z2 = AZ2.Z{i})
 
-\<^imap>\<open>\<open>{i}\<close> => \<open>
-structure Z{i} = \<^eval>\<open>sfx_T_nargs "Pair_Zipper"\<close>(
-  structure Z1 = AZ1.Z{i}
-  structure Z2 = AZ2.Z{i}
-)\<close>\<close>
+  structure Down{i} = \<^eval>\<open>sfx_T_nargs "Pair_Move"\<close>(
+    structure M1 = AZ1.Down{i}
+    structure M2 = AZ2.Down{i})
 
-\<^imap>\<open>\<open>{i}\<close> => \<open>
-structure Down{i} = \<^eval>\<open>sfx_T_nargs "Pair_Move"\<close>(
-  structure M1 = AZ1.Down{i}
-  structure M2 = AZ2.Down{i}
-)\<close>\<close>
+  structure Up{i} = \<^eval>\<open>sfx_T_nargs "Pair_Move"\<close>(
+    structure M1 = AZ1.Up{i}
+    structure M2 = AZ2.Up{i})\<close>\<close>
+end
+open Z
 
-\<^imap>\<open>\<open>{i}\<close> => \<open>
-structure Up{i} = \<^eval>\<open>sfx_T_nargs "Pair_Move"\<close>(
-  structure M1 = AZ1.Up{i}
-  structure M2 = AZ2.Up{i}
-)\<close>\<close>
+structure SZ1 =
+struct
+  structure Z = Z
+  structure ZSub = AZ1
+  \<^imap>\<open>\<open>{i}\<close> => \<open>
+  structure SZ{i} = Z{i}.SZ1\<close>\<close>
+end
+structure SZ2 =
+struct
+  structure Z = Z
+  structure ZSub = AZ2
+  \<^imap>\<open>\<open>{i}\<close> => \<open>
+  structure SZ{i} = Z{i}.SZ2\<close>\<close>
+end
 
 end

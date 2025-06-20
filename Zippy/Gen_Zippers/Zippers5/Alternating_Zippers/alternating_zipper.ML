@@ -36,20 +36,3 @@ structure LZ = \<^eval>\<open>pfx_sfx_nargs "Linked_Zipper"\<close>(
 open LZ
 
 end
-
-\<^imap>\<open>\<open>{i}\<close> => \<open>
-functor \<^eval>\<open>mk_name ["Instantiate", pfx_sfx_inst_nargs "Alternating_Zipper" {i}]\<close>(
-    type @{AllT_args} inst
-    structure Z : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close>
-  ) :
-    \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close>
-    \<^imap>\<open>\<open>{j}\<close> => \<open>
-    where type @{AllT_args} Z{j}.ZM.container = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.Z{j}.ZM.container
-    where type @{AllT_args} Z{j}.ZD.content = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.Z{j}.ZD.content
-    where type @{AllT_args} Z{j}.ZD.zcontext = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.Z{j}.ZD.zcontext
-    where type @{AllT_args} Z{j}.zipper = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.Z{j}.zipper\<close>\<close>
-  = Z\<close>\<close>

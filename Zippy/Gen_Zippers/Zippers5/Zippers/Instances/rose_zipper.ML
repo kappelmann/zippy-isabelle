@@ -102,15 +102,3 @@ fun cons_sibling_zcontext c =
 fun cons_child_zcontext c = apfst (cons c)
 
 end
-
-\<^imap>\<open>\<open>{i}\<close> => \<open>
-functor \<^eval>\<open>sfx_inst_T_nargs "Instantiate_Rose_Zipper" {i}\<close>(
-    type @{AllT_args} inst
-    structure Z : \<^eval>\<open>sfx_T_nargs "ROSE_ZIPPER"\<close>
-  ) :
-    \<^eval>\<open>sfx_T_nargs "ROSE_ZIPPER"\<close>
-    where type @{AllT_args} content = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.content
-    where type @{AllT_args} zipper = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.zipper
-  = Z\<close>\<close>

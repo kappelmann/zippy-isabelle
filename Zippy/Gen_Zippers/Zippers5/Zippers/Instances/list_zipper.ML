@@ -65,15 +65,3 @@ open Z
 fun cons_zcontext c = apfst (fn hs => hs @ [c])
 
 end
-
-\<^imap>\<open>\<open>{i}\<close> => \<open>
-functor \<^eval>\<open>sfx_inst_T_nargs "Instantiate_List_Zipper" {i}\<close>(
-    type @{AllT_args} inst
-    structure Z : \<^eval>\<open>sfx_T_nargs "LIST_ZIPPER"\<close>
-  ) :
-    \<^eval>\<open>sfx_T_nargs "LIST_ZIPPER"\<close>
-    where type @{AllT_args} content = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.content
-    where type @{AllT_args} zipper = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.zipper
-  = Z\<close>\<close>

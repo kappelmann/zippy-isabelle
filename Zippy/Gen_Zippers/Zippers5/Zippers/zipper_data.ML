@@ -44,26 +44,13 @@ struct
   fun lens _ = L.mk_lens getter modifier
 end
 
-structure ZCtxt = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(
+structure ZCtxt =
+struct
   open Base
   type @{AllT_args} data = @{AllT_args} zcontext
   fun getter (Zipper {zcontext,...}) = zcontext
   fun modifier (f, Zipper {content, zcontext}) = zipper (content, f zcontext)
   fun lens _ = L.mk_lens getter modifier
-)
-
 end
 
-\<^imap>\<open>\<open>{i}\<close> => \<open>
-functor \<^eval>\<open>sfx_inst_T_nargs "Instantiate_Zipper_Data" {i}\<close>(
-    type @{AllT_args} inst
-    structure Z : \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close>
-  ) :
-    \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close>
-    where type @{AllT_args} content = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.content
-    where type @{AllT_args} zcontext = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.zcontext
-    where type @{AllT_args} zipper = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.zipper
-  = Z\<close>\<close>
+end

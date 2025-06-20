@@ -1,51 +1,53 @@
-session Zippy = "HOL" +
+session Zippy = "Pure" +
   sessions
-    ML_Unification
     ML_Typeclasses
+    ML_Unification
     SpecCheck
   directories
     "Antiquotations"
-    "Gen_Coroutines"
-    "Gen_Coroutines/Coroutines_1"
     "Gen_Lists"
     "Gen_Lists/Lists_1"
     "Gen_Zippers/"
     "Gen_Zippers/Zippers5"
     "Gen_Zippers/Zippers5/Alternating_Zippers"
     "Gen_Zippers/Zippers5/Alternating_Zippers/Instances"
+    "Gen_Zippers/Zippers5/Alternating_Zippers/Instances/Nodes"
+    "Gen_Zippers/Zippers5/Alternating_Zippers/Paths"
+    "Gen_Zippers/Zippers5/Alternating_Zippers/Utils"
     "Gen_Zippers/Zippers5/Enumerable"
     "Gen_Zippers/Zippers5/Linked_Zippers"
     "Gen_Zippers/Zippers5/Moves"
     "Gen_Zippers/Zippers5/Structured_Lenses"
     "Gen_Zippers/Zippers5/Zippers"
     "Gen_Zippers/Zippers5/Zippers/Instances"
-    "Instances"
-    "Instances/Actions"
-    "Instances/Actions/Lists"
-    "Instances/Base"
-    "Instances/Base/Lists"
-    "Instances/Goals"
-    "Instances/Goals/Lists"
-    "Instances/Tactics"
-    "Instances/Tactics/Lists"
-    "Instances/Identifiers"
-    "Instances/Position"
-    "Instances/Position/Lists"
-    "Instances/Prover"
-    "Instances/Prover/Gen"
-    "Instances/Prover/Goals"
-    "Instances/Prover/Instances"
-    "Instances/Prover/Metadata"
-    "Instances/Prover/Position"
-    "Instances/Prover/Tactics"
+    "Gen_Zippers/Zippers5/Zippers/Utils"
+    "Zippy"
+    "Zippy/Action_Clusters"
+    "Zippy/Actions"
+    "Zippy/Actions/Base"
+    "Zippy/Actions/Positions"
+    "Zippy/Base"
+    "Zippy/Base/Lists"
+    "Zippy/Goals"
+    "Zippy/Goals/Base"
+    "Zippy/Goals/Lists"
+    "Zippy/Identifiers"
+    "Zippy/Positions"
+    "Zippy/Positions/Lists"
+    "Zippy/Runs"
+    "Zippy/State"
+    "Zippy/Tactics"
+    "Zippy/Tactics/Base"
+    "Zippy/Tactics/Lists"
+    "Priority_Queues"
     "Union_Find"
   theories
     Zippy_Paper
-    Zippy_Prover
-    Zippy_Prover_Instances
 
-session Zippy_Examples in Examples = "Zippy" +
+session Zippy_Examples in Examples = "HOL" +
   options [quick_and_dirty]
+  sessions
+    Zippy
   theories
     Zippy_Examples
 

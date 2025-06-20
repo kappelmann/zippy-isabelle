@@ -48,6 +48,7 @@ sig
   val get : unit -> (@{ParaT_args} s) state
   val put : s -> (@{ParaT_args} unit) state
 
+  val run : s -> (@{ParaT_args} 'a) state -> (@{ParaT_args} (s, 'a) SR.result) M.t
   val eval : s -> (@{ParaT_args} 'a) state -> (@{ParaT_args} 'a) M.t
   val exec : s -> (@{ParaT_args} 'a) state -> (@{ParaT_args} s) M.t
 end
@@ -90,8 +91,9 @@ fun put s = state (fn _ => SR.result s ())
 end
 open MS
 
-fun eval s st = st s |> M.map SR.value
-fun exec s st = st s |> M.map SR.state
+fun run s st = st s
+fun eval s = run s #> M.map SR.value
+fun exec s = run s #> M.map SR.state
 
 end
 

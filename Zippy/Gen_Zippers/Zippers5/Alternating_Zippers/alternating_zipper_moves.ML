@@ -19,16 +19,3 @@ sig
   sharing type Up{i}.M.t = M.t\<close>
   where stop = 1\<close>
 end
-
-\<^imap>\<open>\<open>{i}\<close> => \<open>
-functor \<^eval>\<open>mk_name ["Instantiate", pfx_sfx_inst_nargs "Alternating_Zipper_Moves" {i}]\<close>(
-    type @{AllT_args} inst
-    structure Z : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER_MOVES"\<close>
-  ) :
-    \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER_MOVES"\<close>
-    \<^imap>\<open>\<open>{j}\<close> => \<open>
-    where type @{AllT_args} Z{j}.container = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.Z{j}.container
-    where type @{AllT_args} Z{j}.zipper = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.Z{j}.zipper\<close>\<close>
-  = Z\<close>\<close>

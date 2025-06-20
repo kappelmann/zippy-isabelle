@@ -1,7 +1,6 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory ML_State
   imports
-    ML_ITypeclasses
     ML_ICategories
     ML_State_Base
 begin

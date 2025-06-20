@@ -23,20 +23,5 @@ sig
   sharing type Up{j}.to = Z\<^eval>\<open>string_of_int ({j} - 1) ^ "."\<close>zipper
   sharing type Up{j}.M.t = M.t\<close>
   where start = 2 and stop = {i}\<close>
-end
-
-\<^imap>\<open>\<open>{j}\<close> => \<open>
-functor \<^eval>\<open>mk_name ["Instantiate", ML_Gen.nprefix "{i}", sfx_inst_T_nargs "Linked_Zipper_Moves" {j}]\<close>(
-    type @{AllT_args} inst
-    structure Z : \<^eval>\<open>mk_name [ML_Gen.nprefix "{i}", sfx_T_nargs "LINKED_ZIPPER_MOVES"]\<close>
-  ) :
-    \<^eval>\<open>mk_name [ML_Gen.nprefix "{i}", sfx_T_nargs "LINKED_ZIPPER_MOVES"]\<close>
-    \<^imap>\<open>\<open>{k}\<close> => \<open>
-    where type @{AllT_args} Z{k}.container = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.Z{k}.container
-    where type @{AllT_args} Z{k}.zipper = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {j}\<close>) Z.Z{k}.zipper\<close>
-    where stop = {i}\<close>
-  = Z\<close>\<close>
-\<close>
+end\<close>
 where start = 2\<close>

@@ -77,15 +77,3 @@ structure Left = \<^eval>\<open>sfx_T_nargs "Hom_Move"\<close>(open Base; val mo
 structure Right = \<^eval>\<open>sfx_T_nargs "Hom_Move"\<close>(open Base; val move = right)
 
 end
-
-\<^imap>\<open>\<open>{i}\<close> => \<open>
-functor \<^eval>\<open>sfx_inst_T_nargs "Instantiate_Zipper_Moves" {i}\<close>(
-    type @{AllT_args} inst
-    structure Z : \<^eval>\<open>sfx_T_nargs "ZIPPER_MOVES"\<close>
-  ) :
-    \<^eval>\<open>sfx_T_nargs "ZIPPER_MOVES"\<close>
-    where type @{AllT_args} container = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.container
-    where type @{AllT_args} zipper = (@{ParaT_args}
-      \<^eval>\<open>ML_Gen.inst_zipperT "@{AllT_args} inst" {i}\<close>) Z.zipper
-  = Z\<close>\<close>

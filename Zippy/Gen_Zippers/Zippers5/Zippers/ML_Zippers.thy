@@ -20,6 +20,7 @@ ML_gen_file\<open>zipper.ML\<close>
 ML_gen_file\<open>modify_zipper_zipper.ML\<close>
 ML_gen_file\<open>modify_zipper_content.ML\<close>
 ML_gen_file\<open>extend_zipper_context.ML\<close>
+ML_gen_file\<open>sub_zipper.ML\<close>
 ML_gen_file\<open>pair_zipper.ML\<close>
 
 end

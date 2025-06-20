@@ -1,10 +1,9 @@
 (*  Title:      Zippy/alternating_global_position_zipper.ML
     Author:     Kevin Kappelmann
 *)
-(*TODO: generalise to arbitrary list types*)
 signature \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_GLOBAL_POSITION_ZIPPER"\<close> =
 sig
-  type path = int list list
+  type path = Zipper_Position.pos list
   val init_path : path
   include \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close>
   \<^imap>\<open>\<open>{i}\<close> => \<open>
@@ -19,7 +18,8 @@ functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Global_Position_Zipper"\<close
   ) : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_GLOBAL_POSITION_ZIPPER"\<close> =
 struct
 
-type path = int list list
+structure Pos = Zipper_Position
+type path = Pos.pos list
 val init_path = []
 
 structure L = \<^eval>\<open>sfx_ParaT_nargs "SLens"\<close>
@@ -28,20 +28,19 @@ structure M = MB
 open M
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-structure Z{i} = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
-  structure ZM = \<^eval>\<open>sfx_T_nargs "Zipper_Moves"\<close>(
-    structure M = MB
-    open M.M
-    type @{AllT_args} container = path
-    type @{AllT_args} zipper = path
-    fun zip pss = pure ([0] :: pss)
-    fun unzip (_ :: pss) = pure pss
-    fun down (ps :: pss) = pure ((0 :: ps) :: pss)
-    fun up ((p :: ps) :: pss) = pure (ps :: pss)
-    fun left ((p :: ps) :: pss) = pure ((p + 1 :: ps) :: pss)
-    fun right ((p :: ps) :: pss) = pure ((p - 1 :: ps) :: pss))
-  structure ZD = \<^eval>\<open>sfx_T_nargs "Content_Zipper_Data"\<close>(
-    type @{AllT_args} content = path))\<close>\<close>
+structure Z{i} = \<^eval>\<open>sfx_T_nargs "Content_Zipper"\<close>(
+  structure M = MB
+  open M.M
+  type @{AllT_args} container = path
+  type @{AllT_args} content = path
+  type @{AllT_args} zipper = path
+  fun zip pss = pure (Pos.init :: pss)
+  fun unzip (_ :: pss) = pure pss
+  fun down (ps :: pss) = pure ((Pos.init_x :: ps) :: pss)
+  (*FIXME: use monad with exception instead of throwing option exception?*)
+  fun up (ps :: pss) = pure (the (Pos.up ps) :: pss)
+  fun left (ps :: pss) = pure (Pos.left ps :: pss)
+  fun right (ps :: pss) = pure (Pos.right ps :: pss))\<close>\<close>
 
 structure Base =
 struct
@@ -51,7 +50,7 @@ struct
 end
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-structure Down{i} = struct open Base; fun move pss = M.pure ([0] :: pss) end\<close>\<close>
+structure Down{i} = struct open Base; fun move pss = M.pure (Pos.init :: pss) end\<close>\<close>
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 structure Up{i} = struct open Base; fun move (_ :: pss) = M.pure pss end\<close>\<close>

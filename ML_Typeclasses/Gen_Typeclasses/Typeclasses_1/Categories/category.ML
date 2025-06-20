@@ -184,7 +184,8 @@ end
 signature \<^eval>\<open>sfx_ParaT_nargs "ARROW_CHOICE"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_CHOICE_BASE"\<close>
-  val opt : (@{ParaT_args} unit, 'b) cat -> (@{ParaT_args} 'a, 'b) cat -> (@{ParaT_args} 'a option, 'b) cat
+  val opt : (@{ParaT_args} unit, 'b) cat -> (@{ParaT_args} 'a, 'b) cat ->
+    (@{ParaT_args} 'a option, 'b) cat
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Arrow_Choice"\<close>(
