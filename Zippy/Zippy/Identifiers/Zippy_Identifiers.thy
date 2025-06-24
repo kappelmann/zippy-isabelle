@@ -1,7 +1,7 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory Zippy_Identifiers
   imports
-    Zippy_Base
+    Pure
 begin
 
 paragraph \<open>Summary\<close>

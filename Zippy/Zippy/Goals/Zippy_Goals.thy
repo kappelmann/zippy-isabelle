@@ -2,6 +2,7 @@
 theory Zippy_Goals
   imports
     ML_Alternating_Zipper_Paths
+    Zippy_Base
     Zippy_Goals_Base
 begin
 
@@ -25,5 +26,7 @@ ML_file\<open>zippy_top_meta_vars_mixin.ML\<close>
 
 ML_file\<open>zippy_goal_results_top_meta_vars_mixin_base.ML\<close>
 ML_file\<open>zippy_goal_results_top_meta_vars_mixin.ML\<close>
+
+ML_file\<open>zippy_goals_results_top_meta_vars_mixin_base.ML\<close>
 
 end

@@ -8,12 +8,11 @@ sig
 end
 
 functor Zippy_Action_App_Num_Mixin(
-    ActionAN : ZIPPY_ACTION_APP_NUM_MIXIN_BASE
+    AANum : ZIPPY_ACTION_APP_NUM_MIXIN_BASE
   ) : ZIPPY_ACTION_APP_NUM_MIXIN =
 struct
 
-open ActionAN
-fun inc_action_app_num x = L.modifier (AAN.inc, x)
+open AANum
+fun inc_action_app_num x = L.modifier (AANum.inc, x)
 
 end
-

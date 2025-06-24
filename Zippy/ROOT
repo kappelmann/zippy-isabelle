@@ -21,7 +21,11 @@ session Zippy = "Pure" +
     "Gen_Zippers/Zippers5/Zippers"
     "Gen_Zippers/Zippers5/Zippers/Instances"
     "Gen_Zippers/Zippers5/Zippers/Utils"
+    "Priority_Queues"
+    "Union_Find"
     "Zippy"
+    "Zippy/Action_Applications"
+    "Zippy/Action_Applications/Base"
     "Zippy/Action_Clusters"
     "Zippy/Actions"
     "Zippy/Actions/Base"
@@ -39,8 +43,6 @@ session Zippy = "Pure" +
     "Zippy/Tactics"
     "Zippy/Tactics/Base"
     "Zippy/Tactics/Lists"
-    "Priority_Queues"
-    "Union_Find"
   theories
     Zippy_Paper
 

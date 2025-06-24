@@ -20,6 +20,7 @@ sig
   val enum : (@{ParaT_args} 'a, 'a) C.cat -> (@{ParaT_args} unit, 'a) C.cat ->
     (@{ParaT_args} unit, 'a) coroutine
   val enum' : (@{ParaT_args} 'a, 'a) C.cat -> (@{ParaT_args} 'a, 'a) coroutine
+  val enum_co : (@{ParaT_args} 'a, 'a) coroutine -> 'a -> (@{ParaT_args} unit, 'a) coroutine
 
   val flat : (@{ParaT_args} 'a, (@{ParaT_args} 'a, 'b) coroutine) coroutine ->
     (@{ParaT_args} 'a, 'b) coroutine
@@ -71,6 +72,8 @@ fun map_co f = map f f
 
 fun enum next init = init >>> arr (fn x => (x, enum next (fn _ => next x))) |> coroutine
 fun enum' next = next >>> arr (fn x => (x, enum' next)) |> coroutine
+fun enum_co co x = (fn _ => Co.resume co x >>= (arr fst &&& arr (fn (x, co) => enum_co co x)))
+  |> Co.coroutine
 
 fun flat coco = (fn x => Co.resume coco x >>= (fn (co, coco) => resume (append co (flat coco)) x))
   |> Co.coroutine

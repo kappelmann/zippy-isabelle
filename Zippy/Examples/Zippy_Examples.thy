@@ -32,7 +32,7 @@ schematic_goal shows "?A \<and> B" "C \<and> D"
 ML_prf\<open>open Zippy Zippy.MU.Mo\<close>
 apply (tactic \<open>fn state =>
   let
-    fun opt_statesq _ =
+    fun run _ =
       (*initialise the zipper*)
       (Util.init_thm_state state
       (*add actions*)
@@ -43,7 +43,7 @@ apply (tactic \<open>fn state =>
         (NCo4.Meta.Meta.empty @{binding action1})
         (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
         (ZS.with_state I
-          (Tac_Util.resolve_moved_tac Zippy_Tactic_Result_Progress.promising @{thms cheat silly} #> arr))
+          (Tac_Util.resolve_moved_tac Zippy_Action_App_Progress.promising @{thms cheat silly} #> arr))
         (Tac.GPU.F.Goals [1])
       >>= Up3.move
       >>= Tac_Util.cons_single_ztactic_action_cluster
@@ -68,11 +68,12 @@ apply (tactic \<open>fn state =>
       (* >>= Z1.ZM.Zip.move *)
       (* >>= Util.with_state Util.finish_promising_gclusters_oldest_first *)
       (*run best-first-search*)
-      >>= SRuns.init_repeat_step_queue I (SOME 1000)
+      >>= SRuns.init_repeat_step_queue I
+        (ZS.with_state I SRuns.mk_df_post_unreturned_unfinished_statesq) (SOME 0)
       )
       |> SRuns.seq_from_monad @{context}
       |> Seq.pull |> (fn sq => Seq.make (fn _ => sq))
-    val (time, opt_statesq) = Timing.timing opt_statesq () |> apfst @{print}
+    val (time, ressq) = Timing.timing run () |> apfst @{print}
   in
     let val _ =
       (* Seq.list_of statesq  *)
@@ -82,7 +83,11 @@ apply (tactic \<open>fn state =>
         #> Seq.list_of)  *)
       (* |> @{print} *)
       ()
-    in Seq.map fst opt_statesq end
+    in
+      ressq
+      (* |> Seq.filter SRuns.is_finished  *)
+      |> Seq.map (SRuns.get_result_data #> #thm_states) |> Seq.flat
+    end
   end
 \<close>)
 (*you can backtrack with "back"*)

@@ -29,10 +29,10 @@ sig
     (@{ParaT_args} @{AllT_args} PAction.zipper, @{AllT_args} PAction.zipper) Co.coroutine ->
     @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) hom_move
 
-  type @{AllT_args} container
-  val fold_children_pactions_queue : @{AllT_args} container ->
+  type @{AllT_args} container1
+  val fold_children_pactions_queue : @{AllT_args} container1 ->
     (@{ParaT_args} @{AllT_args} queue) hom_move
-  val init_pactions_queue : (@{ParaT_args} @{AllT_args} container, @{AllT_args} queue) cat
+  val init_pactions_queue : (@{ParaT_args} @{AllT_args} container1, @{AllT_args} queue) cat
 
   val update_stagnate : @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) hom_move
   val update_expand :
@@ -74,7 +74,7 @@ fun fold_pactions_queue co z = AE.try (fn queue =>
     (fn z => mk_entry_insert z queue >>= arr Co.continue) co z
   >>= arr (Co.dest_res #> snd))
 
-type @{AllT_args} container = @{AllT_args} Z1.ZM.container
+type @{AllT_args} container1 = @{AllT_args} Z1.ZM.container
 fun fold_children_pactions_queue c queue = AE.catch'
   (Z1.ZM.Zip.move >>> ADF_Post4.enum_zipper3 mk_exn
     >>> (fn (z, co) => fold_pactions_queue (Co.cons (id ()) co) z queue))

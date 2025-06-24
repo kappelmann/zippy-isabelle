@@ -64,7 +64,7 @@ structure LGoals_Results = Zippy_Lists_Goals_Results_Mixin(
   structure Z = ZL; structure Goals_Results = Runs)
 structure PAction_Queue = Zippy_PAction_Queue_Mixin(
   structure Z = ZE; structure PAction_Queue = PAction_Queue; val mk_exn = mk_exn)
-structure GCluster_RTMV = Zippy_Goal_Results_Top_Meta_Vars_Mixin(
+structure TMV = Zippy_Goal_Results_Top_Meta_Vars_Mixin(
   structure Z = Z
   structure Goal_Results_Top_Meta_Vars = Zippy_Goal_Results_Top_Meta_Vars_Mixin_Base(
     structure Results = GCluster_Results; structure Top_Meta_Vars = Top_Meta_Vars))
@@ -72,7 +72,7 @@ structure GCluster_RTMV = Zippy_Goal_Results_Top_Meta_Vars_Mixin(
 local open SC Mo A
 in
 fun move_entry_if_may_take_more_results {zipper,...} z = ZP.path_from_zipper4 zipper
-  >>= (fn pos => GCluster_RTMV.move_path_if_may_take_more_results4 pos z)
+  >>= (fn pos => TMV.move_path_if_may_take_more_results4 pos z)
 
 fun update_goal_results_up_stagnate z = z |> (ZB.top4 >>> arr (rpair Results.empty))
 fun update_goal_results_up_expand ctxt = Down5.move >>> LGoals_Results.update_goal_results_up ctxt

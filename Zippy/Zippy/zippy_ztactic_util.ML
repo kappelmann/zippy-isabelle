@@ -3,7 +3,7 @@
 *)
 signature ZIPPY_ZTACTIC_UTIL =
 sig
-  type ztactic = Zippy.NCo5.Result_Meta.Meta.metadata Zippy.Tac.ztactic
+  type ztactic = Zippy.NCo5.Meta.Meta.metadata Zippy.Tac.ztactic
 
   (* misc *)
   val ztactic_resultsq : ztactic -> @{AllT_args} Zippy.Z2.zipper ->
@@ -50,7 +50,7 @@ sig
   val cheat_tac : Proof.context -> Zippy.Tac.GPU.F.focus -> ztactic
 
   (*resolution with theorems*)
-  val resolve_moved_tac : Zippy_Tactic_Result_Progress.progress -> thm list ->
+  val resolve_moved_tac : Zippy_Action_App_Progress.progress -> thm list ->
     Proof.context -> Zippy.Tac.GPU.F.focus -> ztactic
 end
 
@@ -58,7 +58,7 @@ structure Zippy_ZTactic_Util : ZIPPY_ZTACTIC_UTIL =
 struct
 open Zippy Zippy.MU
 
-type ztactic = NCo5.Result_Meta.Meta.metadata Tac.ztactic
+type ztactic = NCo5.Meta.Meta.metadata Tac.ztactic
 
 (* misc *)
 fun ztactic_resultsq tac z2 = tac (NCo2.GCluster.get_state z2)
@@ -66,7 +66,8 @@ fun ztactic_resultsq tac z2 = tac (NCo2.GCluster.get_state z2)
 (* priorities *)
 local open SC Mo
 in
-fun with_halve_prio_depth_res_co x = NCo4.PResults_Pos.with_halve_prio_depth_res_co Prio.halve x
+fun with_halve_prio_depth_res_co x =
+  NCo4.PResults_Pos.with_depth_prio_res_co (fn i => arr (funpow i Prio.halve)) x
 
 (* fun halve_prio_co p = NCo4.PResults.enum_prio_res_co (arr Prio.halve) p *)
 fun enum_halve_prio_depth_res_co next p = NCo4.PResults.enum_prio_res_co next p
@@ -84,12 +85,12 @@ fun cons_ztactic_action result_tail_presults_action meta mk_prio_sq_c tac focus 
 fun cons_single_ztactic_action_cluster actionc_meta result_tail_presults_action action_meta
   mk_prio_sq_c tac focus =
   let val add_action = cons_ztactic_action result_tail_presults_action action_meta mk_prio_sq_c tac
-  in Util.cons_action_cluster actionc_meta [(add_action, focus)] end
+  in Util.cons_action_cluster actionc_meta [(focus, add_action)] end
 
-local structure Meta = NCo5.Result_Meta.Meta
+local structure Meta = NCo5.Meta.Meta
 in
 fun cheat_tac ctxt = Skip_Proof.cheat_tac ctxt
-  |> Tac.RTac.lift_tac' (K (Meta.metadata Zippy_Tactic_Result_Progress.promising))
+  |> Tac.RTac.lift_tac' (K (Meta.metadata Zippy_Action_App_Progress.promising))
   |> Tac.lift_all_goals_focus_tac Tac.no_tac Meta.add Tac.single_goal_empty_target
 
 fun resolve_moved_tac progress thms ctxt = resolve_tac ctxt thms

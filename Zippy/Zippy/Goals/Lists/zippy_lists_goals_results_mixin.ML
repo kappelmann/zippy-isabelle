@@ -1,9 +1,7 @@
 (*  Title:      Zippy/zippy_lists_goals_results_mixin.ML
     Author:     Kevin Kappelmann
 *)
-signature ZIPPY_LISTS_GOALS_RESULTS_MIXIN =
-sig
-  include ZIPPY_GOALS_RESULTS_MIXIN_BASE
+signature ZIPPY_LISTS_GOALS_RESULTS_MIXIN = sig include ZIPPY_GOALS_RESULTS_MIXIN_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
 
   (*initialise results below and including the given zipper*)

@@ -1,9 +1,9 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory Zippy_Goals_Base
   imports
+    ML_Typeclasses.ML_Typeclasses_Base
     ML_Unification.Unify_Resolve_Tactics_Base
     ML_Union_Find
-    Zippy_Base
 begin
 
 ML_file\<open>zippy_thm_state.ML\<close>

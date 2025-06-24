@@ -1,8 +1,8 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory Zippy_Action_Clusters
   imports
-    Zippy_Base
     SpecCheck.SpecCheck_Show
+    Zippy_Base
     Zippy_Identifiers
 begin
 

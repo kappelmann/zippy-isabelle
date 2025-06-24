@@ -1,7 +1,6 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory Zippy_Actions
   imports
-    ML_Order_Utils
     ML_Priority_Queues
     Zippy_Actions_Base
     Zippy_Base
@@ -13,9 +12,6 @@ ML_file\<open>zippy_paction_mixin.ML\<close>
 
 ML_file\<open>zippy_paction_queue_mixin_base.ML\<close>
 ML_file\<open>zippy_paction_queue_mixin.ML\<close>
-
-ML_file\<open>zippy_action_app_num_mixin_base.ML\<close>
-ML_file\<open>zippy_action_app_num_mixin.ML\<close>
 
 ML_file\<open>zippy_prio_mixin_base.ML\<close>
 

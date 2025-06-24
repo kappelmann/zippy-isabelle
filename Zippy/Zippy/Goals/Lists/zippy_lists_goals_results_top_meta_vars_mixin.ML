@@ -1,0 +1,107 @@
+(*  Title:      Zippy/zippy_lists_goals_results_top_meta_vars_mixin.ML
+    Author:     Kevin Kappelmann
+*)
+signature ZIPPY_LISTS_GOALS_RESULTS_TOP_META_VARS_MIXIN =
+sig
+  include ZIPPY_GOALS_RESULTS_TOP_META_VARS_MIXIN_BASE
+  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  structure Co : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL"\<close>
+  where type (@{ParaT_args} 'a, 'b) C.cat = (@{ParaT_args} 'a, 'b) cat
+
+  val mk_statesq :
+    (*enumerate direct gclusters children of given gcluster*)
+    (@{ParaT_args} @{AllT_args} GCluster.L.container,
+      (@{ParaT_args} unit, @{AllT_args} GClusters.L.container) Co.coroutine) cat ->
+    Proof.context -> (@{ParaT_args} @{AllT_args} GClusters.L.container,
+      GClusters.GCS.state Seq.seq) cat
+
+  \<^imap>\<open>\<open>{i}\<close> => \<open>
+  type @{AllT_args} zipper{i}\<close>\<close>
+  (*depth-first postorder enumeration of direct zipper1 children*)
+  \<^imap>\<open>\<open>{i}\<close> => \<open>
+  val enum_df_post_children{i} : (unit -> @{ParaT_args encl = "" ""} Co.AE.exn) ->
+    (@{ParaT_args} @{AllT_args} zipper{i},
+      (@{ParaT_args} unit, @{AllT_args} zipper1) Co.coroutine) cat\<close> where start = 2\<close>
+
+  val mk_statesq_df_post : (unit -> @{ParaT_args encl = "" ""} Co.AE.exn) ->
+    Proof.context -> (@{ParaT_args} @{AllT_args} GClusters.L.container,
+      GClusters.GCS.state Seq.seq) cat
+end
+
+functor Zippy_Lists_Goals_Results_Top_Meta_Vars_Mixin(
+    structure Z : ZIPPY_LISTS
+    structure Goals_Results_Top_Meta_Vars : ZIPPY_GOALS_RESULTS_TOP_META_VARS_MIXIN_BASE
+    sharing type Goals_Results_Top_Meta_Vars.GClusters.L.container = Z.Z1.zipper
+    sharing type Goals_Results_Top_Meta_Vars.GCluster.L.container = Z.Z2.zipper
+  ) : ZIPPY_LISTS_GOALS_RESULTS_TOP_META_VARS_MIXIN =
+struct
+
+open Z Goals_Results_Top_Meta_Vars
+structure MU = Zippy_Monad_Util(M); open MU
+structure ZE = Zippy_Base_Enum(structure Z = Z; structure Co = Co)
+structure GCluster = Zippy_Goal_Cluster_Mixin(GCluster)
+structure GCluster_Results = Zippy_Goal_Results_Mixin(GCluster_Results)
+structure TMV = Zippy_Goal_Results_Top_Meta_Vars_Mixin(
+  structure Z = Z
+  structure Goal_Results_Top_Meta_Vars = Zippy_Goal_Results_Top_Meta_Vars_Mixin_Base(
+    structure Results = GCluster_Results; structure Top_Meta_Vars = Top_Meta_Vars))
+
+local open SC A Mo
+  structure LTSM = \<^eval>\<open>sfx_ParaT_nargs "Traversable"\<close>(
+    \<^eval>\<open>sfx_ParaT_nargs "List_Traversable_Trans"\<close>(
+    \<^eval>\<open>sfx_ParaT_nargs "Identity_Traversable"\<close>(
+    \<^eval>\<open>sfx_ParaT_nargs "Seq_Monad_Trans"\<close>(M))))
+in
+fun mk_statesq enum_gclusters_children ctxt z =
+  let val gcs = GClusters.L.getter z
+  in
+    if GClusters.GCS.is_finished gcs
+    then pure (Seq.single (GClusters.GCS.get_state gcs))
+    else AE.catch'
+      (get_gcluster_list_statesq enum_gclusters_children ctxt
+      >>> arr (Seq.maps
+        (fn gcluster_states => GClusters.GCS.finish_cluster_states ctxt gcluster_states gcs)))
+      (K Seq.empty) z
+  end
+and get_gcluster_list_statesq enum_gclusters_children ctxt =
+  Down1.move >>> list_container_zippers2 >>> mk_statesq_gcluster_list enum_gclusters_children ctxt
+and mk_statesq_gcluster_list enum_gclusters_children ctxt =
+  LTSM.traverse (mk_statesq_gcluster enum_gclusters_children ctxt)
+and mk_statesq_gcluster enum_gclusters_children ctxt z = z |>
+  (if TMV.may_take_more_results z
+  then
+    AE.catch'
+      (enum_gclusters_children
+        >>> (fn co => Co.repeat_step_res (K ()) (first (mk_statesq enum_gclusters_children ctxt)
+            >>> arr (fn (s, r) => Seq.append r s |> Co.continue))
+          co ((), Seq.empty))
+        >>> arr (Co.dest_res #> snd))
+      (K Seq.empty)
+    >>> arr (fn gcs_statesq => GCluster.get_state z |> Seq.single |> Seq.append gcs_statesq)
+  else arr GCluster_Results.get_states)
+end
+
+local open SC Mo A
+  fun gen_enum_zippers mk_exn down enum_children enum_child = down
+    >>> (fn z => Co.repeat_step_res (arr fst)
+      (fn (z, co) => AE.catch' (enum_child mk_exn >>> arr (Co.append co #> Co.continue))
+        (K (Co.continue co)) z)
+      (enum_children mk_exn) (z, Co.throw (mk_exn ())))
+    >>> arr (Co.dest_res #> snd)
+in
+\<^imap>\<open>\<open>{i}\<close> => \<open>
+type @{AllT_args} zipper{i} = @{AllT_args} Z{i}.zipper\<close>\<close>
+
+fun \<^imap>\<open>\<open>{i}\<close> => \<open>
+enum_df_post_children{i} mk_exn = gen_enum_zippers mk_exn Down{i}.move
+  ZE.DF_Post\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>enum_zipper
+  enum_df_post_children\<^eval>\<open>succ_mod_nzippers {i}\<close>\<close>
+where sep = "and" and start = 2 and stop = 4\<close>
+and enum_df_post_children5 mk_exn z = z |>
+  (Down5.move >>> arr (Co.enum_co (ZE.DF_Post1.enum_zipper mk_exn)))
+
+fun mk_statesq_df_post mk_exn = mk_statesq (enum_df_post_children2 mk_exn)
+end
+
+end
+

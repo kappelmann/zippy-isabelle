@@ -23,7 +23,7 @@ sig
     (@{ParaT_args} @{AllT_args} zipper * result Seq.seq, prio * result Seq.seq) Co.coroutine ->
     result Seq.seq -> @{AllT_args} presults
 
-  (** create priorities **)
+  (* create priorities *)
   val mk_prio_res_co : (@{ParaT_args} @{AllT_args} zipper * result Seq.seq, prio) Co.coroutine ->
     (@{ParaT_args} @{AllT_args} zipper * result Seq.seq, prio * result Seq.seq) Co.coroutine
 
@@ -65,6 +65,7 @@ fun gen_presults_from_sq aco_empty_sq mk_prio_sq_c sq =
 
 fun presults_from_sq e = gen_presults_from_sq (Co.throw e)
 
+(* create priorities *)
 fun mk_prio_res_co prio_co = (fn (z, sq) => Co.resume prio_co (z, sq)
   >>= arr (fn (p, prio_co) => ((p, sq), mk_prio_res_co prio_co)))
   |> Co.coroutine

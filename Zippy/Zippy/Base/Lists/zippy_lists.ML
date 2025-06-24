@@ -35,16 +35,10 @@ sig
     (@{ParaT_args} @{AllT_args} Z{i}.zipper, @{AllT_args} Z{i}.zipper) Co.coroutine) cat\<close>\<close>
 
   (* containers *)
-  (*TODO: double check usages of below stuff*)
+  (*respects the order of goal clusters for Z2*)
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   val list_container_zippers{i} :
     (@{ParaT_args} @{AllT_args} Z{i}.zipper, @{AllT_args} Z{i}.zipper list) cat\<close>\<close>
-
-  (*TODO: remove?*)
-  val fold_newest_first : ('a -> (@{ParaT_args} 'b) hom_move) -> 'a list ->
-    (@{ParaT_args} 'b) hom_move
-  val fold_oldest_first : ('a -> (@{ParaT_args} 'b) hom_move) -> 'a list ->
-    (@{ParaT_args} 'b) hom_move
 end
 
 functor Zippy_Lists(
@@ -87,28 +81,14 @@ fun enum_zipper{i} x = x |> (first{i} >>> arr (rpair (Co.enum' next{i})))
 \<close>\<close>
 
 (* containers *)
-fun list_container_zippers unzip first next =
-  let fun build acc = AE.catch' (fn z => next z >>= build acc >>= arr (cons z)) (arr single)
-  in unzip >>> first >>> build [] end
-
+local
+  fun list_container_zippers unzip first next =
+    let fun build acc = AE.catch' (fn z => next z >>= build acc >>= arr (cons z)) (arr single)
+    in unzip >>> first >>> build [] end
+in
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 fun list_container_zippers{i} x = list_container_zippers Z{i}.ZM.Unzip.move first{i} next{i} x\<close>\<close>
-
-(*invariant: operations add new node to the front of the lists*)
-val fold_newest_first = ZB.LF.foldlM
-val fold_oldest_first = ZB.LF.foldrM
-
-(*TODO*)
-(* fun list_promising_zipper5_gclusters_children z = Down5.move z >>= ZL.list_container_zippers1
-\<^imap>\<open>\<open>{i}\<close> => \<open>
-and list_promising_zipper{i}_gclusters_children x = x |>
-  (Down{i}.move
-  >>> ZL.list_container_zippers\<^eval>\<open>succ_mod_nzippers {i}\<close>
-  >>> ZB.LT.traverse (AE.catch'
-    list_promising_zipper\<^eval>\<open>succ_mod_nzippers {i}\<close>_gclusters_children (A.K []))
-  >>> arr List.concat)\<close> *)
-(* where start = 2 and stop = 4\<close> *)
-
+end
 end
 
 end

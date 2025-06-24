@@ -5,6 +5,5 @@ theory Zippy_Actions_Base
 begin
 
 ML_file\<open>zippy_action_result.ML\<close>
-ML_file\<open>zippy_action_app_num.ML\<close>
 
 end

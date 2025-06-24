@@ -8,8 +8,8 @@ sig
 
   type @{AllT_args} node_gc
   val init_state : (@{ParaT_args} GClusters.GCS.gclusters, @{AllT_args} GClusters.L.container) cat ->
-    (GCluster.GC.gcluster -> @{AllT_args} node_gc) ->
-    (@{ParaT_args} GClusters.GCS.state, Tac.GPU.focus_update * @{AllT_args} GClusters.L.container) cat
+    (GCluster.GC.gcluster -> @{AllT_args} node_gc) -> (@{ParaT_args} GClusters.GCS.state,
+      Tac.GPU.focus_update * @{AllT_args} GClusters.L.container) cat
 end
 
 functor Zippy_Lists_Goals_Tactic_Mixin(

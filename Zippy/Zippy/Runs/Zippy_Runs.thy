@@ -1,6 +1,7 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory Zippy_Runs
   imports
+    Zippy_Action_Applications
     Zippy_Actions
     Zippy_Lists_Goals
     Zippy_Lists_Positions

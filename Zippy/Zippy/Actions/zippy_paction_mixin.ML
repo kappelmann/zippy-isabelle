@@ -4,7 +4,7 @@
 signature ZIPPY_PACTION_MIXIN =
 sig
   include ZIPPY_PACTION_MIXIN_BASE
-  structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION_REPEAT"\<close>
+  structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
   sharing type AE.K.M.t = M.t
 
   val no_action : @{ParaT_args encl = "(" ")"} AE.exn -> @{AllT_args} action
@@ -19,7 +19,7 @@ end
 
 functor Zippy_PAction_Mixin(
     structure PAction : ZIPPY_PACTION_MIXIN_BASE
-    structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION_REPEAT"\<close>
+    structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
     sharing type AE.K.M.t = PAction.M.t
   ) : ZIPPY_PACTION_MIXIN =
 struct

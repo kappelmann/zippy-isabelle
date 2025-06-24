@@ -16,16 +16,15 @@ sig
 
   (* action cluster *)
   val cons_action_cluster : Zippy.NCo3.Meta.Meta.metadata ->
-    ((Zippy.Tac.GPU.F.focus ->
-      (@{ParaT_args} @{AllT_args} Zippy.Z3.zipper, @{AllT_args} Zippy.Z4.zipper) Zippy.cat)
-      * Zippy.Tac.GPU.F.focus) list ->
+    (Zippy.NCo4.Goal_Focus.F.focus * (Zippy.NCo4.Goal_Focus.F.focus ->
+      (@{ParaT_args} @{AllT_args} Zippy.Z3.zipper, @{AllT_args} Zippy.Z4.zipper) Zippy.cat)) list ->
     (@{ParaT_args} @{AllT_args} Zippy.Z2.zipper, @{AllT_args} Zippy.Z3.zipper) Zippy.cat
 
   (* presults *)
   val cons_presults_action :
     (Zippy.NCo4.PResults.result * @{AllT_args} Zippy.NCo4.PResults.presults ->
        @{AllT_args} Zippy.NCo4.PAction.action) ->
-    Zippy.NCo4.Meta.Meta.metadata -> Zippy.Tac.GPU.F.focus ->
+    Zippy.NCo4.Meta.Meta.metadata -> Zippy.NCo4.Goal_Focus.F.focus ->
     @{AllT_args} Zippy.NCo4.PResults.presults ->
     (@{ParaT_args} @{AllT_args} Zippy.Z3.zipper, @{AllT_args} Zippy.Z4.zipper) Zippy.cat
 
@@ -46,12 +45,6 @@ sig
   val result_tail_presults_action : (@{ParaT_arg 0} -> Proof.context) ->
     Zippy.NCo4.PResults.result * @{AllT_args} Zippy.NCo4.PResults.presults ->
     @{AllT_args} Zippy.NCo4.PAction.action
-
-  (* finish *)
-  val finish_promising_gclusters_oldest_first : Proof.context ->
-    (@{ParaT_args} @{AllT_args} Zippy.Goals.GClusters.L.container, thm Seq.seq) Zippy.cat
-  val finish_promising_gclusters_newest_first : Proof.context ->
-    (@{ParaT_args} @{AllT_args} Zippy.Goals.GClusters.L.container, thm Seq.seq) Zippy.cat
 end
 
 structure Zippy_Util : ZIPPY_UTIL =
@@ -75,7 +68,7 @@ fun node2 parent_top_meta_vars gcluster = ZN.node_no_next2 exn {
   top_meta_vars = Top_Meta_Vars.TMV.init parent_top_meta_vars (GCluster.GC.get_state gcluster)}
 end
 
-local open SC Mo
+local open SC Mo A
 in
 (* initialisation *)
 fun init_thm_state state = state |>
@@ -90,7 +83,7 @@ fun cons_action_cluster meta =
 (* presults *)
 fun cons_presults_action result_tail_presults_action meta focus presults =
   let val n = {presults = presults,
-    action_app_num = NCo4.ActionAN.AAN.init,
+    action_app_num = NCo4.Action_App_Num.AANum.init,
     focus = focus,
     paction = NCo4.PAction_PResults.paction_from_presults exn result_tail_presults_action,
     meta = meta}
@@ -99,13 +92,13 @@ fun cons_presults_action result_tail_presults_action meta focus presults =
 fun cons_action_application_result prio result z =
   let
     val result_meta = Tac.get_more result
-    val action_app_num = NCo4.ActionAN.L.getter z
+    val action_app_num = NCo4.Action_App_Num.L.getter z
     val focus = NCo4.Goal_Focus.L.getter z
     val n = {action_app_num = action_app_num, focus = focus, prio = prio, result_meta = result_meta}
   in ZL.cons_content_move_safe4 exn n z end
 
 fun update_tail_presults presults z = L.set_modify NCo4.PResults.L.modifier (presults, z)
-  |> NCo4.ActionAN.inc_action_app_num
+  |> NCo4.Action_App_Num.inc_action_app_num
 
 fun init_result_copy_parents prio result z =
   let fun set_next5 n z = L.set_modify ZN.Node_Next5.modifier (pure n, z)
@@ -123,33 +116,7 @@ fun update_result get_ctxt prio result = init_result_copy_parents prio result >>
   >>> Up1.move >>> arr NCo4.PAction.AResult.Expand
 
 fun result_tail_presults_action get_ctxt = NCo4.PAction_PResults.result_tail_presults_action
-  (K (fn presults => arr (update_tail_presults presults))) (update_result get_ctxt)
-
-(* finish *)
-fun list_promising_zipper5_gclusters_children z =
-  arr NCo5.Result_Meta.Progress.getter z
-  >>= (fn progress => (if progress = Zippy_Tactic_Result_Progress.Promising
-    then Down5.move z >>= ZL.list_container_zippers1
-    else pure []))
-\<^imap>\<open>\<open>{i}\<close> => \<open>
-and list_promising_zipper{i}_gclusters_children x = x |>
-  (Down{i}.move
-  >>> ZL.list_container_zippers\<^eval>\<open>succ_mod_nzippers {i}\<close>
-  >>> ZB.LT.traverse (AE.catch'
-    list_promising_zipper\<^eval>\<open>succ_mod_nzippers {i}\<close>_gclusters_children (A.K []))
-  >>> arr List.concat)\<close>
-where start = 2 and stop = 4\<close>
-
-local
-  fun finish_gclusters x = LGoals.finish_gclusters_fold list_promising_zipper2_gclusters_children x
-  fun apply_append f x acc = f x >>= arr (Seq.append acc)
-  fun fold_newest_first_append f = ZL.fold_newest_first (apply_append f)
-  fun fold_oldest_first_append f = ZL.fold_oldest_first (apply_append f)
-in
-fun finish_promising_gclusters_oldest_first x = finish_gclusters fold_oldest_first_append x
-fun finish_promising_gclusters_newest_first x = finish_gclusters fold_newest_first_append x
-end
-
+  (Library.K (fn presults => arr (update_tail_presults presults))) (update_result get_ctxt)
 end
 
 end

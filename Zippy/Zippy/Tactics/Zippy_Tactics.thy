@@ -14,9 +14,4 @@ ML_file\<open>zippy_goals_tactic_copy_mixin.ML\<close>
 
 ML_file\<open>zippy_goals_tactic_copy_paction_mixin_base.ML\<close>
 
-ML_file\<open>zippy_tactic_result_progress.ML\<close>
-ML_file\<open>zippy_tactic_result_metadata.ML\<close>
-ML_file\<open>zippy_tactic_result_metadata_mixin_base.ML\<close>
-ML_file\<open>zippy_tactic_result_metadata_mixin.ML\<close>
-
 end

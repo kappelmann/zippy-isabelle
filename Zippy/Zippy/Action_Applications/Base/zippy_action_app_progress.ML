@@ -1,7 +1,7 @@
-(*  Title:      Zippy/zippy_tactic_result_progress.ML
+(*  Title:      Zippy/zippy_action_app_progress.ML
     Author:     Kevin Kappelmann
 *)
-signature ZIPPY_TACTIC_RESULT_PROGRESS =
+signature ZIPPY_ACTION_APP_PROGRESS =
 sig
   datatype progress = Promising | Unclear
   val promising : progress
@@ -9,7 +9,7 @@ sig
   val pretty : progress -> Pretty.T
 end
 
-structure Zippy_Tactic_Result_Progress : ZIPPY_TACTIC_RESULT_PROGRESS =
+structure Zippy_Action_App_Progress : ZIPPY_ACTION_APP_PROGRESS =
 struct
 
 datatype progress = Promising | Unclear

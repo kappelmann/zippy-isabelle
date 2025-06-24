@@ -7,5 +7,6 @@ begin
 
 ML_file\<open>zippy_lists_goals_mixin.ML\<close>
 ML_file\<open>zippy_lists_goals_results_mixin.ML\<close>
+ML_file\<open>zippy_lists_goals_results_top_meta_vars_mixin.ML\<close>
 
 end

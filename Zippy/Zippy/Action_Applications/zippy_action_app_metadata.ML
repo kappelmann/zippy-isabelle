@@ -1,9 +1,9 @@
-(*  Title:      Zippy/zippy_tactic_result_metadata.ML
+(*  Title:      Zippy/zippy_action_app_metadata.ML
     Author:     Kevin Kappelmann
 *)
-signature ZIPPY_TACTIC_RESULT_METADATA =
+signature ZIPPY_ACTION_APP_METADATA =
 sig
-  type progress = Zippy_Tactic_Result_Progress.progress
+  type progress = Zippy_Action_App_Progress.progress
 
   type metadata
   val metadata : progress -> metadata
@@ -18,10 +18,10 @@ sig
   val add : metadata * metadata -> metadata
 end
 
-structure Zippy_Tactic_Result_Metadata : ZIPPY_TACTIC_RESULT_METADATA =
+structure Zippy_Action_App_Metadata : ZIPPY_ACTION_APP_METADATA =
 struct
 
-type progress = Zippy_Tactic_Result_Progress.progress
+type progress = Zippy_Action_App_Progress.progress
 
 datatype metadata = Metadata of {
   progress : progress
@@ -31,7 +31,7 @@ fun metadata progress = Metadata {progress = progress}
 fun eq_metadata (m1 as Metadata {progress = progress1}, m2 as Metadata {progress = progress2}) =
   pointer_eq (m1, m2) orelse progress1 = progress2
 fun pretty_metadata (Metadata {progress}) = SpecCheck_Show_Base.record [
-    ("progress", Zippy_Tactic_Result_Progress.pretty progress)
+    ("progress", Zippy_Action_App_Progress.pretty progress)
   ]
 
 structure L = \<^eval>\<open>sfx_ParaT_nargs "SLens_Kleisli_Identity"\<close>
@@ -45,7 +45,7 @@ struct
   fun lens _ = L.mk_lens getter modifier
 end
 
-local open Zippy_Tactic_Result_Progress
+local open Zippy_Action_App_Progress
 in
 fun add (md1, md2) =
   let val progress =

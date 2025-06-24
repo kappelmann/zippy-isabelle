@@ -29,13 +29,10 @@ structure MEU = Zippy_Monad_Exception_Util(ME)
 (* misc *)
 structure Co = \<^eval>\<open>sfx_ParaT_nargs "Coroutine_Util"\<close>(
   structure AE = MEU.AE; structure Co = \<^eval>\<open>sfx_ParaT_nargs "Coroutine"\<close>(MEU.A))
-
 structure Tac = Standard_Zippy_ZTactic
-
 val exn : @{ParaT_args encl = "(" ")"} MEU.AE.exn = ()
 
 (* construction *)
-
 local
   (** node content base data **)
   @{record (struct) Node_Co_Base1 NODE_CO_BASE1 [gclusters, results]}
@@ -55,11 +52,11 @@ local
   structure GResults = Zippy_Goal_Results
   type copy_update_data = Tac.GPU.focus_update
   structure ACMeta = Zippy_Action_Cluster_Metadata
-  structure TRMeta = Zippy_Tactic_Result_Metadata
-  type result = TRMeta.metadata Tac.result
   structure AResult = Zippy_Action_Result
-  structure AAN = Zippy_Action_App_Num
   structure AMeta = Zippy_Action_Metadata
+  structure AANum = Zippy_Action_App_Num
+  structure AAMeta = Zippy_Action_App_Metadata
+  type result = AAMeta.metadata Tac.result
   structure GF = Standard_Zippy_Goal_Focus
 
   (*** create recursive datatypes ***)
@@ -81,10 +78,10 @@ local
 
       (@{AllT_args} copy, ACMeta.metadata) Node_Co_Base3.data,
 
-      (@{AllT_args} paction, @{AllT_args} presults, AAN.action_app_num, GF.focus, AMeta.metadata)
+      (@{AllT_args} paction, @{AllT_args} presults, AANum.action_app_num, GF.focus, AMeta.metadata)
         Node_Co_Base4.data,
 
-      (AAN.action_app_num, GF.focus, prio, TRMeta.metadata) Node_Co_Base5.data
+      (AANum.action_app_num, GF.focus, prio, AAMeta.metadata) Node_Co_Base5.data
     ) Z{i}.zipper
   \<close> where sep = "and"\<close>
   end
@@ -92,9 +89,9 @@ local
   type @{AllT_args} inst2 = (GC.gcluster, GResults.results,
     Top_Meta_Vars.top_meta_vars) Node_Co_Base2.data
   type @{AllT_args} inst3 = (@{AllT_args} copy, ACMeta.metadata) Node_Co_Base3.data
-  type @{AllT_args} inst4 = (@{AllT_args} paction, @{AllT_args} presults, AAN.action_app_num,
+  type @{AllT_args} inst4 = (@{AllT_args} paction, @{AllT_args} presults, AANum.action_app_num,
     GF.focus, AMeta.metadata) Node_Co_Base4.data
-  type @{AllT_args} inst5 = (AAN.action_app_num, GF.focus, prio, TRMeta.metadata) Node_Co_Base5.data
+  type @{AllT_args} inst5 = (AANum.action_app_num, GF.focus, prio, AAMeta.metadata) Node_Co_Base5.data
 in
 
 (*** instantiate data in alternating zipper skeleton ***)
@@ -171,6 +168,8 @@ structure ZB = Zippy_Base(structure Z = ZL; structure AE = MEU.AE)
 structure ZE = Zippy_Base_Enum(structure Z = ZL; structure Co = Co)
 structure ZS = Zippy_State_Mixin(open ZL; structure MS = MS)
 local structure Z : ZIPPY_BASE_BASE = ZB in open Z end
+
+(*** container constructors ***)
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 val container{i} : @{AllT_args} ZP.ZGPos.Z{i}.ZM.container ->
   @{AllT_args} ZP.ZLPos.Z{i}.ZM.container ->
@@ -254,6 +253,10 @@ structure Goals_Results = Zippy_Goals_Results_Mixin_Base(open Goals
   structure GCluster_Results = NCo2.Results)
 structure LGoals_Results = Zippy_Lists_Goals_Results_Mixin(
   structure Z = ZL; structure Goals_Results = Goals_Results)
+structure LGoals_Results_TMV = Zippy_Lists_Goals_Results_Top_Meta_Vars_Mixin(
+  structure Z = ZL
+  structure Goals_Results_Top_Meta_Vars = Zippy_Goals_Results_Top_Meta_Vars_Mixin_Base(
+    open Goals_Results; structure Top_Meta_Vars = NCo2.Top_Meta_Vars))
 
 (*** action clusters ***)
 local structure Base =
@@ -330,10 +333,10 @@ struct
   structure PAction_PResults = Zippy_PAction_PResults_Mixin(Zippy_PAction_PResults_Mixin_Base(
     structure PResults = PResults; structure PAction = PAction))
 
-  structure ActionAN = Zippy_Action_App_Num_Mixin(Zippy_Action_App_Num_Mixin_Base(
-    structure AAN = AAN
+  structure Action_App_Num = Zippy_Action_App_Num_Mixin(Zippy_Action_App_Num_Mixin_Base(
+    structure AANum = AANum
     structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = AAN.action_app_num
+      type @{AllT_args} data = AANum.action_app_num
       fun lens _ = mk_lens NCB.get_action_app_num NCB.map_action_app_num)))
 
   structure Goal_Focus = Zippy_Goal_Focus_Mixin_Base(
@@ -369,10 +372,10 @@ in
 structure NCo5 =
 struct
   structure CB = Base.NCB
-  structure ActionAN = Zippy_Action_App_Num_Mixin(Zippy_Action_App_Num_Mixin_Base(
-    structure AAN = AAN
+  structure Action_App_Num = Zippy_Action_App_Num_Mixin(Zippy_Action_App_Num_Mixin_Base(
+    structure AANum = AANum
     structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = AAN.action_app_num
+      type @{AllT_args} data = AANum.action_app_num
       fun lens _ = mk_lens NCB.get_action_app_num NCB.map_action_app_num)))
 
   structure Goal_Focus = Zippy_Goal_Focus_Mixin_Base(
@@ -388,11 +391,12 @@ struct
         type @{AllT_args} data = prio
         fun lens _ = mk_lens NCB.get_prio NCB.map_prio))
 
-  structure Result_Meta = Zippy_Tactic_Result_Metadata_Mixin(Zippy_Tactic_Result_Metadata_Mixin_Base(
-    structure Meta = TRMeta
+  structure Meta = Zippy_Action_App_Metadata_Mixin(Zippy_Action_App_Metadata_Mixin_Base(
+    structure Meta = AAMeta
     structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
       type @{AllT_args} data = Meta.metadata
       fun lens _ = mk_lens NCB.get_result_meta NCB.map_result_meta)))
+  structure EMeta = Zippy_Enum_Action_App_Metadata_Mixin(structure Z = ZE; structure Meta = Meta)
 end
 end
 end
@@ -417,8 +421,9 @@ structure LGTCP = Zippy_Lists_Goals_Tactic_Copy_PAction_Mixin(
 structure Runs = Zippy_Runs_Mixin(
   structure Z = struct open ZL; structure ZP = ZP end
   structure Co = Co
-  structure Runs = Zippy_Runs_Mixin_Base(open Goals_Results
-    structure Top_Meta_Vars = NCo2.Top_Meta_Vars; structure PAction_Queue = PAction_Queue)
+  structure Runs = Zippy_Runs_Mixin_Base(open LGoals_Results_TMV
+    structure PAction_Queue = PAction_Queue
+    structure Action_App_Meta = NCo5.Meta)
   val mk_exn = Library.K exn)
 structure SRuns = Zippy_State_Runs_Mixin(
   structure Z = struct open ZL; structure ZP = ZP; structure ZS = ZS end
@@ -458,7 +463,7 @@ structure NCo4 =
 struct
   open NCo4
   fun pretty n = Show.record [
-    ("Action application number", ActionAN.AAN.pretty (ActionAN.L.getter n)),
+    ("Action application number", Action_App_Num.AANum.pretty (Action_App_Num.L.getter n)),
     ("Focus", Goal_Focus.F.pretty (Goal_Focus.L.getter n)),
     ("Metadata", Meta.Meta.pretty_metadata (Meta.L.getter n))
   ]
@@ -467,10 +472,10 @@ structure NCo5 =
 struct
   open NCo5
   fun pretty (pretty_prio : prio Show.show) n = Show.record [
-    ("Action application number", ActionAN.AAN.pretty (ActionAN.L.getter n)),
+    ("Action application number", Action_App_Num.AANum.pretty (Action_App_Num.L.getter n)),
     ("Focus", Goal_Focus.F.pretty (Goal_Focus.L.getter n)),
     ("Priority", pretty_prio (Prio.L.getter n)),
-    ("Result Metadata", Result_Meta.Meta.pretty_metadata (Result_Meta.L.getter n))
+    ("Metadata", Meta.Meta.pretty_metadata (Meta.L.getter n))
   ]
 end
 end

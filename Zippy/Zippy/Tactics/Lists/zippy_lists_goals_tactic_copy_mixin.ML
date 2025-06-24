@@ -5,7 +5,7 @@ signature ZIPPY_LISTS_GOALS_TACTIC_COPY_MIXIN =
 sig
   include ZIPPY_GOALS_TACTIC_COPY_MIXIN_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
-  structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION_REPEAT"\<close>
+  structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
   sharing type AE.K.M.t = M.t
 
   (* init result *)

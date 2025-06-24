@@ -5,8 +5,7 @@ signature ZIPPY_LISTS_GOALS_TACTIC_COPY_PACTION_MIXIN =
 sig
   include ZIPPY_GOALS_TACTIC_COPY_PACTION_MIXIN_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
-
-  structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION_REPEAT"\<close>
+  structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
   sharing type AE.K.M.t = M.t
 
   (* add actions *)
@@ -24,10 +23,9 @@ sig
   val cons_action_cluster : @{ParaT_args encl = "(" ")"} AE.exn ->
     (*create node content*)
     (@{AllT_args} Copy.copy -> @{AllT_args} node_co) ->
-    (*list of pairs of actions to add and initial focus*)
-    ((Tac.GPU.F.focus ->
-      (@{ParaT_args} @{AllT_args} Copy.zipper_from, @{AllT_args} PAction.zipper) cat)
-      * Tac.GPU.F.focus) list ->
+    (*list of pairs of initial focus and actions to add*)
+    (Tac.GPU.F.focus * (Tac.GPU.F.focus ->
+      (@{ParaT_args} @{AllT_args} Copy.zipper_from, @{AllT_args} PAction.zipper) cat)) list ->
     (@{ParaT_args} @{AllT_args} GCluster.L.container, @{AllT_args} Copy.zipper_from) cat
 end
 
@@ -49,14 +47,14 @@ structure ZLG = Zippy_Lists_Goals_Mixin(structure Z = Z; structure Goals = GTCP)
 structure ZB = Zippy_Base(structure Z = Z; structure AE = AE)
 structure GTC = Zippy_Goals_Tactic_Copy_Mixin(GTCP)
 
-local open SC ZB
+local open SC
 in
 (* add actions *)
 fun add_actions add_actions =
-  LF.foldlM (fn add_action => AE.try (add_action >>> Z.Up4.move)) add_actions
+  ZB.LF.foldlM (fn add_action => AE.try (add_action >>> Z.Up4.move)) add_actions
 
 (* add action clusters *)
-fun add_action_clusters add_action_cluster = LF.foldlM
+fun add_action_clusters add_action_cluster = ZB.LF.foldlM
   (fn (cpos, x) => ZLG.move_cpos cpos
     >>> AE.try (add_action_cluster x >>> Up3.move)
     >>> Up2.move)
@@ -64,10 +62,10 @@ fun add_action_clusters add_action_cluster = LF.foldlM
 type @{AllT_args} node_co = @{AllT_args} ZN.N3.content
 fun cons_action_cluster exn mk_node add_action_focus_list =
   let
-    fun init_copy cud _ = GTC.apply_copy_update_data_focus_list cud add_action_focus_list
+    fun init_copy cud _ = GTC.focus_list_apply_copy_update_data cud add_action_focus_list
       |> add_action_clusters (cons_action_cluster exn mk_node)
     val copy = Copy.copy init_copy
-    val add_actions = add_actions (List.map (fn (f, x) => f x) add_action_focus_list)
+    val add_actions = add_actions (List.map (fn (x, f) => f x) add_action_focus_list)
   in cons_content_move_safe2 exn (mk_node copy) >>> add_actions end
 
 end

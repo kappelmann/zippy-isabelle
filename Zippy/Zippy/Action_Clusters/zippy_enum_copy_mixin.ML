@@ -4,7 +4,7 @@
 signature ZIPPY_ENUM_COPY_MIXIN =
 sig
   include ZIPPY_COPY_MIXIN_BASE
-  structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION_REPEAT"\<close>
+  structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
   sharing type AE.K.M.t = M.t
 
   val copy_parents : (unit -> @{ParaT_args encl = "" ""} AE.exn) ->
