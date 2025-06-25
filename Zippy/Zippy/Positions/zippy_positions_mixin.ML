@@ -32,15 +32,15 @@ end
 
 functor Zippy_Positions_Mixin(
     structure Z : ZIPPY_POSITIONS_MIXIN_BASE
-    structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
-    sharing type AE.K.M.t = Z.M.t
+    structure Exn : ZIPPY_EXCEPTION_MIXIN
+    sharing type Exn.M.t = Z.M.t
   ) : ZIPPY_POSITIONS_MIXIN =
 struct
 
 open Z
 structure MU = Zippy_Monad_Util(Z.M); open MU
 structure Path_ZLPos = \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Path_Local_Position_Zipper"\<close>(
-  structure Z = Z.ZLPos; structure AE = AE)
+  structure Z = Z.ZLPos; structure AE = Exn.AE)
 structure Path_Util = \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Path_Util"\<close>(Z); open Path_Util
 
 local open Mo

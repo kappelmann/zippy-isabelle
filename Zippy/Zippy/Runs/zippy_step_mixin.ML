@@ -1,10 +1,11 @@
-(*  Title:      Zippy/zippy_runs_mixin.ML
+(*  Title:      Zippy/zippy_step_mixin.ML
     Author:     Kevin Kappelmann
 *)
-signature ZIPPY_RUNS_MIXIN =
+signature ZIPPY_STEP_MIXIN =
 sig
-  include ZIPPY_RUNS_MIXIN_BASE
+  include ZIPPY_STEP_MIXIN_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  sharing type M.t = PAction_Queue.PAction.M.t
 
   val move_entry_if_may_take_more_results : @{AllT_args} PAction_Queue.entry ->
     (@{ParaT_args} @{AllT_args} GClusters.L.container,
@@ -38,30 +39,30 @@ sig
       * @{AllT_args} PAction_Queue.queue) cat
 end
 
-functor Zippy_Runs_Mixin(
+functor Zippy_Step_Mixin(
     structure Z : ZIPPY_LISTS_POSITIONS_MIXIN_BASE
-    structure Co : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL"\<close>
-    where type (@{ParaT_args} 'a, 'b) C.cat = (@{ParaT_args} 'a, 'b) Z.cat
-    sharing type Co.AE.exn = Z.ZN_AZ2.L.M.exn
-    structure Runs : ZIPPY_RUNS_MIXIN_BASE
-    sharing type Runs.GClusters.L.container = Z.Z1.zipper
-    sharing type Runs.GCluster.L.container = Z.Z2.zipper
-    sharing type Runs.PAction_Queue.PAction.zipper_trim = Z.Z1.zipper
-    sharing type Runs.PAction_Queue.PAction.zipper = Z.Z4.zipper
-    sharing type Runs.PAction_Queue.PAction.zipper_expand = Z.Z5.zipper
-    sharing type Runs.PAction_Queue.PAction.M.t = Z.M.t
-    val mk_exn : (unit -> @{ParaT_args encl = "" ""} Co.AE.exn)
-  ) : ZIPPY_RUNS_MIXIN =
+    structure Step : ZIPPY_STEP_MIXIN_BASE
+    sharing type Step.GClusters.L.container = Z.Z1.zipper
+    sharing type Step.GCluster.L.container = Z.Z2.zipper
+    sharing type Step.PAction_Queue.PAction.zipper_trim = Z.Z1.zipper
+    sharing type Step.PAction_Queue.PAction.zipper = Z.Z4.zipper
+    sharing type Step.PAction_Queue.PAction.zipper_expand = Z.Z5.zipper
+    sharing type Step.PAction_Queue.PAction.M.t = Z.M.t
+    structure Co : ZIPPY_COROUTINE_MIXIN_BASE
+    sharing type Co.M.t = Z.M.t
+    val mk_exn : (unit -> @{ParaT_args encl = "" ""} Co.ME.exn)
+  ) : ZIPPY_STEP_MIXIN =
 struct
 
-open Runs Z
+open Step Z
 structure MU = Zippy_Monad_Util(M); open MU
-structure ZL = Zippy_Lists(structure Z = Z; structure Co = Co); open ZL
-structure ZB = Zippy_Base(structure Z = Z; structure AE = AE)
-structure ZE = Zippy_Base_Enum(structure Z = Z; structure Co = Co)
-structure ZP = Zippy_Positions_Mixin(structure Z = ZP; structure AE = AE)
+structure ZL = Zippy_Lists(structure Z = Z; structure Co = Co)
+structure Exn = Zippy_Exception_Mixin(Co)
+structure ZB = Zippy_Base(structure Z = Z; structure Exn = Exn)
+structure ZE = Zippy_Enum_Mixin(open Z; structure Co = Co)
+structure ZP = Zippy_Positions_Mixin(structure Z = ZP; structure Exn = Exn)
 structure LGoals_Results = Zippy_Lists_Goals_Results_Mixin(
-  structure Z = ZL; structure Goals_Results = Runs)
+  structure Z = ZL; structure Goals_Results = Step)
 structure PAction_Queue = Zippy_PAction_Queue_Mixin(
   structure Z = ZE; structure PAction_Queue = PAction_Queue; val mk_exn = mk_exn)
 structure TMV = Zippy_Goal_Results_Top_Meta_Vars_Mixin(

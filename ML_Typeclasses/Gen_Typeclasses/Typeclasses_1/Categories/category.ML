@@ -11,6 +11,7 @@ infix 1 &&&
 
 signature \<^eval>\<open>sfx_ParaT_nargs "SEMICATEGORY_BASE"\<close> =
 sig
+  (*TODO: rename to morph + add emorph + remove moves*)
   type (@{ParaT_args} 'a, 'b) cat
   val comp : (@{ParaT_args} 'b, 'c) cat -> (@{ParaT_args} 'a, 'b) cat -> (@{ParaT_args} 'a, 'c) cat
 end

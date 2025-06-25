@@ -5,8 +5,8 @@ Indexed state monads; adapted from Haskell's mtl package.
 *)
 signature \<^eval>\<open>sfx_ParaT_nargs "IMONAD_STATE_BASE"\<close> =
 sig
-  structure SR : STATE_RESULT_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "IMONAD_BASE"\<close>
+  structure SR : STATE_RESULT_BASE
   val state : ('si -> ('so, 'a) SR.result) -> (@{ParaT_args} 'si, 'so, 'a) t
   val get : unit -> (@{ParaT_args} 's, 's, 's) t
   val put : 'so -> (@{ParaT_args} 'si, 'so, unit) t
@@ -115,12 +115,33 @@ functor \<^eval>\<open>sfx_ParaT_nargs "IMonad_Exception_State_Trans"\<close>(
     where type (@{ParaT_args} 'i, 'j, 'a) t = (@{ParaT_args} 'i, 'j, 'a) S.t
   =
 struct
-
 open M
 fun throw e = S.lift (M.throw e)
 fun catch m f s = M.catch (m s) (fn e => f e s)
 open S
+end
 
+functor \<^eval>\<open>sfx_ParaT_nargs "IMonad_State_State_Trans"\<close>(A :
+  sig
+    structure M : \<^eval>\<open>sfx_ParaT_nargs "MONAD_STATE_BASE"\<close>
+    structure S : \<^eval>\<open>sfx_ParaT_nargs "ISTATE_TRANS"\<close>
+    sharing type S.M.t = M.t
+    type ParaT
+  end
+  ) :
+    (*note: not an indexed monad; the state type of S is stored into the parameters types of M while
+    the parameter types of S are passed as an argument ParaT*)
+    \<^eval>\<open>sfx_ParaT_nargs "MONAD_STATE_BASE"\<close>
+    where type (@{ParaT_args} 'a) t = (A.ParaT, @{ParaT_arg 0}, @{ParaT_arg 0}, 'a) A.S.t
+  =
+struct
+open A A.M
+open S
+type (@{ParaT_args} 'a) t = (A.ParaT, @{ParaT_arg 0}, @{ParaT_arg 0}, 'a) A.S.t
+structure SR = A.M.SR
+fun state fs = S.lift (A.M.state fs)
+fun get _ = S.lift (A.M.get ())
+fun put s = S.lift (A.M.put s)
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "IARROW_STATE_BASE"\<close> =

@@ -1,8 +1,9 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory Zippy_Lists_Base
   imports
-    Zippy_Base
     ML_Zipper_Instances
+    Zippy_Enums
+    Zippy_Nodes
 begin
 
 ML_file\<open>zippy_lists_base.ML\<close>

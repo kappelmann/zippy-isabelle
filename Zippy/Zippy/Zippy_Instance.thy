@@ -10,7 +10,10 @@ begin
 ML_file\<open>zippy_instance.ML\<close>
 
 ML\<open>
-  structure Zippy = Zippy_Instance(type prio = Prio.prio; val prio_ord = Prio.ord)
+  @{functor_instance struct_name = Zippy
+    and functor_name = Zippy_Instance
+    and id = \<open>""\<close>
+    and more_args = \<open>type prio = Prio.prio; val prio_ord = Prio.ord\<close>}
   structure Zippy = struct open Zippy; structure Prio = Prio end
 \<close>
 

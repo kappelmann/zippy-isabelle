@@ -12,17 +12,17 @@ sig
   (* priorities *)
   val with_halve_prio_depth_res_co :
     (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper * Zippy.NCo4.PResults.result Seq.seq,
-      Zippy.Prio.prio * Zippy.NCo4.PResults.result Seq.seq) Zippy.Co.coroutine ->
+      Zippy.Prio.prio * Zippy.NCo4.PResults.result Seq.seq) Zippy.Co.Co.coroutine ->
     (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper * Zippy.NCo4.PResults.result Seq.seq,
-      Zippy.Prio.prio * Zippy.NCo4.PResults.result Seq.seq) Zippy.Co.coroutine
+      Zippy.Prio.prio * Zippy.NCo4.PResults.result Seq.seq) Zippy.Co.Co.coroutine
   (*halves the priorities with each pull of a result*)
   val enum_halve_prio_depth_res_co : (@{ParaT_args} Zippy.Prio.prio) Zippy.hom_move ->
     Zippy.Prio.prio ->
     (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper * Zippy.NCo4.PResults.result Seq.seq,
-      Zippy.Prio.prio * Zippy.NCo4.PResults.result Seq.seq) Zippy.Co.coroutine
+      Zippy.Prio.prio * Zippy.NCo4.PResults.result Seq.seq) Zippy.Co.Co.coroutine
   val halve_prio_halve_prio_depth_res_co : Zippy.Prio.prio ->
     (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper * Zippy.NCo4.PResults.result Seq.seq,
-      Zippy.Prio.prio * Zippy.NCo4.PResults.result Seq.seq) Zippy.Co.coroutine
+      Zippy.Prio.prio * Zippy.NCo4.PResults.result Seq.seq) Zippy.Co.Co.coroutine
 
   (* action *)
   val cons_ztactic_action :
@@ -30,7 +30,7 @@ sig
        @{AllT_args} Zippy.NCo4.PAction.action) ->
     Zippy.NCo4.Meta.Meta.metadata ->
     (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper * Zippy.NCo4.PResults.result Seq.seq,
-      Zippy.NCo4.PResults.prio * Zippy.NCo4.PResults.result Seq.seq) Zippy.Co.coroutine ->
+      Zippy.NCo4.PResults.prio * Zippy.NCo4.PResults.result Seq.seq) Zippy.Co.Co.coroutine ->
     (@{ParaT_args} Zippy.Tac.GPU.F.focus, ztactic) Zippy.cat -> Zippy.Tac.GPU.F.focus ->
     (@{ParaT_args} @{AllT_args} Zippy.Z3.zipper, @{AllT_args} Zippy.Z4.zipper) Zippy.cat
 
@@ -41,7 +41,7 @@ sig
        @{AllT_args} Zippy.NCo4.PAction.action) ->
     Zippy.NCo4.Meta.Meta.metadata ->
     (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper * Zippy.NCo4.PResults.result Seq.seq,
-      Zippy.NCo4.PResults.prio * Zippy.NCo4.PResults.result Seq.seq) Zippy.Co.coroutine ->
+      Zippy.NCo4.PResults.prio * Zippy.NCo4.PResults.result Seq.seq) Zippy.Co.Co.coroutine ->
     (@{ParaT_args} Zippy.Tac.GPU.F.focus, ztactic) Zippy.cat -> Zippy.Tac.GPU.F.focus ->
     (@{ParaT_args} @{AllT_args} Zippy.Z2.zipper, @{AllT_args} Zippy.Z3.zipper) Zippy.cat
 

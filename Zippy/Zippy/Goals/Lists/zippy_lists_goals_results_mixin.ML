@@ -1,7 +1,9 @@
 (*  Title:      Zippy/zippy_lists_goals_results_mixin.ML
     Author:     Kevin Kappelmann
 *)
-signature ZIPPY_LISTS_GOALS_RESULTS_MIXIN = sig include ZIPPY_GOALS_RESULTS_MIXIN_BASE
+signature ZIPPY_LISTS_GOALS_RESULTS_MIXIN =
+sig
+  include ZIPPY_GOALS_RESULTS_MIXIN_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
 
   (*initialise results below and including the given zipper*)
@@ -32,15 +34,17 @@ struct
 
 open Z Goals_Results
 structure MU = Zippy_Monad_Util(M); open MU
-structure ZB = Zippy_Base(structure Z = Z; structure AE = AE)
+structure Exn = Zippy_Exception_Mixin(Co)
+structure ZB = Zippy_Base(structure Z = Z; structure Exn = Exn)
 structure GClusters = Zippy_Goal_Clusters_Mixin(GClusters)
 structure GClusters_Results = Zippy_Goal_Results_Mixin(GClusters_Results)
 structure GCluster_Results = Zippy_Goal_Results_Mixin(GCluster_Results)
+structure LGoals = Zippy_Lists_Goals_Mixin(structure Z = Z; structure Goals = Goals_Results)
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 type @{AllT_args} zipper{i} = @{AllT_args} Z{i}.zipper\<close>\<close>
 
-local open SC Mo
+local open SC Mo Co Exn
   fun gen_init_goal_results_down init_goal_results_down_child enum_children up_child combine_res =
     let
       fun update_child (z, (_, results_acc)) = init_goal_results_down_child z
@@ -69,7 +73,7 @@ fun init_goal_results_down1 ctxt z =
       in
         gen_init_goal_results_down
           (init_goal_results_down2 ctxt >>> A.second (arr single))
-          (Down1.move >>> Z2.ZM.Unzip.move >>> enum_zipper2) Up2.move
+          (Down1.move >>> Z2.ZM.Unzip.move >>> LGoals.enum_gcluster) Up2.move
           (fn results => cons (the_single results)) (arr (rpair [Results.empty])) z
         >>= arr update_zipper
       end
@@ -111,7 +115,7 @@ fun update_goal_results_up1 cpos statesq ctxt z =
           (arr (with_results statesq))
     end
   in
-    Down1.move z >>= list_container_zippers2
+    Down1.move z >>= LGoals.gcluster_list
     >>= (fn zippers =>
       if Library.forall GCluster_Results.has_results zippers
       then update_results zippers

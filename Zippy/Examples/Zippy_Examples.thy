@@ -18,7 +18,7 @@ there are no more subgoals in one of the tree's branches.\<close>
 ML\<open>
 local
   open Zippy
-  open MU MEU
+  open MU
   open SC Mo A
 in
 end
@@ -32,6 +32,7 @@ schematic_goal shows "?A \<and> B" "C \<and> D"
 ML_prf\<open>open Zippy Zippy.MU.Mo\<close>
 apply (tactic \<open>fn state =>
   let
+    val with_ctxt = Ctxt.with_ctxt
     fun run _ =
       (*initialise the zipper*)
       (Util.init_thm_state state
@@ -39,28 +40,28 @@ apply (tactic \<open>fn state =>
       >>= Down1.move
       >>= Tac_Util.cons_single_ztactic_action_cluster
         (NCo3.Meta.Meta.empty @{binding cluster1})
-        (Util.result_tail_presults_action I)
+        Util.result_tail_presults_action
         (NCo4.Meta.Meta.empty @{binding action1})
         (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
-        (ZS.with_state I
+        (with_ctxt
           (Tac_Util.resolve_moved_tac Zippy_Action_App_Progress.promising @{thms cheat silly} #> arr))
         (Tac.GPU.F.Goals [1])
       >>= Up3.move
       >>= Tac_Util.cons_single_ztactic_action_cluster
         (NCo3.Meta.Meta.empty @{binding cluster2})
-        (Util.result_tail_presults_action I)
+        Util.result_tail_presults_action
         (NCo4.Meta.Meta.empty @{binding action2})
         (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
-        (ZS.with_state I (Tac_Util.cheat_tac #> arr))
+        (with_ctxt (Tac_Util.cheat_tac #> arr))
         (Tac.GPU.F.Goals [1])
       >>= Up3.move
       >>= Z2.ZM.Down.move
       >>= Tac_Util.cons_single_ztactic_action_cluster
         (NCo3.Meta.Meta.empty @{binding cluster3})
-        (Util.result_tail_presults_action I)
+        Util.result_tail_presults_action
         (NCo4.Meta.Meta.empty @{binding action3})
         (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
-        (ZS.with_state I (Tac_Util.cheat_tac #> arr))
+        (with_ctxt (Tac_Util.cheat_tac #> arr))
         (Tac.GPU.F.Goals [1])
       >>= ZB.top3
       >>= Z1.ZM.Unzip.move
@@ -68,10 +69,10 @@ apply (tactic \<open>fn state =>
       (* >>= Z1.ZM.Zip.move *)
       (* >>= Util.with_state Util.finish_promising_gclusters_oldest_first *)
       (*run best-first-search*)
-      >>= SRuns.init_repeat_step_queue I
-        (ZS.with_state I SRuns.mk_df_post_unreturned_unfinished_statesq) (SOME 0)
+      >>= Run.init_repeat_step_queue
+        (with_ctxt Run.mk_df_post_unreturned_unfinished_statesq) (SOME 0)
       )
-      |> SRuns.seq_from_monad @{context}
+      |> Run.seq_from_monad {ctxt = @{context}, state = ()}
       |> Seq.pull |> (fn sq => Seq.make (fn _ => sq))
     val (time, ressq) = Timing.timing run () |> apfst @{print}
   in
@@ -86,7 +87,7 @@ apply (tactic \<open>fn state =>
     in
       ressq
       (* |> Seq.filter SRuns.is_finished  *)
-      |> Seq.map (SRuns.get_result_data #> #thm_states) |> Seq.flat
+      |> Seq.map (Run.get_result_data #> #thm_states) |> Seq.flat
     end
   end
 \<close>)

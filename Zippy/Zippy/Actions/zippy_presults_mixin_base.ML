@@ -5,6 +5,7 @@ Prioritised results.
 *)
 signature ZIPPY_PRESULTS_MIXIN_BASE =
 sig
+  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
   type @{AllT_args} presults
   type @{AllT_args} zipper
 
@@ -14,28 +15,27 @@ sig
 
   type prio
   type result
-  structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
-  structure Co : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL"\<close>
-  where type (@{ParaT_args} 'a, 'b) C.cat = (@{ParaT_args} 'a, 'b) K.kleisli
+  structure Co : ZIPPY_COROUTINE_MIXIN_BASE
+  sharing type Co.M.t = M.t
 
-  val presults : (@{ParaT_args} @{AllT_args} zipper, prio, result) Co.acoroutine ->
+  val presults : (@{ParaT_args} @{AllT_args} zipper, prio, result) Co.Co.acoroutine ->
     @{AllT_args} presults
   val dest_presults : @{AllT_args} presults ->
-    (@{ParaT_args} @{AllT_args} zipper, prio, result) Co.acoroutine
+    (@{ParaT_args} @{AllT_args} zipper, prio, result) Co.Co.acoroutine
 end
 
 functor Zippy_PResults_Mixin_Base(A :
   sig
+    include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
     structure L : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
-    structure Co : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL"\<close>
-    where type (@{ParaT_args} 'a, 'b) C.cat = (@{ParaT_args} 'a, 'b) K.kleisli
+    structure Co : ZIPPY_COROUTINE_MIXIN_BASE
+    sharing type Co.M.t = M.t
     type prio
     type result
-    val presults : (@{ParaT_args} @{AllT_args} L.container, prio, result) Co.acoroutine ->
+    val presults : (@{ParaT_args} @{AllT_args} L.container, prio, result) Co.Co.acoroutine ->
       @{AllT_args} L.data
     val dest_presults : @{AllT_args} L.data ->
-      (@{ParaT_args} @{AllT_args} L.container, prio, result) Co.acoroutine
+      (@{ParaT_args} @{AllT_args} L.container, prio, result) Co.Co.acoroutine
   end
   ) : ZIPPY_PRESULTS_MIXIN_BASE
   =

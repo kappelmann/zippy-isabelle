@@ -119,12 +119,30 @@ functor \<^eval>\<open>sfx_ParaT_nargs "Monad_Exception_State_Trans"\<close>(
     where type (@{ParaT_args} 'a) t = (@{ParaT_args} 'a) S.t
   =
 struct
-
 open M
 fun throw e = S.lift (M.throw e)
 fun catch m f s = M.catch (m s) (fn e => f e s)
 open S
+end
 
+functor \<^eval>\<open>sfx_ParaT_nargs "Monad_State_State_Trans"\<close>(A :
+  sig
+    structure M : \<^eval>\<open>sfx_ParaT_nargs "MONAD_STATE_BASE"\<close>
+    structure S : \<^eval>\<open>sfx_ParaT_nargs "STATE_TRANS"\<close>
+    sharing type S.M.t = M.t
+  end
+  ) :
+    \<^eval>\<open>sfx_ParaT_nargs "MONAD_STATE_BASE"\<close>
+    where type (@{ParaT_args} 'a) t = (@{ParaT_args} 'a) A.S.t
+  =
+struct
+open A A.M
+open S
+structure SR = A.M.SR
+type s = A.M.s
+fun state fs = S.lift (A.M.state fs)
+fun get _ = S.lift (A.M.get ())
+fun put s = S.lift (A.M.put s)
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "ARROW_STATE_BASE"\<close> =
@@ -159,7 +177,6 @@ fun change f = access f &&& id ()
   >>> first (put ())
   >>> arr snd
 end
-
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_STATE"\<close> =
@@ -170,7 +187,7 @@ sig
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_State"\<close>(
-    structure MS : \<^eval>\<open>sfx_ParaT_nargs "MONAD_STATE_BASE"\<close>
+    MS : \<^eval>\<open>sfx_ParaT_nargs "MONAD_STATE_BASE"\<close>
   ) : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_STATE"\<close> =
 struct
 structure KA = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Apply_Base"\<close>(MS)

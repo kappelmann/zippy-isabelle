@@ -6,7 +6,7 @@ sig
   structure PAction : ZIPPY_PACTION_MIXIN_BASE
 
   structure PResults : ZIPPY_PRESULTS_MIXIN_BASE
-  sharing type PResults.K.M.t = PAction.M.t
+  sharing type PResults.M.t = PAction.M.t
   sharing type PResults.zipper = PAction.zipper
   sharing type PResults.prio = PAction.prio
 end
@@ -15,7 +15,7 @@ functor Zippy_PAction_PResults_Mixin_Base(A :
   sig
     structure PAction : ZIPPY_PACTION_MIXIN_BASE
     structure PResults : ZIPPY_PRESULTS_MIXIN_BASE
-    sharing type PResults.K.M.t = PAction.M.t
+    sharing type PResults.M.t = PAction.M.t
     sharing type PResults.zipper = PAction.zipper
     sharing type PResults.prio = PAction.prio
   end

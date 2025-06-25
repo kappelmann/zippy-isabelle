@@ -5,13 +5,13 @@ theory Zippy_Runs
     Zippy_Actions
     Zippy_Lists_Goals
     Zippy_Lists_Positions
-    Zippy_State
+    Zippy_States
 begin
 
-ML_file\<open>zippy_runs_mixin_base.ML\<close>
-ML_file\<open>zippy_runs_mixin.ML\<close>
+ML_file\<open>zippy_step_mixin_base.ML\<close>
+ML_file\<open>zippy_step_mixin.ML\<close>
 
-ML_file\<open>zippy_lists_state_positions_mixin_base.ML\<close>
-ML_file\<open>zippy_state_runs_mixin.ML\<close>
+ML_file\<open>zippy_run_mixin_base.ML\<close>
+ML_file\<open>zippy_run_mixin.ML\<close>
 
 end

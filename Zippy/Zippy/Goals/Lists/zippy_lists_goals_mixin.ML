@@ -5,6 +5,8 @@ signature ZIPPY_LISTS_GOALS_MIXIN =
 sig
   include ZIPPY_GOALS_MIXIN_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  structure Co : ZIPPY_COROUTINE_MIXIN_BASE
+  sharing type Co.M.t = M.t
 
   (* lenses *)
   type @{AllT_args} node_gc
@@ -16,6 +18,18 @@ sig
   (* movements *)
   val move_cpos : GClusters.GCS.cluster_pos ->
     (@{ParaT_args} @{AllT_args} GClusters.L.container, @{AllT_args} GCluster.L.container) cat
+
+  (* gcluster enumerations *)
+  type @{AllT_args} container_gc
+  (*returns first zipper and remaining enumeration, respecting the order of cluster positions*)
+  val enum_gcluster : (@{ParaT_args} @{AllT_args} container_gc,
+    @{AllT_args} GCluster.L.container
+    * (@{ParaT_args} @{AllT_args} GCluster.L.container, @{AllT_args} GCluster.L.container)
+      Co.Co.coroutine) cat
+
+  (*list in order of cluster positions*)
+  val gcluster_list : (@{ParaT_args} @{AllT_args} GCluster.L.container,
+    @{AllT_args} GCluster.L.container list) cat
 end
 
 functor Zippy_Lists_Goals_Mixin(
@@ -28,7 +42,8 @@ struct
 
 open Z Goals
 structure MU = Zippy_Monad_Util(M); open MU
-structure ZNU = Zippy_Node(structure Z = Z; structure AE = AE)
+structure Exn = Zippy_Exception_Mixin(Co)
+structure ZNU = Zippy_Node(structure Z = Z; structure Exn = Exn)
 
 local open SC Mo
 in
@@ -40,6 +55,11 @@ fun set_gcluster_list mk_node gcs z = List.map mk_node gcs
 
 (* movements *)
 fun move_cpos cpos = Down1.move >>> C.repeatn cpos Z2.ZM.Down.move
+
+(* gcluster enumerations *)
+type @{AllT_args} container_gc = @{AllT_args} Z2.ZM.container
+val enum_gcluster = enum_zipper2
+val gcluster_list = list_container_zippers2
 end
 
 end

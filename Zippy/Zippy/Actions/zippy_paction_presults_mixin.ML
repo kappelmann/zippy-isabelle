@@ -5,6 +5,7 @@ signature ZIPPY_PACTION_PRESULTS_MIXIN =
 sig
   include ZIPPY_PACTION_PRESULTS_MIXIN_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  sharing type M.t = PAction.M.t
 
   type @{AllT_args} zipper = @{AllT_args} PAction.zipper
   type prio = PAction.prio
@@ -18,7 +19,7 @@ sig
     (PResults.result * @{AllT_args} PResults.presults -> @{AllT_args} PAction.action) ->
     @{AllT_args} PAction.paction
 
-  val paction_from_presults : @{ParaT_args encl = "(" ")"} PResults.Co.AE.exn ->
+  val paction_from_presults : @{ParaT_args encl = "(" ")"} PResults.Co.ME.exn ->
     (PResults.result * @{AllT_args} PResults.presults -> @{AllT_args} PAction.action) ->
     @{AllT_args} PAction.paction
 
@@ -37,19 +38,18 @@ struct
 
 open PAction_PResults
 structure MU = Zippy_Monad_Util(PAction.M); open MU MU.MB
-structure AE = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Exception_Repeat"\<close>(
-  open PResults.Co.AE; structure K = \<^eval>\<open>sfx_ParaT_nargs "Kleisli"\<close>(M))
-structure PAction = Zippy_PAction_Mixin(open PAction_PResults; structure AE = AE)
+structure Exn = Zippy_Exception_Mixin(PResults.Co)
+structure PAction = Zippy_PAction_Mixin(open PAction_PResults; structure Exn = Exn)
 structure PResults = Zippy_PResults_Mixin(PAction_PResults.PResults)
 
 type @{AllT_args} zipper = @{AllT_args} PAction.zipper
 type prio = PAction.prio
 
-local open SC Mo A
+local open SC Mo A PResults.Co Exn
 in
 fun gen_paction_from_presults get_presults empty_action result_tail_presults_action =
   let fun update_action rp_aco prio = AE.catch'
-    (fn z => PResults.Co.resume rp_aco z
+    (fn z => Co.resume rp_aco z
       >>= (apsnd PResults.presults #> (fn rpress => result_tail_presults_action rpress prio z)))
     (empty_action prio)
   in

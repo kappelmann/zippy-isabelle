@@ -4,17 +4,18 @@
 signature ZIPPY_NODE =
 sig
   include ZIPPY_NODE_BASE
-  structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
-  sharing type AE.K.M.t = M.t
+  structure Exn : ZIPPY_EXCEPTION_MIXIN
+  sharing type Exn.M.t = M.t
 
   (* misc *)
-  val no_parent : (@{ParaT_args} @{ParaT_args encl = "(" ")"} AE.exn, 'p) cat
-  val no_next : (@{ParaT_args} @{ParaT_args encl = "(" ")"} AE.exn, 'n) cat
+  val no_parent : (@{ParaT_args} @{ParaT_args encl = "(" ")"} Exn.AE.exn, 'p) cat
+  val no_next : (@{ParaT_args} @{ParaT_args encl = "(" ")"} Exn.AE.exn, 'n) cat
 
   (* constructors *)
-  val container_no_parent : @{ParaT_args encl = "(" ")"} AE.exn -> 'c -> 'c * (@{ParaT_args} 'p) M.t
+  val container_no_parent : @{ParaT_args encl = "(" ")"} Exn.AE.exn -> 'c ->
+    'c * (@{ParaT_args} 'p) M.t
   \<^imap>\<open>\<open>{i}\<close> => \<open>
-  val node_no_next{i} : @{ParaT_args encl = "(" ")"} AE.exn -> @{AllT_args} ZN.N{i}.content ->
+  val node_no_next{i} : @{ParaT_args encl = "(" ")"} Exn.AE.exn -> @{AllT_args} ZN.N{i}.content ->
     @{AllT_args} ZN.N{i}.node\<close>\<close>
 
   (* lenses *)
@@ -31,19 +32,19 @@ sig
   where type @{AllT_args} data = @{AllT_args} ZN.N{i}.next
   sharing type Node_Next{i}.container = Z{i}.zipper\<close>\<close>
 
-  val set_no_next : @{ParaT_args encl = "(" ")"} AE.exn ->
+  val set_no_next : @{ParaT_args encl = "(" ")"} Exn.AE.exn ->
     (@{ParaT_args} 's, (@{ParaT_args} 'i) M.t) L.smodifier -> 's -> 's
 end
 
 functor Zippy_Node(
     structure Z : ZIPPY_NODE_BASE
-    structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
-    sharing type AE.K.M.t = Z.M.t
+    structure Exn : ZIPPY_EXCEPTION_MIXIN
+    sharing type Exn.M.t = Z.M.t
   ) : ZIPPY_NODE =
 struct
 
 open Z
-structure AE = AE
+structure Exn = Exn; open Exn
 
 (* misc *)
 val no_parent = AE.throw

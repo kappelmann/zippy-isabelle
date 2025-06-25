@@ -7,7 +7,8 @@ sig
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
 
   type @{AllT_args} node_gc
-  val init_state : (@{ParaT_args} GClusters.GCS.gclusters, @{AllT_args} GClusters.L.container) cat ->
+  val init_state :
+    (@{ParaT_args} GClusters.GCS.gclusters, @{AllT_args} GClusters.L.container) cat ->
     (GCluster.GC.gcluster -> @{AllT_args} node_gc) -> (@{ParaT_args} GClusters.GCS.state,
       Tac.GPU.focus_update * @{AllT_args} GClusters.L.container) cat
 end

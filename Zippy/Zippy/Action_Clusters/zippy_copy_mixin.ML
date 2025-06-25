@@ -14,15 +14,24 @@ end
 
 functor Zippy_Copy_Mixin(
     structure Copy : ZIPPY_COPY_MIXIN_BASE
-    structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
-    sharing type AE.K.M.t = Copy.M.t
+    structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
+    sharing type Ctxt.M.t = Copy.M.t
+    structure Exn : ZIPPY_EXCEPTION_MIXIN
+    sharing type Exn.M.t = Copy.M.t
   ) : ZIPPY_COPY_MIXIN =
 struct
 
 open Copy
+structure MU = Zippy_Monad_Util(M); open MU
 
-fun get_run_copy cud z3 z1 = L.getter z3 |> (run_copy #> (fn copy => copy cud z3 z1))
-fun get_run_copy_safe cud z3 = AE.try (get_run_copy cud z3)
+local open Mo
+in
+fun get_run_copy cud z3 z1 = Ctxt.MS.get () >>= (fn ctxt =>
+  let val _ = @{log Logger.ERR} ctxt (fn _ => "Copying")
+  in L.getter z3 |> (run_copy #> (fn copy => copy cud z3 z1))
+  end)
+fun get_run_copy_safe cud z3 = Exn.AE.try (get_run_copy cud z3)
+end
 
 end
 

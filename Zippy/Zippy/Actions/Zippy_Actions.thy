@@ -3,7 +3,7 @@ theory Zippy_Actions
   imports
     ML_Priority_Queues
     Zippy_Actions_Base
-    Zippy_Base
+    Zippy_Enums
     Zippy_Identifiers
 begin
 

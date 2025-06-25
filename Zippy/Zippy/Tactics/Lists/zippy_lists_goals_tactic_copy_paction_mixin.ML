@@ -5,8 +5,9 @@ signature ZIPPY_LISTS_GOALS_TACTIC_COPY_PACTION_MIXIN =
 sig
   include ZIPPY_GOALS_TACTIC_COPY_PACTION_MIXIN_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
-  structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
-  sharing type AE.K.M.t = M.t
+  sharing type M.t = Copy.M.t
+  structure Exn : ZIPPY_EXCEPTION_MIXIN_BASE
+  sharing type Exn.M.t = M.t
 
   (* add actions *)
   val add_actions :
@@ -20,7 +21,7 @@ sig
     (@{ParaT_args} @{AllT_args} GClusters.L.container) hom_move
 
   type @{AllT_args} node_co
-  val cons_action_cluster : @{ParaT_args encl = "(" ")"} AE.exn ->
+  val cons_action_cluster : @{ParaT_args encl = "(" ")"} Exn.ME.exn ->
     (*create node content*)
     (@{AllT_args} Copy.copy -> @{AllT_args} node_co) ->
     (*list of pairs of initial focus and actions to add*)
@@ -43,11 +44,12 @@ struct
 
 open Z GTCP
 structure MU = Zippy_Monad_Util(M); open MU
-structure ZLG = Zippy_Lists_Goals_Mixin(structure Z = Z; structure Goals = GTCP)
-structure ZB = Zippy_Base(structure Z = Z; structure AE = AE)
+structure LGoals = Zippy_Lists_Goals_Mixin(structure Z = Z; structure Goals = GTCP)
+structure Exn = Zippy_Exception_Mixin(Z.Co)
+structure ZB = Zippy_Base(structure Z = Z; structure Exn = Exn)
 structure GTC = Zippy_Goals_Tactic_Copy_Mixin(GTCP)
 
-local open SC
+local open SC Exn
 in
 (* add actions *)
 fun add_actions add_actions =
@@ -55,7 +57,7 @@ fun add_actions add_actions =
 
 (* add action clusters *)
 fun add_action_clusters add_action_cluster = ZB.LF.foldlM
-  (fn (cpos, x) => ZLG.move_cpos cpos
+  (fn (cpos, x) => LGoals.move_cpos cpos
     >>> AE.try (add_action_cluster x >>> Up3.move)
     >>> Up2.move)
 
@@ -67,8 +69,5 @@ fun cons_action_cluster exn mk_node add_action_focus_list =
     val copy = Copy.copy init_copy
     val add_actions = add_actions (List.map (fn (x, f) => f x) add_action_focus_list)
   in cons_content_move_safe2 exn (mk_node copy) >>> add_actions end
-
 end
-
 end
-

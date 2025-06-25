@@ -16,9 +16,9 @@ end
 
 functor Zippy_Lists_Positions_Mixin_Base(
     structure Z : ZIPPY_LISTS_BASE
-    structure ME : \<^eval>\<open>sfx_ParaT_nargs "MONAD_EXCEPTION_BASE"\<close>
-    where type @{ParaT_args encl = "(" ")"} exn = unit
-    sharing type ME.t = Z.M.t
+    structure Exn : ZIPPY_EXCEPTION_MIXIN_BASE
+    where type @{ParaT_args encl = "(" ")"} ME.exn = unit
+    sharing type Exn.M.t = Z.M.t
   ) :
   sig
     include ZIPPY_LISTS_POSITIONS_MIXIN_BASE
@@ -31,7 +31,7 @@ functor Zippy_Lists_Positions_Mixin_Base(
   =
 struct
 open Z
-structure Z = Zippy_Node_Positions_Mixin_Base(structure Z = Z; structure ME = ME)
+structure Z = Zippy_Node_Positions_Mixin_Base(structure Z = Z; structure Exn = Exn)
 open Z
 end
 

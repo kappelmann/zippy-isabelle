@@ -4,7 +4,7 @@
 signature ZIPPY_UTIL =
 sig
   (* misc *)
-  val mk_exn : unit -> @{ParaT_args encl = "" ""} Zippy.ZE.AE.exn
+  val mk_exn : unit -> @{ParaT_args encl = "" ""} Zippy.Exn.ME.exn
 
   (* nodes *)
   val node1 : Zippy.Goals.GClusters.GCS.gclusters -> @{AllT_args} Zippy.ZN.ZN.N1.node
@@ -38,18 +38,18 @@ sig
     (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper,
       Zippy.NCo3.Copy.copy_update_data * @{AllT_args} Zippy.Z1.zipper) Zippy.cat
 
-  val update_result : (@{ParaT_arg 0} -> Proof.context) -> Prio.prio ->
-    Zippy.NCo4.PResults.result -> (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper,
+  val update_result : Prio.prio -> Zippy.NCo4.PResults.result ->
+    (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper,
       @{AllT_args} Zippy.NCo4.PAction.action_result) Zippy.cat
 
-  val result_tail_presults_action : (@{ParaT_arg 0} -> Proof.context) ->
+  val result_tail_presults_action :
     Zippy.NCo4.PResults.result * @{AllT_args} Zippy.NCo4.PResults.presults ->
     @{AllT_args} Zippy.NCo4.PAction.action
 end
 
 structure Zippy_Util : ZIPPY_UTIL =
 struct
-open Zippy Zippy.MEU
+open Zippy Zippy.MU
 
 (* misc *)
 fun mk_exn _ = exn
@@ -111,12 +111,12 @@ fun init_result_copy_parents prio result z =
       (node2 parent_top_meta_vars) result z)
   end
 
-fun update_result get_ctxt prio result = init_result_copy_parents prio result >>> arr snd
-  >>> ZS.with_state get_ctxt LGoals_Results.init_goal_results_down1 >>> arr fst
+fun update_result prio result = init_result_copy_parents prio result >>> arr snd
+  >>> Ctxt.with_ctxt LGoals_Results.init_goal_results_down1 >>> arr fst
   >>> Up1.move >>> arr NCo4.PAction.AResult.Expand
 
-fun result_tail_presults_action get_ctxt = NCo4.PAction_PResults.result_tail_presults_action
-  (Library.K (fn presults => arr (update_tail_presults presults))) (update_result get_ctxt)
+fun result_tail_presults_action x = NCo4.PAction_PResults.result_tail_presults_action
+  (Library.K (fn presults => arr (update_tail_presults presults))) update_result x
 end
 
 end

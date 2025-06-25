@@ -33,19 +33,19 @@ sig
 end
 
 functor Zippy_Lists_Base(
-    M : \<^eval>\<open>sfx_ParaT_nargs "MONAD_EXCEPTION_BASE"\<close>
-    where type @{ParaT_args encl = "(" ")"} exn = unit
+    Exn : ZIPPY_EXCEPTION_MIXIN
+    where type @{ParaT_args encl = "(" ")"} ME.exn = unit
   ) :
     ZIPPY_LISTS_BASE
     \<^imap>\<open>\<open>{i}\<close> => \<open>where type @{AllT_args} ZN.N{i}.content = @{ZipperT_arg \<open>{i} - 1\<close>}\<close>\<close>
   =
 struct
 
+structure M = Exn.ME
 structure MU = Zippy_Monad_Util(M); open MU
-structure MEU = Zippy_Monad_Exception_Util(M); open MEU
 
 structure ZN_AZ1 = \<^eval>\<open>sfx_T_nargs "Single_Content_Zipper"\<close>(
-  structure AE = AE
+  structure AE = Exn.AE
   type @{AllT_args} container = @{ZipperT_arg 0}
   type @{AllT_args} content = @{ZipperT_arg 0}
   val zip = M.pure

@@ -5,8 +5,9 @@ signature ZIPPY_PACTION_QUEUE_MIXIN =
 sig
   include ZIPPY_PACTION_QUEUE_MIXIN_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
-  structure Co : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL"\<close>
-  where type (@{ParaT_args} 'a, 'b) C.cat = (@{ParaT_args} 'a, 'b) cat
+  sharing type M.t = PAction.M.t
+  structure Co : ZIPPY_COROUTINE_MIXIN_BASE
+  sharing type Co.M.t = M.t
 
   val mk_entry : (@{ParaT_args} @{AllT_args} PAction.zipper, @{AllT_args} entry) cat
   val run_entry : @{AllT_args} entry -> (@{ParaT_args} @{AllT_args} PAction.zipper,
@@ -14,19 +15,19 @@ sig
 
   val fold_pactions :
     (*update result*)
-    (@{ParaT_args} @{AllT_args} entry * 'r, 'r Co.res) cat ->
+    (@{ParaT_args} @{AllT_args} entry * 'r, 'r Co.Co.res) cat ->
     (*initialise result*)
-    (@{ParaT_args} @{AllT_args} PAction.zipper, 'r Co.res) cat ->
+    (@{ParaT_args} @{AllT_args} PAction.zipper, 'r Co.Co.res) cat ->
     (*zipper enumeration*)
-    (@{ParaT_args} @{AllT_args} PAction.zipper, @{AllT_args} PAction.zipper) Co.coroutine ->
+    (@{ParaT_args} @{AllT_args} PAction.zipper, @{AllT_args} PAction.zipper) Co.Co.coroutine ->
     (*zipper to start the enumeration*)
-    (@{ParaT_args} @{AllT_args} PAction.zipper, (@{AllT_args} PAction.zipper * 'r) Co.res) cat
+    (@{ParaT_args} @{AllT_args} PAction.zipper, (@{AllT_args} PAction.zipper * 'r) Co.Co.res) cat
 
   val insert : @{AllT_args} entry -> @{AllT_args} queue -> @{AllT_args}queue
   val mk_entry_insert : @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) hom_move
 
   val fold_pactions_queue :
-    (@{ParaT_args} @{AllT_args} PAction.zipper, @{AllT_args} PAction.zipper) Co.coroutine ->
+    (@{ParaT_args} @{AllT_args} PAction.zipper, @{AllT_args} PAction.zipper) Co.Co.coroutine ->
     @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) hom_move
 
   type @{AllT_args} container1
@@ -42,22 +43,22 @@ sig
 end
 
 functor Zippy_PAction_Queue_Mixin(
-    structure Z : ZIPPY_BASE_ENUM
+    structure Z : ZIPPY_ENUM_MIXIN
     structure PAction_Queue : ZIPPY_PACTION_QUEUE_MIXIN_BASE
     sharing type PAction_Queue.PAction.zipper_trim = Z.Z1.zipper
     sharing type PAction_Queue.PAction.zipper = Z.Z4.zipper
     sharing type PAction_Queue.PAction.zipper_expand = Z.Z5.zipper
     sharing type PAction_Queue.PAction.M.t = Z.M.t
-    val mk_exn : (unit -> @{ParaT_args encl = "" ""} Z.AE.exn)
+    val mk_exn : (unit -> @{ParaT_args encl = "" ""} Z.Co.ME.exn)
   ) : ZIPPY_PACTION_QUEUE_MIXIN =
 struct
 
 open Z PAction_Queue
-structure AE = struct open PAction Co.AE end
-structure MU = Zippy_Monad_Util(PAction.M); open MU MU.MB
-structure PAction = Zippy_PAction_Mixin(structure PAction = PAction; structure AE = AE)
+structure MU = Zippy_Monad_Util(PAction.M); open MU
+structure Exn = Zippy_Exception_Mixin(Co)
+structure PAction = Zippy_PAction_Mixin(structure PAction = PAction; structure Exn = Exn)
 
-local open SC Mo A PAction
+local open SC Mo A PAction Co Exn
 in
 fun mk_entry zipper = get_run_paction zipper
   >>= arr (fn (prio, action) => {prio = prio, action = action, zipper = zipper})
@@ -75,6 +76,7 @@ fun fold_pactions_queue co z = AE.try (fn queue =>
   >>= arr (Co.dest_res #> snd))
 
 type @{AllT_args} container1 = @{AllT_args} Z1.ZM.container
+(*FIXME: could be made more efficient: only add pactions of goals that may take more results*)
 fun fold_children_pactions_queue c queue = AE.catch'
   (Z1.ZM.Zip.move >>> ADF_Post4.enum_zipper3 mk_exn
     >>> (fn (z, co) => fold_pactions_queue (Co.cons (id ()) co) z queue))

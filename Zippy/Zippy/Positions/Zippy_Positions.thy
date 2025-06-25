@@ -2,7 +2,7 @@
 theory Zippy_Positions
   imports
     ML_Alternating_Zipper_Paths
-    Zippy_Base
+    Zippy_Nodes
 begin
 
 ML_file\<open>zippy_positions_mixin_base.ML\<close>
