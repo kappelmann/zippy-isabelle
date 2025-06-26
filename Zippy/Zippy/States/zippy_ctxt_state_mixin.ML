@@ -8,6 +8,7 @@ sig
   sharing type AS.K.M.t = MS.t
 
   val with_ctxt : (Proof.context -> (@{ParaT_args} 'a, 'b) cat) -> (@{ParaT_args} 'a, 'b) cat
+  val get_ctxt : unit -> (@{ParaT_args} Proof.context) M.t
 end
 
 functor Zippy_Ctxt_State_Mixin(
@@ -18,5 +19,5 @@ open Ctxt
 structure AS = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_State"\<close>(MS)
 
 fun with_ctxt f = AS.access (fn (x, s) => f s x)
-
+fun get_ctxt _ = MS.get ()
 end

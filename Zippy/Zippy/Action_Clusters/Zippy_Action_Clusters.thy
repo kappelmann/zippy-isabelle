@@ -1,9 +1,9 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory Zippy_Action_Clusters
   imports
-    SpecCheck.SpecCheck_Show
     Zippy_Enums
     Zippy_Identifiers
+    Zippy_Shows
     Zippy_States
 begin
 

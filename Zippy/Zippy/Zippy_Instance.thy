@@ -13,7 +13,10 @@ ML\<open>
   @{functor_instance struct_name = Zippy
     and functor_name = Zippy_Instance
     and id = \<open>""\<close>
-    and more_args = \<open>type prio = Prio.prio; val prio_ord = Prio.ord\<close>}
+    and more_args = \<open>
+      type prio = Prio.prio
+      val prio_ord = Prio.ord #> rev_order
+      val pretty_prio = Prio.pretty\<close>}
   structure Zippy = struct open Zippy; structure Prio = Prio end
 \<close>
 

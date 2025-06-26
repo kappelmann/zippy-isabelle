@@ -39,27 +39,27 @@ apply (tactic \<open>fn state =>
       (*add actions*)
       >>= Down1.move
       >>= Tac_Util.cons_single_ztactic_action_cluster
-        (NCo3.Meta.Meta.empty @{binding cluster1})
+        (Mixin3.Meta.Meta.empty @{binding cluster1})
         Util.result_tail_presults_action
-        (NCo4.Meta.Meta.empty @{binding action1})
+        (Mixin4.Meta.Meta.empty @{binding action1})
         (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
         (with_ctxt
           (Tac_Util.resolve_moved_tac Zippy_Action_App_Progress.promising @{thms cheat silly} #> arr))
         (Tac.GPU.F.Goals [1])
       >>= Up3.move
       >>= Tac_Util.cons_single_ztactic_action_cluster
-        (NCo3.Meta.Meta.empty @{binding cluster2})
+        (Mixin3.Meta.Meta.empty @{binding cluster2})
         Util.result_tail_presults_action
-        (NCo4.Meta.Meta.empty @{binding action2})
+        (Mixin4.Meta.Meta.empty @{binding action2})
         (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
         (with_ctxt (Tac_Util.cheat_tac #> arr))
         (Tac.GPU.F.Goals [1])
       >>= Up3.move
       >>= Z2.ZM.Down.move
       >>= Tac_Util.cons_single_ztactic_action_cluster
-        (NCo3.Meta.Meta.empty @{binding cluster3})
+        (Mixin3.Meta.Meta.empty @{binding cluster3})
         Util.result_tail_presults_action
-        (NCo4.Meta.Meta.empty @{binding action3})
+        (Mixin4.Meta.Meta.empty @{binding action3})
         (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
         (with_ctxt (Tac_Util.cheat_tac #> arr))
         (Tac.GPU.F.Goals [1])
@@ -70,7 +70,7 @@ apply (tactic \<open>fn state =>
       (* >>= Util.with_state Util.finish_promising_gclusters_oldest_first *)
       (*run best-first-search*)
       >>= Run.init_repeat_step_queue
-        (with_ctxt Run.mk_df_post_unreturned_unfinished_statesq) (SOME 0)
+        (with_ctxt Run.mk_df_post_unreturned_unfinished_statesq) (SOME 3)
       )
       |> Run.seq_from_monad {ctxt = @{context}, state = ()}
       |> Seq.pull |> (fn sq => Seq.make (fn _ => sq))
@@ -79,8 +79,8 @@ apply (tactic \<open>fn state =>
     let val _ =
       (* Seq.list_of statesq  *)
       (* |> List.map (snd #> fst #> fst #> Zippy.ZN.ZCore.N1.Co.getter
-        #> Zippy.NCo1.CB.get_results
-        #> Zippy.NCo1.Results.R.get_states
+        #> Zippy.Mixin1.CB.get_results
+        #> Zippy.Mixin1.Results.R.get_states
         #> Seq.list_of)  *)
       (* |> @{print} *)
       ()

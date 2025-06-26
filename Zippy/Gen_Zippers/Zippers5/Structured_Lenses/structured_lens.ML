@@ -1,4 +1,4 @@
-(*  Title:  structured_lens.ML
+(*  Title:  Zippy/structured_lens.ML
     Author: Kevin Kappelmann
 
 Lenses with fixed, explicit types.

@@ -11,6 +11,7 @@ functor Zippy_Instance(
     structure FIA : FUNCTOR_INSTANCE_ARGS
     type prio
     val prio_ord : prio ord
+    val pretty_prio : prio -> Pretty.T
   ) =
 struct
 
@@ -196,22 +197,23 @@ local structure Z : ZIPPY_BASE_BASE = ZB in open Z end
 (** container constructors **)
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 val container{i} : @{AllT_args} ZP.ZGPos.Z{i}.ZM.container ->
-  @{AllT_args} ZP.ZLPos.Z{i}.ZM.container ->
-  @{AllT_args} ZP.ZDepth.Z{i}.ZM.container ->
+  @{AllT_args} ZP.ZLPos.Z{i}.ZM.container -> @{AllT_args} ZP.ZDepth.Z{i}.ZM.container ->
   @{AllT_args} ZN.ZN.Z{i}.ZM.container -> @{AllT_args} Z{i}.ZM.container =
   ZLP.container{i}
-val init_container{i} : @{AllT_args} ZN.ZN.Z{i}.ZM.container ->
-  @{AllT_args} Z{i}.ZM.container =
+val init_container{i} : @{AllT_args} ZN.ZN.Z{i}.ZM.container -> @{AllT_args} Z{i}.ZM.container =
   ZLP.init_container{i}\<close>\<close>
 
-(* data mixins *)
-local structure Base =
+structure ZLP = Zippy_Lists_Positions_Mixin(
+  structure Z = struct open ZL; structure ZP = ZP end; structure Exn = Exn)
+
+(* lenses *)
+local
+  structure Base =
   struct
-    structure L = \<^eval>\<open>sfx_ParaT_nargs "SLens_Kleisli_Identity"\<close>; open L
+    structure L = \<^eval>\<open>sfx_ParaT_nargs "SLens_Kleisli_Identity"\<close>
     fun gen_mk_lens l getter modifier = L.comp (L.mk_lens getter (uncurry modifier)) (l ())
   end
 in
-(** goal clusters **)
 local structure Base =
   struct
     open Base
@@ -220,23 +222,17 @@ local structure Base =
     fun mk_lens x = gen_mk_lens ZN.Node_Co1.lens x
   end
 in
-structure NCo1 =
+structure Lens1 =
 struct
-  structure CB = Base.NCB
-  structure GClusters = Zippy_Goal_Clusters_Mixin(Zippy_Goal_Clusters_Mixin_Base(
-    structure GCS = GCS
-    structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = GCS.gclusters
-      fun lens _ = mk_lens NCB.get_gclusters NCB.map_gclusters)))
-  structure Results = Zippy_Goal_Results_Mixin(Zippy_Goal_Results_Mixin_Base(
-    structure R = GResults
-    structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = GResults.results
-      fun lens _ = mk_lens NCB.get_results NCB.map_results)))
+  structure NCB = Base.NCB
+  structure GClusters = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = GCS.gclusters
+    fun lens _ = mk_lens NCB.get_gclusters NCB.map_gclusters)
+  structure Results = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = GResults.results
+    fun lens _ = mk_lens NCB.get_results NCB.map_results)
 end
 end
-
-(** goal cluster **)
 local structure Base =
   struct
     open Base
@@ -245,24 +241,193 @@ local structure Base =
     fun mk_lens x = gen_mk_lens ZN.Node_Co2.lens x
   end
 in
-structure NCo2 =
+structure Lens2 =
 struct
-  structure CB = Base.NCB
-  structure GCluster = Zippy_Goal_Cluster_Mixin(Zippy_Goal_Cluster_Mixin_Base(
-    structure GC = GC
-    structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = GC.gcluster
-      fun lens _ = mk_lens NCB.get_gcluster NCB.map_gcluster)))
+  structure NCB = Base.NCB
+  structure GCluster = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = GC.gcluster
+    fun lens _ = mk_lens NCB.get_gcluster NCB.map_gcluster)
+  structure Results = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = GResults.results
+    fun lens _ = mk_lens NCB.get_results NCB.map_results)
+  structure Top_Meta_Vars = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = Top_Meta_Vars.top_meta_vars
+    fun lens _ = mk_lens NCB.get_top_meta_vars NCB.map_top_meta_vars)
+end
+end
+local structure Base =
+  struct
+    open Base
+    structure NCB = Node_Co_Base3
+    type @{AllT_args} container = @{AllT_args} Z3.zipper
+    fun mk_lens x = gen_mk_lens ZN.Node_Co3.lens x
+  end
+in
+structure Lens3 =
+struct
+  structure NCB = Base.NCB
+  structure Copy = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = @{AllT_args} copy
+    fun lens _ = mk_lens NCB.get_copy NCB.map_copy)
+  structure Meta = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = ACMeta.metadata
+    fun lens _ = mk_lens NCB.get_meta NCB.map_meta)
+end
+end
+local structure Base =
+  struct
+    open Base
+    structure NCB = Node_Co_Base4
+    type @{AllT_args} container = @{AllT_args} Z4.zipper
+    fun mk_lens x = gen_mk_lens ZN.Node_Co4.lens x
+  end
+in
+structure Lens4 =
+struct
+  structure NCB = Base.NCB
+  structure PAction = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = @{AllT_args} paction
+    fun lens _ = mk_lens NCB.get_paction NCB.map_paction)
+  structure PResults = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = @{AllT_args} presults
+    fun lens _ = mk_lens NCB.get_presults NCB.map_presults)
+  structure Action_App_Num = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = AANum.action_app_num
+    fun lens _ = mk_lens NCB.get_action_app_num NCB.map_action_app_num)
+  structure Goal_Focus = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = GF.focus
+    fun lens _ = mk_lens NCB.get_focus NCB.map_focus)
+  structure Meta = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = AMeta.metadata
+    fun lens _ = mk_lens NCB.get_meta NCB.map_meta)
+end
+end
+local structure Base =
+  struct
+    open Base
+    structure NCB = Node_Co_Base5
+    type @{AllT_args} container = @{AllT_args} Z5.zipper
+    fun mk_lens x = gen_mk_lens ZN.Node_Co5.lens x
+  end
+in
+structure Lens5 =
+struct
+  structure Action_App_Num = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = AANum.action_app_num
+    fun lens _ = mk_lens NCB.get_action_app_num NCB.map_action_app_num)
+  structure Goal_Focus = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = GF.focus
+    fun lens _ = mk_lens NCB.get_focus NCB.map_focus)
+  structure Prio = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = prio
+    fun lens _ = mk_lens NCB.get_prio NCB.map_prio)
+  structure Meta = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = AAMeta.metadata
+    fun lens _ = mk_lens NCB.get_result_meta NCB.map_result_meta)
+end
+end
+end
+
+(* pretty printing/shows *)
+local
+  structure Show = SpecCheck_Show_Base
+  fun with_position pretty_position z xs = Pretty.breaks [
+      Show.record xs,
+      Pretty.block [Pretty.str "at position ", pretty_position z]
+    ] |> Pretty.block
+in
+local
+  structure L = Lens1
+  fun show z = with_position ZLP.pretty_position1 z
+in
+structure Show1 = Zippy_Show_Mixin_Base(
+  type @{AllT_args} t = @{AllT_args} Z1.zipper
+  fun pretty ctxt z = show z [
+    ("Goal clusters", GCS.pretty_gclusters ctxt (L.GClusters.getter z)),
+    ("Results", GResults.pretty_results (L.Results.getter z))
+  ])
+end
+local
+  structure L = Lens2
+  fun show z = with_position ZLP.pretty_position2 z
+in
+structure Show2 = Zippy_Show_Mixin_Base(
+  type @{AllT_args} t = @{AllT_args} Z2.zipper
+  fun pretty ctxt z = show z [
+    ("Goal cluster", GC.pretty_gcluster ctxt (L.GCluster.getter z)),
+    ("Results", GResults.pretty_results (L.Results.getter z)),
+    ("Top Meta Variables", Top_Meta_Vars.pretty ctxt (L.Top_Meta_Vars.getter z))
+  ])
+end
+local
+  structure L = Lens3
+  fun show z = with_position ZLP.pretty_position3 z
+in
+structure Show3 = Zippy_Show_Mixin_Base(
+  type @{AllT_args} t = @{AllT_args} Z3.zipper
+  fun pretty _ z = show z [
+    ("Metadata", ACMeta.pretty_metadata (L.Meta.getter z))
+  ])
+end
+local
+  structure L = Lens4
+  fun show z = with_position ZLP.pretty_position4 z
+in
+structure Show4 = Zippy_Show_Mixin_Base(
+  type @{AllT_args} t = @{AllT_args} Z4.zipper
+  fun pretty _ z = show z [
+    ("Action application number", AANum.pretty (L.Action_App_Num.getter z)),
+    ("Focus", GF.pretty (L.Goal_Focus.getter z)),
+    ("Metadata", AMeta.pretty_metadata (L.Meta.getter z))
+  ])
+end
+local
+  structure L = Lens5
+  fun show z = with_position ZLP.pretty_position5 z
+in
+structure Show5 = Zippy_Show_Mixin_Base(
+  type @{AllT_args} t = @{AllT_args} Z5.zipper
+  fun pretty _ z = show z [
+    ("Action application number", AANum.pretty (L.Action_App_Num.getter z)),
+    ("Focus", GF.pretty (L.Goal_Focus.getter z)),
+    ("Priority", pretty_prio (L.Prio.getter z)),
+    ("Metadata", AAMeta.pretty_metadata (L.Meta.getter z))
+  ])
+end
+
+(* data mixins *)
+local structure Base_Mixins =
+  struct
+    structure Exn = Exn
+    structure Co = Co
+    structure Ctxt = Ctxt
+    \<^imap>\<open>\<open>{i}\<close> => \<open>
+    structure Show{i} = Show{i}\<close>\<close>
+  end
+in
+(** goal clusters **)
+local structure L = Lens1
+in
+structure Mixin1 =
+struct
+  structure GClusters = Zippy_Goal_Clusters_Mixin(Zippy_Goal_Clusters_Mixin_Base(
+    structure GCS = GCS; structure L = L.GClusters))
   structure Results = Zippy_Goal_Results_Mixin(Zippy_Goal_Results_Mixin_Base(
-    structure R = GResults
-    structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = GResults.results
-      fun lens _ = mk_lens NCB.get_results NCB.map_results)))
+    structure R = GResults; structure L = L.Results))
+end
+end
+
+(** goal cluster **)
+local structure L = Lens2
+in
+structure Mixin2 =
+struct
+  structure GCluster = Zippy_Goal_Cluster_Mixin(Zippy_Goal_Cluster_Mixin_Base(
+    structure GC = GC; structure L = L.GCluster))
+  structure Results = Zippy_Goal_Results_Mixin(Zippy_Goal_Results_Mixin_Base(
+    structure R = GResults; structure L = L.Results))
   structure Top_Meta_Vars = Zippy_Top_Meta_Vars_Mixin(Zippy_Top_Meta_Vars_Mixin_Base(
-    structure TMV = Top_Meta_Vars
-    structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = Top_Meta_Vars.top_meta_vars
-      fun lens _ = mk_lens NCB.get_top_meta_vars NCB.map_top_meta_vars)))
+    structure TMV = Top_Meta_Vars; structure L = L.Top_Meta_Vars))
   structure Results_Top_Meta_Vars = Zippy_Goal_Results_Top_Meta_Vars_Mixin(
     structure Z = ZL
     structure Goal_Results_Top_Meta_Vars = Zippy_Goal_Results_Top_Meta_Vars_Mixin_Base(
@@ -272,76 +437,54 @@ end
 
 (** goals **)
 structure Goals = Zippy_Goals_Mixin_Base(
-  structure GClusters = NCo1.GClusters; structure GCluster = NCo2.GCluster)
+  structure GClusters = Mixin1.GClusters; structure GCluster = Mixin2.GCluster)
 structure LGoals = Zippy_Lists_Goals_Mixin(structure Z = ZL; structure Goals = Goals)
 structure Goals_Results = Zippy_Goals_Results_Mixin_Base(open Goals
-  structure GClusters_Results = NCo1.Results
-  structure GCluster_Results = NCo2.Results)
+  structure GClusters_Results = Mixin1.Results
+  structure GCluster_Results = Mixin2.Results)
 structure LGoals_Results = Zippy_Lists_Goals_Results_Mixin(
   structure Z = ZL; structure Goals_Results = Goals_Results)
 structure LGoals_Results_TMV = Zippy_Lists_Goals_Results_Top_Meta_Vars_Mixin(
   structure Z = ZL
   structure Goals_Results_Top_Meta_Vars = Zippy_Goals_Results_Top_Meta_Vars_Mixin_Base(
-    open Goals_Results; structure Top_Meta_Vars = NCo2.Top_Meta_Vars))
+    open Goals_Results; structure Top_Meta_Vars = Mixin2.Top_Meta_Vars))
 
 (** action clusters **)
-local structure Base =
-  struct
-    open Base
-    structure NCB = Node_Co_Base3
-    type @{AllT_args} container = @{AllT_args} Z3.zipper
-    fun mk_lens x = gen_mk_lens ZN.Node_Co3.lens x
-  end
+local structure L = Lens3
 in
-structure NCo3 =
+structure Mixin3 =
 struct
-  structure CB = Base.NCB
-  structure Copy = Zippy_Copy_Mixin(
+  structure Copy = Zippy_Copy_Mixin(open Base_Mixins
     structure Copy = Zippy_Copy_Mixin_Base(
       val parent_logger = logger
       structure FIA = struct
-        val full_name = "Zippy.NCo3.Copy"
+        val full_name = "Zippy.Mixin3.Copy"
         val id = "test_id"
         val pos = @{here}
       end
       structure M = ZB
-      structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-        type @{AllT_args} data = @{AllT_args} copy
-        fun lens _ = mk_lens NCB.get_copy NCB.map_copy)
+      structure L = L.Copy
       type @{AllT_args} zipper_to = @{AllT_args} Z1.zipper
       type copy_update_data = copy_update_data
       val copy = Copy
       fun run_copy (Copy copy) = copy)
-    structure Exn = Exn
-    structure Ctxt = Ctxt)
-  structure ECopy = Zippy_Enum_Copy_Mixin(
-      structure Z = ZE; structure Copy = Copy; structure Ctxt = Ctxt)
+    structure Show_From = Show3
+    structure Show_To = Show1)
+  structure ECopy = Zippy_Enum_Copy_Mixin(open Base_Mixins; structure Z = ZE; structure Copy = Copy)
   structure Meta = Zippy_Action_Cluster_Metadata_Mixin_Base(
-    structure Meta = ACMeta
-    structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = Meta.metadata
-      fun lens _ = mk_lens NCB.get_meta NCB.map_meta))
+    structure Meta = ACMeta; structure L = L.Meta)
 end
 end
 
 (** actions **)
-local structure Base =
-  struct
-    open Base
-    structure NCB = Node_Co_Base4
-    type @{AllT_args} container = @{AllT_args} Z4.zipper
-    fun mk_lens x = gen_mk_lens ZN.Node_Co4.lens x
-  end
+local structure L = Lens4
 in
-structure NCo4 =
+structure Mixin4 =
 struct
-  structure CB = Base.NCB
   structure PAction = Zippy_PAction_Mixin(
     structure PAction = Zippy_PAction_Mixin_Base(
-      structure M = ZB
-      structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-        type @{AllT_args} data = @{AllT_args} paction
-        fun lens _ = mk_lens NCB.get_paction NCB.map_paction)
+      structure M = MU.MB
+      structure L = L.PAction
       structure AResult = AResult
       type @{AllT_args} zipper_expand = @{AllT_args} Z5.zipper
       type @{AllT_args} zipper_trim = @{AllT_args} Z1.zipper
@@ -350,13 +493,10 @@ struct
       fun run_paction (PAction paction) = paction)
     structure Exn = Exn)
 
-  structure PResults = Zippy_PResults_Mixin(Zippy_PResults_Mixin_Base(
-    open MU.MB
-    structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = @{AllT_args} presults
-      fun lens _ = mk_lens NCB.get_presults NCB.map_presults)
+  structure PResults = Zippy_PResults_Mixin(Zippy_PResults_Mixin_Base(open Base_Mixins
+    structure M = MU.MB
+    structure L = L.PResults
     structure K = ZB.K
-    structure Co = Co
     type prio = PAction.prio
     type result = result
     val presults = PResults
@@ -369,22 +509,12 @@ struct
     structure PResults = PResults; structure PAction = PAction))
 
   structure Action_App_Num = Zippy_Action_App_Num_Mixin(Zippy_Action_App_Num_Mixin_Base(
-    structure AANum = AANum
-    structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = AANum.action_app_num
-      fun lens _ = mk_lens NCB.get_action_app_num NCB.map_action_app_num)))
+    structure AANum = AANum; structure L = L.Action_App_Num))
 
-  structure Goal_Focus = Zippy_Goal_Focus_Mixin_Base(
-    structure F = GF
-    structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = GF.focus
-      fun lens _ = mk_lens NCB.get_focus NCB.map_focus))
+  structure Goal_Focus = Zippy_Goal_Focus_Mixin_Base(structure F = GF; structure L = L.Goal_Focus)
 
   structure Meta = Zippy_Action_Cluster_Metadata_Mixin_Base(
-    structure Meta = AMeta
-    structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = Meta.metadata
-      fun lens _ = mk_lens NCB.get_meta NCB.map_meta))
+    structure Meta = AMeta; structure L = L.Meta)
 end
 end
 
@@ -392,135 +522,60 @@ end
 structure PAction_Queue = Zippy_PAction_Queue_Mixin(
   structure Z = ZE
   structure PAction_Queue = Zippy_PAction_Queue_Mixin_Base(
-    structure PAction = NCo4.PAction
-    structure Queue = Leftist_Heap(type prio = prio; val ord = (prio_ord #> rev_order)))
+    structure PAction = Mixin4.PAction
+    structure Queue = Leftist_Heap(type prio = prio; val ord = prio_ord))
   val mk_exn = Library.K exn)
 
 (** action applications **)
-local structure Base =
-  struct
-    open Base
-    structure NCB = Node_Co_Base5
-    type @{AllT_args} container = @{AllT_args} Z5.zipper
-    fun mk_lens x = gen_mk_lens ZN.Node_Co5.lens x
-  end
+local structure L = Lens5
 in
-structure NCo5 =
+structure Mixin5 =
 struct
-  structure CB = Base.NCB
   structure Action_App_Num = Zippy_Action_App_Num_Mixin(Zippy_Action_App_Num_Mixin_Base(
-    structure AANum = AANum
-    structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = AANum.action_app_num
-      fun lens _ = mk_lens NCB.get_action_app_num NCB.map_action_app_num)))
+    structure AANum = AANum; structure L = L.Action_App_Num))
 
-  structure Goal_Focus = Zippy_Goal_Focus_Mixin_Base(
-    structure F = GF
-    structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = GF.focus
-      fun lens _ = mk_lens NCB.get_focus NCB.map_focus))
+  structure Goal_Focus = Zippy_Goal_Focus_Mixin_Base(structure F = GF; structure L = L.Goal_Focus)
 
-  structure Prio = Zippy_Prio_Mixin_Base(
-    type prio = NCo4.PAction.prio
-    structure L =
-      \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-        type @{AllT_args} data = prio
-        fun lens _ = mk_lens NCB.get_prio NCB.map_prio))
+  structure Prio = Zippy_Prio_Mixin_Base(type prio = Mixin4.PAction.prio; structure L = L.Prio)
 
   structure Meta = Zippy_Action_App_Metadata_Mixin(Zippy_Action_App_Metadata_Mixin_Base(
-    structure Meta = AAMeta
-    structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = Meta.metadata
-      fun lens _ = mk_lens NCB.get_result_meta NCB.map_result_meta)))
+    structure Meta = AAMeta; structure L = L.Meta))
   structure EMeta = Zippy_Enum_Action_App_Metadata_Mixin(structure Z = ZE; structure Meta = Meta)
 end
 end
-end
-end
 
-(* tactics *)
+(** tactics **)
 structure Goals_Tac = Zippy_Goals_Tactic_Mixin_Base(open Goals; structure Tac = Tac)
 structure LGoals_Tac = Zippy_Lists_Goals_Tactic_Mixin(
   structure Z = ZL; structure Goals_Tac = Goals_Tac)
 
 structure GTC = Zippy_Goals_Tactic_Copy_Mixin(
-  Zippy_Goals_Tactic_Copy_Mixin_Base(open Goals_Tac; structure Copy = NCo3.Copy))
-structure LGTC = Zippy_Lists_Goals_Tactic_Copy_Mixin(
-  structure Z = ZL; structure GTC = GTC; structure Ctxt = Ctxt)
+  Zippy_Goals_Tactic_Copy_Mixin_Base(open Goals_Tac; structure Copy = Mixin3.Copy))
+structure LGTC = Zippy_Lists_Goals_Tactic_Copy_Mixin(open Base_Mixins
+  structure Z = ZL; structure GTC = GTC)
 
 structure GTCP = Zippy_Goals_Tactic_Copy_PAction_Mixin_Base(
-  open GTC; structure PAction = NCo4.PAction)
+  open GTC; structure PAction = Mixin4.PAction)
 structure LGTCP = Zippy_Lists_Goals_Tactic_Copy_PAction_Mixin(
   structure Z = ZL; structure GTCP = GTCP)
 
-(* runs *)
-local structure ZLP : ZIPPY_LISTS_POSITIONS_MIXIN_BASE = struct open ZL; structure ZP = ZP end
-in
-structure Step = Zippy_Step_Mixin(
+(** runs **)
+structure Step = Zippy_Step_Mixin(open Base_Mixins
   structure Z = ZLP
   structure Step = Zippy_Step_Mixin_Base(open LGoals_Results_TMV
     structure PAction_Queue = PAction_Queue)
-  structure Co = Co
   val mk_exn = Library.K exn)
 
-structure Run = Zippy_Run_Mixin(
+structure Run = Zippy_Run_Mixin(open Base_Mixins
   structure Z = ZLP
-  structure Run = Zippy_Run_Mixin_Base(open Step; structure Action_App_Meta = NCo5.Meta)
-  structure Co = Co
+  structure Run = Zippy_Run_Mixin_Base(open Step; structure Action_App_Meta = Mixin5.Meta)
   val mk_exn = Library.K exn
-  structure Ctxt = Ctxt
   type @{AllT_args} state = {ctxt : Proof.context, state : @{ParaT_arg 0}}
   fun seq_from_monad {ctxt, state} =
     State_MSTrans.eval state #> Ctxt_MSTrans.eval ctxt #> the_default Seq.empty
   fun with_state f = Ctxt.with_ctxt (fn ctxt => State.with_state (fn state =>
     f {ctxt = ctxt, state = state})))
 end
-
-(* pretty printing *)
-local structure Show = SpecCheck_Show_Base
-in
-structure NCo1 =
-struct
-  open NCo1
-  fun pretty ctxt n = Show.record [
-    ("Goal clusters", GClusters.GCS.pretty_gclusters ctxt (GClusters.L.getter n)),
-    ("Results", Results.R.pretty_results (Results.L.getter n))
-  ]
-end
-structure NCo2 =
-struct
-  open NCo2
-  fun pretty ctxt n = Show.record [
-    ("Goal cluster", GCluster.GC.pretty_gcluster ctxt (GCluster.L.getter n)),
-    ("Results", Results.R.pretty_results (Results.L.getter n)),
-    ("Top Meta Variables", Top_Meta_Vars.TMV.pretty ctxt (Top_Meta_Vars.L.getter n))
-  ]
-end
-structure NCo3 =
-struct
-  open NCo3
-  fun pretty n = Show.record [
-    ("Metadata", Meta.Meta.pretty_metadata (Meta.L.getter n))
-  ]
-end
-structure NCo4 =
-struct
-  open NCo4
-  fun pretty n = Show.record [
-    ("Action application number", Action_App_Num.AANum.pretty (Action_App_Num.L.getter n)),
-    ("Focus", Goal_Focus.F.pretty (Goal_Focus.L.getter n)),
-    ("Metadata", Meta.Meta.pretty_metadata (Meta.L.getter n))
-  ]
-end
-structure NCo5 =
-struct
-  open NCo5
-  fun pretty (pretty_prio : prio Show.show) n = Show.record [
-    ("Action application number", Action_App_Num.AANum.pretty (Action_App_Num.L.getter n)),
-    ("Focus", Goal_Focus.F.pretty (Goal_Focus.L.getter n)),
-    ("Priority", pretty_prio (Prio.L.getter n)),
-    ("Metadata", Meta.Meta.pretty_metadata (Meta.L.getter n))
-  ]
 end
 end
 

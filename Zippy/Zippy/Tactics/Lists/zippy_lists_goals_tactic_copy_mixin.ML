@@ -32,15 +32,21 @@ functor Zippy_Lists_Goals_Tactic_Copy_Mixin(
     sharing type GTC.Copy.M.t = Z.M.t
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
+    structure Show1 : ZIPPY_SHOW_MIXIN_BASE
+    sharing type Show1.t = Z.Z1.zipper
+    structure Show3 : ZIPPY_SHOW_MIXIN_BASE
+    sharing type Show3.t = Z.Z3.zipper
   ) : ZIPPY_LISTS_GOALS_TACTIC_COPY_MIXIN =
 struct
 
 open Z GTC
-structure Exn = Co
+structure Exn = Zippy_Exception_Mixin(Co)
 structure MU = Zippy_Monad_Util(M); open MU
 structure LGoals = Zippy_Lists_Goals_Mixin(structure Z = Z; structure Goals = GTC); open LGoals
 structure ZE = Zippy_Enum_Mixin(Z)
-structure ECopy = Zippy_Enum_Copy_Mixin(structure Z = ZE structure Copy = Copy; structure Ctxt = Ctxt)
+structure Copy = Zippy_Copy_Mixin(structure Copy = Copy; structure Exn = Exn; structure Ctxt = Ctxt
+  structure Show_From = Show3; structure Show_To = Show1)
+structure ECopy = Zippy_Enum_Copy_Mixin(structure Z = ZE; structure Copy = Copy)
 
 local open SC Mo
 in

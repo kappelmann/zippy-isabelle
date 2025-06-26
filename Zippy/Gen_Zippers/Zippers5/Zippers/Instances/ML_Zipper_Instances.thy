@@ -1,10 +1,10 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory ML_Zipper_Instances
   imports
-    ML_Lists
     ML_Zippers
     ML_Zipper_Directions
     ML_Zipper_Positions
+    ML_Lists
 begin
 
 ML_gen_file\<open>content_zipper.ML\<close>

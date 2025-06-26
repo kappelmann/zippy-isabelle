@@ -8,43 +8,43 @@ sig
 
   (* nodes *)
   val node1 : Zippy.Goals.GClusters.GCS.gclusters -> @{AllT_args} Zippy.ZN.ZN.N1.node
-  val node2 : Zippy.NCo2.Top_Meta_Vars.TMV.top_meta_vars -> Zippy.Goals.GCluster.GC.gcluster ->
+  val node2 : Zippy.Mixin2.Top_Meta_Vars.TMV.top_meta_vars -> Zippy.Goals.GCluster.GC.gcluster ->
     @{AllT_args} Zippy.ZN.ZN.N2.node
 
   (* initialisation *)
   val init_thm_state : (@{ParaT_args} Zippy_Thm_State.state, @{AllT_args} Zippy.Z1.zipper) Zippy.cat
 
   (* action cluster *)
-  val cons_action_cluster : Zippy.NCo3.Meta.Meta.metadata ->
-    (Zippy.NCo4.Goal_Focus.F.focus * (Zippy.NCo4.Goal_Focus.F.focus ->
+  val cons_action_cluster : Zippy.Mixin3.Meta.Meta.metadata ->
+    (Zippy.Mixin4.Goal_Focus.F.focus * (Zippy.Mixin4.Goal_Focus.F.focus ->
       (@{ParaT_args} @{AllT_args} Zippy.Z3.zipper, @{AllT_args} Zippy.Z4.zipper) Zippy.cat)) list ->
     (@{ParaT_args} @{AllT_args} Zippy.Z2.zipper, @{AllT_args} Zippy.Z3.zipper) Zippy.cat
 
   (* presults *)
   val cons_presults_action :
-    (Zippy.NCo4.PResults.result * @{AllT_args} Zippy.NCo4.PResults.presults ->
-       @{AllT_args} Zippy.NCo4.PAction.action) ->
-    Zippy.NCo4.Meta.Meta.metadata -> Zippy.NCo4.Goal_Focus.F.focus ->
-    @{AllT_args} Zippy.NCo4.PResults.presults ->
+    (Zippy.Mixin4.PResults.result * @{AllT_args} Zippy.Mixin4.PResults.presults ->
+       @{AllT_args} Zippy.Mixin4.PAction.action) ->
+    Zippy.Mixin4.Meta.Meta.metadata -> Zippy.Mixin4.Goal_Focus.F.focus ->
+    @{AllT_args} Zippy.Mixin4.PResults.presults ->
     (@{ParaT_args} @{AllT_args} Zippy.Z3.zipper, @{AllT_args} Zippy.Z4.zipper) Zippy.cat
 
-  val cons_action_application_result : Zippy.Prio.prio -> Zippy.NCo4.PResults.result ->
+  val cons_action_application_result : Zippy.Prio.prio -> Zippy.Mixin4.PResults.result ->
     (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper, @{AllT_args} Zippy.Z5.zipper) Zippy.cat
 
-  val update_tail_presults : @{AllT_args} Zippy.NCo4.PResults.presults ->
+  val update_tail_presults : @{AllT_args} Zippy.Mixin4.PResults.presults ->
     @{AllT_args} Zippy.Z4.zipper -> @{AllT_args} Zippy.Z4.zipper
 
-  val init_result_copy_parents : Zippy.Prio.prio -> Zippy.NCo4.PResults.result ->
+  val init_result_copy_parents : Zippy.Prio.prio -> Zippy.Mixin4.PResults.result ->
     (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper,
-      Zippy.NCo3.Copy.copy_update_data * @{AllT_args} Zippy.Z1.zipper) Zippy.cat
+      Zippy.Mixin3.Copy.copy_update_data * @{AllT_args} Zippy.Z1.zipper) Zippy.cat
 
-  val update_result : Prio.prio -> Zippy.NCo4.PResults.result ->
+  val update_result : Prio.prio -> Zippy.Mixin4.PResults.result ->
     (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper,
-      @{AllT_args} Zippy.NCo4.PAction.action_result) Zippy.cat
+      @{AllT_args} Zippy.Mixin4.PAction.action_result) Zippy.cat
 
   val result_tail_presults_action :
-    Zippy.NCo4.PResults.result * @{AllT_args} Zippy.NCo4.PResults.presults ->
-    @{AllT_args} Zippy.NCo4.PAction.action
+    Zippy.Mixin4.PResults.result * @{AllT_args} Zippy.Mixin4.PResults.presults ->
+    @{AllT_args} Zippy.Mixin4.PAction.action
 end
 
 structure Zippy_Util : ZIPPY_UTIL =
@@ -57,10 +57,10 @@ fun mk_exn _ = exn
 (* nodes *)
 fun node1 gclusters = ZN.node_no_next1 exn {
   gclusters = gclusters,
-  results = if NCo1.GClusters.GCS.is_finished gclusters
-    then NCo1.Results.R.non_empty (Seq.single (NCo1.GClusters.GCS.get_state gclusters))
-    else NCo1.Results.R.empty}
-local open NCo2
+  results = if Mixin1.GClusters.GCS.is_finished gclusters
+    then Mixin1.Results.R.non_empty (Seq.single (Mixin1.GClusters.GCS.get_state gclusters))
+    else Mixin1.Results.R.empty}
+local open Mixin2
 in
 fun node2 parent_top_meta_vars gcluster = ZN.node_no_next2 exn {
   gcluster = gcluster,
@@ -83,27 +83,27 @@ fun cons_action_cluster meta =
 (* presults *)
 fun cons_presults_action result_tail_presults_action meta focus presults =
   let val n = {presults = presults,
-    action_app_num = NCo4.Action_App_Num.AANum.init,
+    action_app_num = Mixin4.Action_App_Num.AANum.init,
     focus = focus,
-    paction = NCo4.PAction_PResults.paction_from_presults exn result_tail_presults_action,
+    paction = Mixin4.PAction_PResults.paction_from_presults exn result_tail_presults_action,
     meta = meta}
   in ZL.cons_content_move_safe3 exn n end
 
 fun cons_action_application_result prio result z =
   let
     val result_meta = Tac.get_more result
-    val action_app_num = NCo4.Action_App_Num.L.getter z
-    val focus = NCo4.Goal_Focus.L.getter z
+    val action_app_num = Mixin4.Action_App_Num.L.getter z
+    val focus = Mixin4.Goal_Focus.L.getter z
     val n = {action_app_num = action_app_num, focus = focus, prio = prio, result_meta = result_meta}
   in ZL.cons_content_move_safe4 exn n z end
 
-fun update_tail_presults presults z = L.set_modify NCo4.PResults.L.modifier (presults, z)
-  |> NCo4.Action_App_Num.inc_action_app_num
+fun update_tail_presults presults z = L.set_modify Mixin4.PResults.L.modifier (presults, z)
+  |> Mixin4.Action_App_Num.inc_action_app_num
 
 fun init_result_copy_parents prio result z =
   let fun set_next5 n z = L.set_modify ZN.Node_Next5.modifier (pure n, z)
   in
-    Up4.move z >>= Up3.move >>= arr NCo2.Top_Meta_Vars.L.getter >>=
+    Up4.move z >>= Up3.move >>= arr Mixin2.Top_Meta_Vars.L.getter >>=
     (fn parent_top_meta_vars => LGTC.init_result_copy_parents mk_exn
       (fn gclusters => cons_action_application_result prio result
         >>> arr (set_next5 (node1 gclusters))
@@ -113,9 +113,9 @@ fun init_result_copy_parents prio result z =
 
 fun update_result prio result = init_result_copy_parents prio result >>> arr snd
   >>> Ctxt.with_ctxt LGoals_Results.init_goal_results_down1 >>> arr fst
-  >>> Up1.move >>> arr NCo4.PAction.AResult.Expand
+  >>> Up1.move >>> arr Mixin4.PAction.AResult.Expand
 
-fun result_tail_presults_action x = NCo4.PAction_PResults.result_tail_presults_action
+fun result_tail_presults_action x = Mixin4.PAction_PResults.result_tail_presults_action
   (Library.K (fn presults => arr (update_tail_presults presults))) update_result x
 end
 

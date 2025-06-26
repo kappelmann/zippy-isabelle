@@ -26,10 +26,10 @@ end
 
 functor Zippy_PResults_Mixin_Base(A :
   sig
-    include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+    structure M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
     structure L : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
     structure Co : ZIPPY_COROUTINE_MIXIN_BASE
-    sharing type Co.M.t = M.t
+    sharing type Co.M.t = M.M.t
     type prio
     type result
     val presults : (@{ParaT_args} @{AllT_args} L.container, prio, result) Co.Co.acoroutine ->
@@ -41,7 +41,7 @@ functor Zippy_PResults_Mixin_Base(A :
   =
 struct
 
-open A
+open A A.M
 type @{AllT_args} zipper = @{AllT_args} L.container
 type @{AllT_args} presults = @{AllT_args} L.data
 

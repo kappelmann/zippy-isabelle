@@ -1,4 +1,4 @@
-(*  Title:  structured_lens.ML
+(*  Title:  Zippy/sstructured_lens.ML
     Author: Kevin Kappelmann
 
 Standard function space lenses

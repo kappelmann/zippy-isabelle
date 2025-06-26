@@ -13,12 +13,10 @@ end
 
 functor Zippy_Enum_Copy_Mixin(
     structure Z : ZIPPY_ENUM_MIXIN
-    structure Copy : ZIPPY_COPY_MIXIN_BASE
+    structure Copy : ZIPPY_COPY_MIXIN
     sharing type Copy.zipper_from = Z.Z3.zipper
     sharing type Copy.zipper_to = Z.Z1.zipper
     sharing type Copy.M.t = Z.M.t
-    structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
-    sharing type Ctxt.M.t = Z.M.t
   ) : ZIPPY_ENUM_COPY_MIXIN =
 struct
 
@@ -26,7 +24,6 @@ open Z Copy
 structure MU = Zippy_Monad_Util(M); open MU
 structure Co = Co
 structure Exn = Zippy_Exception_Mixin(Co)
-structure Copy = Zippy_Copy_Mixin(structure Copy = Copy; structure Ctxt = Ctxt; structure Exn = Exn)
 
 local open SC Mo Co
 in
