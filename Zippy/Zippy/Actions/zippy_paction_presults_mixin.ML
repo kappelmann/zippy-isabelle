@@ -3,6 +3,7 @@
 *)
 signature ZIPPY_PACTION_PRESULTS_MIXIN =
 sig
+  include ZIPPY_LOGGER_MIXIN_BASE
   include ZIPPY_PACTION_PRESULTS_MIXIN_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
   sharing type M.t = PAction.M.t
@@ -19,7 +20,7 @@ sig
     (PResults.result * @{AllT_args} PResults.presults -> @{AllT_args} PAction.action) ->
     @{AllT_args} PAction.paction
 
-  val paction_from_presults : @{ParaT_args encl = "(" ")"} PResults.Co.ME.exn ->
+  val paction_from_presults : @{ParaT_args encl = "(" ")"} PAction.Exn.ME.exn ->
     (PResults.result * @{AllT_args} PResults.presults -> @{AllT_args} PAction.action) ->
     @{AllT_args} PAction.paction
 
@@ -32,15 +33,16 @@ sig
 end
 
 functor Zippy_PAction_PResults_Mixin(
-    PAction_PResults : ZIPPY_PACTION_PRESULTS_MIXIN_BASE
+    structure PAction_PResults : ZIPPY_PACTION_PRESULTS_MIXIN_BASE
+    structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
+    sharing type Ctxt.M.t = PAction_PResults.PAction.M.t
+    structure Log : ZIPPY_LOGGER_MIXIN_BASE
   ) : ZIPPY_PACTION_PRESULTS_MIXIN =
 struct
 
-open PAction_PResults
+open PAction_PResults Log
 structure MU = Zippy_Monad_Util(PAction.M); open MU MU.MB
 structure Exn = Zippy_Exception_Mixin(PResults.Co)
-structure PAction = Zippy_PAction_Mixin(open PAction_PResults; structure Exn = Exn)
-structure PResults = Zippy_PResults_Mixin(PAction_PResults.PResults)
 
 type @{AllT_args} zipper = @{AllT_args} PAction.zipper
 type prio = PAction.prio
@@ -60,7 +62,9 @@ fun gen_paction_from_presults get_presults empty_action result_tail_presults_act
   end
 
 fun paction_from_presults e = gen_paction_from_presults (arr PResults.L.getter)
-  (Library.K (arr (PAction.disable_paction e #> PAction.AResult.Stagnate)))
+  (Library.K (Ctxt.with_ctxt (fn ctxt =>
+    (@{log Logger.DEBUG} ctxt (fn _ => "PResults empty. Disabling paction.");
+    PAction.disable_paction e >>> arr PAction.AResult.Stagnate))))
 
 fun result_tail_presults_action update_tail_presults update_result (x, aco) prio =
   update_tail_presults prio aco >>> update_result prio x

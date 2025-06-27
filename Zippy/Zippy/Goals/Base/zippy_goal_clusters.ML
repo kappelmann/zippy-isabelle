@@ -6,16 +6,16 @@ sig
   (*counting from 0 as is convention for indexing of datatypes*)
   type cluster_pos = int
   val init_cluster_pos : cluster_pos
-  val pretty_cluster_pos : cluster_pos -> Pretty.T
+  val pretty_cluster_pos : cluster_pos SpecCheck_Show.show
   (*counting from 1 as is convention for Isabelle goals*)
   type goal_pos = int
-  val pretty_goal_pos : goal_pos -> Pretty.T
+  val pretty_goal_pos : goal_pos SpecCheck_Show.show
   (*position of a state's goal in the created goal clusters*)
   type gcpos
   val get_gcpos_cluster : gcpos -> cluster_pos
   val get_gcpos_goal : gcpos -> goal_pos
   val mk_gcpos_index : goal_pos list list -> goal_pos -> gcpos
-  val pretty_gcpos : gcpos -> Pretty.T
+  val pretty_gcpos : gcpos SpecCheck_Show.show
 
   structure UF : IMPERATIVE_UNION_FIND
   type veclass = term UF.set
@@ -25,7 +25,7 @@ sig
   val build_veclasses : term list -> (goal_pos * veclass option) list list * veclass Termtab.table
 
   type gclusters
-  val pretty_gclusters : Proof.context -> gclusters -> Pretty.T
+  val pretty_gclusters : Proof.context -> gclusters SpecCheck_Show.show
   (*returns unaltered state*)
   type state = Zippy_Thm_State.state
   val get_state : gclusters -> state

@@ -3,6 +3,7 @@
 *)
 signature ZIPPY_LISTS_GOALS_TACTIC_COPY_MIXIN =
 sig
+  include ZIPPY_LOGGER_MIXIN_BASE
   include ZIPPY_GOALS_TACTIC_COPY_MIXIN_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
   sharing type M.t = Copy.M.t
@@ -32,10 +33,10 @@ functor Zippy_Lists_Goals_Tactic_Copy_Mixin(
     sharing type GTC.Copy.M.t = Z.M.t
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
+    structure Log : ZIPPY_LOGGER_MIXIN_BASE
+    structure Log_ECopy : ZIPPY_LOGGER_MIXIN_BASE
     structure Show1 : ZIPPY_SHOW_MIXIN_BASE
     sharing type Show1.t = Z.Z1.zipper
-    structure Show3 : ZIPPY_SHOW_MIXIN_BASE
-    sharing type Show3.t = Z.Z3.zipper
   ) : ZIPPY_LISTS_GOALS_TACTIC_COPY_MIXIN =
 struct
 
@@ -44,16 +45,23 @@ structure Exn = Zippy_Exception_Mixin(Co)
 structure MU = Zippy_Monad_Util(M); open MU
 structure LGoals = Zippy_Lists_Goals_Mixin(structure Z = Z; structure Goals = GTC); open LGoals
 structure ZE = Zippy_Enum_Mixin(Z)
-structure Copy = Zippy_Copy_Mixin(structure Copy = Copy; structure Exn = Exn; structure Ctxt = Ctxt
-  structure Show_From = Show3; structure Show_To = Show1)
-structure ECopy = Zippy_Enum_Copy_Mixin(structure Z = ZE; structure Copy = Copy)
+structure ECopy = Zippy_Enum_Copy_Mixin(structure Z = ZE; structure Copy = Copy;
+  structure Ctxt = Ctxt; structure Log = Log_ECopy; structure Show_To = Show1)
+open Log
 
 local open SC Mo
 in
 (* init result *)
-fun init_result add_gcs mk_gc_node res =
-  let val (ud, (gcs, gc_list)) = Tac.init_result res
-  in add_gcs gcs >>> arr (LGoals.set_gcluster_list mk_gc_node gc_list #> pair ud) end
+fun init_result add_gcs mk_gc_node res z = Ctxt.get_ctxt () >>= (fn ctxt => z |>
+  let
+    val (ud, (gcs, gc_list)) = Tac.init_result res
+    val _ = @{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
+        Pretty.block [Pretty.str "Initialised result state ",
+          Zippy_Thm_State.pretty ctxt (#state res), Pretty.str "."],
+        Pretty.block [Pretty.str "Resulting goal clusters: ",
+          GClusters.GCS.pretty_gclusters ctxt gcs]
+      ] |> Pretty.block0 |> Pretty.string_of)
+  in add_gcs gcs >>> arr (LGoals.set_gcluster_list mk_gc_node gc_list #> pair ud) end)
 
 fun init_result_copy_parents mk_exn add_gcs mk_gc_node res = init_result add_gcs mk_gc_node res
   >>> (fn (cud, z) => ECopy.copy_parents mk_exn cud z >>= arr (pair cud))

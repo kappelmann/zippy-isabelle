@@ -10,7 +10,7 @@ sig
   val get_thm : gcluster -> thm
   val has_meta_vars : gcluster -> bool
   val meta_vars : gcluster -> Vars.set
-  val pretty_gcluster : Proof.context -> gcluster -> Pretty.T
+  val pretty_gcluster : Proof.context -> gcluster SpecCheck_Show.show
 
   val init : GCS.gclusters * int list -> gcluster list
   val init' : GCS.gclusters -> gcluster list

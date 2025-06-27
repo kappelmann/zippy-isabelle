@@ -3,6 +3,7 @@
 *)
 signature ZIPPY_PACTION_QUEUE_MIXIN =
 sig
+  include ZIPPY_LOGGER_MIXIN_BASE
   include ZIPPY_PACTION_QUEUE_MIXIN_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
   sharing type M.t = PAction.M.t
@@ -26,12 +27,12 @@ sig
   val insert : @{AllT_args} entry -> @{AllT_args} queue -> @{AllT_args}queue
   val mk_entry_insert : @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) hom_move
 
-  val fold_pactions_queue :
+  val insert_pactions_queue :
     (@{ParaT_args} @{AllT_args} PAction.zipper, @{AllT_args} PAction.zipper) Co.Co.coroutine ->
     @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) hom_move
 
   type @{AllT_args} container1
-  val fold_children_pactions_queue : @{AllT_args} container1 ->
+  val insert_descendant_pactions_queue : @{AllT_args} container1 ->
     (@{ParaT_args} @{AllT_args} queue) hom_move
   val init_pactions_queue : (@{ParaT_args} @{AllT_args} container1, @{AllT_args} queue) cat
 
@@ -50,19 +51,24 @@ functor Zippy_PAction_Queue_Mixin(
     sharing type PAction_Queue.PAction.zipper_expand = Z.Z5.zipper
     sharing type PAction_Queue.PAction.M.t = Z.M.t
     val mk_exn : (unit -> @{ParaT_args encl = "" ""} Z.Co.ME.exn)
+    structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
+    sharing type Ctxt.M.t =Z.M.t
+    structure Log : ZIPPY_LOGGER_MIXIN_BASE
+    structure Show_Container1 : ZIPPY_SHOW_MIXIN_BASE
+    sharing type Show_Container1.t = Z.Z1.ZM.container
+    structure Show4 : ZIPPY_SHOW_MIXIN_BASE
+    sharing type Show4.t = Z.Z4.zipper
   ) : ZIPPY_PACTION_QUEUE_MIXIN =
 struct
 
-open Z PAction_Queue
+open Z PAction_Queue Log
 structure MU = Zippy_Monad_Util(PAction.M); open MU
-structure Exn = Zippy_Exception_Mixin(Co)
-structure PAction = Zippy_PAction_Mixin(structure PAction = PAction; structure Exn = Exn)
 
-local open SC Mo A PAction Co Exn
+local open SC Mo A Co PAction.Exn
 in
-fun mk_entry zipper = get_run_paction zipper
+fun mk_entry zipper = PAction.get_run_paction zipper
   >>= arr (fn (prio, action) => {prio = prio, action = action, zipper = zipper})
-fun run_entry entry = run_action (#prio entry, #action entry)
+fun run_entry entry = PAction.run_action (#prio entry, #action entry)
 
 fun fold_pactions update = Co.repeat_step_res_init (arr fst)
   (AE.catch' (first mk_entry >>> update) (arr (snd #> Co.continue))) (AE.id ())
@@ -70,22 +76,38 @@ fun fold_pactions update = Co.repeat_step_res_init (arr fst)
 fun insert entry = Queue.insert (#prio entry, entry)
 fun mk_entry_insert z queue = mk_entry z >>= arr (fn entry => insert entry queue)
 
-fun fold_pactions_queue co z = AE.try (fn queue =>
+fun insert_pactions_queue co z = AE.try (fn queue =>
   fold_pactions (arr (Library.uncurry insert #> Co.continue))
     (fn z => mk_entry_insert z queue >>= arr Co.continue) co z
   >>= arr (Co.dest_res #> snd))
 
 type @{AllT_args} container1 = @{AllT_args} Z1.ZM.container
 (*FIXME: could be made more efficient: only add pactions of goals that may take more results*)
-fun fold_children_pactions_queue c queue = AE.catch'
-  (Z1.ZM.Zip.move >>> ADF_Post4.enum_zipper3 mk_exn
-    >>> (fn (z, co) => fold_pactions_queue (Co.cons (id ()) co) z queue))
-  (A.K queue) c
-fun init_pactions_queue c = fold_children_pactions_queue c Queue.empty
+fun insert_descendant_pactions_queue c queue = Ctxt.get_ctxt () >>= (fn ctxt =>
+  (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
+      Pretty.str "Inserting descendant pactions of",
+      Show_Container1.pretty ctxt c,
+      Pretty.str "to queue."
+    ] |> Pretty.block |> Pretty.string_of);
+  AE.catch'
+    (Z1.ZM.Zip.move >>> ADF_Post4.enum_zipper3 mk_exn
+      >>> (fn (z, co) => insert_pactions_queue (Co.cons (id ()) co) z queue))
+    (A.K queue) c))
+fun init_pactions_queue c = insert_descendant_pactions_queue c Queue.empty
 
-fun update_stagnate z = AE.try (mk_entry_insert z)
-fun update_expand fold_pactions_queue z = fold_pactions_queue z
-  >>> (fn queue => Z.Up5.move z >>= (fn z => update_stagnate z queue))
+local
+  fun mk_entry_insert_log z q = Ctxt.get_ctxt () >>= (fn ctxt =>
+    (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
+        Pretty.str "Inserting paction of",
+        Show4.pretty ctxt z,
+        Pretty.str "to queue."
+      ] |> Pretty.block |> Pretty.string_of);
+    AE.try (mk_entry_insert z) q))
+in
+fun update_stagnate z = mk_entry_insert_log z
+fun update_expand insert_descendant_pactions_queue z = insert_descendant_pactions_queue z
+  >>> (fn queue => Z.Up5.move z >>= (fn z => mk_entry_insert_log z queue))
+end
 (*trimming may invalidate entries in the queue; we hence re-initialise it*)
 fun update_trim z _ = Z1.ZM.Unzip.move z >>= init_pactions_queue
 end

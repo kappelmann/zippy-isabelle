@@ -8,7 +8,7 @@ sig
   type action_app_num = int
   val init : action_app_num
   val inc : action_app_num -> action_app_num
-  val pretty : action_app_num -> Pretty.T
+  val pretty : action_app_num SpecCheck_Show.show
 end
 
 structure Zippy_Action_App_Num : ZIPPY_ACTION_APP_NUM =

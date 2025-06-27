@@ -6,7 +6,7 @@ theory Gen_ML_Typeclasses_Base
 begin
 
 ML\<open>
-  @{functor_instance struct_name = Para_Type_Args_Antiquotations
+  \<^functor_instance>\<open>struct_name = Para_Type_Args_Antiquotations
     and functor_name = Args_Antiquotations
     and id = \<open>"ParaT"\<close>
     and more_args = \<open>val init_args = {
@@ -15,8 +15,7 @@ ML\<open>
       encl = SOME ("", ""),
       encl_arg = SOME ("", ""),
       start = SOME 0,
-      stop = SOME NONE
-    }\<close>}
+      stop = SOME NONE}\<close>\<close>
 \<close>
 local_setup \<open>Para_Type_Args_Antiquotations.setup_args_attribute
   (SOME "set parameter type args antiquotation arguments")\<close>

@@ -11,9 +11,6 @@ functor Zippy_Top_Meta_Vars_Mixin(
     Top_Meta_Vars : ZIPPY_TOP_META_VARS_MIXIN_BASE
   ) : ZIPPY_TOP_META_VARS_MIXIN =
 struct
-
 open Top_Meta_Vars
-
 fun is_empty x = L.getter x |> TMV.is_empty
-
 end

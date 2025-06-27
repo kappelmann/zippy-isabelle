@@ -4,7 +4,7 @@
 signature ZIPPY_GOAL_RESULTS =
 sig
   type results
-  val pretty_results : results -> Pretty.T
+  val pretty_results : results SpecCheck_Show.show
   type state = Zippy_Thm_State.state
   val get_states : results -> state Seq.seq
   val get_thms : results -> thm Seq.seq

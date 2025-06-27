@@ -8,7 +8,7 @@ sig
   val goals : GCS.goal_pos list -> focus
   val single : GCS.goal_pos -> focus
   val none : focus
-  val pretty : focus -> Pretty.T
+  val pretty : focus SpecCheck_Show.show
 end
 
 functor Zippy_Goal_Focus(GCS : ZIPPY_GOAL_CLUSTERS) : ZIPPY_GOAL_FOCUS =

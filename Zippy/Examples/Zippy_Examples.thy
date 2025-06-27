@@ -27,6 +27,8 @@ end
 lemma silly: "A \<Longrightarrow> B" sorry
 lemma cheat : "A" sorry
 
+declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.Run.logger Logger.DEBUG\<close>]]
+declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.Step.logger Logger.DEBUG\<close>]]
 declare[[ML_print_depth=100]]
 schematic_goal shows "?A \<and> B" "C \<and> D"
 ML_prf\<open>open Zippy Zippy.MU.Mo\<close>
@@ -65,12 +67,9 @@ apply (tactic \<open>fn state =>
         (Tac.GPU.F.Goals [1])
       >>= ZB.top3
       >>= Z1.ZM.Unzip.move
-      (*get the theorems*)
-      (* >>= Z1.ZM.Zip.move *)
-      (* >>= Util.with_state Util.finish_promising_gclusters_oldest_first *)
       (*run best-first-search*)
       >>= Run.init_repeat_step_queue
-        (with_ctxt Run.mk_df_post_unreturned_unfinished_statesq) (SOME 3)
+        (with_ctxt Run.mk_df_post_unreturned_unfinished_statesq) NONE
       )
       |> Run.seq_from_monad {ctxt = @{context}, state = ()}
       |> Seq.pull |> (fn sq => Seq.make (fn _ => sq))

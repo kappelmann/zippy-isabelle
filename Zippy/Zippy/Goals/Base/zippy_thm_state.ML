@@ -4,7 +4,7 @@
 signature ZIPPY_THM_STATE =
 sig
   type state = thm
-  val pretty : Proof.context -> state -> Pretty.T
+  val pretty : Proof.context -> state SpecCheck_Show.show
   val init : cterm -> state
   val get_thm : state -> thm
   val nprems_of : state -> int

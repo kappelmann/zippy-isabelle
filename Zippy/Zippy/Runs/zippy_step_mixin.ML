@@ -3,6 +3,7 @@
 *)
 signature ZIPPY_STEP_MIXIN =
 sig
+  include ZIPPY_LOGGER_MIXIN_BASE
   include ZIPPY_STEP_MIXIN_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
   sharing type M.t = PAction_Queue.PAction.M.t
@@ -13,7 +14,7 @@ sig
 
   val update_goal_results_up_stagnate : (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper,
     @{AllT_args} GClusters.L.container * Results.results) cat
-  val update_goal_results_up_expand : Proof.context ->
+  val update_goal_results_up_expand :
     (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_expand,
       @{AllT_args} GClusters.L.container * Results.results) cat
   val update_goal_results_up_trim : (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_trim,
@@ -22,21 +23,20 @@ sig
   val update_stagnate : @{AllT_args} PAction_Queue.queue ->
     (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper,
       (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) cat
-  val update_expand : @{AllT_args} PAction_Queue.queue -> Proof.context ->
+  val update_expand : @{AllT_args} PAction_Queue.queue ->
     (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_expand,
       (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) cat
   val update_trim : @{AllT_args} PAction_Queue.queue ->
     (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_trim,
       (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) cat
-  val update_action_result : @{AllT_args} PAction_Queue.queue -> Proof.context ->
+  val update_action_result : @{AllT_args} PAction_Queue.queue ->
     (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.action_result,
       (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) cat
 
-  type @{AllT_args} container
-  val step_queue : @{AllT_args} PAction_Queue.queue -> Proof.context ->
-    (@{ParaT_args} @{AllT_args} container,
-      ((@{AllT_args} GClusters.L.container * Results.results)) option
-      * @{AllT_args} PAction_Queue.queue) cat
+  val step_queue : @{AllT_args} PAction_Queue.queue ->
+    (@{ParaT_args} @{AllT_args} PAction_Queue.container1,
+      (((@{AllT_args} GClusters.L.container * Results.results)) option
+      * @{AllT_args} PAction_Queue.queue) option) cat
 end
 
 functor Zippy_Step_Mixin(
@@ -48,13 +48,21 @@ functor Zippy_Step_Mixin(
     sharing type Step.PAction_Queue.PAction.zipper = Z.Z4.zipper
     sharing type Step.PAction_Queue.PAction.zipper_expand = Z.Z5.zipper
     sharing type Step.PAction_Queue.PAction.M.t = Z.M.t
+    sharing type Step.PAction_Queue.container1 = Z.Z1.ZM.container
     structure Co : ZIPPY_COROUTINE_MIXIN_BASE
     sharing type Co.M.t = Z.M.t
     val mk_exn : (unit -> @{ParaT_args encl = "" ""} Co.ME.exn)
+    structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
+    sharing type Ctxt.M.t =Z.M.t
+    structure Log : ZIPPY_LOGGER_MIXIN_BASE
+    structure Show1 : ZIPPY_SHOW_MIXIN_BASE
+    sharing type Show1.t = Z.Z1.zipper
+    structure Show_Queue_Entry : ZIPPY_SHOW_MIXIN_BASE
+    where type @{AllT_args} t = @{AllT_args} Step.PAction_Queue.entry
   ) : ZIPPY_STEP_MIXIN =
 struct
 
-open Step Z
+open Step Z Log
 structure MU = Zippy_Monad_Util(M); open MU
 structure ZL = Zippy_Lists(structure Z = Z; structure Co = Co)
 structure Exn = Zippy_Exception_Mixin(Co)
@@ -63,8 +71,6 @@ structure ZE = Zippy_Enum_Mixin(open Z; structure Co = Co)
 structure ZP = Zippy_Positions_Mixin(structure Z = ZP; structure Exn = Exn)
 structure LGoals_Results = Zippy_Lists_Goals_Results_Mixin(
   structure Z = ZL; structure Goals_Results = Step)
-structure PAction_Queue = Zippy_PAction_Queue_Mixin(
-  structure Z = ZE; structure PAction_Queue = PAction_Queue; val mk_exn = mk_exn)
 structure TMV = Zippy_Goal_Results_Top_Meta_Vars_Mixin(
   structure Z = Z
   structure Goal_Results_Top_Meta_Vars = Zippy_Goal_Results_Top_Meta_Vars_Mixin_Base(
@@ -76,29 +82,46 @@ fun move_entry_if_may_take_more_results {zipper,...} z = ZP.path_from_zipper4 zi
   >>= (fn pos => TMV.move_path_if_may_take_more_results4 pos z)
 
 fun update_goal_results_up_stagnate z = z |> (ZB.top4 >>> arr (rpair Results.empty))
-fun update_goal_results_up_expand ctxt = Down5.move >>> LGoals_Results.update_goal_results_up ctxt
+fun update_goal_results_up_expand z = Down5.move z
+  >>= Ctxt.with_ctxt (fn ctxt => fn z => z |>
+    (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
+      Pretty.str "Updating goal results upwards from",
+      Show1.pretty ctxt z
+    ] |> Pretty.block |> Pretty.string_of);
+    LGoals_Results.update_goal_results_up ctxt))
 fun update_goal_results_up_trim z = z |> (ZB.top1 >>> arr (rpair Results.empty))
 
 fun update_stagnate queue =
   update_goal_results_up_stagnate &&& (fn z => PAction_Queue.update_stagnate z queue)
-fun update_expand queue ctxt =
+fun update_expand queue =
   let fun update_queue z = PAction_Queue.update_expand
     (fn z => fn queue => Down5.move z >>= Z1.ZM.Unzip.move >>=
-      (fn z => PAction_Queue.fold_children_pactions_queue z queue))
+      (fn z => PAction_Queue.insert_descendant_pactions_queue z queue))
     z queue
-  in update_goal_results_up_expand ctxt &&& update_queue end
+  in update_goal_results_up_expand &&& update_queue end
 fun update_trim queue = update_goal_results_up_trim &&& (fn z => PAction_Queue.update_trim z queue)
-fun update_action_result queue ctxt = PAction_Queue.PAction.AResult.merge
-  (update_stagnate queue) (update_expand queue ctxt) (update_trim queue)
+fun update_action_result queue = PAction_Queue.PAction.AResult.merge
+  (update_stagnate queue) (update_expand queue) (update_trim queue)
 
-type @{AllT_args} container = @{AllT_args} Z1.ZM.container
-fun step_queue queue ctxt = case PAction_Queue.Queue.min_elem queue of
-    NONE => K (NONE, queue)
-  | SOME ((_, e), queue) => Z1.ZM.Zip.move
+fun step_queue queue z = Ctxt.get_ctxt () >>= (fn ctxt => z |>
+  let
+    val _ = @{log Logger.TRACE} ctxt (fn _ => "Pulling minimal entry from queue.")
+  in case PAction_Queue.Queue.min_elem queue of
+    NONE => (@{log Logger.DEBUG} ctxt (fn _ => "No more entries in queue.");
+      K NONE)
+  | SOME ((_, e), queue) =>
+      (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
+        Pretty.str "Pulled and moving to entry",
+        Show_Queue_Entry.pretty ctxt e
+      ] |> Pretty.block |> Pretty.string_of);
+      Z1.ZM.Zip.move
       >>> move_entry_if_may_take_more_results e
-      >>> AC.opt (K (NONE, queue))
-        (PAction_Queue.run_entry e >>> update_action_result queue ctxt >>> first (arr SOME))
+      >>> Ctxt.with_ctxt (fn ctxt => AC.opt
+        (fn _ => (@{log Logger.DEBUG} ctxt (fn _ => "Entry takes no further results.");
+          pure (SOME (NONE, queue))))
+        (@{log Logger.TRACE} ctxt (fn _ => "Running entry.");
+          PAction_Queue.run_entry e >>> update_action_result queue >>> arr (apfst SOME #> SOME))))
+  end)
 end
 
 end
-

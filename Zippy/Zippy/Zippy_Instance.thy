@@ -10,13 +10,13 @@ begin
 ML_file\<open>zippy_instance.ML\<close>
 
 ML\<open>
-  @{functor_instance struct_name = Zippy
+  \<^functor_instance>\<open>struct_name = Zippy
     and functor_name = Zippy_Instance
     and id = \<open>""\<close>
     and more_args = \<open>
-      type prio = Prio.prio
+      type prio = Prio.prio;
       val prio_ord = Prio.ord #> rev_order
-      val pretty_prio = Prio.pretty\<close>}
+      val pretty_prio = Prio.pretty\<close>\<close>
   structure Zippy = struct open Zippy; structure Prio = Prio end
 \<close>
 

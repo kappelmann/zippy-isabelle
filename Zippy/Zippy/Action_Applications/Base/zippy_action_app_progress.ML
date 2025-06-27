@@ -6,7 +6,7 @@ sig
   datatype progress = Promising | Unclear
   val promising : progress
   val unclear : progress
-  val pretty : progress -> Pretty.T
+  val pretty : progress SpecCheck_Show.show
 end
 
 structure Zippy_Action_App_Progress : ZIPPY_ACTION_APP_PROGRESS =

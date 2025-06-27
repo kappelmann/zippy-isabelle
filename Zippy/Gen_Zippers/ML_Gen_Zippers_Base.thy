@@ -17,7 +17,7 @@ carefully used (i.e. avoid deep type instantiation chains):
 \<^url>\<open>https://github.com/polyml/polyml/issues/213\<close>\<close>
 
 ML\<open>
-  @{functor_instance struct_name = Zipper_Type_Args_Antiquotations
+  \<^functor_instance>\<open>struct_name = Zipper_Type_Args_Antiquotations
     and functor_name = Args_Antiquotations
     and id = \<open>"ZipperT"\<close>
     and more_args = \<open>val init_args = {
@@ -26,8 +26,7 @@ ML\<open>
       encl = SOME ("", ""),
       encl_arg = SOME ("", ""),
       start = SOME 0,
-      stop = SOME NONE
-    }\<close>}
+      stop = SOME NONE}\<close>\<close>
 \<close>
 local_setup \<open>Zipper_Type_Args_Antiquotations.setup_args_attribute
   (SOME "set zipper type args antiquotation arguments")\<close>
@@ -35,7 +34,7 @@ setup \<open>Zipper_Type_Args_Antiquotations.setup_args_antiquotation\<close>
 setup \<open>Zipper_Type_Args_Antiquotations.setup_arg_antiquotation\<close>
 
 ML\<open>
-  @{functor_instance struct_name = All_Type_Args_Antiquotations
+  \<^functor_instance>\<open>struct_name = All_Type_Args_Antiquotations
     and functor_name = Args_Antiquotations
     and id = \<open>"AllT"\<close>
     and more_args = \<open>val init_args = {
@@ -44,8 +43,7 @@ ML\<open>
       encl = SOME ("(", ")"),
       encl_arg = SOME ("", ""),
       start = SOME 0,
-      stop = SOME NONE
-    }\<close>}
+      stop = SOME NONE}\<close>\<close>
 \<close>
 local_setup \<open>All_Type_Args_Antiquotations.setup_args_attribute
   (SOME "set all type args antiquotation arguments")\<close>

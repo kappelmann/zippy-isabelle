@@ -9,7 +9,7 @@ sig
   sharing type Co.M.t = M.t
 
   val mk_statesq :
-    (*enumerate direct gclusters children of given gcluster*)
+    (*enumerate gcluster children of given gcluster*)
     (@{ParaT_args} @{AllT_args} GCluster.L.container,
       (@{ParaT_args} unit, @{AllT_args} GClusters.L.container) Co.Co.coroutine) cat ->
     Proof.context -> (@{ParaT_args} @{AllT_args} GClusters.L.container,
@@ -17,7 +17,7 @@ sig
 
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   type @{AllT_args} zipper{i}\<close>\<close>
-  (*depth-first postorder enumeration of direct zipper1 children*)
+  (*depth-first postorder enumeration of zipper1 children*)
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   val enum_df_post_children{i} : (unit -> @{ParaT_args encl = "" ""} Co.ME.exn) ->
     (@{ParaT_args} @{AllT_args} zipper{i},

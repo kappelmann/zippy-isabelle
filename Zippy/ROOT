@@ -40,6 +40,7 @@ session Zippy = "Pure" +
     "Zippy/Goals/Lists"
     "Zippy/Identifiers"
     "Zippy/Lists"
+    "Zippy/Loggers"
     "Zippy/Nodes"
     "Zippy/Positions"
     "Zippy/Positions/Lists"

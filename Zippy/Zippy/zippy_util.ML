@@ -72,13 +72,14 @@ local open SC Mo A
 in
 (* initialisation *)
 fun init_thm_state state = state |>
-  (LGoals_Tac.init_state (node1 #> ZN.container_no_parent exn #> init_container1 #> Z1.ZM.Zip.move)
+  (LGoals_Tac.init_state
+    (node1 #> ZN.container_no_parent exn #> Container_Constructor.init_container1 #> Z1.ZM.Zip.move)
     (node2 (Zippy_Thm_State.meta_vars state))
   >>> arr snd)
 
 (* action cluster *)
 fun cons_action_cluster meta =
-  LGTCP.cons_action_cluster exn (fn copy => {meta = meta, copy = copy})
+  LGoals_Tac_Copy_PAction.cons_action_cluster exn (fn copy => {meta = meta, copy = copy})
 
 (* presults *)
 fun cons_presults_action result_tail_presults_action meta focus presults =
@@ -104,7 +105,7 @@ fun init_result_copy_parents prio result z =
   let fun set_next5 n z = L.set_modify ZN.Node_Next5.modifier (pure n, z)
   in
     Up4.move z >>= Up3.move >>= arr Mixin2.Top_Meta_Vars.L.getter >>=
-    (fn parent_top_meta_vars => LGTC.init_result_copy_parents mk_exn
+    (fn parent_top_meta_vars => LGoals_Tac_Copy.init_result_copy_parents mk_exn
       (fn gclusters => cons_action_application_result prio result
         >>> arr (set_next5 (node1 gclusters))
         >>> Down5.move)

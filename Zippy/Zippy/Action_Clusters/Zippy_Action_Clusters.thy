@@ -3,6 +3,7 @@ theory Zippy_Action_Clusters
   imports
     Zippy_Enums
     Zippy_Identifiers
+    Zippy_Loggers
     Zippy_Shows
     Zippy_States
 begin

@@ -6,7 +6,7 @@ Meta variables shared with top-level goal.
 signature ZIPPY_TOP_META_VARS =
 sig
   type top_meta_vars = Vars.set
-  val pretty : Proof.context -> top_meta_vars -> Pretty.T
+  val pretty : Proof.context -> top_meta_vars SpecCheck_Show.show
   (*initialise a state's top-level meta variables given its parent's top-level meta variables*)
   val init : top_meta_vars -> Zippy_Thm_State.state -> top_meta_vars
   val is_empty : top_meta_vars -> bool

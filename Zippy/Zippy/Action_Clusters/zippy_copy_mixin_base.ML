@@ -5,7 +5,6 @@ Copy mechanism.
 *)
 signature ZIPPY_COPY_MIXIN_BASE =
 sig
-  include HAS_LOGGER
   include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
 
   type @{AllT_args} copy
@@ -34,19 +33,11 @@ functor Zippy_Copy_Mixin_Base(A :
       (@{ParaT_args} @{AllT_args} zipper_to) M.hom_move) -> @{AllT_args} L.data
     val run_copy : @{AllT_args} L.data -> copy_update_data ->
       @{AllT_args} L.container -> (@{ParaT_args} @{AllT_args} zipper_to) M.hom_move
-    structure FIA : FUNCTOR_INSTANCE_ARGS
-    val parent_logger : Logger.logger_binding
   end
   ) : ZIPPY_COPY_MIXIN_BASE
   =
 struct
-
 open A A.M
-structure FIU = Functor_Instance_Util(FIA)
-val logger = Logger.setup_new_logger A.parent_logger FIU.base_name
-val _ = @{print} logger
-
 type @{AllT_args} zipper_from = @{AllT_args} L.container
 type @{AllT_args} copy = @{AllT_args} L.data
-
 end

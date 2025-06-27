@@ -10,7 +10,7 @@ sig
 
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   type @{AllT_args} zipper{i}\<close>\<close>
-  (*depth-first postorder enumeration of promising, direct zipper1 children*)
+  (*depth-first postorder enumeration of promising zipper1 children*)
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   val enum_df_post_promising_children{i} : (unit -> @{ParaT_args encl = "" ""} Co.ME.exn) ->
     (@{ParaT_args} @{AllT_args} zipper{i},

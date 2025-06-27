@@ -11,7 +11,7 @@ sig
   val empty : Zippy_Identifier.id -> metadata
 
   val eq_metadata : metadata * metadata -> bool
-  val pretty_metadata : metadata -> Pretty.T
+  val pretty_metadata : metadata SpecCheck_Show.show
 
   structure Id : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
   where type @{AllT_args} container = metadata

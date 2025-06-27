@@ -51,7 +51,6 @@ functor Zippy_PAction_Mixin_Base(A :
   ) : ZIPPY_PACTION_MIXIN_BASE
   =
 struct
-
 open A A.M
 
 type @{AllT_args} zipper = @{AllT_args} L.container
@@ -60,5 +59,4 @@ type @{AllT_args} action_result =
   (@{AllT_args} zipper, @{AllT_args} zipper_expand, @{AllT_args} zipper_trim) AResult.result
 type @{AllT_args} action = prio -> (@{ParaT_args} @{AllT_args} zipper,
   @{AllT_args} action_result) move
-
 end

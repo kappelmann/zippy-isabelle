@@ -4,7 +4,7 @@
 signature ZIPPY_PACTION_QUEUE_MIXIN_BASE =
 sig
   type prio
-  structure PAction : ZIPPY_PACTION_MIXIN_BASE
+  structure PAction : ZIPPY_PACTION_MIXIN
   sharing type PAction.prio = prio
   structure Queue : PRIORITY_QUEUE
   sharing type Queue.prio = prio
@@ -17,7 +17,7 @@ end
 
 functor Zippy_PAction_Queue_Mixin_Base(A :
   sig
-    structure PAction : ZIPPY_PACTION_MIXIN_BASE
+    structure PAction : ZIPPY_PACTION_MIXIN
     structure Queue : PRIORITY_QUEUE
     sharing type Queue.prio = PAction.prio
   end

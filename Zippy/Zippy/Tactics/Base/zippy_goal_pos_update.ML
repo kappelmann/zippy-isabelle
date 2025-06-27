@@ -9,7 +9,7 @@ sig
   val empty : 't target
   val target : 't list -> 't target
   val map_list : ('t list -> 'u list) -> 't target -> 'u target
-  val pretty : ('t -> Pretty.T) -> 't target -> Pretty.T
+  val pretty : 't SpecCheck_Show.show -> 't target SpecCheck_Show.show
   include \<^eval>\<open>sfx_ParaT_nargs "MONAD_BASE"\<close>
   where type (@{ParaT_args} 'a) t = 'a target
 end

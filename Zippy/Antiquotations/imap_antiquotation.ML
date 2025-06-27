@@ -178,7 +178,8 @@ fun read_antiquotation input ctxt =
   let
     val keywords = Thy_Header.get_keywords' ctxt
     val (f, ctxt) = input
-      |> Parse.read_embedded ctxt keywords (pair (Context.Proof ctxt) #> parse_antiquotation_args #> apsnd snd)
+      |> Parse.read_embedded ctxt keywords
+        (pair (Context.Proof ctxt) #> parse_antiquotation_args #> apsnd snd)
       |> (fn f => f ctxt)
   in ML_Context.expand_antiquotes (ML_Code_Util.read f) ctxt end
 

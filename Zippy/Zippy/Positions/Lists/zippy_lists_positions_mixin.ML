@@ -8,7 +8,8 @@ sig
   val compact_path : ZP.ZGPos.path -> int list
   val pretty_path : ZP.ZGPos.path SpecCheck_Show.show
   \<^imap>\<open>\<open>{i}\<close> => \<open>
-  val pretty_position{i} : @{AllT_args} Z{i}.zipper SpecCheck_Show.show\<close>\<close>
+  val pretty_position_zipper{i} : @{AllT_args} Z{i}.zipper SpecCheck_Show.show
+  val pretty_position_container{i} : @{AllT_args} Z{i}.ZM.container SpecCheck_Show.show\<close>\<close>
 end
 
 functor Zippy_Lists_Positions_Mixin(
@@ -26,9 +27,13 @@ val compact_path = List.map (List.length #> General_Util.pred)
 val pretty_path = compact_path #> List.rev #> chop_groups \<^eval>\<open>ML_Gen.nzippers' ()\<close>
   #> Show.list (Show.list Show.int)
 
+fun pretty_position depth path = Show.record [("Depth", Show.int depth), ("Path", pretty_path path)]
+
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-fun pretty_position{i} z = Show.record [
-    ("Depth", Show.int (ZP.ZZDepth_Co{i}.getter z)),
-    ("Path", pretty_path (ZP.ZZGPos_Co{i}.getter z))
-  ]\<close>\<close>
+fun pretty_position_zipper{i} z = pretty_position
+  (ZP.ZZDepth_Co{i}.getter z) (ZP.ZZGPos_Co{i}.getter z)
+fun pretty_position_container{i} c = pretty_position
+  (ZP.SZDepth.SZ{i}.Container.getter c) (ZP.SZGPos.SZ{i}.Container.getter c)
+\<close>\<close>
+
 end
