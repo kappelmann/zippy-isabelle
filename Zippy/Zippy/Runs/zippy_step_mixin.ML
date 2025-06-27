@@ -5,38 +5,38 @@ signature ZIPPY_STEP_MIXIN =
 sig
   include ZIPPY_LOGGER_MIXIN_BASE
   include ZIPPY_STEP_MIXIN_BASE
-  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   sharing type M.t = PAction_Queue.PAction.M.t
 
   val move_entry_if_may_take_more_results : @{AllT_args} PAction_Queue.entry ->
     (@{ParaT_args} @{AllT_args} GClusters.L.container,
-      @{AllT_args} PAction_Queue.PAction.L.container option) cat
+      @{AllT_args} PAction_Queue.PAction.L.container option) morph
 
   val update_goal_results_up_stagnate : (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper,
-    @{AllT_args} GClusters.L.container * Results.results) cat
+    @{AllT_args} GClusters.L.container * Results.results) morph
   val update_goal_results_up_expand :
     (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_expand,
-      @{AllT_args} GClusters.L.container * Results.results) cat
+      @{AllT_args} GClusters.L.container * Results.results) morph
   val update_goal_results_up_trim : (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_trim,
-    @{AllT_args} GClusters.L.container * Results.results) cat
+    @{AllT_args} GClusters.L.container * Results.results) morph
 
   val update_stagnate : @{AllT_args} PAction_Queue.queue ->
     (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper,
-      (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) cat
+      (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) morph
   val update_expand : @{AllT_args} PAction_Queue.queue ->
     (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_expand,
-      (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) cat
+      (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) morph
   val update_trim : @{AllT_args} PAction_Queue.queue ->
     (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_trim,
-      (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) cat
+      (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) morph
   val update_action_result : @{AllT_args} PAction_Queue.queue ->
     (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.action_result,
-      (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) cat
+      (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) morph
 
   val step_queue : @{AllT_args} PAction_Queue.queue ->
     (@{ParaT_args} @{AllT_args} PAction_Queue.container1,
       (((@{AllT_args} GClusters.L.container * Results.results)) option
-      * @{AllT_args} PAction_Queue.queue) option) cat
+      * @{AllT_args} PAction_Queue.queue) option) morph
 end
 
 functor Zippy_Step_Mixin(
@@ -82,7 +82,7 @@ fun move_entry_if_may_take_more_results {zipper,...} z = ZP.path_from_zipper4 zi
   >>= (fn pos => TMV.move_path_if_may_take_more_results4 pos z)
 
 fun update_goal_results_up_stagnate z = z |> (ZB.top4 >>> arr (rpair Results.empty))
-fun update_goal_results_up_expand z = Down5.move z
+fun update_goal_results_up_expand z = Down5.morph z
   >>= Ctxt.with_ctxt (fn ctxt => fn z => z |>
     (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
       Pretty.str "Updating goal results upwards from",
@@ -95,7 +95,7 @@ fun update_stagnate queue =
   update_goal_results_up_stagnate &&& (fn z => PAction_Queue.update_stagnate z queue)
 fun update_expand queue =
   let fun update_queue z = PAction_Queue.update_expand
-    (fn z => fn queue => Down5.move z >>= Z1.ZM.Unzip.move >>=
+    (fn z => fn queue => Down5.morph z >>= Z1.ZM.Unzip.morph >>=
       (fn z => PAction_Queue.insert_descendant_pactions_queue z queue))
     z queue
   in update_goal_results_up_expand &&& update_queue end
@@ -114,7 +114,7 @@ fun step_queue queue z = Ctxt.get_ctxt () >>= (fn ctxt => z |>
         Pretty.str "Pulled and moving to entry",
         Show_Queue_Entry.pretty ctxt e
       ] |> Pretty.block |> Pretty.string_of);
-      Z1.ZM.Zip.move
+      Z1.ZM.Zip.morph
       >>> move_entry_if_may_take_more_results e
       >>> Ctxt.with_ctxt (fn ctxt => AC.opt
         (fn _ => (@{log Logger.DEBUG} ctxt (fn _ => "Entry takes no further results.");

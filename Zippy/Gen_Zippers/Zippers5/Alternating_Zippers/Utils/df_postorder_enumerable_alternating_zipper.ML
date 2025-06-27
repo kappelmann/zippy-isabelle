@@ -2,7 +2,7 @@
     Author:     Kevin Kappelmann
 *)
 (*preconditions:
-1) Down{i}.move moves to leftmost, topmost child*)
+1) Down{i}.morph moves to leftmost, topmost child*)
 functor \<^eval>\<open>mk_name ["DF_Postorder_Enumerate", pfx_sfx_nargs "Alternating_Zipper"]\<close>(
     structure Z : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close>
     \<^imap>\<open>\<open>{i}\<close> => \<open>
@@ -20,8 +20,8 @@ structure Co = E1.Co
 
 local
   open Co.AE
-  structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(Z); open SC
-  structure M = \<^eval>\<open>sfx_ParaT_nargs "Monad"\<close>(Z.K.M); open M
+  structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(Z.K); open SC
+  structure M = \<^eval>\<open>sfx_ParaT_nargs "Monad"\<close>(Z.M); open M
   structure A = \<^eval>\<open>sfx_ParaT_nargs "Arrow"\<close>(Co.AE); open A
 in
 
@@ -35,26 +35,26 @@ fun gen_enum_zipper enum_zipper down back_up enum_zipper_down =
   in enum enum_zipper end
 fun enum_zipper1 mk_exn =
   let
-    val back_up = \<^imap>\<open>\<open>{j}\<close> =>\<open>Up\<^eval>\<open>ML_Gen.sub_mod_nzippers' 1 ({j} - 1) ^ "."\<close>move\<close>
+    val back_up = \<^imap>\<open>\<open>{j}\<close> =>\<open>Up\<^eval>\<open>ML_Gen.sub_mod_nzippers' 1 ({j} - 1) ^ "."\<close>morph\<close>
       where sep = ">>>"\<close>
     fun enum co = Co.resume co >>> catch'
-      (fn (z, co) => Down1.move z
+      (fn (z, co) => Down1.morph z
         >>= enum_zipper2 mk_exn
         >>= second (arr (fn co1 => Co.append co1 (Co.cons back_up (enum co |> Co.coroutine)))))
       (second (arr (enum #> Co.coroutine)))
   in enum (E1.enum_zipper mk_exn) |> Co.coroutine end
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 and enum_zipper{i} mk_exn =
-  let val back_up = \<^imap>\<open>\<open>{j}\<close> =>\<open>Up\<^eval>\<open>ML_Gen.sub_mod_nzippers' 1 ({j} - {i}) ^ "."\<close>move\<close>
+  let val back_up = \<^imap>\<open>\<open>{j}\<close> =>\<open>Up\<^eval>\<open>ML_Gen.sub_mod_nzippers' 1 ({j} - {i}) ^ "."\<close>morph\<close>
     where start = {i} and sep = ">>>"\<close>
   in
-    gen_enum_zipper (E{i}.enum_zipper mk_exn) Down{i}.move back_up
+    gen_enum_zipper (E{i}.enum_zipper mk_exn) Down{i}.morph back_up
       (enum_zipper\<^eval>\<open>succ_mod_nzippers {i}\<close> mk_exn)
   end
 \<close> where start = 2 and stop = \<^eval>\<open>string_of_int (ML_Gen.nzippers () - 1)\<close>\<close>
 and \<^eval>\<open>"enum_zipper" ^ ML_Gen.nzippers' ()\<close> mk_exn =
   gen_enum_zipper (\<^eval>\<open>implode ["E", ML_Gen.nzippers' (), ".enum_zipper"]\<close> mk_exn)
-    \<^eval>\<open>implode ["Down", ML_Gen.nzippers' (), ".move"]\<close> Up1.move
+    \<^eval>\<open>implode ["Down", ML_Gen.nzippers' (), ".morph"]\<close> Up1.morph
     (Co.resume (enum_zipper1 mk_exn))
 
 end

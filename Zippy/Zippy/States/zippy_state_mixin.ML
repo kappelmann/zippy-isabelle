@@ -7,9 +7,9 @@ sig
   structure AS : \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI_ARROW_STATE"\<close>
   where type (@{ParaT_args} 'i, 'j, 'a) K.M.t = (@{ParaT_args} 'i, 'j, 'a) MS.t
 
-  val with_state_select : (@{ParaT_arg 0} -> 's) -> ('s -> (@{ParaT_args} 'a, 'b) cat) ->
-    (@{ParaT_args} 'a, 'b) cat
-  val with_state : (@{ParaT_arg 0} -> (@{ParaT_args} 'a, 'b) cat) -> (@{ParaT_args} 'a, 'b) cat
+  val with_state_select : (@{ParaT_arg 0} -> 's) -> ('s -> (@{ParaT_args} 'a, 'b) morph) ->
+    (@{ParaT_args} 'a, 'b) morph
+  val with_state : (@{ParaT_arg 0} -> (@{ParaT_args} 'a, 'b) morph) -> (@{ParaT_args} 'a, 'b) morph
 end
 
 functor Zippy_State_Mixin(

@@ -11,12 +11,12 @@ sig
   type (@{ParaT_args} 'a, 'b, 'c) acoroutine
   type (@{ParaT_args} 'a, 'b) coroutine = (@{ParaT_args} 'a, 'b, 'b) acoroutine
 
-  val acoroutine : (@{ParaT_args} 'a, 'b * (@{ParaT_args} 'a, 'c, 'b) acoroutine) C.cat ->
+  val acoroutine : (@{ParaT_args} 'a, 'b * (@{ParaT_args} 'a, 'c, 'b) acoroutine) C.morph ->
     (@{ParaT_args} 'a, 'b, 'c) acoroutine
-  val coroutine : (@{ParaT_args} 'a, 'b * (@{ParaT_args} 'a, 'b) coroutine) C.cat ->
+  val coroutine : (@{ParaT_args} 'a, 'b * (@{ParaT_args} 'a, 'b) coroutine) C.morph ->
     (@{ParaT_args} 'a, 'b) coroutine
   val resume : (@{ParaT_args} 'a, 'b, 'c) acoroutine -> (@{ParaT_args} 'a, 'b *
-    (@{ParaT_args} 'a, 'c, 'b) acoroutine) C.cat
+    (@{ParaT_args} 'a, 'c, 'b) acoroutine) C.morph
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Coroutine"\<close>(C : \<^eval>\<open>sfx_ParaT_nargs "CATEGORY_BASE"\<close>)
@@ -25,7 +25,7 @@ struct
 structure C = C
 
 datatype (@{ParaT_args} 'a, 'b, 'c) acoroutine =
-  Coroutine of (@{ParaT_args} 'a, 'b * (@{ParaT_args} 'a, 'c, 'b) acoroutine) C.cat
+  Coroutine of (@{ParaT_args} 'a, 'b * (@{ParaT_args} 'a, 'c, 'b) acoroutine) C.morph
 
 type (@{ParaT_args} 'a, 'b) coroutine = (@{ParaT_args} 'a, 'b, 'b) acoroutine
 

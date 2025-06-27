@@ -12,9 +12,9 @@ sig
   sharing type Z.Z{i}.ZD.content = Z{i}.ZD.content\<close>\<close>
 
   \<^imap>\<open>\<open>{i}\<close> => \<open>
-  val path_from_zipper{i} : (@{ParaT_args} @{AllT_args} Z{i}.zipper, path{i}) cat
+  val path_from_zipper{i} : (@{ParaT_args} @{AllT_args} Z{i}.zipper, path{i}) morph
   val move_zipper{i} : @{AllT_args} Z{i}.zipper ->
-    (@{ParaT_args} @{AllT_args} Z1.zipper, @{AllT_args} Z{i}.zipper) cat\<close>\<close>
+    (@{ParaT_args} @{AllT_args} Z1.zipper, @{AllT_args} Z{i}.zipper) morph\<close>\<close>
 
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   structure ZZGPos_Co{i} : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>

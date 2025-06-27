@@ -5,7 +5,7 @@ Prioritised results.
 *)
 signature ZIPPY_PRESULTS_MIXIN_BASE =
 sig
-  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   type @{AllT_args} presults
   type @{AllT_args} zipper
 
@@ -26,7 +26,7 @@ end
 
 functor Zippy_PResults_Mixin_Base(A :
   sig
-    structure M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+    structure M : \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
     structure L : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
     structure Co : ZIPPY_COROUTINE_MIXIN_BASE
     sharing type Co.M.t = M.M.t

@@ -7,7 +7,7 @@ sig
   structure AS : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_STATE"\<close>
   sharing type AS.K.M.t = MS.t
 
-  val with_ctxt : (Proof.context -> (@{ParaT_args} 'a, 'b) cat) -> (@{ParaT_args} 'a, 'b) cat
+  val with_ctxt : (Proof.context -> (@{ParaT_args} 'a, 'b) morph) -> (@{ParaT_args} 'a, 'b) morph
   val get_ctxt : unit -> (@{ParaT_args} Proof.context) M.t
 end
 

@@ -6,17 +6,17 @@ Utilities on indexed categories
 signature \<^eval>\<open>sfx_ParaT_nargs "IARROW_EXCEPTION_REPEAT"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_EXCEPTION"\<close>
-  val repeat : (@{ParaT_args} 'i, 'i, 'a, 'a) cat -> (@{ParaT_args} 'i, 'i, 'a, 'a) cat
-  val repeatn_safe : int -> (@{ParaT_args} 'i, 'i, 'a, 'a) cat -> (@{ParaT_args} 'i, 'i, 'a, 'a) cat
-  val try_step : (@{ParaT_args} 'i, 'j, 'a, 'b) cat -> (@{ParaT_args} 'i, 'i, 'a, 'a) cat ->
-    (@{ParaT_args} 'i, 'j, 'a, 'b) cat
+  val repeat : (@{ParaT_args} 'i, 'i, 'a) emorph -> (@{ParaT_args} 'i, 'i, 'a) emorph
+  val repeatn_safe : int -> (@{ParaT_args} 'i, 'i, 'a) emorph -> (@{ParaT_args} 'i, 'i, 'a) emorph
+  val try_step : (@{ParaT_args} 'i, 'j, 'a, 'b) morph -> (@{ParaT_args} 'i, 'i, 'a) emorph ->
+    (@{ParaT_args} 'i, 'j, 'a, 'b) morph
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI_ARROW_EXCEPTION_REPEAT"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_EXCEPTION_REPEAT"\<close>
-  where type (@{ParaT_args} 'i, 'j, 'a, 'b) cat = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'i, 'j, 'a, 'b) morph = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "IKleisli_Arrow_Exception_Repeat"\<close>(

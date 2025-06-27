@@ -84,10 +84,10 @@ local
   local structure Z : ZIPPY_BASE_BASE = ZLP; open Z
   in
   datatype @{AllT_args} copy = Copy of copy_update_data -> @{AllT_args} zipper3 ->
-    (@{ParaT_args} @{AllT_args} zipper1) hom_move
+    (@{ParaT_args} @{AllT_args} zipper1) emorph
   and @{AllT_args} paction = PAction of (@{ParaT_args} @{AllT_args} zipper4, prio *
     (prio -> (@{ParaT_args} @{AllT_args} zipper4,
-      (@{AllT_args} zipper4, @{AllT_args} zipper5, @{AllT_args} zipper1) AResult.result) move)) cat
+      (@{AllT_args} zipper4, @{AllT_args} zipper5, @{AllT_args} zipper1) AResult.result) morph)) morph
   and @{AllT_args} presults = PResults of
     (@{ParaT_args} @{AllT_args} zipper4, prio, result) Co.Co.acoroutine
   withtype

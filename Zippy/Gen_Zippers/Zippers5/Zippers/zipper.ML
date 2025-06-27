@@ -3,9 +3,9 @@
 *)
 signature \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close> =
 sig
-  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   type @{AllT_args} zipper
-  structure ZM : \<^eval>\<open>sfx_T_nargs "ZIPPER_MOVES"\<close>
+  structure ZM : \<^eval>\<open>sfx_T_nargs "ZIPPER_MORPHS"\<close>
   sharing type ZM.zipper = zipper
   sharing type ZM.M.t = M.t
   structure ZD : \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close>
@@ -13,7 +13,7 @@ sig
 end
 
 functor \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
-    structure ZM : \<^eval>\<open>sfx_T_nargs "ZIPPER_MOVES"\<close>
+    structure ZM : \<^eval>\<open>sfx_T_nargs "ZIPPER_MORPHS"\<close>
     structure ZD : \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close>
     sharing type ZD.zipper = ZM.zipper
   ) : \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close> =

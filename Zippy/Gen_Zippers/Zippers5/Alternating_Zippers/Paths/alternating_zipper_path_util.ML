@@ -7,10 +7,10 @@ sig
   structure Z : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER"\<close>
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   val move_path{i} : path{i} ->
-    (@{ParaT_args} @{AllT_args} Z.Z1.zipper, @{AllT_args} Z.Z{i}.zipper) Z.cat
+    (@{ParaT_args} @{AllT_args} Z.Z1.zipper, @{AllT_args} Z.Z{i}.zipper) Z.morph
 
   val move_path_from_root{i} : int list list ->
-    (@{ParaT_args} @{AllT_args} Z.Z1.zipper, @{AllT_args} Z.Z{i}.zipper) Z.cat\<close>\<close>
+    (@{ParaT_args} @{AllT_args} Z.Z1.zipper, @{AllT_args} Z.Z{i}.zipper) Z.morph\<close>\<close>
 end
 
 functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Path_Util"\<close>(
@@ -27,14 +27,14 @@ local
   structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(A)
   open SC
 in
-fun move_path1 (Pos pos) = PosU.move_pos Z1.ZM.Left.move Z1.ZM.Right.move Z1.ZM.Down.move pos
+fun move_path1 (Pos pos) = PosU.move_pos Z1.ZM.Left.morph Z1.ZM.Right.morph Z1.ZM.Down.morph pos
   | move_path1 (Path1 (pos, p)) = \<^eval>\<open>"move_path" ^ pred_mod_nzippers 1\<close> p
-    >>> \<^eval>\<open>"Down" ^ pred_mod_nzippers 1 ^ ".move"\<close>
+    >>> \<^eval>\<open>"Down" ^ pred_mod_nzippers 1 ^ ".morph"\<close>
     >>> move_path1 (Pos pos)
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 and move_path{i} (Path{i} (pos, p)) = move_path\<^eval>\<open>pred_mod_nzippers {i}\<close> p
-  >>> Down\<^eval>\<open>pred_mod_nzippers {i} ^ "."\<close>move
-  >>> PosU.move_pos Z{i}.ZM.Left.move Z{i}.ZM.Right.move Z{i}.ZM.Down.move pos
+  >>> Down\<^eval>\<open>pred_mod_nzippers {i} ^ "."\<close>morph
+  >>> PosU.move_pos Z{i}.ZM.Left.morph Z{i}.ZM.Right.morph Z{i}.ZM.Down.morph pos
 \<close> where start = 2\<close>
 end
 

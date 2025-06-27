@@ -16,7 +16,7 @@ session Zippy = "Pure" +
     "Gen_Zippers/Zippers5/Alternating_Zippers/Utils"
     "Gen_Zippers/Zippers5/Enumerable"
     "Gen_Zippers/Zippers5/Linked_Zippers"
-    "Gen_Zippers/Zippers5/Moves"
+    "Gen_Zippers/Zippers5/Morphs"
     "Gen_Zippers/Zippers5/Structured_Lenses"
     "Gen_Zippers/Zippers5/Zippers"
     "Gen_Zippers/Zippers5/Zippers/Instances"

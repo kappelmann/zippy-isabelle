@@ -2,14 +2,14 @@
 section \<open>Zippers\<close>
 theory ML_Zippers
   imports
-    ML_Moves
+    ML_Morphs
     ML_Structured_Lenses
 begin
 
-ML_gen_file\<open>zipper_moves.ML\<close>
-ML_gen_file\<open>modify_zipper_moves_zipper.ML\<close>
-ML_gen_file\<open>modify_zipper_moves_container.ML\<close>
-ML_gen_file\<open>pair_zipper_moves.ML\<close>
+ML_gen_file\<open>zipper_morphs.ML\<close>
+ML_gen_file\<open>modify_zipper_morphs_zipper.ML\<close>
+ML_gen_file\<open>modify_zipper_morphs_container.ML\<close>
+ML_gen_file\<open>pair_zipper_morphs.ML\<close>
 
 ML_gen_file\<open>zipper_data.ML\<close>
 ML_gen_file\<open>modify_zipper_data_zipper.ML\<close>

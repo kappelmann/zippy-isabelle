@@ -5,21 +5,21 @@ signature \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "COROUTINE"\<close>
   structure AE : \<^eval>\<open>sfx_ParaT_nargs "ARROW_EXCEPTION_REPEAT"\<close>
-  sharing type AE.cat = C.cat
+  sharing type AE.morph = C.morph
   val throw : @{ParaT_args encl = "(" ")"} AE.exn -> (@{ParaT_args} 'a, 'b, 'c) acoroutine
-  val cons : (@{ParaT_args} 'a, 'b) C.cat -> (@{ParaT_args} 'a, 'c, 'b) acoroutine ->
+  val cons : (@{ParaT_args} 'a, 'b) C.morph -> (@{ParaT_args} 'a, 'c, 'b) acoroutine ->
     (@{ParaT_args} 'a, 'b, 'c) acoroutine
   val append : (@{ParaT_args} 'a, 'b) coroutine -> (@{ParaT_args} 'a, 'b) coroutine ->
     (@{ParaT_args} 'a, 'b) coroutine
 
-  val map : (@{ParaT_args} 'b1, 'b2) C.cat -> (@{ParaT_args}  'c1, 'c2) C.cat ->
+  val map : (@{ParaT_args} 'b1, 'b2) C.morph -> (@{ParaT_args}  'c1, 'c2) C.morph ->
     (@{ParaT_args} 'a, 'b1, 'c1) acoroutine -> (@{ParaT_args} 'a, 'b2, 'c2) acoroutine
-  val map_co : (@{ParaT_args} 'b1, 'b2) C.cat -> (@{ParaT_args} 'a, 'b1) coroutine ->
+  val map_co : (@{ParaT_args} 'b1, 'b2) C.morph -> (@{ParaT_args} 'a, 'b1) coroutine ->
     (@{ParaT_args} 'a, 'b2) coroutine
 
-  val enum : (@{ParaT_args} 'a, 'a) C.cat -> (@{ParaT_args} unit, 'a) C.cat ->
+  val enum : (@{ParaT_args} 'a) C.emorph -> (@{ParaT_args} unit, 'a) C.morph ->
     (@{ParaT_args} unit, 'a) coroutine
-  val enum' : (@{ParaT_args} 'a, 'a) C.cat -> (@{ParaT_args} 'a, 'a) coroutine
+  val enum' : (@{ParaT_args} 'a) C.emorph -> (@{ParaT_args} 'a, 'a) coroutine
   val enum_co : (@{ParaT_args} 'a, 'a) coroutine -> 'a -> (@{ParaT_args} unit, 'a) coroutine
 
   val flat : (@{ParaT_args} 'a, (@{ParaT_args} 'a, 'b) coroutine) coroutine ->
@@ -32,22 +32,22 @@ sig
   val dest_res : 'a res -> 'a
   val map_res : ('a -> 'b) -> 'a res -> 'b res
 
-  val repeat_res : (@{ParaT_args} 'r, 'a) C.cat -> (@{ParaT_args} 'b, 'r res) C.cat ->
-    (@{ParaT_args} 'a, 'b) coroutine -> (@{ParaT_args} 'a, 'r res) C.cat
+  val repeat_res : (@{ParaT_args} 'r, 'a) C.morph -> (@{ParaT_args} 'b, 'r res) C.morph ->
+    (@{ParaT_args} 'a, 'b) coroutine -> (@{ParaT_args} 'a, 'r res) C.morph
 
-  val repeat_step_res : (@{ParaT_args} 'b * 'r, 'a) C.cat -> (@{ParaT_args} 'b * 'r, 'r res) C.cat ->
-    (@{ParaT_args} 'a, 'b) coroutine -> (@{ParaT_args} 'a * 'r, ('b * 'r) res) C.cat
+  val repeat_step_res : (@{ParaT_args} 'b * 'r, 'a) C.morph -> (@{ParaT_args} 'b * 'r, 'r res) C.morph ->
+    (@{ParaT_args} 'a, 'b) coroutine -> (@{ParaT_args} 'a * 'r, ('b * 'r) res) C.morph
 
-  val repeat_step_res_init : (@{ParaT_args} 'b * 'r, 'a) C.cat ->
-    (@{ParaT_args} 'b * 'r, 'r res) C.cat -> (@{ParaT_args} 'b, 'a) C.cat ->
-    (@{ParaT_args} 'b, 'r res) C.cat -> (@{ParaT_args} 'a, 'b) coroutine ->
-    (@{ParaT_args} 'a, ('b * 'r) res) C.cat
+  val repeat_step_res_init : (@{ParaT_args} 'b * 'r, 'a) C.morph ->
+    (@{ParaT_args} 'b * 'r, 'r res) C.morph -> (@{ParaT_args} 'b, 'a) C.morph ->
+    (@{ParaT_args} 'b, 'r res) C.morph -> (@{ParaT_args} 'a, 'b) coroutine ->
+    (@{ParaT_args} 'a, ('b * 'r) res) C.morph
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Coroutine_Util"\<close>(
     structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION_REPEAT"\<close>
     structure Co : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE"\<close>
-    where type (@{ParaT_args} 'a, 'b) C.cat = (@{ParaT_args} 'a, 'b) AE.cat
+    where type (@{ParaT_args} 'a, 'b) C.morph = (@{ParaT_args} 'a, 'b) AE.morph
   ) : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL"\<close> =
 struct
 

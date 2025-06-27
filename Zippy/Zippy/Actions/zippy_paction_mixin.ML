@@ -11,11 +11,11 @@ sig
   val no_action : @{ParaT_args encl = "(" ")"} Exn.AE.exn -> @{AllT_args} action
   val no_paction : @{ParaT_args encl = "(" ")"} Exn.AE.exn -> @{AllT_args} paction
   val disable_paction : @{ParaT_args encl = "(" ")"} Exn.AE.exn ->
-    (@{ParaT_args} @{AllT_args} zipper) hom_move
+    (@{ParaT_args} @{AllT_args} zipper) emorph
 
-  val get_run_paction : (@{ParaT_args} @{AllT_args} zipper, prio * @{AllT_args} action) cat
+  val get_run_paction : (@{ParaT_args} @{AllT_args} zipper, prio * @{AllT_args} action) morph
   val run_action : prio * @{AllT_args} action -> (@{ParaT_args} @{AllT_args} zipper,
-    @{AllT_args} action_result) move
+    @{AllT_args} action_result) morph
 end
 
 functor Zippy_PAction_Mixin(
@@ -39,7 +39,7 @@ fun no_paction e = AE.throw' e |> PAction.paction
 
 local open Mo
 in
-fun disable_paction e z = Ctxt.get_ctxt () >>= arr (fn ctxt =>
+fun disable_paction e z = Ctxt.get_ctxt () >>= K.arr (fn ctxt =>
   (@{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
       Pretty.str "Disabling paction of",
       Show.pretty ctxt z

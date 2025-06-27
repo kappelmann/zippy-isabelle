@@ -35,7 +35,7 @@ struct
 
 structure Z =
 struct
-  structure M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close> = AZ1
+  structure M : \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close> = AZ1
   open M
   structure L = AZ1.L
   \<^imap>\<open>\<open>{i}\<close> => \<open>
@@ -43,16 +43,15 @@ struct
     structure Z1 = AZ1.Z{i}
     structure Z2 = AZ2.Z{i})
 
-  structure Down{i} = \<^eval>\<open>sfx_T_nargs "Pair_Move"\<close>(
+  structure Down{i} = \<^eval>\<open>sfx_T_nargs "Pair_Morph"\<close>(
     structure M1 = AZ1.Down{i}
     structure M2 = AZ2.Down{i})
 
-  structure Up{i} = \<^eval>\<open>sfx_T_nargs "Pair_Move"\<close>(
+  structure Up{i} = \<^eval>\<open>sfx_T_nargs "Pair_Morph"\<close>(
     structure M1 = AZ1.Up{i}
     structure M2 = AZ2.Up{i})\<close>\<close>
 end
 open Z
-
 structure SZ1 =
 struct
   structure Z = Z
@@ -67,5 +66,4 @@ struct
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   structure SZ{i} = Z{i}.SZ2\<close>\<close>
 end
-
 end

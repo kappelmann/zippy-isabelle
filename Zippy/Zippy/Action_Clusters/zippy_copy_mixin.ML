@@ -7,10 +7,10 @@ sig
   include ZIPPY_COPY_MIXIN_BASE
 
   val get_run_copy : copy_update_data -> @{AllT_args} zipper_from ->
-    (@{ParaT_args} @{AllT_args} zipper_to) hom_move
+    (@{ParaT_args} @{AllT_args} zipper_to) emorph
 
   val get_run_copy_safe : copy_update_data -> @{AllT_args} zipper_from ->
-    (@{ParaT_args} @{AllT_args} zipper_to) hom_move
+    (@{ParaT_args} @{AllT_args} zipper_to) emorph
 end
 
 functor Zippy_Copy_Mixin(

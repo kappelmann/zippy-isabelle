@@ -4,7 +4,7 @@
 signature ZIPPY_PRESULTS_POSITIONS_MIXIN =
 sig
   include ZIPPY_PRESULTS_MIXIN_BASE
-  val with_depth_prio_res_co : (int -> (@{ParaT_args} prio, prio) cat) ->
+  val with_depth_prio_res_co : (int -> (@{ParaT_args} prio) emorph) ->
     (@{ParaT_args} @{AllT_args} zipper * result Seq.seq, prio * result Seq.seq) Co.Co.coroutine ->
     (@{ParaT_args} @{AllT_args} zipper * result Seq.seq, prio * result Seq.seq) Co.Co.coroutine
 end
@@ -17,7 +17,7 @@ functor Zippy_PResults_Positions_Mixin(
   =
 struct
 open Z PResults
-structure MU = Zippy_Monad_Util(K.M); open MU
+structure MU = Zippy_Monad_Util(M); open MU
 
 local open Mo A Co
 in

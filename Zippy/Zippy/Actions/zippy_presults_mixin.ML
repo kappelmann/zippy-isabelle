@@ -8,9 +8,9 @@ sig
   val empty_presults : @{ParaT_args encl = "(" ")"} Co.ME.exn -> @{AllT_args} presults
 
   val run_presults : @{AllT_args} presults -> (@{ParaT_args} @{AllT_args} zipper,
-    prio * (@{ParaT_args} @{AllT_args} zipper, result, prio) Co.Co.acoroutine) cat
+    prio * (@{ParaT_args} @{AllT_args} zipper, result, prio) Co.Co.acoroutine) morph
   val get_run_presults : (@{ParaT_args} @{AllT_args} zipper,
-    prio * (@{ParaT_args} @{AllT_args} zipper, result, prio) Co.Co.acoroutine) cat
+    prio * (@{ParaT_args} @{AllT_args} zipper, result, prio) Co.Co.acoroutine) morph
 
   val gen_presults_from_sq :
     (*coroutine in case of an empty sequence*)
@@ -27,7 +27,7 @@ sig
   val mk_prio_res_co : (@{ParaT_args} @{AllT_args} zipper * result Seq.seq, prio) Co.Co.coroutine ->
     (@{ParaT_args} @{AllT_args} zipper * result Seq.seq, prio * result Seq.seq) Co.Co.coroutine
 
-  val enum_prio_res_co : (@{ParaT_args} prio, prio) cat -> prio ->
+  val enum_prio_res_co : (@{ParaT_args} prio, prio) morph -> prio ->
     (@{ParaT_args} @{AllT_args} zipper * result Seq.seq, prio * result Seq.seq) Co.Co.coroutine
 end
 
@@ -37,7 +37,7 @@ functor Zippy_PResults_Mixin(
 struct
 
 open PResults
-structure MU = Zippy_Monad_Util(K.M); open MU
+structure MU = Zippy_Monad_Util(M); open MU
 
 local open Mo SC A Co
 in

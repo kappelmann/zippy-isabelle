@@ -41,22 +41,22 @@ end
 end
 end
 
-functor \<^eval>\<open>sfx_T_nargs "Content_Zipper_Moves"\<close>(
-    structure M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+functor \<^eval>\<open>sfx_T_nargs "Content_Zipper_Morphs"\<close>(
+    structure M : \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
     type @{AllT_args} container
     type @{AllT_args} content
-    val zip : (@{ParaT_args} @{AllT_args} container, @{AllT_args} content) M.move
-    val unzip : (@{ParaT_args} @{AllT_args} content, @{AllT_args} container) M.move
-    val up : (@{ParaT_args} @{AllT_args} content) M.hom_move
-    val down : (@{ParaT_args} @{AllT_args} content) M.hom_move
-    val left : (@{ParaT_args} @{AllT_args} content) M.hom_move
-    val right : (@{ParaT_args} @{AllT_args} content) M.hom_move
+    val zip : (@{ParaT_args} @{AllT_args} container, @{AllT_args} content) M.morph
+    val unzip : (@{ParaT_args} @{AllT_args} content, @{AllT_args} container) M.morph
+    val up : (@{ParaT_args} @{AllT_args} content) M.emorph
+    val down : (@{ParaT_args} @{AllT_args} content) M.emorph
+    val left : (@{ParaT_args} @{AllT_args} content) M.emorph
+    val right : (@{ParaT_args} @{AllT_args} content) M.emorph
   ) :
-    \<^eval>\<open>sfx_T_nargs "ZIPPER_MOVES"\<close>
+    \<^eval>\<open>sfx_T_nargs "ZIPPER_MORPHS"\<close>
     where type @{AllT_args} container = @{AllT_args} container
     where type @{AllT_args} zipper = @{AllT_args} content
   =
-\<^eval>\<open>sfx_T_nargs "Zipper_Moves"\<close>(
+\<^eval>\<open>sfx_T_nargs "Zipper_Morphs"\<close>(
   structure M = M
   type @{AllT_args} container = @{AllT_args} container
   type @{AllT_args} zipper = @{AllT_args} content
@@ -79,15 +79,15 @@ sig
 end
 
 functor \<^eval>\<open>sfx_T_nargs "Content_Zipper"\<close>(
-    structure M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+    structure M : \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
     type @{AllT_args} container
     type @{AllT_args} content
-    val zip : (@{ParaT_args} @{AllT_args} container, @{AllT_args} content) M.move
-    val unzip : (@{ParaT_args} @{AllT_args} content, @{AllT_args} container) M.move
-    val up : (@{ParaT_args} @{AllT_args} content) M.hom_move
-    val down : (@{ParaT_args} @{AllT_args} content) M.hom_move
-    val left : (@{ParaT_args} @{AllT_args} content) M.hom_move
-    val right : (@{ParaT_args} @{AllT_args} content) M.hom_move
+    val zip : (@{ParaT_args} @{AllT_args} container, @{AllT_args} content) M.morph
+    val unzip : (@{ParaT_args} @{AllT_args} content, @{AllT_args} container) M.morph
+    val up : (@{ParaT_args} @{AllT_args} content) M.emorph
+    val down : (@{ParaT_args} @{AllT_args} content) M.emorph
+    val left : (@{ParaT_args} @{AllT_args} content) M.emorph
+    val right : (@{ParaT_args} @{AllT_args} content) M.emorph
   ) : \<^eval>\<open>sfx_T_nargs "CONTENT_ZIPPER"\<close> =
 struct
 
@@ -96,7 +96,7 @@ type @{AllT_args} content = @{AllT_args} content
 structure Z = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
   structure ZD = \<^eval>\<open>sfx_T_nargs "Content_Zipper_Data"\<close>(
     type @{AllT_args} content = @{AllT_args} content)
-  structure ZM = \<^eval>\<open>sfx_T_nargs "Content_Zipper_Moves"\<close>(
+  structure ZM = \<^eval>\<open>sfx_T_nargs "Content_Zipper_Morphs"\<close>(
     structure M = M
     type @{AllT_args} container = @{AllT_args} container
     type @{AllT_args} content = @{AllT_args} content
@@ -118,11 +118,11 @@ functor \<^eval>\<open>sfx_T_nargs "Single_Content_Zipper"\<close>(
     where type @{ParaT_args encl = "(" ")"} exn = unit
     type @{AllT_args} container
     type @{AllT_args} content
-    val zip : (@{ParaT_args} @{AllT_args} container, @{AllT_args} content) AE.cat
-    val unzip : (@{ParaT_args} @{AllT_args} content, @{AllT_args} container) AE.cat
+    val zip : (@{ParaT_args} @{AllT_args} container, @{AllT_args} content) AE.morph
+    val unzip : (@{ParaT_args} @{AllT_args} content, @{AllT_args} container) AE.morph
   ) : \<^eval>\<open>sfx_T_nargs "SINGLE_CONTENT_ZIPPER"\<close> =
 \<^eval>\<open>sfx_T_nargs "Content_Zipper"\<close>(
-  structure M = \<^eval>\<open>sfx_ParaT_nargs "Move_Base"\<close>(AE.K.M)
+  structure M = \<^eval>\<open>sfx_ParaT_nargs "Morph_Base"\<close>(AE.K.M)
   type @{AllT_args} container = @{AllT_args} container
   type @{AllT_args} content = @{AllT_args} content
   open AE

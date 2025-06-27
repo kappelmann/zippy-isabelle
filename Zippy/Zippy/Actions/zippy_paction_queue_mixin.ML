@@ -5,42 +5,42 @@ signature ZIPPY_PACTION_QUEUE_MIXIN =
 sig
   include ZIPPY_LOGGER_MIXIN_BASE
   include ZIPPY_PACTION_QUEUE_MIXIN_BASE
-  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   sharing type M.t = PAction.M.t
   structure Co : ZIPPY_COROUTINE_MIXIN_BASE
   sharing type Co.M.t = M.t
 
-  val mk_entry : (@{ParaT_args} @{AllT_args} PAction.zipper, @{AllT_args} entry) cat
+  val mk_entry : (@{ParaT_args} @{AllT_args} PAction.zipper, @{AllT_args} entry) morph
   val run_entry : @{AllT_args} entry -> (@{ParaT_args} @{AllT_args} PAction.zipper,
-    @{AllT_args} PAction.action_result) move
+    @{AllT_args} PAction.action_result) morph
 
   val fold_pactions :
     (*update result*)
-    (@{ParaT_args} @{AllT_args} entry * 'r, 'r Co.Co.res) cat ->
+    (@{ParaT_args} @{AllT_args} entry * 'r, 'r Co.Co.res) morph ->
     (*initialise result*)
-    (@{ParaT_args} @{AllT_args} PAction.zipper, 'r Co.Co.res) cat ->
+    (@{ParaT_args} @{AllT_args} PAction.zipper, 'r Co.Co.res) morph ->
     (*zipper enumeration*)
     (@{ParaT_args} @{AllT_args} PAction.zipper, @{AllT_args} PAction.zipper) Co.Co.coroutine ->
     (*zipper to start the enumeration*)
-    (@{ParaT_args} @{AllT_args} PAction.zipper, (@{AllT_args} PAction.zipper * 'r) Co.Co.res) cat
+    (@{ParaT_args} @{AllT_args} PAction.zipper, (@{AllT_args} PAction.zipper * 'r) Co.Co.res) morph
 
   val insert : @{AllT_args} entry -> @{AllT_args} queue -> @{AllT_args}queue
-  val mk_entry_insert : @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) hom_move
+  val mk_entry_insert : @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) emorph
 
   val insert_pactions_queue :
     (@{ParaT_args} @{AllT_args} PAction.zipper, @{AllT_args} PAction.zipper) Co.Co.coroutine ->
-    @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) hom_move
+    @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) emorph
 
   type @{AllT_args} container1
   val insert_descendant_pactions_queue : @{AllT_args} container1 ->
-    (@{ParaT_args} @{AllT_args} queue) hom_move
-  val init_pactions_queue : (@{ParaT_args} @{AllT_args} container1, @{AllT_args} queue) cat
+    (@{ParaT_args} @{AllT_args} queue) emorph
+  val init_pactions_queue : (@{ParaT_args} @{AllT_args} container1, @{AllT_args} queue) morph
 
-  val update_stagnate : @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) hom_move
+  val update_stagnate : @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) emorph
   val update_expand :
-    (@{AllT_args} PAction.zipper_expand -> (@{ParaT_args} @{AllT_args} queue) hom_move) ->
-    @{AllT_args} PAction.zipper_expand -> (@{ParaT_args} @{AllT_args} queue) hom_move
-  val update_trim : @{AllT_args} PAction.zipper_trim -> (@{ParaT_args} @{AllT_args} queue) hom_move
+    (@{AllT_args} PAction.zipper_expand -> (@{ParaT_args} @{AllT_args} queue) emorph) ->
+    @{AllT_args} PAction.zipper_expand -> (@{ParaT_args} @{AllT_args} queue) emorph
+  val update_trim : @{AllT_args} PAction.zipper_trim -> (@{ParaT_args} @{AllT_args} queue) emorph
 end
 
 functor Zippy_PAction_Queue_Mixin(
@@ -90,7 +90,7 @@ fun insert_descendant_pactions_queue c queue = Ctxt.get_ctxt () >>= (fn ctxt =>
       Pretty.str "to queue."
     ] |> Pretty.block |> Pretty.string_of);
   AE.catch'
-    (Z1.ZM.Zip.move >>> ADF_Post4.enum_zipper3 mk_exn
+    (Z1.ZM.Zip.morph >>> ADF_Post4.enum_zipper3 mk_exn
       >>> (fn (z, co) => insert_pactions_queue (Co.cons (id ()) co) z queue))
     (A.K queue) c))
 fun init_pactions_queue c = insert_descendant_pactions_queue c Queue.empty
@@ -106,10 +106,10 @@ local
 in
 fun update_stagnate z = mk_entry_insert_log z
 fun update_expand insert_descendant_pactions_queue z = insert_descendant_pactions_queue z
-  >>> (fn queue => Z.Up5.move z >>= (fn z => mk_entry_insert_log z queue))
+  >>> (fn queue => Z.Up5.morph z >>= (fn z => mk_entry_insert_log z queue))
 end
 (*trimming may invalidate entries in the queue; we hence re-initialise it*)
-fun update_trim z _ = Z1.ZM.Unzip.move z >>= init_pactions_queue
+fun update_trim z _ = Z1.ZM.Unzip.morph z >>= init_pactions_queue
 end
 
 end

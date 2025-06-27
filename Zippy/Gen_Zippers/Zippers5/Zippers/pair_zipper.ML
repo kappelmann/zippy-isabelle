@@ -31,7 +31,7 @@ functor \<^eval>\<open>sfx_T_nargs "Pair_Zipper"\<close>(
 struct
 
 structure Z = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
-  structure ZM = \<^eval>\<open>sfx_T_nargs "Pair_Zipper_Moves"\<close>(
+  structure ZM = \<^eval>\<open>sfx_T_nargs "Pair_Zipper_Morphs"\<close>(
     structure Z1 = Z1.ZM; structure Z2 = Z2.ZM)
   structure ZD = \<^eval>\<open>sfx_T_nargs "Pair_Zipper_Data"\<close>(
     structure Z1 = Z1.ZD; structure Z2 = Z2.ZD))

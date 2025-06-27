@@ -11,16 +11,17 @@ infix 1 &&&
 
 signature \<^eval>\<open>sfx_ParaT_nargs "SEMICATEGORY_BASE"\<close> =
 sig
-  (*TODO: rename to morph + add emorph + remove moves*)
-  type (@{ParaT_args} 'a, 'b) cat
-  val comp : (@{ParaT_args} 'b, 'c) cat -> (@{ParaT_args} 'a, 'b) cat -> (@{ParaT_args} 'a, 'c) cat
+  type (@{ParaT_args} 'a, 'b) morph
+  (*endomorphisms*)
+  type (@{ParaT_args} 'a) emorph = (@{ParaT_args} 'a, 'a) morph
+  val comp : (@{ParaT_args} 'b, 'c) morph -> (@{ParaT_args} 'a, 'b) morph -> (@{ParaT_args} 'a, 'c) morph
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "SEMI_CATEGORY"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "SEMICATEGORY_BASE"\<close>
-  val >>> : (@{ParaT_args} 'a, 'b) cat * (@{ParaT_args} 'b, 'c) cat -> (@{ParaT_args} 'a, 'c) cat
-  val o : (@{ParaT_args} 'b, 'c) cat * (@{ParaT_args} 'a, 'b) cat -> (@{ParaT_args} 'a, 'c) cat
+  val >>> : (@{ParaT_args} 'a, 'b) morph * (@{ParaT_args} 'b, 'c) morph -> (@{ParaT_args} 'a, 'c) morph
+  val o : (@{ParaT_args} 'b, 'c) morph * (@{ParaT_args} 'a, 'b) morph -> (@{ParaT_args} 'a, 'c) morph
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(SC : \<^eval>\<open>sfx_ParaT_nargs "SEMICATEGORY_BASE"\<close>)
@@ -38,13 +39,13 @@ sig
   include \<^eval>\<open>sfx_ParaT_nargs "SEMICATEGORY_BASE"\<close>
 
   (*unit argument to fight ML's value restriction*)
-  val id : unit -> (@{ParaT_args} 'a, 'a) cat
+  val id : unit -> (@{ParaT_args} 'a) emorph
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "CATEGORY"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "CATEGORY_BASE"\<close>
-  val repeatn : int -> (@{ParaT_args} 'a, 'a) cat -> (@{ParaT_args} 'a, 'a) cat
+  val repeatn : int -> (@{ParaT_args} 'a) emorph -> (@{ParaT_args} 'a) emorph
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Category"\<close>(C : \<^eval>\<open>sfx_ParaT_nargs "CATEGORY_BASE"\<close>)
@@ -57,22 +58,23 @@ end
 signature \<^eval>\<open>sfx_ParaT_nargs "ARROW_BASE"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "CATEGORY_BASE"\<close>
-  val arr : ('a -> 'b) -> (@{ParaT_args} 'a, 'b) cat
-  val *** : (@{ParaT_args} 'a, 'b) cat * (@{ParaT_args} 'c, 'd) cat ->
-    (@{ParaT_args} ('a * 'c), ('b * 'd)) cat
+  val arr : ('a -> 'b) -> (@{ParaT_args} 'a, 'b) morph
+  val *** : (@{ParaT_args} 'a, 'b) morph * (@{ParaT_args} 'c, 'd) morph ->
+    (@{ParaT_args} ('a * 'c), ('b * 'd)) morph
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "ARROW"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_BASE"\<close>
 
-  val first : (@{ParaT_args} 'a, 'b) cat -> (@{ParaT_args} ('a * 'c), ('b * 'c)) cat
-  val second : (@{ParaT_args} 'a, 'b) cat -> (@{ParaT_args} ('c * 'a), ('c * 'b)) cat
+  val first : (@{ParaT_args} 'a, 'b) morph -> (@{ParaT_args} ('a * 'c), ('b * 'c)) morph
+  val second : (@{ParaT_args} 'a, 'b) morph -> (@{ParaT_args} ('c * 'a), ('c * 'b)) morph
 
-  val &&& : (@{ParaT_args} 'a, 'b) cat * (@{ParaT_args} 'a, 'c) cat -> (@{ParaT_args} 'a, ('b * 'c)) cat
+  val &&& : (@{ParaT_args} 'a, 'b) morph * (@{ParaT_args} 'a, 'c) morph ->
+    (@{ParaT_args} 'a, ('b * 'c)) morph
 
-  val K : 'a -> (@{ParaT_args} 'b, 'a) cat
-  val curry : (@{ParaT_args} ('a * 'b), 'c) cat -> 'a -> (@{ParaT_args} 'b, 'c) cat
+  val K : 'a -> (@{ParaT_args} 'b, 'a) morph
+  val curry : (@{ParaT_args} ('a * 'b), 'c) morph -> 'a -> (@{ParaT_args} 'b, 'c) morph
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Arrow"\<close>(A : \<^eval>\<open>sfx_ParaT_nargs "ARROW_BASE"\<close>)
@@ -93,14 +95,14 @@ end
 signature \<^eval>\<open>sfx_ParaT_nargs "ARROW_APPLY_BASE"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_BASE"\<close>
-  val app : (@{ParaT_args} (@{ParaT_args} 'a, 'b) cat * 'a, 'b) cat
+  val app : (@{ParaT_args} (@{ParaT_args} 'a, 'b) morph * 'a, 'b) morph
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "ARROW_APPLY"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_APPLY_BASE"\<close>
-  val uncurry : ('a -> (@{ParaT_args} 'b, 'c) cat) -> (@{ParaT_args} ('a * 'b), 'c) cat
-  val app' : 'a -> (@{ParaT_args} (@{ParaT_args} 'a, 'b) cat, 'b) cat
+  val uncurry : ('a -> (@{ParaT_args} 'b, 'c) morph) -> (@{ParaT_args} ('a * 'b), 'c) morph
+  val app' : 'a -> (@{ParaT_args} (@{ParaT_args} 'a, 'b) morph, 'b) morph
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Arrow_Apply"\<close>(A : \<^eval>\<open>sfx_ParaT_nargs "ARROW_APPLY_BASE"\<close>)
@@ -120,25 +122,25 @@ signature \<^eval>\<open>sfx_ParaT_nargs "ARROW_ARROW_APPLY"\<close> =
 sig
   structure A : \<^eval>\<open>sfx_ParaT_nargs "ARROW"\<close>
   structure AA : \<^eval>\<open>sfx_ParaT_nargs "ARROW_APPLY"\<close>
-  where type (@{ParaT_args} 'a, 'b) cat = (@{ParaT_args} 'a, 'b) A.cat
+  sharing type AA.morph = A.morph
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "ARROW_ZERO_BASE"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_BASE"\<close>
-  val zero : unit -> (@{ParaT_args} 'a, 'b) cat
+  val zero : unit -> (@{ParaT_args} 'a, 'b) morph
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "ARROW_PLUS_BASE"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_ZERO_BASE"\<close>
-  val plus : (@{ParaT_args} 'a, 'b) cat -> (@{ParaT_args} 'a, 'b) cat -> (@{ParaT_args} 'a, 'b) cat
+  val plus : (@{ParaT_args} 'a, 'b) morph -> (@{ParaT_args} 'a, 'b) morph -> (@{ParaT_args} 'a, 'b) morph
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "ARROW_OR_BASE"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_ZERO_BASE"\<close>
-  val or : (@{ParaT_args} 'a, 'b) cat -> (@{ParaT_args} 'a, 'b) cat -> (@{ParaT_args} 'a, 'b) cat
+  val or : (@{ParaT_args} 'a, 'b) morph -> (@{ParaT_args} 'a, 'b) morph -> (@{ParaT_args} 'a, 'b) morph
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "ARROW_EXCEPTION_BASE"\<close> =
@@ -146,18 +148,18 @@ sig
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_BASE"\<close>
   type @{ParaT_args encl = "(" ")"} exn
 
-  val throw : (@{ParaT_args} @{ParaT_args encl = "(" ")"} exn, 'a) cat
-  val catch : (@{ParaT_args} 'a, 'b) cat ->
-    (@{ParaT_args} 'a * @{ParaT_args encl = "(" ")"} exn, 'b) cat -> (@{ParaT_args} 'a, 'b) cat
+  val throw : (@{ParaT_args} @{ParaT_args encl = "(" ")"} exn, 'a) morph
+  val catch : (@{ParaT_args} 'a, 'b) morph ->
+    (@{ParaT_args} 'a * @{ParaT_args encl = "(" ")"} exn, 'b) morph -> (@{ParaT_args} 'a, 'b) morph
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "ARROW_EXCEPTION"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_EXCEPTION_BASE"\<close>
 
-  val throw' : @{ParaT_args encl = "(" ")"} exn -> (@{ParaT_args} 'a, 'b) cat
-  val catch' : (@{ParaT_args} 'a, 'b) cat -> (@{ParaT_args} 'a, 'b) cat -> (@{ParaT_args} 'a, 'b) cat
-  val try : (@{ParaT_args} 'a, 'a) cat -> (@{ParaT_args} 'a, 'a) cat
+  val throw' : @{ParaT_args encl = "(" ")"} exn -> (@{ParaT_args} 'a, 'b) morph
+  val catch' : (@{ParaT_args} 'a, 'b) morph -> (@{ParaT_args} 'a, 'b) morph -> (@{ParaT_args} 'a, 'b) morph
+  val try : (@{ParaT_args} 'a) emorph -> (@{ParaT_args} 'a) emorph
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Arrow_Exception"\<close>(
@@ -176,17 +178,17 @@ end
 signature \<^eval>\<open>sfx_ParaT_nargs "ARROW_CHOICE_BASE"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_BASE"\<close>
-  val cases : (@{ParaT_args} 'a, 'c) cat -> (@{ParaT_args} 'b, 'd) cat ->
-    (@{ParaT_args} ('a, 'b) Either.either, ('c, 'd) Either.either) cat
-  val merge : (@{ParaT_args} 'a, 'c) cat -> (@{ParaT_args} 'b, 'c) cat ->
-    (@{ParaT_args} ('a, 'b) Either.either, 'c) cat
+  val cases : (@{ParaT_args} 'a, 'c) morph -> (@{ParaT_args} 'b, 'd) morph ->
+    (@{ParaT_args} ('a, 'b) Either.either, ('c, 'd) Either.either) morph
+  val merge : (@{ParaT_args} 'a, 'c) morph -> (@{ParaT_args} 'b, 'c) morph ->
+    (@{ParaT_args} ('a, 'b) Either.either, 'c) morph
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "ARROW_CHOICE"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_CHOICE_BASE"\<close>
-  val opt : (@{ParaT_args} unit, 'b) cat -> (@{ParaT_args} 'a, 'b) cat ->
-    (@{ParaT_args} 'a option, 'b) cat
+  val opt : (@{ParaT_args} unit, 'b) morph -> (@{ParaT_args} 'a, 'b) morph ->
+    (@{ParaT_args} 'a option, 'b) morph
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Arrow_Choice"\<close>(

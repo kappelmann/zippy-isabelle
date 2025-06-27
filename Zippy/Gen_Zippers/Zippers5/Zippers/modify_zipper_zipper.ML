@@ -20,10 +20,10 @@ functor \<^eval>\<open>sfx_T_nargs "Modify_Zipper_Zipper"\<close>(
     val nzipper = nzipper
     val dest_nzipper = dest_nzipper
   end
-  structure ZM = \<^eval>\<open>sfx_T_nargs "Modify_Zipper_Moves_Zipper"\<close>(
+  structure ZM = \<^eval>\<open>sfx_T_nargs "Modify_Zipper_Morphs_Zipper"\<close>(
     open Base;
-    fun nzipper x = Z.arr Base.nzipper x
-    fun dest_nzipper x = Z.arr Base.dest_nzipper x
+    fun nzipper x = Z.K.arr Base.nzipper x
+    fun dest_nzipper x = Z.K.arr Base.dest_nzipper x
     structure Z = Z.ZM)
   structure ZD = \<^eval>\<open>sfx_T_nargs "Modify_Zipper_Data_Zipper"\<close>(open Base; structure Z = Z.ZD)
 )

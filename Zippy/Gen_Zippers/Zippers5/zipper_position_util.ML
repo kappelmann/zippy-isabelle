@@ -4,10 +4,10 @@
 signature \<^eval>\<open>sfx_ParaT_nargs "ZIPPER_POSITION_UTIL"\<close> =
 sig
   structure C : \<^eval>\<open>sfx_ParaT_nargs "CATEGORY_BASE"\<close>
-  val move_xpos : (@{ParaT_args} 'a, 'a) C.cat -> (@{ParaT_args}  'a, 'a) C.cat -> int ->
-    (@{ParaT_args}  'a, 'a) C.cat
-  val move_pos : (@{ParaT_args} 'a, 'a) C.cat -> (@{ParaT_args} 'a, 'a) C.cat ->
-    (@{ParaT_args} 'a, 'a) C.cat -> Zipper_Position.pos -> (@{ParaT_args} 'a, 'a) C.cat
+  val move_xpos : (@{ParaT_args} 'a) C.emorph -> (@{ParaT_args}  'a) C.emorph -> int ->
+    (@{ParaT_args}  'a) C.emorph
+  val move_pos : (@{ParaT_args} 'a) C.emorph -> (@{ParaT_args} 'a) C.emorph ->
+    (@{ParaT_args} 'a) C.emorph -> Zipper_Position.pos -> (@{ParaT_args} 'a) C.emorph
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Zipper_Position_Util"\<close>(

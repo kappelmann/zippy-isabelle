@@ -4,21 +4,21 @@
 signature ZIPPY_LISTS_GOALS_TACTIC_COPY_PACTION_MIXIN =
 sig
   include ZIPPY_GOALS_TACTIC_COPY_PACTION_MIXIN_BASE
-  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   sharing type M.t = Copy.M.t
   structure Exn : ZIPPY_EXCEPTION_MIXIN_BASE
   sharing type Exn.M.t = M.t
 
   (* add actions *)
   val add_actions :
-    ((@{ParaT_args} @{AllT_args} Copy.zipper_from, @{AllT_args} PAction.zipper) cat) list ->
-    (@{ParaT_args} @{AllT_args} Copy.zipper_from) hom_move
+    ((@{ParaT_args} @{AllT_args} Copy.zipper_from, @{AllT_args} PAction.zipper) morph) list ->
+    (@{ParaT_args} @{AllT_args} Copy.zipper_from) emorph
 
   (* add action clusters *)
   val add_action_clusters :
-    ('a -> (@{ParaT_args} @{AllT_args} GCluster.L.container, @{AllT_args} Copy.zipper_from) cat) ->
+    ('a -> (@{ParaT_args} @{AllT_args} GCluster.L.container, @{AllT_args} Copy.zipper_from) morph) ->
     (GClusters.GCS.cluster_pos * 'a) list ->
-    (@{ParaT_args} @{AllT_args} GClusters.L.container) hom_move
+    (@{ParaT_args} @{AllT_args} GClusters.L.container) emorph
 
   type @{AllT_args} node_co
   val cons_action_cluster : @{ParaT_args encl = "(" ")"} Exn.ME.exn ->
@@ -26,8 +26,8 @@ sig
     (@{AllT_args} Copy.copy -> @{AllT_args} node_co) ->
     (*list of pairs of initial focus and actions to add*)
     (Tac.GPU.F.focus * (Tac.GPU.F.focus ->
-      (@{ParaT_args} @{AllT_args} Copy.zipper_from, @{AllT_args} PAction.zipper) cat)) list ->
-    (@{ParaT_args} @{AllT_args} GCluster.L.container, @{AllT_args} Copy.zipper_from) cat
+      (@{ParaT_args} @{AllT_args} Copy.zipper_from, @{AllT_args} PAction.zipper) morph)) list ->
+    (@{ParaT_args} @{AllT_args} GCluster.L.container, @{AllT_args} Copy.zipper_from) morph
 end
 
 functor Zippy_Lists_Goals_Tactic_Copy_PAction_Mixin(
@@ -53,13 +53,13 @@ local open SC Exn
 in
 (* add actions *)
 fun add_actions add_actions =
-  ZB.LF.foldlM (fn add_action => AE.try (add_action >>> Z.Up4.move)) add_actions
+  ZB.LF.foldlM (fn add_action => AE.try (add_action >>> Z.Up4.morph)) add_actions
 
 (* add action clusters *)
 fun add_action_clusters add_action_cluster = ZB.LF.foldlM
   (fn (cpos, x) => LGoals.move_cpos cpos
-    >>> AE.try (add_action_cluster x >>> Up3.move)
-    >>> Up2.move)
+    >>> AE.try (add_action_cluster x >>> Up3.morph)
+    >>> Up2.morph)
 
 type @{AllT_args} node_co = @{AllT_args} ZN.N3.content
 fun cons_action_cluster exn mk_node add_action_focus_list =

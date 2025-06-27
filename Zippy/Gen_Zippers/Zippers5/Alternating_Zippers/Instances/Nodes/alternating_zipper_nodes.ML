@@ -61,7 +61,7 @@ struct
 
 structure A = A
 open A
-structure M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close> = Z1
+structure M : \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close> = Z1
 open M
 structure L = \<^eval>\<open>sfx_ParaT_nargs "SLens_Kleisli_Identity"\<close>
 
@@ -151,37 +151,37 @@ structure Z{i} = \<^eval>\<open>sfx_T_nargs "Extend_Zipper_Context"\<close>(
 
 structure Base =
 struct
-  structure MB = \<^eval>\<open>sfx_ParaT_nargs "Move_Base"\<close>(K.M)
+  structure MB = \<^eval>\<open>sfx_ParaT_nargs "Morph_Base"\<close>(M)
   structure M = \<^eval>\<open>sfx_ParaT_nargs "Monad"\<close>(M)
   open MB M
 end
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-structure Down{i} : \<^eval>\<open>sfx_T_nargs "MOVE"\<close> =
+structure Down{i} : \<^eval>\<open>sfx_T_nargs "MORPH"\<close> =
 struct
   open Base
   type @{AllT_args} from = @{AllT_args} Z{i}.zipper
   type @{AllT_args} to = @{AllT_args} Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>zipper
-  fun move x =
+  fun morph x =
     let
       val zcontent = Z{i}.ZD.Co.getter x
       val content = N{i}.Co.getter zcontent
       val next = N{i}.Next.getter zcontent
       val zctxt = Z{i}.ZD.ZCtxt.getter x
       val pzd = PZD\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>zipper (content, zctxt)
-    in next >>= (fn next => Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>ZM.Zip.move (next, pure pzd)) end
+    in next >>= (fn next => Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>ZM.Zip.morph (next, pure pzd)) end
 end\<close>\<close>
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-structure Up{i} : \<^eval>\<open>sfx_T_nargs "MOVE"\<close> =
+structure Up{i} : \<^eval>\<open>sfx_T_nargs "MORPH"\<close> =
 struct
   open Base
   type @{AllT_args} from = @{AllT_args} Z{i}.zipper
   type @{AllT_args} to = @{AllT_args} Z\<^eval>\<open>pred_mod_nzippers {i} ^ "."\<close>zipper
-  fun move x =
-    Z{i}.ZM.Unzip.move x
+  fun morph x =
+    Z{i}.ZM.Unzip.morph x
     >>= (fn (next, parent) => parent
-    >>= arr (fn parent =>
+    >>= K.arr (fn parent =>
       let
         val content = PZD{i}.Co.getter parent
         val zctxt = PZD{i}.ZCtxt.getter parent

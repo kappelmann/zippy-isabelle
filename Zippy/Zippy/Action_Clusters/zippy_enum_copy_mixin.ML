@@ -9,7 +9,7 @@ sig
   sharing type Co.M.t = M.t
 
   val copy_parents : (unit -> @{ParaT_args encl = "" ""} Co.ME.exn) ->
-    copy_update_data -> (@{ParaT_args} @{AllT_args} zipper_to) hom_move
+    copy_update_data -> (@{ParaT_args} @{AllT_args} zipper_to) emorph
 end
 
 functor Zippy_Enum_Copy_Mixin(
@@ -37,11 +37,11 @@ fun copy_parents mk_exn cud z1 = Ctxt.get_ctxt () >>= (fn ctxt =>
   (@{log Logger.TRACE} ctxt (fn _ => [
       Pretty.block [Pretty.str "Copying parents of ", Show_To.pretty ctxt z1]
     ] |> Pretty.breaks |> Pretty.block |> Pretty.string_of);
-  (Up1.move >>> Up5.move >>> Up4.move >>> Z3.ZM.Unzip.move >>> Z3.ZM.Zip.move) z1
-  >>= (fn z3 => Co.repeat_step_res (arr fst)
-    (AA.uncurry (Copy.get_run_copy_safe cud) >>> arr Co.continue) (DF_Post3.enum_zipper mk_exn)
+  (Up1.morph >>> Up5.morph >>> Up4.morph >>> Z3.ZM.Unzip.morph >>> Z3.ZM.Zip.morph) z1
+  >>= (fn z3 => Co.repeat_step_res (K.arr fst)
+    (AA.uncurry (Copy.get_run_copy_safe cud) >>> K.arr Co.continue) (DF_Post3.enum_zipper mk_exn)
     (z3, z1))
-  >>= arr (Co.dest_res #> snd)))
+  >>= K.arr (Co.dest_res #> snd)))
 end
 
 end

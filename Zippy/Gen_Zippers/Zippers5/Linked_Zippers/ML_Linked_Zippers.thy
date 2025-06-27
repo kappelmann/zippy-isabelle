@@ -9,7 +9,7 @@ ML\<open>
   val mk_name = ML_Gen.mk_name
 \<close>
 
-ML_gen_file\<open>linked_zipper_moves.ML\<close>
+ML_gen_file\<open>linked_zipper_morphs.ML\<close>
 ML_gen_file\<open>linked_zipper.ML\<close>
 
 end

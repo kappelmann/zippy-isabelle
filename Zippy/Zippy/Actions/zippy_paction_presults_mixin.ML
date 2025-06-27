@@ -5,7 +5,7 @@ signature ZIPPY_PACTION_PRESULTS_MIXIN =
 sig
   include ZIPPY_LOGGER_MIXIN_BASE
   include ZIPPY_PACTION_PRESULTS_MIXIN_BASE
-  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   sharing type M.t = PAction.M.t
 
   type @{AllT_args} zipper = @{AllT_args} PAction.zipper
@@ -13,7 +13,7 @@ sig
 
   val gen_paction_from_presults :
     (*get presults*)
-    (@{ParaT_args} @{AllT_args} zipper, @{AllT_args} PResults.presults) cat ->
+    (@{ParaT_args} @{AllT_args} zipper, @{AllT_args} PResults.presults) morph ->
     (*action when results are empty*)
     @{AllT_args} PAction.action ->
     (*update zipper with pulled result and the remaining presults*)
@@ -26,9 +26,9 @@ sig
 
   val result_tail_presults_action :
     (*update with remaining presults*)
-    (prio -> @{AllT_args} PResults.presults -> (@{ParaT_args} @{AllT_args} zipper, 'z) cat) ->
+    (prio -> @{AllT_args} PResults.presults -> (@{ParaT_args} @{AllT_args} zipper, 'z) morph) ->
     (*update with pulled result*)
-    (prio -> PResults.result -> (@{ParaT_args} 'z, @{AllT_args} PAction.action_result) cat) ->
+    (prio -> PResults.result -> (@{ParaT_args} 'z, @{AllT_args} PAction.action_result) morph) ->
     PResults.result * @{AllT_args} PResults.presults -> @{AllT_args} PAction.action
 end
 

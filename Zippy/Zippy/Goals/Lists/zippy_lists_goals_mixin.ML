@@ -4,7 +4,7 @@
 signature ZIPPY_LISTS_GOALS_MIXIN =
 sig
   include ZIPPY_GOALS_MIXIN_BASE
-  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   structure Co : ZIPPY_COROUTINE_MIXIN_BASE
   sharing type Co.M.t = M.t
 
@@ -17,7 +17,7 @@ sig
 
   (* movements *)
   val move_cpos : GClusters.GCS.cluster_pos ->
-    (@{ParaT_args} @{AllT_args} GClusters.L.container, @{AllT_args} GCluster.L.container) cat
+    (@{ParaT_args} @{AllT_args} GClusters.L.container, @{AllT_args} GCluster.L.container) morph
 
   (* gcluster enumerations *)
   type @{AllT_args} container_gc
@@ -25,11 +25,11 @@ sig
   val enum_gcluster : (@{ParaT_args} @{AllT_args} container_gc,
     @{AllT_args} GCluster.L.container
     * (@{ParaT_args} @{AllT_args} GCluster.L.container, @{AllT_args} GCluster.L.container)
-      Co.Co.coroutine) cat
+      Co.Co.coroutine) morph
 
   (*list in order of cluster positions*)
   val gcluster_list : (@{ParaT_args} @{AllT_args} GCluster.L.container,
-    @{AllT_args} GCluster.L.container list) cat
+    @{AllT_args} GCluster.L.container list) morph
 end
 
 functor Zippy_Lists_Goals_Mixin(
@@ -54,7 +54,7 @@ fun set_gcluster_list mk_node gcs z = List.map mk_node gcs
   |> (fn c => L.set_modify ZNU.Node_Next1.modifier (pure c, z))
 
 (* movements *)
-fun move_cpos cpos = Down1.move >>> C.repeatn cpos Z2.ZM.Down.move
+fun move_cpos cpos = Down1.morph >>> C.repeatn cpos Z2.ZM.Down.morph
 
 (* gcluster enumerations *)
 type @{AllT_args} container_gc = @{AllT_args} Z2.ZM.container

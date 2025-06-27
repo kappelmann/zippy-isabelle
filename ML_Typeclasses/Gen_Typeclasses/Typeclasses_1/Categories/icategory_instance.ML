@@ -22,21 +22,21 @@ signature \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI_ARROW_BASE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_BASE"\<close>
-  where type (@{ParaT_args} 'i, 'j, 'a, 'b) cat = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'i, 'j, 'a, 'b) morph = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI_ARROW"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW"\<close>
-  where type (@{ParaT_args} 'i, 'j, 'a, 'b) cat = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'i, 'j, 'a, 'b) morph = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI_ARROW_APPLY_BASE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_APPLY_BASE"\<close>
-  where type (@{ParaT_args} 'i, 'j, 'a, 'b) cat = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'i, 'j, 'a, 'b) morph = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "IKleisli_Arrow_Apply_Base"\<close>(
@@ -48,7 +48,8 @@ open M
 structure K = \<^eval>\<open>sfx_ParaT_nargs "IKleisli"\<close>(M)
 open K
 
-type (@{ParaT_args} 'i, 'j, 'a, 'b) cat = (@{ParaT_args} 'i, 'j, 'a, 'b) kleisli
+type (@{ParaT_args} 'i, 'j, 'a, 'b) morph = (@{ParaT_args} 'i, 'j, 'a, 'b) kleisli
+type (@{ParaT_args} 'i, 'o, 'a) emorph = (@{ParaT_args} 'i, 'o, 'a, 'a) morph
 fun id _ = pure
 local structure M = \<^eval>\<open>sfx_ParaT_nargs "IMonad"\<close>(M) open M
 in
@@ -83,7 +84,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI_ARROW_ZERO_BASE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_ZERO_BASE"\<close>
-  where type (@{ParaT_args} 'i, 'j, 'a, 'b) cat = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'i, 'j, 'a, 'b) morph = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "IKleisli_Arrow_Zero"\<close>(
@@ -99,7 +100,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI_ARROW_PLUS_BASE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_PLUS_BASE"\<close>
-  where type (@{ParaT_args} 'i, 'j, 'a, 'b) cat = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'i, 'j, 'a, 'b) morph = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "IKleisli_Arrow_Plus_Base"\<close>(
@@ -115,7 +116,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI_ARROW_OR_BASE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_OR_BASE"\<close>
-  where type (@{ParaT_args} 'i, 'j, 'a, 'b) cat = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'i, 'j, 'a, 'b) morph = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "IKleisli_Arrow_Or_Base"\<close>(
@@ -131,7 +132,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI_ARROW_EXCEPTION_BASE"\<close>
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_EXCEPTION_BASE"\<close>
-  where type (@{ParaT_args} 'i, 'j, 'a, 'b) cat = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'i, 'j, 'a, 'b) morph = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "IKleisli_Arrow_Exception_Base"\<close>(
@@ -149,14 +150,14 @@ signature \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI_ARROW_EXCEPTION"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_EXCEPTION"\<close>
-  where type (@{ParaT_args} 'i, 'j, 'a, 'b) cat = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'i, 'j, 'a, 'b) morph = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI_ARROW_CHOICE_BASE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_CHOICE_BASE"\<close>
-  where type (@{ParaT_args} 'i, 'j, 'a, 'b) cat = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'i, 'j, 'a, 'b) morph = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "IKleisli_Arrow_Choice_Base"\<close>(
@@ -175,7 +176,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI_ARROW_CHOICE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_CHOICE"\<close>
-  where type (@{ParaT_args} 'i, 'j, 'a, 'b) cat = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'i, 'j, 'a, 'b) morph = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "IKleisli_Arrow_Choice"\<close>(
@@ -193,7 +194,7 @@ functor \<^eval>\<open>sfx_ParaT_nargs "IApplicative_Arrow"\<close>(
   ) : \<^eval>\<open>sfx_ParaT_nargs "IAPPLICATIVE_BASE"\<close> =
 struct
 open A
-type (@{ParaT_args} 'i, 'j, 'a) t = (@{ParaT_args} 'i, 'j, unit, 'a) cat
+type (@{ParaT_args} 'i, 'j, 'a) t = (@{ParaT_args} 'i, 'j, unit, 'a) morph
 fun map f = comp (arr f)
 fun pure x = arr (Library.K x)
 fun f <*> x = comp (arr (uncurry I)) (comp (f *** x) (arr (fn b => (b, b))))

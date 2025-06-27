@@ -4,7 +4,7 @@ theory ML_Lenses
     ML_ICategories
 begin
 
-ML_file\<open>lens.ML\<close>
+ML_gen_file\<open>lens.ML\<close>
 
 (*standard function space lense*)
 ML\<open>
@@ -17,7 +17,7 @@ structure \<^eval>\<open>sfx_ParaT_nargs "SLens"\<close> =
 
 signature \<^eval>\<open>sfx_ParaT_nargs "SLENS"\<close> =
   \<^eval>\<open>sfx_ParaT_nargs "LENS"\<close>
-  where type (@{ParaT_args} 'a, 'b) C.cat = 'a -> 'b
+  where type (@{ParaT_args} 'a, 'b) C.morph = 'a -> 'b
   where type (@{ParaT_args} 't, 'o, 's, 'i) lens =
     (@{ParaT_args} 't, 'o, 's, 'i) \<^eval>\<open>sfx_ParaT_nargs "SLens" ^ ".lens"\<close>
 \<close>

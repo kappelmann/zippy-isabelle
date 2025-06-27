@@ -9,30 +9,30 @@ sig
 
   (* lenses *)
   val modify_cons_safe : (@{ParaT_args} 's, (@{ParaT_args} 'i list) M.t) L.slens -> 'i ->
-    (@{ParaT_args} 's) hom_move
+    (@{ParaT_args} 's) emorph
 
   (* movements *)
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   val cons_node_move_safe{i} : @{AllT_args} ZN.N\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>node ->
     (@{ParaT_args} @{AllT_args} Z{i}.zipper,
-      @{AllT_args} Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>zipper) cat
+      @{AllT_args} Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>zipper) morph
   val cons_content_move_safe{i} : @{ParaT_args encl = "(" ")"} Co.Co.AE.exn ->
     @{AllT_args} ZN.N\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>content ->
     (@{ParaT_args} @{AllT_args} Z{i}.zipper,
-      @{AllT_args} Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>zipper) cat\<close>
+      @{AllT_args} Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>zipper) morph\<close>
   where stop = 4\<close>
 
   (* enumerations *)
   (*in order of container list*)
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   val enum_zipper{i} : (@{ParaT_args} @{AllT_args} Z{i}.ZM.container, @{AllT_args} Z{i}.zipper *
-    (@{ParaT_args} @{AllT_args} Z{i}.zipper, @{AllT_args} Z{i}.zipper) Co.Co.coroutine) cat\<close>\<close>
+    (@{ParaT_args} @{AllT_args} Z{i}.zipper, @{AllT_args} Z{i}.zipper) Co.Co.coroutine) morph\<close>\<close>
 
   (* containers *)
   (*in order of container list*)
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   val list_container_zippers{i} :
-    (@{ParaT_args} @{AllT_args} Z{i}.zipper, @{AllT_args} Z{i}.zipper list) cat\<close>\<close>
+    (@{ParaT_args} @{AllT_args} Z{i}.zipper, @{AllT_args} Z{i}.zipper list) morph\<close>\<close>
 end
 
 functor Zippy_Lists(
@@ -53,32 +53,32 @@ in
 (* lenses *)
 fun modify_cons_safe l x s = L.get l s
   |> (AE.catch' (M.map (cons x)) (fn _ => pure [x])
-  >>> arr (fn xs => L.set l (pure xs, s)))
+  >>> K.arr (fn xs => L.set l (pure xs, s)))
 
 (* movements *)
 fun cons_node_move_safe l down n = modify_cons_safe l n >>> down
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-fun cons_node_move_safe{i} x = cons_node_move_safe (ZNU.Node_Next{i}.lens ()) Down{i}.move x
+fun cons_node_move_safe{i} x = cons_node_move_safe (ZNU.Node_Next{i}.lens ()) Down{i}.morph x
 fun cons_content_move_safe{i} exn n = ZNU.node_no_next\<^eval>\<open>succ_mod_nzippers {i}\<close> exn n
   |> cons_node_move_safe{i}\<close>
 where stop = 4\<close>
 
 (* enumerations *)
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-val first{i} = Z{i}.ZM.Zip.move
-val next{i} = Z{i}.ZM.Down.move
-fun enum_zipper{i} x = x |> (first{i} >>> arr (rpair (Co.Co.enum' next{i})))
+val first{i} = Z{i}.ZM.Zip.morph
+val next{i} = Z{i}.ZM.Down.morph
+fun enum_zipper{i} x = x |> (first{i} >>> K.arr (rpair (Co.Co.enum' next{i})))
 \<close>\<close>
 
 (* containers *)
 local
   fun list_container_zippers unzip first next =
-    let fun build acc = AE.catch' (fn z => next z >>= build acc >>= arr (cons z)) (arr single)
+    let fun build acc = AE.catch' (fn z => next z >>= build acc >>= K.arr (cons z)) (K.arr single)
     in unzip >>> first >>> build [] end
 in
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-fun list_container_zippers{i} x = list_container_zippers Z{i}.ZM.Unzip.move first{i} next{i} x\<close>\<close>
+fun list_container_zippers{i} x = list_container_zippers Z{i}.ZM.Unzip.morph first{i} next{i} x\<close>\<close>
 end
 end
 end

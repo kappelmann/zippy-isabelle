@@ -14,7 +14,7 @@ sig
 end
 
 functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Global_Position_Zipper"\<close>(
-    M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+    M : \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   ) : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_GLOBAL_POSITION_ZIPPER"\<close> =
 struct
 
@@ -50,9 +50,9 @@ struct
 end
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-structure Down{i} = struct open Base; fun move pss = M.pure (Pos.init :: pss) end\<close>\<close>
+structure Down{i} = struct open Base; fun morph pss = M.pure (Pos.init :: pss) end\<close>\<close>
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-structure Up{i} = struct open Base; fun move (_ :: pss) = M.pure pss end\<close>\<close>
+structure Up{i} = struct open Base; fun morph (_ :: pss) = M.pure pss end\<close>\<close>
 
 end

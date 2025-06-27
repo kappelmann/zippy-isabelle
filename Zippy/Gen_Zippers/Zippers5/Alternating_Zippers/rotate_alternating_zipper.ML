@@ -16,7 +16,7 @@ functor \<^eval>\<open>mk_name ["Rotate", pfx_sfx_nargs "Alternating_Zipper"]\<c
       @{AllT_args} Z.Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>zipper\<close>\<close>
   =
 struct
-structure M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close> = Z
+structure M : \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close> = Z
 open M
 structure L = Z.L
 \<^imap>\<open>\<open>{i}\<close> => \<open>

@@ -4,7 +4,7 @@
 signature ZIPPY_RUN_MIXIN =
 sig
   include ZIPPY_RUN_MIXIN_BASE
-  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   sharing type M.t = Step.PAction_Queue.PAction.M.t
   structure Co : ZIPPY_COROUTINE_MIXIN_BASE
   sharing type Co.M.t = M.t
@@ -26,46 +26,46 @@ sig
   val filter_unfinished_statesq : Step.GClusters.GCS.state Seq.seq ->
     Step.GClusters.GCS.state Seq.seq
   val mk_unreturned_statesq :
-    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) cat ->
-    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) cat
+    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph ->
+    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph
 
   val mk_unfinished_unreturned_statesq :
     (@{ParaT_args} @{AllT_args} Step.GCluster.L.container,
-      (@{ParaT_args} unit, @{AllT_args} Step.GClusters.L.container) Co.Co.coroutine) cat ->
+      (@{ParaT_args} unit, @{AllT_args} Step.GClusters.L.container) Co.Co.coroutine) morph ->
     Proof.context -> (@{ParaT_args} @{AllT_args} Step.GClusters.L.container,
-      Step.GClusters.GCS.state Seq.seq) cat
+      Step.GClusters.GCS.state Seq.seq) morph
 
   val mk_df_post_unreturned_unfinished_statesq : Proof.context ->
-    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) cat
+    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph
   val mk_df_post_promising_unreturned_unfinished_statesq : Proof.context ->
-    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) cat
+    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph
 
   (* run *)
   val gen_repeat_step_queue : (@{AllT_args} Step.PAction_Queue.queue ->
       (@{ParaT_args} @{AllT_args} Step.PAction_Queue.container1,
         (((@{AllT_args} Step.GClusters.L.container * Step.Results.results)) option
-        * @{AllT_args} Step.PAction_Queue.queue) option) cat) ->
-    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) cat ->
+        * @{AllT_args} Step.PAction_Queue.queue) option) morph) ->
+    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph ->
     int option -> @{AllT_args} Step.PAction_Queue.queue -> @{AllT_args} state ->
     @{AllT_args} Step.PAction_Queue.container1 -> @{AllT_args} result_data result Seq.seq
 
   val repeat_step_queue :
-    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) cat ->
+    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph ->
     int option -> @{AllT_args} Step.PAction_Queue.queue -> @{AllT_args} state ->
     @{AllT_args} Step.PAction_Queue.container1 -> @{AllT_args} result_data result Seq.seq
 
   val gen_init_repeat_step_queue : (@{AllT_args} Step.PAction_Queue.queue ->
       (@{ParaT_args} @{AllT_args} Step.PAction_Queue.container1,
         (((@{AllT_args} Step.GClusters.L.container * Step.Results.results)) option
-        * @{AllT_args} Step.PAction_Queue.queue) option) cat) ->
-    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) cat ->
+        * @{AllT_args} Step.PAction_Queue.queue) option) morph) ->
+    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph ->
     int option -> (@{ParaT_args} @{AllT_args} Step.PAction_Queue.container1,
-      @{AllT_args} result_data result Seq.seq) cat
+      @{AllT_args} result_data result Seq.seq) morph
 
   val init_repeat_step_queue :
-    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) cat ->
+    (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph ->
     int option -> (@{ParaT_args} @{AllT_args} Step.PAction_Queue.container1,
-      @{AllT_args} result_data result Seq.seq) cat
+      @{AllT_args} result_data result Seq.seq) morph
 end
 
 functor Zippy_Run_Mixin(
@@ -86,8 +86,8 @@ functor Zippy_Run_Mixin(
     sharing type Ctxt.M.t = Z.M.t
     type @{AllT_args} state
     val seq_from_monad : @{AllT_args} state -> (@{ParaT_args} 'a Seq.seq) Z.M.t -> 'a Seq.seq
-    val with_state : (@{AllT_args} state -> (@{ParaT_args} 'a, 'b) Z.cat) ->
-      (@{ParaT_args} 'a, 'b) Z.cat
+    val with_state : (@{AllT_args} state -> (@{ParaT_args} 'a, 'b) Z.morph) ->
+      (@{ParaT_args} 'a, 'b) Z.morph
     structure Log : ZIPPY_LOGGER_MIXIN_BASE
   ) : ZIPPY_RUN_MIXIN =
 struct
@@ -153,7 +153,7 @@ fun pretty_fuel NONE = Pretty.str "Unlimited"
   | pretty_fuel (SOME n) = Show.int n
 fun gen_repeat_step_queue step_queue mk_unfinished_statesq =
   let
-    fun case_unfinished queue = Z1.ZM.Zip.move
+    fun case_unfinished queue = Z1.ZM.Zip.morph
       >>> Ctxt.with_ctxt (fn ctxt => fn z =>
         (@{log Logger.DEBUG} ctxt (fn _ => "Returning unfinished state sequence.");
         mk_unfinished_statesq z)
@@ -183,7 +183,7 @@ fun gen_repeat_step_queue step_queue mk_unfinished_statesq =
               NONE => Ctxt.get_ctxt () >>= (fn ctxt =>
                 (@{log Logger.DEBUG} ctxt (fn _ => "No zipper changes. Continuing with next step.");
                 arr nextsq c))
-            | SOME (z, results) => Z1.ZM.Unzip.move z
+            | SOME (z, results) => Z1.ZM.Unzip.morph z
                 >>= Ctxt.with_ctxt (fn ctxt => arr (nextsq #>
                   (if Step.Results.has_results results
                   then (@{log Logger.DEBUG} ctxt (fn _ => "Returning new results.");

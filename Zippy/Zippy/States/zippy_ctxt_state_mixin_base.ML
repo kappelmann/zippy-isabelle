@@ -3,7 +3,7 @@
 *)
 signature ZIPPY_CTXT_STATE_MIXIN_BASE =
 sig
-  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   structure MS : \<^eval>\<open>sfx_ParaT_nargs "MONAD_STATE_BASE"\<close>
   where type s = Proof.context
   sharing type MS.t = M.t
@@ -16,6 +16,6 @@ functor Zippy_Ctxt_State_Mixin_Base(
   =
 struct
 structure MS = MS
-structure MB = \<^eval>\<open>sfx_ParaT_nargs "Move_Base"\<close>(MS)
+structure MB = \<^eval>\<open>sfx_ParaT_nargs "Morph_Base"\<close>(MS)
 open MB
 end

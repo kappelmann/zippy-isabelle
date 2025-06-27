@@ -4,7 +4,7 @@
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 signature \<^eval>\<open>mk_name [ML_Gen.nprefix "{i}", sfx_T_nargs "LINKED_ZIPPER"]\<close> =
 sig
-  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   structure L : \<^eval>\<open>sfx_ParaT_nargs "SLENS"\<close>
 
   \<^imap>\<open>\<open>{j}\<close> => \<open>
@@ -13,14 +13,14 @@ sig
   where stop = {i}\<close>
 
   \<^imap>\<open>\<open>{j}\<close> => \<open>
-  structure Down{j} : \<^eval>\<open>sfx_T_nargs "MOVE"\<close>
+  structure Down{j} : \<^eval>\<open>sfx_T_nargs "MORPH"\<close>
   sharing type Down{j}.from = Z{j}.zipper
   sharing type Down{j}.to = Z\<^eval>\<open>string_of_int ({j} + 1) ^ "."\<close>zipper
   sharing type Down{j}.M.t = M.t\<close>
   where stop = \<open>{i} - 1\<close>\<close>
 
   \<^imap>\<open>\<open>{j}\<close> => \<open>
-  structure Up{j} : \<^eval>\<open>sfx_T_nargs "MOVE"\<close>
+  structure Up{j} : \<^eval>\<open>sfx_T_nargs "MORPH"\<close>
   sharing type Up{j}.from = Z{j}.zipper
   sharing type Up{j}.to =  Z\<^eval>\<open>string_of_int ({j} - 1) ^ "."\<close>zipper
   sharing type Up{j}.M.t = M.t\<close>
@@ -28,7 +28,7 @@ sig
 end
 
 functor \<^eval>\<open>mk_name [ML_Gen.nprefix "{i}", sfx_T_nargs "Linked_Zipper"]\<close>(
-    structure Z : \<^eval>\<open>mk_name [ML_Gen.nprefix "{i}", sfx_T_nargs "LINKED_ZIPPER_MOVES"]\<close>
+    structure Z : \<^eval>\<open>mk_name [ML_Gen.nprefix "{i}", sfx_T_nargs "LINKED_ZIPPER_MORPHS"]\<close>
     \<^imap>\<open>\<open>{j}\<close> => \<open>
     structure ZD{j} : \<^eval>\<open>sfx_T_nargs "ZIPPER_DATA"\<close>
     sharing type ZD{j}.zipper = Z.Z{j}.zipper\<close>

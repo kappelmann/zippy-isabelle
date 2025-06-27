@@ -38,7 +38,7 @@ sig
   structure A : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW"\<close>
   where type (@{ParaT_args} 'a) K.M.t = (@{ParaT_args} 'a) T.t
 
-  type 't gpos_update = (unit, GCS.goal_pos, 't) A.cat
+  type 't gpos_update = (unit, GCS.goal_pos, 't) A.morph
   val id : GCS.goal_pos gpos_update
   val comp : 't gpos_update -> GCS.goal_pos gpos_update -> 't gpos_update
   val comp_pure : 't gpos_update -> (GCS.goal_pos -> GCS.goal_pos) -> 't gpos_update

@@ -13,7 +13,7 @@ functor \<^eval>\<open>sfx_T_nargs "Position_Zipper"\<close>(
 \<^eval>\<open>sfx_T_nargs "Content_Zipper"\<close>(
   structure Pos = Zipper_Position
   structure ME = M
-  structure M = \<^eval>\<open>sfx_ParaT_nargs "Move_Base"\<close>(M)
+  structure M = \<^eval>\<open>sfx_ParaT_nargs "Morph_Base"\<close>(M)
   type @{AllT_args} container = unit
   type @{AllT_args} content = Pos.pos
   structure A = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow"\<close>(M.M)

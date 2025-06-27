@@ -8,8 +8,8 @@ sig
   sharing type Exn.M.t = M.t
 
   (* misc *)
-  val no_parent : (@{ParaT_args} @{ParaT_args encl = "(" ")"} Exn.AE.exn, 'p) cat
-  val no_next : (@{ParaT_args} @{ParaT_args encl = "(" ")"} Exn.AE.exn, 'n) cat
+  val no_parent : (@{ParaT_args} @{ParaT_args encl = "(" ")"} Exn.AE.exn, 'p) morph
+  val no_next : (@{ParaT_args} @{ParaT_args encl = "(" ")"} Exn.AE.exn, 'n) morph
 
   (* constructors *)
   val container_no_parent : @{ParaT_args encl = "(" ")"} Exn.AE.exn -> 'c ->

@@ -8,7 +8,8 @@ structure \<^eval>\<open>sfx_ParaT_nargs "SArrow_Apply"\<close>
   : \<^eval>\<open>sfx_ParaT_nargs "ARROW_APPLY_BASE"\<close> =
 struct
 
-type (@{ParaT_args} 'a, 'b) cat = 'a -> 'b
+type (@{ParaT_args} 'a, 'b) morph = 'a -> 'b
+type (@{ParaT_args} 'a) emorph = (@{ParaT_args} 'a, 'a) morph
 fun id _ = I
 fun comp f g x = f (g x)
 val arr = I
@@ -42,21 +43,21 @@ signature \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_BASE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_BASE"\<close>
-  where type (@{ParaT_args} 'a, 'b) cat = (@{ParaT_args} 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'a, 'b) morph = (@{ParaT_args} 'a, 'b) K.kleisli
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW"\<close>
-  where type (@{ParaT_args} 'a, 'b) cat = (@{ParaT_args} 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'a, 'b) morph = (@{ParaT_args} 'a, 'b) K.kleisli
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_APPLY_BASE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_APPLY_BASE"\<close>
-  where type (@{ParaT_args} 'a, 'b) cat = (@{ParaT_args} 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'a, 'b) morph = (@{ParaT_args} 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Apply_Base"\<close>(
@@ -68,7 +69,8 @@ open M
 structure K = \<^eval>\<open>sfx_ParaT_nargs "Kleisli"\<close>(M)
 open K
 
-type (@{ParaT_args} 'a, 'b) cat = (@{ParaT_args} 'a, 'b) kleisli
+type (@{ParaT_args} 'a, 'b) morph = (@{ParaT_args} 'a, 'b) kleisli
+type (@{ParaT_args} 'a) emorph = (@{ParaT_args} 'a, 'a) morph
 fun id _ = pure
 local structure M = \<^eval>\<open>sfx_ParaT_nargs "Monad"\<close>(M) open M
 in
@@ -101,7 +103,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_APPLY"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_APPLY"\<close>
-  where type (@{ParaT_args} 'a, 'b) cat = (@{ParaT_args} 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'a, 'b) morph = (@{ParaT_args} 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Apply"\<close>(M : \<^eval>\<open>sfx_ParaT_nargs "MONAD_BASE"\<close>)
@@ -119,7 +121,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_ARROW_APPLY"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_ARROW_APPLY"\<close>
-  where type (@{ParaT_args} 'a, 'b) A.cat = (@{ParaT_args} 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'a, 'b) A.morph = (@{ParaT_args} 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Arrow_Apply"\<close>(
@@ -135,7 +137,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_ZERO_BASE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_ZERO_BASE"\<close>
-  where type (@{ParaT_args} 'a, 'b) cat = (@{ParaT_args} 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'a, 'b) morph = (@{ParaT_args} 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Zero"\<close>(
@@ -151,7 +153,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_PLUS_BASE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_PLUS_BASE"\<close>
-  where type (@{ParaT_args} 'a, 'b) cat = (@{ParaT_args} 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'a, 'b) morph = (@{ParaT_args} 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Plus_Base"\<close>(
@@ -167,7 +169,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_OR_BASE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_OR_BASE"\<close>
-  where type (@{ParaT_args} 'a, 'b) cat = (@{ParaT_args} 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'a, 'b) morph = (@{ParaT_args} 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Or_Base"\<close>(
@@ -183,7 +185,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION_BASE"\<close> 
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_EXCEPTION_BASE"\<close>
-  where type (@{ParaT_args} 'a, 'b) cat = (@{ParaT_args} 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'a, 'b) morph = (@{ParaT_args} 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Exception_Base"\<close>(
@@ -201,7 +203,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_EXCEPTION"\<close>
-  where type (@{ParaT_args} 'a, 'b) cat = (@{ParaT_args} 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'a, 'b) morph = (@{ParaT_args} 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Exception"\<close>(
@@ -219,7 +221,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_CHOICE_BASE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_CHOICE_BASE"\<close>
-  where type (@{ParaT_args} 'a, 'b) cat = (@{ParaT_args} 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'a, 'b) morph = (@{ParaT_args} 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Choice_Base"\<close>(
@@ -238,7 +240,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_CHOICE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "ARROW_CHOICE"\<close>
-  where type (@{ParaT_args} 'a, 'b) cat = (@{ParaT_args} 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'a, 'b) morph = (@{ParaT_args} 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Choice"\<close>(
@@ -256,7 +258,7 @@ functor \<^eval>\<open>sfx_ParaT_nargs "Applicative_Arrow"\<close>(
   ) : \<^eval>\<open>sfx_ParaT_nargs "APPLICATIVE_BASE"\<close> =
 struct
 open A
-type (@{ParaT_args} 'a) t = (@{ParaT_args} unit, 'a) cat
+type (@{ParaT_args} 'a) t = (@{ParaT_args} unit, 'a) morph
 fun map f = comp (arr f)
 fun pure x = arr (Library.K x)
 fun f <*> x = comp (arr (uncurry I)) (comp (f *** x) (arr (fn b => (b, b))))

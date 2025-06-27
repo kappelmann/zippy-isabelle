@@ -59,23 +59,23 @@ local
 in
 structure Z = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(
   structure ZD = ZD
-  structure ZM = \<^eval>\<open>sfx_T_nargs "Zipper_Moves"\<close>(
+  structure ZM = \<^eval>\<open>sfx_T_nargs "Zipper_Morphs"\<close>(
     type @{AllT_args} content = @{AllT_args} Z.ZD.content
     type @{AllT_args} zcontext = @{AllT_args} ZD.zcontext
     type @{AllT_args} zipper = @{AllT_args} ZD.zipper
     structure ZM = Z.ZM
     structure M = ZM
     type @{AllT_args} container = @{AllT_args} ZM.container * @{AllT_args} new_zcontext
-    fun zip x = x |> (first ZM.Zip.move >>> arr zipper_from_base_zipper)
+    fun zip x = x |> (first ZM.Zip.morph >>> arr zipper_from_base_zipper)
     fun unzip x = x |>
-      ((arr base_zipper_from_zipper >>> ZM.Unzip.move) &&& (arr (ZD.ZCtxt.getter #> get_new_zcontext)))
-    fun lift_move move =
+      ((arr base_zipper_from_zipper >>> ZM.Unzip.morph) &&& (arr (ZD.ZCtxt.getter #> get_new_zcontext)))
+    fun lift_morph move =
       (arr base_zipper_from_zipper >>> move) &&& (arr (ZD.ZCtxt.getter #> get_new_zcontext))
       >>> arr zipper_from_base_zipper
-    fun up x = x |> lift_move ZM.Up.move
-    fun down x = x |> lift_move ZM.Down.move
-    fun left x = x |> lift_move ZM.Left.move
-    fun right x = x |> lift_move ZM.Right.move)
+    fun up x = x |> lift_morph ZM.Up.morph
+    fun down x = x |> lift_morph ZM.Down.morph
+    fun left x = x |> lift_morph ZM.Left.morph
+    fun right x = x |> lift_morph ZM.Right.morph)
 )
 open Z
 end

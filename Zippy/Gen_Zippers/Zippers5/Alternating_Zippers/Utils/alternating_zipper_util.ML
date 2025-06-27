@@ -7,7 +7,7 @@ sig
 
   (* movements *)
   \<^imap>\<open>\<open>{i}\<close> => \<open>
-  val top{i} : (@{ParaT_args} @{AllT_args} Z{i}.zipper, @{AllT_args} Z1.zipper) move\<close>\<close>
+  val top{i} : (@{ParaT_args} @{AllT_args} Z{i}.zipper, @{AllT_args} Z1.zipper) morph\<close>\<close>
 end
 
 functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Util"\<close>(
@@ -26,9 +26,9 @@ local
 in
 (* movements *)
 fun top1 x = x |> (AE.repeat
-  (\<^imap>\<open>\<open>{j}\<close> =>\<open>Up\<^eval>\<open>ML_Gen.sub_mod_nzippers' 1 ({j} - 1) ^ "."\<close>move\<close> where sep = ">>>"\<close>))
+  (\<^imap>\<open>\<open>{j}\<close> =>\<open>Up\<^eval>\<open>ML_Gen.sub_mod_nzippers' 1 ({j} - 1) ^ "."\<close>morph\<close> where sep = ">>>"\<close>))
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-fun top{i} x = x |> (Up{i}.move >>> top\<^eval>\<open>string_of_int ({i} - 1)\<close>)
+fun top{i} x = x |> (Up{i}.morph >>> top\<^eval>\<open>string_of_int ({i} - 1)\<close>)
 \<close> where start = 2\<close>
 
 end

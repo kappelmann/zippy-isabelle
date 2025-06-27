@@ -31,7 +31,7 @@ declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.Run.logger L
 declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.Step.logger Logger.DEBUG\<close>]]
 declare[[ML_print_depth=100]]
 schematic_goal shows "?A \<and> B" "C \<and> D"
-ML_prf\<open>open Zippy Zippy.MU.Mo\<close>
+ML_prf\<open>open Zippy; open MU.Mo MU.A\<close>
 apply (tactic \<open>fn state =>
   let
     val with_ctxt = Ctxt.with_ctxt
@@ -39,7 +39,7 @@ apply (tactic \<open>fn state =>
       (*initialise the zipper*)
       (Util.init_thm_state state
       (*add actions*)
-      >>= Down1.move
+      >>= Down1.morph
       >>= Tac_Util.cons_single_ztactic_action_cluster
         (Mixin3.Meta.Meta.empty @{binding cluster1})
         Util.result_tail_presults_action
@@ -48,7 +48,7 @@ apply (tactic \<open>fn state =>
         (with_ctxt
           (Tac_Util.resolve_moved_tac Zippy_Action_App_Progress.promising @{thms cheat silly} #> arr))
         (Tac.GPU.F.Goals [1])
-      >>= Up3.move
+      >>= Up3.morph
       >>= Tac_Util.cons_single_ztactic_action_cluster
         (Mixin3.Meta.Meta.empty @{binding cluster2})
         Util.result_tail_presults_action
@@ -56,8 +56,8 @@ apply (tactic \<open>fn state =>
         (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
         (with_ctxt (Tac_Util.cheat_tac #> arr))
         (Tac.GPU.F.Goals [1])
-      >>= Up3.move
-      >>= Z2.ZM.Down.move
+      >>= Up3.morph
+      >>= Z2.ZM.Down.morph
       >>= Tac_Util.cons_single_ztactic_action_cluster
         (Mixin3.Meta.Meta.empty @{binding cluster3})
         Util.result_tail_presults_action
@@ -66,7 +66,7 @@ apply (tactic \<open>fn state =>
         (with_ctxt (Tac_Util.cheat_tac #> arr))
         (Tac.GPU.F.Goals [1])
       >>= ZB.top3
-      >>= Z1.ZM.Unzip.move
+      >>= Z1.ZM.Unzip.morph
       (*run best-first-search*)
       >>= Run.init_repeat_step_queue
         (with_ctxt Run.mk_df_post_unreturned_unfinished_statesq) NONE
@@ -124,18 +124,18 @@ apply (tactic \<open>fn state =>
       (*initialise the zipper*)
       (init_thm_state' mk_gcd_more state >>= arr snd
       (*add the resolution tactics to the goal cluster*)
-      >>= Down1.move
+      >>= Down1.morph
       (*one could, of course, also split each theorem into a separate action*)
       >>= with_state (zippy_resolve_tac RMD.promising @{thms conjI impI disjI1 disjI2}
           #> add_tac amd P.HIGH (F.goals [1]))
-      >>= Up4.move >>= Up3.move
+      >>= Up4.morph >>= Up3.morph
       (*add the assumption tactic to the goal cluster*)
       >>= with_state (assume_tac #> zippy_tac RMD.promising #> add_tac amd P.HIGH (F.goals [1]))
-      >>= top4 >>= Z1.ZM.Unzip.move
+      >>= top4 >>= Z1.ZM.Unzip.morph
       (*repeat best-first-search until no more changes*)
       >>= repeat_fold_pactions_max_df NONE
       (*get the theorems*)
-      >>= Z1.ZM.Zip.move >>= with_state finish_gclusters_oldest_first)
+      >>= Z1.ZM.Zip.morph >>= with_state finish_gclusters_oldest_first)
       (*pass context to state monad*)
       |> MS.eval @{context}
   in
@@ -166,19 +166,19 @@ val opt_statesq =
   (init_thm_state' mk_gcd_more state >>= arr snd
   (*print the goal clusters*)
   >>= (fn z => with_state pretty_gcs z >>= arr Pretty.writeln >>= arr (K z))
-  >>= Down1.move
+  >>= Down1.morph
   (*print the first goal cluster*)
   >>= (fn z => with_state pretty_gc z >>= arr Pretty.writeln >>= arr (K z))
   (*add cheat tac focused on first subgoal of first goal cluster*)
   >>= with_state (cheat_tac RMD.promising #> add_tac amd P.VERY_HIGH (F.goals [1]))
   (*print the first action*)
   >>= (fn z => pretty_action z >>= arr Pretty.writeln >>= arr (K z))
-  >>= Up4.move >>= Up3.move
+  >>= Up4.morph >>= Up3.morph
   (*add cheat tac focused on second subgoal of first goal cluster*)
   >>= with_state (cheat_tac RMD.promising #> add_tac amd P.MEDIUM (F.goals [2]))
   (*print the second action*)
   >>= (fn z => pretty_action z >>= arr Pretty.writeln >>= arr (K z))
-  >>= Up4.move >>= Up3.move >>= Z2.ZM.Down.move
+  >>= Up4.morph >>= Up3.morph >>= Z2.ZM.Down.morph
   (*print the second goal cluster*)
   >>= (fn z => with_state pretty_gc z >>= arr Pretty.writeln >>= arr (K z))
   (*print the local location*)
@@ -187,11 +187,11 @@ val opt_statesq =
   >>= with_state (cheat_tac RMD.promising #> add_tac amd P.LOW F.none)
   (*print the third action*)
   >>= (fn z => pretty_action z >>= arr Pretty.writeln >>= arr (K z))
-  >>= top4 >>= Z1.ZM.Unzip.move
+  >>= top4 >>= Z1.ZM.Unzip.morph
   (*repeat best-first-search for 4 steps*)
   >>= repeat_fold_pactions_max_df (SOME 4)
   (*get the theorems*)
-  >>= Z1.ZM.Zip.move >>= with_state finish_gclusters_oldest_first >>= arr Seq.list_of
+  >>= Z1.ZM.Zip.morph >>= with_state finish_gclusters_oldest_first >>= arr Seq.list_of
   ) |> MS.eval @{context} (*pass context to state monad*)
 \<close>
 oops

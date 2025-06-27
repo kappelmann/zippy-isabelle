@@ -2,7 +2,7 @@
 theory Zippy_Exceptions
   imports
     ML_Typeclasses.ML_Categories
-    ML_Moves
+    ML_Morphs
 begin
 
 ML_file\<open>zippy_exception_mixin_base.ML\<close>

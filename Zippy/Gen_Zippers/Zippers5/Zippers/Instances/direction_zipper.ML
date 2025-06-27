@@ -1,7 +1,7 @@
 (*  Title:      Zippy/direction_zipper.ML
     Author:     Kevin Kappelmann
 *)
-functor \<^eval>\<open>sfx_T_nargs "Direction_Zipper"\<close>(M : \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>) :
+functor \<^eval>\<open>sfx_T_nargs "Direction_Zipper"\<close>(M : \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>) :
     \<^eval>\<open>sfx_T_nargs "ZIPPER"\<close>
     where type @{AllT_args} ZD.content = Zipper_Direction.direction
     where type @{AllT_args} ZD.zcontext = unit

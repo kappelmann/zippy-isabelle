@@ -32,12 +32,12 @@ struct
   type @{AllT_args} content = @{AllT_args} content
   type @{AllT_args} zcontext = @{AllT_args} content L.t * @{AllT_args} content L.t
 end)
-structure ZM = \<^eval>\<open>sfx_T_nargs "Zipper_Moves"\<close>(
-  structure M = \<^eval>\<open>sfx_ParaT_nargs "Move_Base"\<close>(L.M)
+structure ZM = \<^eval>\<open>sfx_T_nargs "Zipper_Morphs"\<close>(
+  structure M = \<^eval>\<open>sfx_ParaT_nargs "Morph_Base"\<close>(L.M)
   type @{AllT_args} container = @{AllT_args} content L.t
   open ZD
   local
-    structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(M)
+    structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(M.K)
     structure A = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow"\<close>(M.M)
     open SC A
   in

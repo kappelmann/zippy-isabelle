@@ -4,23 +4,23 @@
 signature ZIPPY_LISTS_GOALS_RESULTS_MIXIN =
 sig
   include ZIPPY_GOALS_RESULTS_MIXIN_BASE
-  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
 
   (*initialise results below and including the given zipper*)
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   type @{AllT_args} zipper{i}
   val init_goal_results_down{i} : Proof.context -> (@{ParaT_args} @{AllT_args} zipper{i},
-    @{AllT_args} zipper{i} * Results.results) cat\<close>\<close>
+    @{AllT_args} zipper{i} * Results.results) morph\<close>\<close>
 
   (*update and return results upwards from the given zipper*)
   val update_goal_results_up : Proof.context -> (@{ParaT_args} @{AllT_args} zipper1,
-    @{AllT_args} zipper1 * Results.results) cat
+    @{AllT_args} zipper1 * Results.results) morph
   (*invariants for update_goal_results_up{i}: passed result sequence for children is non-empty*)
   val update_goal_results_up1 : GClusters.GCS.cluster_pos -> GClusters.GCS.state Seq.seq ->
-    Proof.context -> (@{ParaT_args} @{AllT_args} zipper1, @{AllT_args} zipper1 * Results.results) cat
+    Proof.context -> (@{ParaT_args} @{AllT_args} zipper1, @{AllT_args} zipper1 * Results.results) morph
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   val update_goal_results_up{i} : GClusters.GCS.state Seq.seq -> Proof.context ->
-    (@{ParaT_args} @{AllT_args} zipper{i}, @{AllT_args} zipper1 * Results.results) cat\<close>
+    (@{ParaT_args} @{AllT_args} zipper{i}, @{AllT_args} zipper1 * Results.results) morph\<close>
   where start = 2\<close>
 end
 
@@ -44,7 +44,7 @@ structure LGoals = Zippy_Lists_Goals_Mixin(structure Z = Z; structure Goals = Go
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 type @{AllT_args} zipper{i} = @{AllT_args} Z{i}.zipper\<close>\<close>
 
-local open SC Mo Co Exn
+local open SC A Mo Co Exn
   fun gen_init_goal_results_down init_goal_results_down_child enum_children up_child combine_res =
     let
       fun update_child (z, (_, results_acc)) = init_goal_results_down_child z
@@ -73,7 +73,7 @@ fun init_goal_results_down1 ctxt z =
       in
         gen_init_goal_results_down
           (init_goal_results_down2 ctxt >>> A.second (arr single))
-          (Down1.move >>> Z2.ZM.Unzip.move >>> LGoals.enum_gcluster) Up2.move
+          (Down1.morph >>> Z2.ZM.Unzip.morph >>> LGoals.enum_gcluster) Up2.morph
           (fn results => cons (the_single results)) (arr (rpair [Results.empty])) z
         >>= arr update_zipper
       end
@@ -86,17 +86,17 @@ and init_goal_results_down2 ctxt =
     results)
   in
     gen_init_goal_results_down (init_goal_results_down3 ctxt)
-      (Down2.move >>> Z3.ZM.Unzip.move >>> enum_zipper3) Up3.move
+      (Down2.morph >>> Z3.ZM.Unzip.morph >>> enum_zipper3) Up3.morph
       Results.append (arr without_results)
     >>> arr update_zipper
   end
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 and init_goal_results_down{i} ctxt =
   gen_init_goal_results_down (init_goal_results_down\<^eval>\<open>succ_mod_nzippers {i}\<close> ctxt)
-    (Down{i}.move
-    >>> Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>ZM.Unzip.move
+    (Down{i}.morph
+    >>> Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>ZM.Unzip.morph
     >>> enum_zipper\<^eval>\<open>succ_mod_nzippers {i}\<close>)
-    Up\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>move Results.append (arr without_results)\<close>
+    Up\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>morph Results.append (arr without_results)\<close>
 where start = 3\<close>
 
 local fun go_top_no_goal_results x = x |> (ZB.top1 >>> arr without_results)
@@ -111,11 +111,11 @@ fun update_goal_results_up1 cpos statesq ctxt z =
     in
       GClusters_Results.append_non_empty_states statesq z
       |> AE.catch'
-          (Up1.move >>> \<^eval>\<open>"update_goal_results_up" ^ pred_mod_nzippers 1\<close> statesq ctxt)
+          (Up1.morph >>> \<^eval>\<open>"update_goal_results_up" ^ pred_mod_nzippers 1\<close> statesq ctxt)
           (arr (with_results statesq))
     end
   in
-    Down1.move z >>= LGoals.gcluster_list
+    Down1.morph z >>= LGoals.gcluster_list
     >>= (fn zippers =>
       if Library.forall GCluster_Results.has_results zippers
       then update_results zippers
@@ -125,10 +125,10 @@ and update_goal_results_up2 statesq ctxt z =
   let val cpos = (GCluster.L.getter #> GCluster.GC.get_pos) z
   in
     GCluster_Results.append_non_empty_states statesq z
-    |> Up2.move >>= update_goal_results_up1 cpos statesq ctxt
+    |> Up2.morph >>= update_goal_results_up1 cpos statesq ctxt
   end
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-and update_goal_results_up{i} statesq ctxt = Up{i}.move
+and update_goal_results_up{i} statesq ctxt = Up{i}.morph
   >>> update_goal_results_up\<^eval>\<open>pred_mod_nzippers {i}\<close> statesq ctxt\<close>
 where start = 3\<close>
 
@@ -137,7 +137,7 @@ fun update_goal_results_up ctxt z = if GClusters_Results.has_results z
     let val statesq = GClusters_Results.get_states z
     in
       AE.catch'
-        (Up1.move >>> \<^eval>\<open>"update_goal_results_up" ^ pred_mod_nzippers 1\<close> statesq ctxt)
+        (Up1.morph >>> \<^eval>\<open>"update_goal_results_up" ^ pred_mod_nzippers 1\<close> statesq ctxt)
         (arr (with_results statesq)) z
     end
   else go_top_no_goal_results z

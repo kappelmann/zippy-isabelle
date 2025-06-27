@@ -147,21 +147,21 @@ end
 signature \<^eval>\<open>sfx_ParaT_nargs "IARROW_STATE_BASE"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_BASE"\<close>
-  val get : unit -> (@{ParaT_args} 's, 's, 'a, 's) cat
-  val put : unit -> (@{ParaT_args} 'si, 'so, 'so, unit) cat
+  val get : unit -> (@{ParaT_args} 's, 's, 'a, 's) morph
+  val put : unit -> (@{ParaT_args} 'si, 'so, 'so, unit) morph
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "IARROW_STATE"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_STATE_BASE"\<close>
-  val change : (@{ParaT_args} 'si, 'sm, 'a * 'si, 'so) cat -> (@{ParaT_args} 'si, 'so, 'a, 'a) cat
-  val access : (@{ParaT_args} 'si, 'so, 'a * 'si, 'b) cat -> (@{ParaT_args} 'si, 'so, 'a, 'b) cat
+  val change : (@{ParaT_args} 'si, 'sm, 'a * 'si, 'so) morph -> (@{ParaT_args} 'si, 'so, 'a) emorph
+  val access : (@{ParaT_args} 'si, 'so, 'a * 'si, 'b) morph -> (@{ParaT_args} 'si, 'so, 'a, 'b) morph
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "IArrow_State"\<close>(
     structure AS : \<^eval>\<open>sfx_ParaT_nargs "IARROW_STATE_BASE"\<close>
     structure A : \<^eval>\<open>sfx_ParaT_nargs "IARROW"\<close>
-    sharing type A.cat = AS.cat
+    sharing type A.morph = AS.morph
   ) : \<^eval>\<open>sfx_ParaT_nargs "IARROW_STATE"\<close> =
 struct
 open AS
@@ -182,7 +182,7 @@ signature \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI_ARROW_STATE"\<close> =
 sig
   structure K : \<^eval>\<open>sfx_ParaT_nargs "IKLEISLI"\<close>
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_STATE"\<close>
-  where type (@{ParaT_args} 'i, 'j, 'a, 'b) cat = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
+  where type (@{ParaT_args} 'i, 'j, 'a, 'b) morph = (@{ParaT_args} 'i, 'j, 'a, 'b) K.kleisli
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "IKleisli_Arrow_State"\<close>(

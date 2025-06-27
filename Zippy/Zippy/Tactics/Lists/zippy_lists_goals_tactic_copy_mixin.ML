@@ -5,7 +5,7 @@ signature ZIPPY_LISTS_GOALS_TACTIC_COPY_MIXIN =
 sig
   include ZIPPY_LOGGER_MIXIN_BASE
   include ZIPPY_GOALS_TACTIC_COPY_MIXIN_BASE
-  include \<^eval>\<open>sfx_ParaT_nargs "MOVE_BASE"\<close>
+  include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   sharing type M.t = Copy.M.t
   structure Exn : ZIPPY_EXCEPTION_MIXIN_BASE
   sharing type Exn.M.t = M.t
@@ -13,14 +13,14 @@ sig
   (* init result *)
   type @{AllT_args} node_gc
   val init_result :
-    (GClusters.GCS.gclusters -> (@{ParaT_args} 'z5, @{AllT_args} GClusters.L.container) cat) ->
+    (GClusters.GCS.gclusters -> (@{ParaT_args} 'z5, @{AllT_args} GClusters.L.container) morph) ->
     (GCluster.GC.gcluster -> @{AllT_args} node_gc) -> 'm Tac.result ->
-    (@{ParaT_args} 'z5, Copy.copy_update_data * @{AllT_args} GClusters.L.container) cat
+    (@{ParaT_args} 'z5, Copy.copy_update_data * @{AllT_args} GClusters.L.container) morph
 
   val init_result_copy_parents : (unit -> @{ParaT_args encl = "" ""} Exn.ME.exn) ->
-    (GClusters.GCS.gclusters -> (@{ParaT_args} 'z5, @{AllT_args} GClusters.L.container) cat) ->
+    (GClusters.GCS.gclusters -> (@{ParaT_args} 'z5, @{AllT_args} GClusters.L.container) morph) ->
     (GCluster.GC.gcluster -> @{AllT_args} node_gc) -> 'm Tac.result ->
-    (@{ParaT_args} 'z5, Copy.copy_update_data * @{AllT_args} Copy.zipper_to) cat
+    (@{ParaT_args} 'z5, Copy.copy_update_data * @{AllT_args} Copy.zipper_to) morph
 end
 
 functor Zippy_Lists_Goals_Tactic_Copy_Mixin(
@@ -49,7 +49,7 @@ structure ECopy = Zippy_Enum_Copy_Mixin(structure Z = ZE; structure Copy = Copy;
   structure Ctxt = Ctxt; structure Log = Log_ECopy; structure Show_To = Show1)
 open Log
 
-local open SC Mo
+local open SC A Mo
 in
 (* init result *)
 fun init_result add_gcs mk_gc_node res z = Ctxt.get_ctxt () >>= (fn ctxt => z |>

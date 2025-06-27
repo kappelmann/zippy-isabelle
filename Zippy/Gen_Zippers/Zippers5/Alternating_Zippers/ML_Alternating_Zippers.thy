@@ -11,7 +11,7 @@ ML\<open>
   val pred_mod_nzippers = ML_Gen.pred_mod_nzippers'
 \<close>
 
-ML_gen_file\<open>alternating_zipper_moves.ML\<close>
+ML_gen_file\<open>alternating_zipper_morphs.ML\<close>
 ML_gen_file\<open>alternating_zipper.ML\<close>
 ML_gen_file\<open>sub_alternating_zipper.ML\<close>
 ML_gen_file\<open>pair_alternating_zipper.ML\<close>

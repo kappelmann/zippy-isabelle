@@ -12,13 +12,13 @@ sig
     @{AllT_args} Zippy.ZN.ZN.N2.node
 
   (* initialisation *)
-  val init_thm_state : (@{ParaT_args} Zippy_Thm_State.state, @{AllT_args} Zippy.Z1.zipper) Zippy.cat
+  val init_thm_state : (@{ParaT_args} Zippy_Thm_State.state, @{AllT_args} Zippy.Z1.zipper) Zippy.morph
 
   (* action cluster *)
   val cons_action_cluster : Zippy.Mixin3.Meta.Meta.metadata ->
     (Zippy.Mixin4.Goal_Focus.F.focus * (Zippy.Mixin4.Goal_Focus.F.focus ->
-      (@{ParaT_args} @{AllT_args} Zippy.Z3.zipper, @{AllT_args} Zippy.Z4.zipper) Zippy.cat)) list ->
-    (@{ParaT_args} @{AllT_args} Zippy.Z2.zipper, @{AllT_args} Zippy.Z3.zipper) Zippy.cat
+      (@{ParaT_args} @{AllT_args} Zippy.Z3.zipper, @{AllT_args} Zippy.Z4.zipper) Zippy.morph)) list ->
+    (@{ParaT_args} @{AllT_args} Zippy.Z2.zipper, @{AllT_args} Zippy.Z3.zipper) Zippy.morph
 
   (* presults *)
   val cons_presults_action :
@@ -26,21 +26,21 @@ sig
        @{AllT_args} Zippy.Mixin4.PAction.action) ->
     Zippy.Mixin4.Meta.Meta.metadata -> Zippy.Mixin4.Goal_Focus.F.focus ->
     @{AllT_args} Zippy.Mixin4.PResults.presults ->
-    (@{ParaT_args} @{AllT_args} Zippy.Z3.zipper, @{AllT_args} Zippy.Z4.zipper) Zippy.cat
+    (@{ParaT_args} @{AllT_args} Zippy.Z3.zipper, @{AllT_args} Zippy.Z4.zipper) Zippy.morph
 
   val cons_action_application_result : Zippy.Prio.prio -> Zippy.Mixin4.PResults.result ->
-    (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper, @{AllT_args} Zippy.Z5.zipper) Zippy.cat
+    (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper, @{AllT_args} Zippy.Z5.zipper) Zippy.morph
 
   val update_tail_presults : @{AllT_args} Zippy.Mixin4.PResults.presults ->
     @{AllT_args} Zippy.Z4.zipper -> @{AllT_args} Zippy.Z4.zipper
 
   val init_result_copy_parents : Zippy.Prio.prio -> Zippy.Mixin4.PResults.result ->
     (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper,
-      Zippy.Mixin3.Copy.copy_update_data * @{AllT_args} Zippy.Z1.zipper) Zippy.cat
+      Zippy.Mixin3.Copy.copy_update_data * @{AllT_args} Zippy.Z1.zipper) Zippy.morph
 
   val update_result : Prio.prio -> Zippy.Mixin4.PResults.result ->
     (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper,
-      @{AllT_args} Zippy.Mixin4.PAction.action_result) Zippy.cat
+      @{AllT_args} Zippy.Mixin4.PAction.action_result) Zippy.morph
 
   val result_tail_presults_action :
     Zippy.Mixin4.PResults.result * @{AllT_args} Zippy.Mixin4.PResults.presults ->
@@ -73,7 +73,7 @@ in
 (* initialisation *)
 fun init_thm_state state = state |>
   (LGoals_Tac.init_state
-    (node1 #> ZN.container_no_parent exn #> Container_Constructor.init_container1 #> Z1.ZM.Zip.move)
+    (node1 #> ZN.container_no_parent exn #> Container_Constructor.init_container1 #> Z1.ZM.Zip.morph)
     (node2 (Zippy_Thm_State.meta_vars state))
   >>> arr snd)
 
@@ -104,17 +104,17 @@ fun update_tail_presults presults z = L.set_modify Mixin4.PResults.L.modifier (p
 fun init_result_copy_parents prio result z =
   let fun set_next5 n z = L.set_modify ZN.Node_Next5.modifier (pure n, z)
   in
-    Up4.move z >>= Up3.move >>= arr Mixin2.Top_Meta_Vars.L.getter >>=
+    Up4.morph z >>= Up3.morph >>= arr Mixin2.Top_Meta_Vars.L.getter >>=
     (fn parent_top_meta_vars => LGoals_Tac_Copy.init_result_copy_parents mk_exn
       (fn gclusters => cons_action_application_result prio result
         >>> arr (set_next5 (node1 gclusters))
-        >>> Down5.move)
+        >>> Down5.morph)
       (node2 parent_top_meta_vars) result z)
   end
 
 fun update_result prio result = init_result_copy_parents prio result >>> arr snd
   >>> Ctxt.with_ctxt LGoals_Results.init_goal_results_down1 >>> arr fst
-  >>> Up1.move >>> arr Mixin4.PAction.AResult.Expand
+  >>> Up1.morph >>> arr Mixin4.PAction.AResult.Expand
 
 fun result_tail_presults_action x = Mixin4.PAction_PResults.result_tail_presults_action
   (Library.K (fn presults => arr (update_tail_presults presults))) update_result x

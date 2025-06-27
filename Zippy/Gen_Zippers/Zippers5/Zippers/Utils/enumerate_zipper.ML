@@ -3,9 +3,9 @@
 *)
 signature \<^eval>\<open>sfx_T_nargs "ENUMERATE_ZIPPER"\<close> =
 sig
-  structure Z : \<^eval>\<open>sfx_T_nargs "ZIPPER_MOVES"\<close>
+  structure Z : \<^eval>\<open>sfx_T_nargs "ZIPPER_MORPHS"\<close>
   structure Co : \<^eval>\<open>sfx_ParaT_nargs "COROUTINE_UTIL"\<close>
-  where type (@{ParaT_args} 'a, 'b) C.cat = (@{ParaT_args} 'a, 'b) Z.cat
+  where type (@{ParaT_args} 'a, 'b) C.morph = (@{ParaT_args} 'a, 'b) Z.morph
   (*enumerate zippers starting from the first passed zipper*)
   val enum_zipper :
     (*exception for empty coroutine*)

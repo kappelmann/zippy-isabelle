@@ -47,8 +47,8 @@ structure ZD = \<^eval>\<open>sfx_T_nargs "Zipper_Data"\<close>(
     (((@{AllT_args} content * @{AllT_args} content rose) L.t *
     (@{AllT_args} content * @{AllT_args} content rose) L.t * @{AllT_args} content option) L.t))
 
-structure ZM = \<^eval>\<open>sfx_T_nargs "Zipper_Moves"\<close>(
-  structure M = \<^eval>\<open>sfx_ParaT_nargs "Move_Base"\<close>(L.M)
+structure ZM = \<^eval>\<open>sfx_T_nargs "Zipper_Morphs"\<close>(
+  structure M = \<^eval>\<open>sfx_ParaT_nargs "Morph_Base"\<close>(L.M)
   type @{AllT_args} container = @{AllT_args} content rose
   open ZD
   local
