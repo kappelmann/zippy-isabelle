@@ -3,12 +3,12 @@ section \<open>Generic Zippers Base Setup\<close>
 theory ML_Gen_Zippers_Base
   imports
     Zippy_Base_Setup
-    ML_Typeclasses.ML_Lenses
+    ML_Typeclasses.Gen_ML_Typeclasses_Base
 begin
 
 text\<open>The ML code is parametrised by the number of zippers \<open>nzippers\<close>, the number of type parameters
 of the underlying typeclasses \<open>'p1,...,'pn\<close>, and the number of additional type parameters for the
-zipper \<open>'a1,...,'am\<close>.  All parameters of the underlying typeclasses are also put into the zipper
+zipper \<open>'a1,...,'am\<close>. All parameters of the underlying typeclasses are also put into the zipper
 type per default since zippers for search trees must be able to store moves in the zipper
 themselves, i.e. a zipper takes type parameters \<open>'p1,...,'pn,'a1,...,'am\<close>.
 
@@ -61,7 +61,7 @@ struct
   fun nzippers _ = Config.get_generic (Context.the_generic_context ()) nzippers_config
   val nzippers' = nzippers #> string_of_int
 
-  (*ML structure names may not begin with a digit; hence we add a "n" prefix*)
+  (*ML structure names may not begin with a digit; hence we add a "n" prefix for indexed names*)
   val nprefix = prefix "n"
   fun pfx_nzippers s = mk_name [nprefix (nzippers' ()), s]
 

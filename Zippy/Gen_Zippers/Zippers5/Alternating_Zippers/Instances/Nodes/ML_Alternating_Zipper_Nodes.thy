@@ -9,20 +9,22 @@ ML_gen_file\<open>node.ML\<close>
 ML_gen_file\<open>modify_node_content.ML\<close>
 ML_gen_file\<open>modify_node_next.ML\<close>
 
-context
-  (*FIXME: could be made generic with ML programming*)
-  notes [[AllT_args args = ['p1, 'a1, 'a2, 'a3, 'a4, 'a5, 'a6]]]
-  and [[ZipperT_args args = ['a1, 'a2, 'a3, 'a4, 'a5, 'a6]]]
-begin
+setup\<open>fn theory =>
+let val nzippers = Config.get_global theory ML_Gen.nzippers_config + 1
+in Context.theory_map (ML_Gen.setup_nzippers nzippers) theory end\<close>
+
 text \<open>Note: we reload the ML file @{file node.ML}, just with different parameters.\<close>
 ML_gen_file\<open>node.ML\<close>
 ML\<open>
   val succ_node_sig = sfx_T_nargs "NODE"
   val succ_node_functor = sfx_T_nargs "Node"
 \<close>
-end
-context
-  notes [[imap stop = 6]]
+
+setup\<open>fn theory =>
+let val nzippers = Config.get_global theory ML_Gen.nzippers_config - 1
+in Context.theory_map (ML_Gen.setup_nzippers nzippers) theory end\<close>
+
+context notes [[imap stop = 6]]
 begin
 ML_gen_file\<open>instantiate_node_succ.ML\<close>
 end

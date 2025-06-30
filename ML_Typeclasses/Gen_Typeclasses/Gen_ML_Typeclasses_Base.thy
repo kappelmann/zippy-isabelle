@@ -61,7 +61,8 @@ ML\<open>
       end)
     val ML = command "" false
   in
-    Outer_Syntax.command \<^command_keyword>\<open>ML_gen_file\<close> "read and evaluate Isabelle/ML file without duplication check."
+    Outer_Syntax.command \<^command_keyword>\<open>ML_gen_file\<close>
+      "read and evaluate Isabelle/ML file without duplication check."
       (Resources.parse_file --| Scan.option \<^keyword>\<open>;\<close> >> ML NONE)
   end
 \<close>
