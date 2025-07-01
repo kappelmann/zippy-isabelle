@@ -5,6 +5,9 @@ signature ZIPPY_UTIL =
 sig
   (* misc *)
   val mk_exn : unit -> @{ParaT_args encl = "" ""} Zippy.Exn.ME.exn
+  val run_monad : {ctxt : Proof.context, state : @{ParaT_args encl = "" ""}} ->
+    (@{ParaT_args} 'a) Zippy.M.t ->
+    {result : 'a, ctxt : Proof.context, state : @{ParaT_args encl = "" ""}} option
 
   (* nodes *)
   val node1 : Zippy.Goals.GClusters.GCS.gclusters -> @{AllT_args} Zippy.ZN.ZN.N1.node
@@ -28,7 +31,8 @@ sig
     @{AllT_args} Zippy.Mixin4.PResults.presults ->
     (@{ParaT_args} @{AllT_args} Zippy.Z3.zipper, @{AllT_args} Zippy.Z4.zipper) Zippy.morph
 
-  val cons_action_application_result : Zippy.Prio.prio -> Zippy.Mixin4.PResults.result ->
+  (*note: results are added to the back since this keeps the paths of existing nodes unchanged.*)
+  val snoc_action_application_result : Zippy.Prio.prio -> Zippy.Mixin4.PResults.result ->
     (@{ParaT_args} @{AllT_args} Zippy.Z4.zipper, @{AllT_args} Zippy.Z5.zipper) Zippy.morph
 
   val update_tail_presults : @{AllT_args} Zippy.Mixin4.PResults.presults ->
@@ -53,6 +57,15 @@ open Zippy Zippy.MU
 
 (* misc *)
 fun mk_exn _ = exn
+
+fun run_monad {ctxt, state} = State_MSTrans.run state #> Ctxt_MSTrans.run ctxt
+  #> Option.map (fn x =>
+    let
+      val ctxt = Ctxt_MSTrans.SR.state x
+      val x = Ctxt_MSTrans.SR.value x
+      val state = State_MSTrans.SR.state x
+      val result = State_MSTrans.SR.value x
+    in {result = result, ctxt = ctxt, state = state} end)
 
 (* nodes *)
 fun node1 gclusters = ZN.node_no_next1 exn {
@@ -90,13 +103,13 @@ fun cons_presults_action result_tail_presults_action meta focus presults =
     meta = meta}
   in ZL.cons_content_move_safe3 exn n end
 
-fun cons_action_application_result prio result z =
+fun snoc_action_application_result prio result z =
   let
     val result_meta = Tac.get_more result
     val action_app_num = Mixin4.Action_App_Num.L.getter z
     val focus = Mixin4.Goal_Focus.L.getter z
     val n = {action_app_num = action_app_num, focus = focus, prio = prio, result_meta = result_meta}
-  in ZL.cons_content_move_safe4 exn n z end
+  in ZL.snoc_content_move_safe4 exn n z end
 
 fun update_tail_presults presults z = L.set_modify Mixin4.PResults.L.modifier (presults, z)
   |> Mixin4.Action_App_Num.inc_action_app_num
@@ -106,7 +119,7 @@ fun init_result_copy_parents prio result z =
   in
     Up4.morph z >>= Up3.morph >>= arr Mixin2.Top_Meta_Vars.L.getter >>=
     (fn parent_top_meta_vars => LGoals_Tac_Copy.init_result_copy_parents mk_exn
-      (fn gclusters => cons_action_application_result prio result
+      (fn gclusters => snoc_action_application_result prio result
         >>> arr (set_next5 (node1 gclusters))
         >>> Down5.morph)
       (node2 parent_top_meta_vars) result z)

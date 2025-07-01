@@ -3,7 +3,9 @@
 *)
 signature ZIPPY_ACTION_APP_METADATA =
 sig
-  type progress = Zippy_Action_App_Progress.progress
+  structure P : ZIPPY_ACTION_APP_PROGRESS
+  where type progress = Zippy_Action_App_Progress.progress
+  type progress = P.progress
 
   type metadata
   val metadata : progress -> metadata
@@ -21,7 +23,8 @@ end
 structure Zippy_Action_App_Metadata : ZIPPY_ACTION_APP_METADATA =
 struct
 
-type progress = Zippy_Action_App_Progress.progress
+structure P = Zippy_Action_App_Progress
+type progress = P.progress
 
 datatype metadata = Metadata of {
   progress : progress
@@ -31,7 +34,7 @@ fun metadata progress = Metadata {progress = progress}
 fun eq_metadata (m1 as Metadata {progress = progress1}, m2 as Metadata {progress = progress2}) =
   pointer_eq (m1, m2) orelse progress1 = progress2
 fun pretty_metadata (Metadata {progress}) = SpecCheck_Show_Base.record [
-    ("progress", Zippy_Action_App_Progress.pretty progress)
+    ("progress", P.pretty progress)
   ]
 
 structure L = \<^eval>\<open>sfx_ParaT_nargs "SLens_Kleisli_Identity"\<close>
@@ -45,13 +48,10 @@ struct
   fun lens _ = L.mk_lens getter modifier
 end
 
-local open Zippy_Action_App_Progress
-in
 fun add (md1, md2) =
   let val progress =
-    if forall (equal promising) (List.map Progress.getter [md1, md2])
-    then promising else unclear
+    if forall (equal P.promising) (List.map Progress.getter [md1, md2])
+    then P.promising else P.unclear
   in metadata progress end
-end
 
 end

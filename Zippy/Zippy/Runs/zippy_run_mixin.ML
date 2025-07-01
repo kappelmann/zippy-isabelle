@@ -14,6 +14,7 @@ sig
 
   type @{AllT_args} result_data = {
     thm_states : Step.GClusters.GCS.state Seq.seq,
+    steps : int,
     queue : @{AllT_args} Step.PAction_Queue.queue,
     zipper : @{AllT_args} Step.GClusters.L.container,
     state : @{AllT_args} state}
@@ -110,6 +111,7 @@ val seq_from_monad = seq_from_monad
 
 type @{AllT_args} result_data = {
   thm_states : GClusters.GCS.state Seq.seq,
+  steps : int,
   queue : @{AllT_args} Step.PAction_Queue.queue,
   zipper : @{AllT_args} GClusters.L.container,
   state : @{AllT_args} state}
@@ -142,10 +144,10 @@ fun mk_df_post_promising_unreturned_unfinished_statesq ctxt =
 
 (* run *)
 local
-  fun result_data queue zipper state thm_states =
-    {queue = queue, state = state, zipper = zipper, thm_states = thm_states}
-  fun finished x = Finished ooo result_data x
-  fun unfinished x = Unfinished ooo result_data x
+  fun result_data steps queue zipper state thm_states =
+    {steps = steps, queue = queue, state = state, zipper = zipper, thm_states = thm_states}
+  fun finished x = Finished oooo result_data x
+  fun unfinished x = Unfinished oooo result_data x
   structure Show = SpecCheck_Show
 in
 type @{AllT_args} container = @{AllT_args} Z1.ZM.container
@@ -153,11 +155,11 @@ fun pretty_fuel NONE = Pretty.str "Unlimited"
   | pretty_fuel (SOME n) = Show.int n
 fun gen_repeat_step_queue step_queue mk_unfinished_statesq =
   let
-    fun case_unfinished queue = Z1.ZM.Zip.morph
+    fun case_unfinished steps queue = Z1.ZM.Zip.morph
       >>> Ctxt.with_ctxt (fn ctxt => fn z =>
         (@{log Logger.DEBUG} ctxt (fn _ => "Returning unfinished state sequence.");
         mk_unfinished_statesq z)
-      >>= with_state (fn s => arr (unfinished queue z s #> Seq.single)))
+      >>= with_state (fn s => arr (unfinished steps queue z s #> Seq.single)))
     fun run steps opt_fuel queue s c = Seq.make (fn _ => Ctxt.get_ctxt () >>= (fn ctxt => c |>
       (if the_default 1 opt_fuel <= 0
       then (@{log Logger.DEBUG} ctxt (fn _ => Pretty.block [
@@ -165,32 +167,35 @@ fun gen_repeat_step_queue step_queue mk_unfinished_statesq =
             Show.int steps,
             Pretty.str " step(s)."
         ] |> Pretty.string_of);
-        case_unfinished queue)
+        case_unfinished steps queue)
       else Co.AE.catch'
         (fn c => c |>
           (@{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
             Pretty.str "Running one step.",
-            Pretty.block [Pretty.str "Step count: ", Show.int steps],
+            Pretty.block [Pretty.str "Step count: ", Show.int steps, Pretty.str "."],
             Pretty.block [Pretty.str "Remaining fuel: ", pretty_fuel opt_fuel]
           ] |> Pretty.block |> Pretty.string_of);
           step_queue queue)
-        >>= AC.opt
-          (Ctxt.with_ctxt (fn ctxt => fn _ => (@{log Logger.DEBUG} ctxt (fn _ => "Queue is empty.");
-            case_unfinished queue c)))
-          (with_state (fn s => fn (opt_res, queue) =>
-            let val nextsq = run (steps + 1) (Option.map General_Util.pred opt_fuel) queue s
-            in case opt_res of
-              NONE => Ctxt.get_ctxt () >>= (fn ctxt =>
-                (@{log Logger.DEBUG} ctxt (fn _ => "No zipper changes. Continuing with next step.");
-                arr nextsq c))
-            | SOME (z, results) => Z1.ZM.Unzip.morph z
-                >>= Ctxt.with_ctxt (fn ctxt => arr (nextsq #>
-                  (if Step.Results.has_results results
-                  then (@{log Logger.DEBUG} ctxt (fn _ => "Returning new results.");
-                    Step.Results.get_states results |> finished queue z s |> Seq.cons)
-                  else (@{log Logger.DEBUG} ctxt (fn _ => "No new results. Continuing with next step.");
-                    I))))
-            end)))
+        >>= (fn x => x |>
+          let val steps = steps + 1
+          in AC.opt
+            (Ctxt.with_ctxt (fn ctxt => fn _ => (@{log Logger.DEBUG} ctxt (fn _ => "Queue is empty.");
+              case_unfinished steps queue c)))
+            (with_state (fn s => fn (opt_res, queue) =>
+              let val nextsq = run steps (Option.map General_Util.pred opt_fuel) queue s
+              in case opt_res of
+                NONE => Ctxt.get_ctxt () >>= (fn ctxt =>
+                  (@{log Logger.DEBUG} ctxt (fn _ => "No zipper changes. Continuing with next step.");
+                  arr nextsq c))
+              | SOME (z, results) => Z1.ZM.Unzip.morph z
+                  >>= Ctxt.with_ctxt (fn ctxt => arr (nextsq #>
+                    (if Step.Results.has_results results
+                    then (@{log Logger.DEBUG} ctxt (fn _ => "Returning new results.");
+                      Step.Results.get_states results |> finished steps queue z s |> Seq.cons)
+                    else (@{log Logger.DEBUG} ctxt (fn _ => "No new results. Continuing with next step.");
+                      I))))
+              end))
+          end))
         (fn _ => (@{log Logger.WARN} ctxt (fn _ => "Error while running step. Stopping run.");
           pure Seq.empty))))
       |> seq_from_monad s |> Seq.pull)

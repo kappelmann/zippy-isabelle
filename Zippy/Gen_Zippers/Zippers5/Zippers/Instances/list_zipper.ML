@@ -10,7 +10,6 @@ sig
   where type @{AllT_args} ZD.zcontext = @{AllT_args} content L.t * @{AllT_args} content L.t
   where type @{AllT_args} ZM.container = @{AllT_args} content L.t
   sharing type M.t = L.M.t
-  val cons_zcontext : @{AllT_args} content -> @{AllT_args} ZD.zcontext -> @{AllT_args} ZD.zcontext
 end
 
 functor \<^eval>\<open>sfx_T_nargs "List_Zipper"\<close>(
@@ -61,7 +60,4 @@ structure ZM = \<^eval>\<open>sfx_T_nargs "Zipper_Morphs"\<close>(
 
 structure Z = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(structure ZD = ZD; structure ZM = ZM)
 open Z
-
-fun cons_zcontext c = apfst (fn hs => hs @ [c])
-
 end

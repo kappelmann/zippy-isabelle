@@ -21,7 +21,6 @@ signature \<^eval>\<open>sfx_ParaT_nargs "SEMI_CATEGORY"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "SEMICATEGORY_BASE"\<close>
   val >>> : (@{ParaT_args} 'a, 'b) morph * (@{ParaT_args} 'b, 'c) morph -> (@{ParaT_args} 'a, 'c) morph
-  val o : (@{ParaT_args} 'b, 'c) morph * (@{ParaT_args} 'a, 'b) morph -> (@{ParaT_args} 'a, 'c) morph
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(SC : \<^eval>\<open>sfx_ParaT_nargs "SEMICATEGORY_BASE"\<close>)
@@ -30,7 +29,6 @@ struct
 
 open SC
 fun f >>> g = comp g f
-fun f o g = comp f g
 
 end
 

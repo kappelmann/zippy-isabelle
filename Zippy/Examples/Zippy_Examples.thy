@@ -4,6 +4,7 @@ theory Zippy_Examples
     Zippy.ML_Priority_Queues
     Zippy.Zippy_Instance
     Main
+    ML_Unification.ML_Term_Index
 begin
 
 text \<open>Some simple examples showcasing navigation in the zipper and the creation of theorems using
@@ -27,11 +28,11 @@ end
 lemma silly: "A \<Longrightarrow> B" sorry
 lemma cheat : "A" sorry
 
-declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.Run.logger Logger.DEBUG\<close>]]
-declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.Step.logger Logger.DEBUG\<close>]]
 declare[[ML_print_depth=100]]
-schematic_goal shows "?A \<and> B" "C \<and> D"
-ML_prf\<open>open Zippy; open MU.Mo MU.A\<close>
+schematic_goal shows "?A \<and> B" "?C \<and> D"
+ML_prf\<open>open Zippy; open MU; open Mo A\<close>
+supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.Run.logger Logger.DEBUG\<close>]]
+supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.Step.logger Logger.DEBUG\<close>]]
 apply (tactic \<open>fn state =>
   let
     val with_ctxt = Ctxt.with_ctxt
@@ -40,30 +41,27 @@ apply (tactic \<open>fn state =>
       (Util.init_thm_state state
       (*add actions*)
       >>= Down1.morph
-      >>= Tac_Util.cons_single_ztactic_action_cluster
+      >>= Tac_Util.cons_single_ztactic_action_cluster'
         (Mixin3.Meta.Meta.empty @{binding cluster1})
-        Util.result_tail_presults_action
         (Mixin4.Meta.Meta.empty @{binding action1})
         (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
         (with_ctxt
-          (Tac_Util.resolve_moved_tac Zippy_Action_App_Progress.promising @{thms cheat silly} #> arr))
+          (Tac_Util.resolve_moved_ztac Mixin5.Meta.Meta.P.promising @{thms cheat silly} #> arr))
         (Tac.GPU.F.Goals [1])
       >>= Up3.morph
-      >>= Tac_Util.cons_single_ztactic_action_cluster
+      >>= Tac_Util.cons_single_ztactic_action_cluster'
         (Mixin3.Meta.Meta.empty @{binding cluster2})
-        Util.result_tail_presults_action
         (Mixin4.Meta.Meta.empty @{binding action2})
         (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
-        (with_ctxt (Tac_Util.cheat_tac #> arr))
+        (with_ctxt (Tac_Util.cheat_ztac #> arr))
         (Tac.GPU.F.Goals [1])
       >>= Up3.morph
       >>= Z2.ZM.Down.morph
-      >>= Tac_Util.cons_single_ztactic_action_cluster
+      >>= Tac_Util.cons_single_ztactic_action_cluster'
         (Mixin3.Meta.Meta.empty @{binding cluster3})
-        Util.result_tail_presults_action
         (Mixin4.Meta.Meta.empty @{binding action3})
         (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
-        (with_ctxt (Tac_Util.cheat_tac #> arr))
+        (with_ctxt (Tac_Util.cheat_ztac #> arr))
         (Tac.GPU.F.Goals [1])
       >>= ZB.top3
       >>= Z1.ZM.Unzip.morph
@@ -72,42 +70,12 @@ apply (tactic \<open>fn state =>
         (with_ctxt Run.mk_df_post_unreturned_unfinished_statesq) NONE
       )
       |> Run.seq_from_monad {ctxt = @{context}, state = ()}
-      |> Seq.pull |> (fn sq => Seq.make (fn _ => sq))
+      |> Seq.map (Run.get_result_data #> #thm_states) |> Seq.flat |> Tactic_Util.unique_thmsq |> Seq.list_of |> Seq.of_list
+      (* |> Seq.pull |> (fn sq => Seq.make (fn _ => sq)) *)
     val (time, ressq) = Timing.timing run () |> apfst @{print}
-  in
-    let val _ =
-      (* Seq.list_of statesq  *)
-      (* |> List.map (snd #> fst #> fst #> Zippy.ZN.ZCore.N1.Co.getter
-        #> Zippy.Mixin1.CB.get_results
-        #> Zippy.Mixin1.Results.R.get_states
-        #> Seq.list_of)  *)
-      (* |> @{print} *)
-      ()
-    in
-      ressq
-      (* |> Seq.filter SRuns.is_finished  *)
-      |> Seq.map (Run.get_result_data #> #thm_states) |> Seq.flat
-    end
-  end
+  in ressq end
 \<close>)
 (*you can backtrack with "back"*)
-back
-back
-back
-back
-back
-back
-back
-back
-back
-back
-back
-back
-back
-back
-back
-back
-back
 back
 back
 back
@@ -116,44 +84,46 @@ oops
 
 text \<open>Search tree akin to Figure 1 from the paper.\<close>
 
-lemma shows "A \<Longrightarrow> (B \<longrightarrow> C) \<or> (A \<and> A)"
+schematic_goal shows "A \<Longrightarrow> (B \<longrightarrow> C) \<or> (A \<and> A)"
+ML_prf\<open>open Zippy; open MU; open Mo A SC\<close>
+supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.Run.logger Logger.TRACE\<close>]]
+supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.Step.logger Logger.DEBUG\<close>]]
 apply (tactic \<open>fn state =>
   let
-    val amd = amd ()
-    val opt_statesq =
+    val with_ctxt = Ctxt.with_ctxt
+    fun run _ =
       (*initialise the zipper*)
-      (init_thm_state' mk_gcd_more state >>= arr snd
-      (*add the resolution tactics to the goal cluster*)
+      (Util.init_thm_state state
+      (*add actions*)
       >>= Down1.morph
-      (*one could, of course, also split each theorem into a separate action*)
-      >>= with_state (zippy_resolve_tac RMD.promising @{thms conjI impI disjI1 disjI2}
-          #> add_tac amd P.HIGH (F.goals [1]))
-      >>= Up4.morph >>= Up3.morph
-      (*add the assumption tactic to the goal cluster*)
-      >>= with_state (assume_tac #> zippy_tac RMD.promising #> add_tac amd P.HIGH (F.goals [1]))
-      >>= top4 >>= Z1.ZM.Unzip.morph
-      (*repeat best-first-search until no more changes*)
-      >>= repeat_fold_pactions_max_df NONE
-      (*get the theorems*)
-      >>= Z1.ZM.Zip.morph >>= with_state finish_gclusters_oldest_first)
-      (*pass context to state monad*)
-      |> MS.eval @{context}
+      >>= Tac_Util.cons_single_ztactic_action_cluster'
+        (Mixin3.Meta.Meta.empty @{binding cluster1})
+        (Mixin4.Meta.Meta.empty @{binding action1})
+        (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
+        (with_ctxt
+          (Tac_Util.resolve_moved_ztac Mixin5.Meta.Meta.P.promising @{thms conjI impI disjI1 disjI2} #> arr))
+        (Tac.GPU.F.Goals [1])
+      >>= Up3.morph
+      >>= Tac_Util.cons_single_ztactic_action_cluster'
+        (Mixin3.Meta.Meta.empty @{binding cluster2})
+        (Mixin4.Meta.Meta.empty @{binding action2})
+        (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
+        (with_ctxt (Tac_Util.assume_moved_ztac #> arr))
+        (Tac.GPU.F.Goals [1])
+      >>= ZB.top3
+      >>= Z1.ZM.Unzip.morph
+      (*run best-first-search*)
+      >>= Run.init_repeat_step_queue
+        (with_ctxt Run.mk_df_post_unreturned_unfinished_statesq) NONE
+      )
+      |> Run.seq_from_monad {ctxt = @{context}, state = ()}
+      |> Seq.map (Run.get_result_data #> #thm_states) |> Seq.flat |> Tactic_Util.unique_thmsq |> Seq.list_of |> Seq.of_list
+    val (time, ressq) = Timing.timing run () |> apfst @{print}
   in
-    case opt_statesq of
-      NONE => Seq.empty
-    | SOME statesq =>
-        let val _ = Seq.list_of statesq |> @{make_string} |> writeln
-        in statesq end
+    ressq
   end
 \<close>)
-(*you can backtrack with "back"*)
-back
-back (*solved branch*)
-back
-back
-back
-back (*etc.*)
-oops
+done
 
 text \<open>Example with meta variable clusters, navigation, and printing.\<close>
 

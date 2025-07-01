@@ -17,8 +17,6 @@ sig
   include \<^eval>\<open>sfx_ParaT_nargs "ISEMI_CATEGORY_BASE"\<close>
   val >>> : (@{ParaT_args} 'i, 'j, 'a, 'b) morph * (@{ParaT_args} 'j, 'k, 'b, 'c) morph ->
     (@{ParaT_args} 'i, 'k, 'a, 'c) morph
-  val o : (@{ParaT_args} 'j, 'k, 'b, 'c) morph * (@{ParaT_args} 'i, 'j, 'a, 'b) morph ->
-    (@{ParaT_args} 'i, 'k, 'a, 'c) morph
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "ISemi_Category"\<close>(
@@ -27,7 +25,6 @@ functor \<^eval>\<open>sfx_ParaT_nargs "ISemi_Category"\<close>(
 struct
 open C
 fun f >>> g = comp g f
-fun f o g = comp f g
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "ICATEGORY_BASE"\<close> =

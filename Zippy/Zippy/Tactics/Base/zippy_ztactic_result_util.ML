@@ -8,14 +8,11 @@ sig
   sharing type GC.GCS.gcpos = GPU.GCS.gcpos
   sharing type GC.GCS.gclusters = GPU.GCS.gclusters
 
-  val init_result : 'm result ->
-    (GPU.F.focus -> (GPU.GCS.cluster_pos * GPU.F.focus) list) *
-    (GPU.GCS.gclusters * GC.gcluster list)
+  val init_result : 'm result -> GPU.focus_update * (GPU.GCS.gclusters * GC.gcluster list)
 
-  val single_goal_gpos_update : (GPU.GCS.goal_pos -> int -> GPU.GCS.goal_pos GPU.T.target) ->
-    GPU.GCS.goal_pos -> int -> gpos_update
-  val single_goal_empty_target : GPU.GCS.goal_pos -> int -> GPU.GCS.goal_pos GPU.T.target
-  val single_goal_moved_target : GPU.GCS.goal_pos -> int -> GPU.GCS.goal_pos GPU.T.target
+  val single_goal_gpos_update : (int -> gpos_update) -> GPU.GCS.goal_pos -> int -> gpos_update
+  val single_goal_empty_target : int -> gpos_update
+  val single_goal_moved_target : int -> gpos_update
 end
 
 functor Zippy_ZTactic_Result_Util(A :
@@ -40,17 +37,16 @@ fun init_result {state, gpos_update,...} =
     |> rpair goals
   end
 
-fun single_goal_gpos_update target_goal i nnew_goals j = if j < i
+fun single_goal_gpos_update update_goal i nnew_goals j = if j < i
   then T.target [j]
-  else if j = i then target_goal i nnew_goals
+  else if j = i then update_goal nnew_goals i
   else T.target [j + nnew_goals]
 
 val single_goal_empty_target = K (K T.empty)
-fun single_goal_moved_target i nnew_goals = T.target (i upto i + nnew_goals - 1)
+fun single_goal_moved_target nnew_goals i = T.target (i upto i + nnew_goals - 1)
 end
 
 end
 
 structure Standard_Zippy_ZTactic_Result_Util = Zippy_ZTactic_Result_Util(
-  open Standard_ZTactic_Result
-  structure GC = Standard_Zippy_Goal_Cluster)
+  open Standard_ZTactic_Result; structure GC = Standard_Zippy_Goal_Cluster)

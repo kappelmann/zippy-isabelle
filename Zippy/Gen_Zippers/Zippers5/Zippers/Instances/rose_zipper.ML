@@ -16,10 +16,6 @@ sig
     (@{AllT_args} content * @{AllT_args} content rose) L.t * @{AllT_args} content option) L.t)
   where type @{AllT_args} ZM.container = @{AllT_args} content rose
   sharing type M.t = L.M.t
-  val cons_sibling_zcontext : @{AllT_args} content * @{AllT_args} content rose -> @{AllT_args} ZD.zcontext ->
-    @{AllT_args} ZD.zcontext
-  val cons_child_zcontext : @{AllT_args} content * @{AllT_args} content rose -> @{AllT_args} ZD.zcontext ->
-    @{AllT_args} ZD.zcontext
 end
 
 functor \<^eval>\<open>sfx_T_nargs "Rose_Zipper"\<close>(
@@ -96,9 +92,5 @@ structure ZM = \<^eval>\<open>sfx_T_nargs "Zipper_Morphs"\<close>(
 
 structure Z = \<^eval>\<open>sfx_T_nargs "Zipper"\<close>(structure ZD = ZD; structure ZM = ZM)
 open Z
-
-fun cons_sibling_zcontext c =
-  apsnd (fn ((rev_pref, suff, p) :: xs) => (rev_pref @ [c], suff, p) :: xs)
-fun cons_child_zcontext c = apfst (cons c)
 
 end
