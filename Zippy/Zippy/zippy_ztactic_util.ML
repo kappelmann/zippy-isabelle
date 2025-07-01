@@ -66,9 +66,9 @@ sig
   val cheat_ztac : Proof.context -> Zippy.Tac.GPU.F.focus -> ztactic
 
   (*resolution with theorems*)
-  val resolve_moved_ztac : Zippy.Mixin5.Meta.Meta.P.progress -> thm list ->
+  val resolve_changed_ztac : Zippy.Mixin5.Meta.Meta.P.progress -> thm list ->
     Proof.context -> Zippy.Tac.GPU.F.focus -> ztactic
-  val assume_moved_ztac : Proof.context -> Zippy.Tac.GPU.F.focus -> ztactic
+  val assume_gone_ztac : Proof.context -> Zippy.Tac.GPU.F.focus -> ztactic
 end
 
 structure Zippy_ZTactic_Util : ZIPPY_ZTACTIC_UTIL =
@@ -123,13 +123,13 @@ fun lift_tac_progress_all_focus progress target_goal = lift_tac_progress progres
 
 (* concrete tactics *)
 fun cheat_ztac ctxt = Skip_Proof.cheat_tac ctxt
-  |> lift_tac_progress_all_focus Meta.P.promising Tac.single_goal_empty_target
+  |> lift_tac_progress_all_focus Meta.P.promising Tac.update_goal_gone
 
-fun resolve_moved_ztac progress thms ctxt = resolve_tac ctxt thms
-  |> lift_tac_progress_every_focus progress Tac.single_goal_moved_target
+fun resolve_changed_ztac progress thms ctxt = resolve_tac ctxt thms
+  |> lift_tac_progress_every_focus progress Tac.update_goal_changed
 
-fun assume_moved_ztac ctxt = assume_tac ctxt
-  |> lift_tac_progress_every_focus Meta.P.promising Tac.single_goal_empty_target
+fun assume_gone_ztac ctxt = assume_tac ctxt
+  |> lift_tac_progress_every_focus Meta.P.promising Tac.update_goal_gone
 end
 end
 

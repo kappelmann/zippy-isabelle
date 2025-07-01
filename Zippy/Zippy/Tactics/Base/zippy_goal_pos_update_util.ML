@@ -30,8 +30,9 @@ structure SA = \<^eval>\<open>sfx_ParaT_nargs "SArrow_Arrow_Apply"\<close>
 fun dest_gcpos_update gcpos_update gpos = gcpos_update gpos
   |> T.map (SA.A.&&& (GCS.get_gcpos_cluster, GCS.get_gcpos_goal))
 in
-fun update_focus _ gcpos_update (F.Goals gpos) =
-      map (dest_gcpos_update gcpos_update #> (fn T.Target gcposs => gcposs)) gpos
+fun update_focus _ gcpos_update (F.Goals gpos) = gpos
+      |> map (dest_gcpos_update gcpos_update
+        #> (fn T.Gone => [] | T.Moved t => [t] | T.Changed ts => ts))
       |> flat
       |> partition_eq (fst #> (op =))
       |> map (SA.A.&&& (hd #> fst, map snd #> sort int_ord #> F.Goals))

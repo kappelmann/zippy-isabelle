@@ -5,10 +5,7 @@ Goal position updates.
 *)
 signature ZIPPY_GOAL_POS_UPDATE_TARGET =
 sig
-  datatype 't target = Target of 't list
-  val empty : 't target
-  val target : 't list -> 't target
-  val map_list : ('t list -> 'u list) -> 't target -> 'u target
+  datatype 't target = Gone | Moved of 't | Changed of 't list
   val pretty : 't SpecCheck_Show.show -> 't target SpecCheck_Show.show
   include \<^eval>\<open>sfx_ParaT_nargs "MONAD_BASE"\<close>
   where type (@{ParaT_args} 'a) t = 'a target
@@ -16,18 +13,24 @@ end
 
 structure Zippy_Goal_Pos_Update_Target : ZIPPY_GOAL_POS_UPDATE_TARGET =
 struct
-datatype 't target = Target of 't list
-val empty = Target []
-fun target x = Target x
-fun dest_target (Target t) = t
+datatype 't target = Gone | Moved of 't | Changed of 't list
 
-fun map_list f (Target t) = target (f t)
-fun pretty f t = SpecCheck_Show_Base.list f (dest_target t)
+fun pretty _ Gone = Pretty.str "Gone"
+  | pretty f (Moved t) = Pretty.breaks [Pretty.str "Moved", Pretty.enclose "(" ")" [f t]]
+      |> Pretty.block
+  | pretty f (Changed ts) = Pretty.breaks [Pretty.str "Changed", SpecCheck_Show.list f ts]
+      |> Pretty.block
 
 type (@{ParaT_args} 'a) t = 'a target
-fun map f (Target t) = target (List.map f t)
-fun pure x = Target [x]
-fun bind (Target t) f = List.map (f #> dest_target) t |> flat |> target
+fun map _ Gone = Gone
+  | map f (Moved t) = Moved (f t)
+  | map f (Changed ts) = Changed (List.map f ts)
+fun pure x = Moved x
+fun bind Gone _ = Gone
+  | bind (Moved t) f = f t
+  | bind (Changed ts) f =
+      List.mapPartial (f #> (fn Gone => NONE | Moved t => SOME [t] | Changed ts => SOME ts)) ts
+      |> flat |> Changed
 fun f <*> x = bind f (fn f => map f x)
 end
 

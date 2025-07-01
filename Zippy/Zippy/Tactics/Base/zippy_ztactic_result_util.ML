@@ -11,8 +11,8 @@ sig
   val init_result : 'm result -> GPU.focus_update * (GPU.GCS.gclusters * GC.gcluster list)
 
   val single_goal_gpos_update : (int -> gpos_update) -> GPU.GCS.goal_pos -> int -> gpos_update
-  val single_goal_empty_target : int -> gpos_update
-  val single_goal_moved_target : int -> gpos_update
+  val update_goal_gone : int -> gpos_update
+  val update_goal_changed : int -> gpos_update
 end
 
 functor Zippy_ZTactic_Result_Util(A :
@@ -38,14 +38,13 @@ fun init_result {state, gpos_update,...} =
   end
 
 fun single_goal_gpos_update update_goal i nnew_goals j = if j < i
-  then T.target [j]
+  then T.Moved j
   else if j = i then update_goal nnew_goals i
-  else T.target [j + nnew_goals]
+  else T.Moved (j + nnew_goals)
 
-val single_goal_empty_target = K (K T.empty)
-fun single_goal_moved_target nnew_goals i = T.target (i upto i + nnew_goals - 1)
+val update_goal_gone = K (K T.Gone)
+fun update_goal_changed nnew_goals i = T.Changed (i upto i + nnew_goals - 1)
 end
-
 end
 
 structure Standard_Zippy_ZTactic_Result_Util = Zippy_ZTactic_Result_Util(

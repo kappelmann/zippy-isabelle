@@ -46,7 +46,7 @@ apply (tactic \<open>fn state =>
         (Mixin4.Meta.Meta.empty @{binding action1})
         (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
         (with_ctxt
-          (Tac_Util.resolve_moved_ztac Mixin5.Meta.Meta.P.promising @{thms cheat silly} #> arr))
+          (Tac_Util.resolve_changed_ztac Mixin5.Meta.Meta.P.promising @{thms cheat silly} #> arr))
         (Tac.GPU.F.Goals [1])
       >>= Up3.morph
       >>= Tac_Util.cons_single_ztactic_action_cluster'
@@ -101,14 +101,14 @@ apply (tactic \<open>fn state =>
         (Mixin4.Meta.Meta.empty @{binding action1})
         (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
         (with_ctxt
-          (Tac_Util.resolve_moved_ztac Mixin5.Meta.Meta.P.promising @{thms conjI impI disjI1 disjI2} #> arr))
+          (Tac_Util.resolve_changed_ztac Mixin5.Meta.Meta.P.promising @{thms conjI impI disjI1 disjI2} #> arr))
         (Tac.GPU.F.Goals [1])
       >>= Up3.morph
       >>= Tac_Util.cons_single_ztactic_action_cluster'
         (Mixin3.Meta.Meta.empty @{binding cluster2})
         (Mixin4.Meta.Meta.empty @{binding action2})
         (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
-        (with_ctxt (Tac_Util.assume_moved_ztac #> arr))
+        (with_ctxt (Tac_Util.assume_gone_ztac #> arr))
         (Tac.GPU.F.Goals [1])
       >>= ZB.top3
       >>= Z1.ZM.Unzip.morph
