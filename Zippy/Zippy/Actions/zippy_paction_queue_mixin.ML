@@ -36,19 +36,20 @@ sig
     (@{ParaT_args} @{AllT_args} queue) emorph
   val init_pactions_queue : (@{ParaT_args} @{AllT_args} container1, @{AllT_args} queue) morph
 
-  val update_stagnate : @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) emorph
-  val update_expand :
-    (@{AllT_args} PAction.zipper_expand -> (@{ParaT_args} @{AllT_args} queue) emorph) ->
-    @{AllT_args} PAction.zipper_expand -> (@{ParaT_args} @{AllT_args} queue) emorph
-  val update_trim : @{AllT_args} PAction.zipper_trim -> (@{ParaT_args} @{AllT_args} queue) emorph
+  val update_unchanged : @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) emorph
+  val update_expanded :
+    (@{AllT_args} PAction.zipper_expanded -> (@{ParaT_args} @{AllT_args} queue) emorph) ->
+    @{AllT_args} PAction.zipper_expanded -> (@{ParaT_args} @{AllT_args} queue) emorph
+  val update_changed : @{AllT_args} PAction.zipper_changed ->
+    (@{ParaT_args} @{AllT_args} queue) emorph
 end
 
 functor Zippy_PAction_Queue_Mixin(
     structure Z : ZIPPY_ENUM_MIXIN
     structure PAction_Queue : ZIPPY_PACTION_QUEUE_MIXIN_BASE
-    sharing type PAction_Queue.PAction.zipper_trim = Z.Z1.zipper
+    sharing type PAction_Queue.PAction.zipper_changed = Z.Z1.zipper
     sharing type PAction_Queue.PAction.zipper = Z.Z4.zipper
-    sharing type PAction_Queue.PAction.zipper_expand = Z.Z5.zipper
+    sharing type PAction_Queue.PAction.zipper_expanded = Z.Z5.zipper
     sharing type PAction_Queue.PAction.M.t = Z.M.t
     val mk_exn : (unit -> @{ParaT_args encl = "" ""} Z.Co.ME.exn)
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
@@ -104,12 +105,12 @@ local
       ] |> Pretty.block |> Pretty.string_of);
     AE.try (mk_entry_insert z) q))
 in
-fun update_stagnate z = mk_entry_insert_log z
-fun update_expand insert_descendant_pactions_queue z = insert_descendant_pactions_queue z
+fun update_unchanged z = mk_entry_insert_log z
+fun update_expanded insert_descendant_pactions_queue z = insert_descendant_pactions_queue z
   >>> (fn queue => Z.Up5.morph z >>= (fn z => mk_entry_insert_log z queue))
 end
-(*trimming may invalidate entries in the queue; we hence re-initialise it*)
-fun update_trim z _ = Z1.ZM.Unzip.morph z >>= init_pactions_queue
+(*paths of entries in the queue might have changed; we hence re-initialise the queue*)
+fun update_changed z _ = Z1.ZM.Unzip.morph z >>= init_pactions_queue
 end
 
 end

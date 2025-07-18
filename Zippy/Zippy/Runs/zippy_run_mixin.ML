@@ -75,9 +75,9 @@ functor Zippy_Run_Mixin(
     sharing type Run.Step.GClusters.L.container = Z.Z1.zipper
     sharing type Run.Step.GCluster.L.container = Z.Z2.zipper
     sharing type Run.Step.PAction_Queue.container1 = Z.Z1.ZM.container
-    sharing type Run.Step.PAction_Queue.PAction.zipper_trim = Z.Z1.zipper
+    sharing type Run.Step.PAction_Queue.PAction.zipper_changed = Z.Z1.zipper
     sharing type Run.Step.PAction_Queue.PAction.zipper = Z.Z4.zipper
-    sharing type Run.Step.PAction_Queue.PAction.zipper_expand = Z.Z5.zipper
+    sharing type Run.Step.PAction_Queue.PAction.zipper_expanded = Z.Z5.zipper
     sharing type Run.Action_App_Meta.L.container = Z.Z5.zipper
     sharing type Run.Step.PAction_Queue.PAction.M.t = Z.M.t
     structure Co : ZIPPY_COROUTINE_MIXIN_BASE
@@ -85,6 +85,7 @@ functor Zippy_Run_Mixin(
     val mk_exn : (unit -> @{ParaT_args encl = "" ""} Co.ME.exn)
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
+    structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
     type @{AllT_args} state
     val seq_from_monad : @{AllT_args} state -> (@{ParaT_args} 'a Seq.seq) Z.M.t -> 'a Seq.seq
     val with_state : (@{AllT_args} state -> (@{ParaT_args} 'a, 'b) Z.morph) ->
@@ -100,8 +101,9 @@ structure ZL = Zippy_Lists(structure Z = Z; structure Co = Co)
 structure ZE = Zippy_Enum_Mixin(open Z; structure Co = Co)
 structure GClusters = Zippy_Goal_Clusters_Mixin(Step.GClusters)
 structure GClusters_Results = Zippy_Goal_Results_Mixin(Step.GClusters_Results)
-structure LGoals_Results_TMV = Zippy_Lists_Goals_Results_Top_Meta_Vars_Mixin(
-  structure Z = ZL; structure Goals_Results_Top_Meta_Vars = Step)
+structure LGoals_Results_TMV = Zippy_Lists_Goals_Results_Top_Meta_Vars_Mixin(structure Z = ZL
+  structure Goals_Results_Top_Meta_Vars = Step; structure Ctxt = Ctxt
+  structure Log_LGoals = Log_LGoals)
 structure Action_App_Meta = Zippy_Action_App_Metadata_Mixin(Action_App_Meta)
 structure EAction_App_Meta = Zippy_Enum_Action_App_Metadata_Mixin(
   structure Z = ZE; structure Meta = Action_App_Meta)

@@ -33,6 +33,9 @@ functor Zippy_Lists_Goals_Results_Top_Meta_Vars_Mixin(
     structure Goals_Results_Top_Meta_Vars : ZIPPY_GOALS_RESULTS_TOP_META_VARS_MIXIN_BASE
     sharing type Goals_Results_Top_Meta_Vars.GClusters.L.container = Z.Z1.zipper
     sharing type Goals_Results_Top_Meta_Vars.GCluster.L.container = Z.Z2.zipper
+    structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
+    sharing type Ctxt.M.t =Z.M.t
+    structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
   ) : ZIPPY_LISTS_GOALS_RESULTS_TOP_META_VARS_MIXIN =
 struct
 
@@ -42,8 +45,8 @@ structure ZE = Zippy_Enum_Mixin(Z)
 structure Exn = Zippy_Exception_Mixin(Co)
 structure GCluster = Zippy_Goal_Cluster_Mixin(GCluster)
 structure GCluster_Results = Zippy_Goal_Results_Mixin(GCluster_Results)
-structure LGoals = Zippy_Lists_Goals_Mixin(
-  structure Z = Z; structure Goals = Goals_Results_Top_Meta_Vars)
+structure LGoals = Zippy_Lists_Goals_Mixin(structure Z = Z
+  structure Goals = Goals_Results_Top_Meta_Vars; structure Ctxt = Ctxt; structure Log = Log_LGoals)
 structure TMV = Zippy_Goal_Results_Top_Meta_Vars_Mixin(
   structure Z = Z
   structure Goal_Results_Top_Meta_Vars = Zippy_Goal_Results_Top_Meta_Vars_Mixin_Base(

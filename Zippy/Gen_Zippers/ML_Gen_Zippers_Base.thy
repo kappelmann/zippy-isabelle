@@ -3,6 +3,7 @@ section \<open>Generic Zippers Base Setup\<close>
 theory ML_Gen_Zippers_Base
   imports
     Zippy_Base_Setup
+    ML_IMap_Antiquotation
     ML_Typeclasses.Gen_ML_Typeclasses_Base
 begin
 
@@ -17,16 +18,16 @@ carefully used (i.e. avoid deep type instantiation chains):
 \<^url>\<open>https://github.com/polyml/polyml/issues/213\<close>\<close>
 
 ML\<open>
-  \<^functor_instance>\<open>struct_name = Zipper_Type_Args_Antiquotations
-    and functor_name = Args_Antiquotations
-    and id = \<open>"ZipperT"\<close>
-    and more_args = \<open>val init_args = {
-      args = SOME ["'a1"],
-      sep = SOME ", ",
-      encl = SOME ("", ""),
-      encl_arg = SOME ("", ""),
-      start = SOME 0,
-      stop = SOME NONE}\<close>\<close>
+\<^functor_instance>\<open>struct_name = Zipper_Type_Args_Antiquotations
+  and functor_name = Args_Antiquotations
+  and id = \<open>"ZipperT"\<close>
+  and more_args = \<open>val init_args = {
+    args = SOME ["'a1"],
+    sep = SOME ", ",
+    encl = SOME ("", ""),
+    encl_arg = SOME ("", ""),
+    start = SOME 0,
+    stop = SOME NONE}\<close>\<close>
 \<close>
 local_setup \<open>Zipper_Type_Args_Antiquotations.setup_args_attribute
   (SOME "set zipper type args antiquotation arguments")\<close>
@@ -34,16 +35,16 @@ setup \<open>Zipper_Type_Args_Antiquotations.setup_args_antiquotation\<close>
 setup \<open>Zipper_Type_Args_Antiquotations.setup_arg_antiquotation\<close>
 
 ML\<open>
-  \<^functor_instance>\<open>struct_name = All_Type_Args_Antiquotations
-    and functor_name = Args_Antiquotations
-    and id = \<open>"AllT"\<close>
-    and more_args = \<open>val init_args = {
-      args = SOME ["'p1", "'a1"],
-      sep = SOME ", ",
-      encl = SOME ("(", ")"),
-      encl_arg = SOME ("", ""),
-      start = SOME 0,
-      stop = SOME NONE}\<close>\<close>
+\<^functor_instance>\<open>struct_name = All_Type_Args_Antiquotations
+  and functor_name = Args_Antiquotations
+  and id = \<open>"AllT"\<close>
+  and more_args = \<open>val init_args = {
+    args = SOME ["'p1", "'a1"],
+    sep = SOME ", ",
+    encl = SOME ("(", ")"),
+    encl_arg = SOME ("", ""),
+    start = SOME 0,
+    stop = SOME NONE}\<close>\<close>
 \<close>
 local_setup \<open>All_Type_Args_Antiquotations.setup_args_attribute
   (SOME "set all type args antiquotation arguments")\<close>
@@ -55,11 +56,25 @@ ML\<open>
 structure ML_Gen =
 struct
   open ML_Gen
-  structure ZipperT = Zipper_Type_Args_Antiquotations
   structure AllT = All_Type_Args_Antiquotations
-  val nzippers_config = Attrib.setup_config_int @{binding "nzippers"} (K 0)
-  fun nzippers _ = Config.get_generic (Context.the_generic_context ()) nzippers_config
+  structure ZipperT = Zipper_Type_Args_Antiquotations
+  fun nzippers () = ZipperT.nargs (Context.the_generic_context ())
   val nzippers' = nzippers #> string_of_int
+
+  fun setup_zipper_args paraT_args zipperT_args =
+    ParaT.map_args (K paraT_args)
+    #> ZipperT.map_args (K zipperT_args)
+    #> AllT.map_args (K (paraT_args @ zipperT_args))
+    #> Standard_IMap_Antiquotation.map_stop (K (length zipperT_args))
+  fun setup_zipper_args' (opt_ParaT_nargs, opt_ParaT_arg) (opt_nzippers, opt_zipperT_arg) context =
+    let
+      val ParaT_nargs = the_default (ParaT.nargs context) opt_ParaT_nargs
+      val ParaT_arg = the_default (string_of_int #> prefix "'p") opt_ParaT_arg
+      val ParaT_args = map_range ParaT_arg ParaT_nargs
+      val nzippers = the_default (nzippers ()) opt_nzippers
+      val zipperT_arg = the_default (string_of_int #> prefix "'a") opt_zipperT_arg
+      val zipperT_args = map_range zipperT_arg nzippers
+    in setup_zipper_args ParaT_args zipperT_args context end
 
   (*ML structure names may not begin with a digit; hence we add a "n" prefix for indexed names*)
   val nprefix = prefix "n"
@@ -75,9 +90,7 @@ struct
   fun pred_mod_nzippers i = sub_mod_nzippers i 1
   fun pred_mod_nzippers' i = sub_mod_nzippers' i 1
 
-  val ZipperT_nargs = Context.the_generic_context #> ZipperT.nargs
-  val ZipperT_nargs' = ZipperT_nargs #> string_of_int
-  fun sfx_T_nargs s = mk_name [s, ParaT_nargs (), ZipperT_nargs' ()]
+  fun sfx_T_nargs s = mk_name [s, ParaT_nargs' (), nzippers' ()]
 
   val pfx_sfx_nargs = pfx_nzippers #> sfx_T_nargs
 
@@ -90,12 +103,10 @@ struct
   fun inst_zipperT instT i =
     let val ctxt = Context.the_local_context ()
     in
-      1 upto ZipperT_nargs ()
-      |> map (fn j => if i = j then instT else ZipperT.mk_arg_code (j - 1) ctxt)
+      nzippers ()
+      |> map_range (fn j => if i = j + 1 then instT else ZipperT.mk_arg_code j ctxt)
       |> commas
     end
-
-  fun AllT_args _ = AllT.mk_args_code (Context.the_local_context ())
 end
 \<close>
 

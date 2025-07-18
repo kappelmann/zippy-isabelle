@@ -12,22 +12,23 @@ sig
     (@{ParaT_args} @{AllT_args} GClusters.L.container,
       @{AllT_args} PAction_Queue.PAction.L.container option) morph
 
-  val update_goal_results_up_stagnate : (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper,
+  val update_goal_results_up_unchanged : (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper,
     @{AllT_args} GClusters.L.container * Results.results) morph
-  val update_goal_results_up_expand :
-    (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_expand,
+  val update_goal_results_up_expanded :
+    (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_expanded,
       @{AllT_args} GClusters.L.container * Results.results) morph
-  val update_goal_results_up_trim : (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_trim,
-    @{AllT_args} GClusters.L.container * Results.results) morph
+  val update_goal_results_up_changed :
+    (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_changed,
+      @{AllT_args} GClusters.L.container * Results.results) morph
 
-  val update_stagnate : @{AllT_args} PAction_Queue.queue ->
+  val update_unchanged : @{AllT_args} PAction_Queue.queue ->
     (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper,
       (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) morph
-  val update_expand : @{AllT_args} PAction_Queue.queue ->
-    (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_expand,
+  val update_expanded : @{AllT_args} PAction_Queue.queue ->
+    (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_expanded,
       (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) morph
-  val update_trim : @{AllT_args} PAction_Queue.queue ->
-    (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_trim,
+  val update_changed : @{AllT_args} PAction_Queue.queue ->
+    (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.zipper_changed,
       (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) morph
   val update_action_result : @{AllT_args} PAction_Queue.queue ->
     (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.action_result,
@@ -44,9 +45,9 @@ functor Zippy_Step_Mixin(
     structure Step : ZIPPY_STEP_MIXIN_BASE
     sharing type Step.GClusters.L.container = Z.Z1.zipper
     sharing type Step.GCluster.L.container = Z.Z2.zipper
-    sharing type Step.PAction_Queue.PAction.zipper_trim = Z.Z1.zipper
+    sharing type Step.PAction_Queue.PAction.zipper_changed = Z.Z1.zipper
     sharing type Step.PAction_Queue.PAction.zipper = Z.Z4.zipper
-    sharing type Step.PAction_Queue.PAction.zipper_expand = Z.Z5.zipper
+    sharing type Step.PAction_Queue.PAction.zipper_expanded = Z.Z5.zipper
     sharing type Step.PAction_Queue.PAction.M.t = Z.M.t
     sharing type Step.PAction_Queue.container1 = Z.Z1.ZM.container
     structure Co : ZIPPY_COROUTINE_MIXIN_BASE
@@ -55,6 +56,7 @@ functor Zippy_Step_Mixin(
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t =Z.M.t
     structure Log : ZIPPY_LOGGER_MIXIN_BASE
+    structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
     structure Show1 : ZIPPY_SHOW_MIXIN_BASE
     sharing type Show1.t = Z.Z1.zipper
     structure Show_Queue_Entry : ZIPPY_SHOW_MIXIN_BASE
@@ -69,8 +71,8 @@ structure Exn = Zippy_Exception_Mixin(Co)
 structure ZB = Zippy_Base(structure Z = Z; structure Exn = Exn)
 structure ZE = Zippy_Enum_Mixin(open Z; structure Co = Co)
 structure ZP = Zippy_Positions_Mixin(structure Z = ZP; structure Exn = Exn)
-structure LGoals_Results = Zippy_Lists_Goals_Results_Mixin(
-  structure Z = ZL; structure Goals_Results = Step)
+structure LGoals_Results = Zippy_Lists_Goals_Results_Mixin(structure Z = ZL
+  structure Goals_Results = Step; structure Ctxt = Ctxt; structure Log_LGoals = Log_LGoals)
 structure TMV = Zippy_Goal_Results_Top_Meta_Vars_Mixin(
   structure Z = Z
   structure Goal_Results_Top_Meta_Vars = Zippy_Goal_Results_Top_Meta_Vars_Mixin_Base(
@@ -81,27 +83,28 @@ in
 fun move_entry_if_may_take_more_results {zipper,...} z = ZP.path_from_zipper4 zipper
   >>= (fn pos => TMV.move_path_if_may_take_more_results4 pos z)
 
-fun update_goal_results_up_stagnate z = z |> (ZB.top4 >>> arr (rpair Results.empty))
-fun update_goal_results_up_expand z = Down5.morph z
+fun update_goal_results_up_unchanged z = z |> (ZB.top4 >>> arr (rpair Results.empty))
+fun update_goal_results_up_expanded z = Down5.morph z
   >>= Ctxt.with_ctxt (fn ctxt => fn z => z |>
     (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
       Pretty.str "Updating goal results upwards from",
       Show1.pretty ctxt z
     ] |> Pretty.block |> Pretty.string_of);
     LGoals_Results.update_goal_results_up ctxt))
-fun update_goal_results_up_trim z = z |> (ZB.top1 >>> arr (rpair Results.empty))
+fun update_goal_results_up_changed z = z |> (ZB.top1 >>> arr (rpair Results.empty))
 
-fun update_stagnate queue =
-  update_goal_results_up_stagnate &&& (fn z => PAction_Queue.update_stagnate z queue)
-fun update_expand queue =
-  let fun update_queue z = PAction_Queue.update_expand
+fun update_unchanged queue = update_goal_results_up_unchanged
+  &&& (fn z => PAction_Queue.update_unchanged z queue)
+fun update_expanded queue =
+  let fun update_queue z = PAction_Queue.update_expanded
     (fn z => fn queue => Down5.morph z >>= Z1.ZM.Unzip.morph >>=
       (fn z => PAction_Queue.insert_descendant_pactions_queue z queue))
     z queue
-  in update_goal_results_up_expand &&& update_queue end
-fun update_trim queue = update_goal_results_up_trim &&& (fn z => PAction_Queue.update_trim z queue)
+  in update_goal_results_up_expanded &&& update_queue end
+fun update_changed queue = update_goal_results_up_changed
+  &&& (fn z => PAction_Queue.update_changed z queue)
 fun update_action_result queue = PAction_Queue.PAction.AResult.merge
-  (update_stagnate queue) (update_expand queue) (update_trim queue)
+  (update_unchanged queue) (update_expanded queue) (update_changed queue)
 
 fun step_queue queue z = Ctxt.get_ctxt () >>= (fn ctxt => z |>
   let

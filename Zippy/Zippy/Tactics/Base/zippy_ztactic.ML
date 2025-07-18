@@ -3,7 +3,7 @@
 *)
 signature ZIPPY_ZTACTIC =
 sig
-  include ZIPPY_ZTACTIC_RESULT_UTIL
+  include ZIPPY_ZTACTIC_RESULT
   structure RTac : ZIPPY_RTACTIC
 
   structure M : \<^eval>\<open>sfx_ParaT_nargs "MONAD"\<close>
@@ -13,33 +13,50 @@ sig
 
   type 'm ztactic = state -> 'm result Seq.seq (*equivalent to "(_, state, 'm result) A.cat"*)
 
-  val no_tac : 'm ztactic
-  val all_tac : 'm -> 'm ztactic
+  val no_ztac : 'm ztactic
+  val all_ztac : 'm -> 'm ztactic
 
-  val lift_rtac_single_goal : (int -> gpos_update) -> (int -> 'm RTac.rtactic) -> GC.GCS.goal_pos ->
+  val lift_rtac_single_goal : (int -> 'm RTac.rtactic) -> GPU.GCS.goal_pos -> 'm ztactic
+
+  val gen_lift_tac_focus : ((GPU.GCS.goal_pos -> 'a -> 'b Seq.seq) -> 'a -> 'b Seq.seq) ->
+    ((GPU.GCS.goal_pos -> 'a -> 'b Seq.seq) -> GPU.GCS.goal_pos list -> 'a -> 'b Seq.seq) ->
+    (GPU.GCS.goal_pos -> 'a -> 'b Seq.seq) -> GPU.F.focus -> 'a -> 'b Seq.seq
+
+  val zTRY : 'm -> 'm ztactic -> 'm ztactic
+  val zTRY' : 'm -> ('a -> 'm ztactic) -> ('a -> 'm ztactic)
+
+  (*first parameter specifies how to combine the consecutive "more" data*)
+  val depzTHEN : ('m * 'm -> 'm) -> 'm ztactic * ('m -> 'm ztactic) -> 'm ztactic
+  val zTHEN : ('m * 'm -> 'm) -> 'm ztactic * 'm ztactic -> 'm ztactic
+
+  val zEVERY : 'm ztactic -> ('m * 'm -> 'm) -> 'm ztactic list -> 'm ztactic
+  val zALL_GOALS : 'm ztactic -> ('m * 'm -> 'm) -> (GPU.GCS.goal_pos -> 'm ztactic) -> 'm ztactic
+  val zEVERY_GOAL : 'm ztactic -> ('m * 'm -> 'm) -> (GPU.GCS.goal_pos -> 'm ztactic) ->
+    GPU.GCS.goal_pos list -> 'm ztactic
+  val zEVERY_FOCUS : 'm ztactic -> ('m * 'm -> 'm) -> (GPU.GCS.goal_pos -> 'm ztactic) ->
+    GPU.F.focus -> 'm ztactic
+  val zEVERY_FOCUS_NONE_ALL_GOALS : 'm ztactic -> 'm ztactic -> ('m * 'm -> 'm) ->
+    (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus -> 'm ztactic
+
+  (*EVERY where each tactic may fail but at least one must succeed*)
+  val zTRY_EVERY1 : ('m * 'm -> 'm) -> 'm ztactic list -> 'm ztactic
+  val zTRY_ALL_GOALS1 : ('m * 'm -> 'm) -> (GPU.GCS.goal_pos -> 'm ztactic) -> 'm ztactic
+  val zTRY_EVERY_GOAL1 : ('m * 'm -> 'm) -> (GPU.GCS.goal_pos -> 'm ztactic) ->
+    GPU.GCS.goal_pos list -> 'm ztactic
+  val zTRY_EVERY_FOCUS1 : ('m * 'm -> 'm) -> (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus ->
     'm ztactic
+  val zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 : ('m * 'm -> 'm) -> (GPU.GCS.goal_pos -> 'm ztactic) ->
+    GPU.F.focus -> 'm ztactic
 
-  val gen_lift_rtac_focus : ((int -> 'm RTac.rtactic) -> 'm ztactic) -> ((int -> 'm RTac.rtactic) ->
-    GC.GCS.goal_pos list -> 'm ztactic) -> (int -> 'm RTac.rtactic) -> GPU.F.focus -> 'm ztactic
-
-  (*first parameter specifies how to combine consecutive more data*)
-  val mTHEN : ('m * 'm -> 'm) -> 'm ztactic * 'm ztactic -> 'm ztactic
-
-  val mEVERY : 'm ztactic -> ('m * 'm -> 'm) -> 'm ztactic list -> 'm ztactic
-  val lift_rtac_every_goal : 'm ztactic -> ('m * 'm -> 'm) -> (int -> gpos_update) ->
-    (int -> 'm RTac.rtactic) -> GC.GCS.goal_pos list -> 'm ztactic
-  val lift_rtac_every_focus : 'm ztactic -> ('m * 'm -> 'm) -> (int -> gpos_update) ->
-    (int -> 'm RTac.rtactic) -> GPU.F.focus -> 'm ztactic
-
-  val ALLGOALS : 'm ztactic -> ('m * 'm -> 'm) -> (GC.GCS.goal_pos -> 'm ztactic) -> 'm ztactic
-  val lift_rtac_all_goals : 'm ztactic -> ('m * 'm -> 'm) -> (int -> gpos_update) ->
-    (int -> 'm RTac.rtactic) -> 'm ztactic
-  val lift_rtac_all_focus : 'm ztactic -> ('m * 'm -> 'm) -> (int -> gpos_update) ->
-    (int -> 'm RTac.rtactic) -> GPU.F.focus -> 'm ztactic
+  val zIFIRST_GOAL : ('a -> 'm ztactic) -> 'a list -> 'm ztactic
+  val zFIRST_GOAL : (GPU.GCS.goal_pos -> 'm ztactic) -> 'm ztactic
+  val zFIRST_GOAL_FOCUS : (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus -> 'm ztactic
+  val ZFIRST_GOAL_FOCUS_NONE_FIRST_GOAL : (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus ->
+    'm ztactic
 end
 
 functor Zippy_ZTactic(
-    structure R : ZIPPY_ZTACTIC_RESULT_UTIL
+    structure R : ZIPPY_ZTACTIC_RESULT
     structure RTac : ZIPPY_RTACTIC
   ) : ZIPPY_ZTACTIC =
 struct
@@ -55,56 +72,63 @@ structure M = \<^eval>\<open>sfx_ParaT_nargs "Monad"\<close>(
 structure A = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Apply"\<close>(M)
 
 local
-  structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(A)
-  open M A SC GPU
+  structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(A); open M A SC GPU
+  structure TU = Tactic_Util
 in
-fun no_tac _ = Seq.empty
-fun all_tac m state = pure (result m state GPU.id)
+fun no_ztac _ = Seq.empty
+fun all_ztac m state = pure (result m state GPU.id)
 
-fun lift_rtac_single_goal update_goal tac i state = tac i state
+fun lift_rtac_single_goal tac i state = tac i state
   >>= arr (fn {state = state', more} =>
     Zippy_Thm_State.nprems_of state' - Zippy_Thm_State.nprems_of state + 1
-    |> single_goal_gpos_update update_goal i
+    |> single_goal_gpos_update i
     |> result more state')
 
-fun gen_lift_rtac_focus f_none _ tac F.None = f_none tac
-  | gen_lift_rtac_focus _ f_list tac (F.Goals is) = f_list tac is
+fun gen_lift_tac_focus f_none _ tac F.None = f_none tac
+  | gen_lift_tac_focus _ f_goals tac (F.Goals is) = f_goals tac is
 
-fun mTHEN madd (tac1, tac2) =
+fun zTRY m tac = TU.ORELSE (tac, all_ztac m)
+fun zTRY' m tac = TU.ORELSE' (tac, Library.K (all_ztac m))
+
+fun depzTHEN madd (tac1, tac2) =
   let
     fun tac2_update {state, more, gpos_update} =
       let
         val update_ud = map_gpos_update (General_Util.flip GPU.comp gpos_update)
         val update_m = map_more (curry madd more)
-      in tac2 state >>= arr (update_ud #> update_m) end
+      in tac2 more state >>= arr (update_ud #> update_m) end
   in tac1 >>> tac2_update end
+fun zTHEN madd (tac1, tac2) = depzTHEN madd (tac1, Library.K tac2)
 
-fun mEVERY empty_tac _ [] = empty_tac
-  | mEVERY _ madd (tac :: tacs) = fold (curry (mTHEN madd)) tacs tac
+fun gen_every_arg _ empty_tac _ [] = empty_tac
+  | gen_every_arg comb _ tac (i :: is) = fold (fn i => fn acc => comb (acc, tac i)) is (tac i)
 
 (*invariant: position list is sorted*)
-fun lift_rtac_every_goal empty_tac madd update_goal tac =
-  List.map (lift_rtac_single_goal update_goal tac) #> mEVERY empty_tac madd
+fun with_rev_ngoals f tac st = f (List.map tac (Zippy_Thm_State.nprems_of st downto 1)) st
+fun with_rev_goals f tac goals = fold (tac #> cons) goals [] |> f
 
-fun lift_rtac_every_focus empty_tac madd update_goal = gen_lift_rtac_focus (K no_tac)
-  (lift_rtac_every_goal empty_tac madd update_goal)
+fun zEVERY empty_tac madd = gen_every_arg (zTHEN madd) empty_tac I
+fun zALL_GOALS no_goals_tac madd = with_rev_ngoals (zEVERY no_goals_tac madd)
+fun zEVERY_GOAL empty_tac madd tac = with_rev_goals (zEVERY empty_tac madd) tac
+fun zEVERY_FOCUS empty_tac madd = gen_lift_tac_focus (K no_ztac) (zEVERY_GOAL empty_tac madd)
+fun zEVERY_FOCUS_NONE_ALL_GOALS no_goals_tac empty_tac madd = gen_lift_tac_focus
+  (zALL_GOALS no_goals_tac madd) (zEVERY_GOAL empty_tac madd)
 
-fun ALLGOALS no_goals_tac madd tac st =
-  let fun doall 0 = no_goals_tac
-        | doall 1 = tac 1
-        | doall n = mTHEN madd (tac n, doall (n - 1))
-  in doall (Zippy_Thm_State.nprems_of st) st end
+fun zTRY_EVERY1 madd = gen_every_arg
+  (fn (acc, tac) => TU.ORELSE (depzTHEN madd (acc, fn m => zTRY m tac), tac)) no_ztac I
+fun zTRY_ALL_GOALS1 madd = with_rev_ngoals (zTRY_EVERY1 madd)
+fun zTRY_EVERY_GOAL1 madd tac = with_rev_goals (zTRY_EVERY1 madd) tac
+fun zTRY_EVERY_FOCUS1 madd = gen_lift_tac_focus (K no_ztac) (zTRY_EVERY_GOAL1 madd)
+fun zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 madd = gen_lift_tac_focus
+  (zTRY_ALL_GOALS1 madd) (zTRY_EVERY_GOAL1 madd)
 
-fun lift_rtac_all_goals no_goals_tac madd update_goal tac =
-  ALLGOALS no_goals_tac madd (lift_rtac_single_goal update_goal tac)
-
-fun lift_rtac_all_focus no_goals_tac madd update_goal = gen_lift_rtac_focus
-  (lift_rtac_all_goals no_goals_tac madd update_goal)
-  (lift_rtac_every_goal no_goals_tac madd update_goal)
+fun zIFIRST_GOAL tac = gen_every_arg TU.ORELSE no_ztac tac
+fun zFIRST_GOAL tac st = zIFIRST_GOAL tac (1 upto Thm.nprems_of st) st
+fun zFIRST_GOAL_FOCUS x = gen_lift_tac_focus (K no_ztac) zIFIRST_GOAL x
+fun ZFIRST_GOAL_FOCUS_NONE_FIRST_GOAL x = gen_lift_tac_focus zFIRST_GOAL zIFIRST_GOAL x
 end
 
 end
 
 structure Standard_Zippy_ZTactic = Zippy_ZTactic(
-  structure R = Standard_Zippy_ZTactic_Result_Util
-  structure RTac = Standard_Zippy_RTactic)
+  structure R = Standard_ZTactic_Result; structure RTac = Standard_Zippy_RTactic)

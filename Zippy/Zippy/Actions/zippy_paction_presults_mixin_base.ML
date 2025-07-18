@@ -9,6 +9,9 @@ sig
   sharing type PResults.M.t = PAction.M.t
   sharing type PResults.zipper = PAction.zipper
   sharing type PResults.prio = PAction.prio
+
+  type @{AllT_args} result_tail_presults_action =
+    PResults.result * @{AllT_args} PResults.presults -> @{AllT_args} PAction.action
 end
 
 functor Zippy_PAction_PResults_Mixin_Base(A :
@@ -20,4 +23,9 @@ functor Zippy_PAction_PResults_Mixin_Base(A :
     sharing type PResults.prio = PAction.prio
   end
   ) : ZIPPY_PACTION_PRESULTS_MIXIN_BASE
-  = A
+  =
+struct
+open A
+type @{AllT_args} result_tail_presults_action =
+    PResults.result * @{AllT_args} PResults.presults -> @{AllT_args} PAction.action
+end

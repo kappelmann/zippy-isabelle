@@ -5,10 +5,10 @@
 @{record (sig) ZIPPY_NODE_CO_BASE2 [gcluster, results, top_meta_vars]}
 @{record (sig) ZIPPY_NODE_CO_BASE3 [copy, meta]}
 @{record (sig) ZIPPY_NODE_CO_BASE4 [paction, presults, action_app_num, focus, meta]}
-@{record (sig) ZIPPY_NODE_CO_BASE5 [action_app_num, focus, prio, result_meta]}
+@{record (sig) ZIPPY_NODE_CO_BASE5 [action_app_num, focus, prio, gpos_update, result_meta]}
 
 functor Zippy_Instance(
-    structure FIA : FUNCTOR_INSTANCE_ARGS
+    structure FI : FUNCTOR_INSTANCE_BASE
     type prio
     val prio_ord : prio ord
     val pretty_prio : prio SpecCheck_Show.show
@@ -60,7 +60,7 @@ local
   @{record (struct) Node_Co_Base2 ZIPPY_NODE_CO_BASE2 [gcluster, results, top_meta_vars]}
   @{record (struct) Node_Co_Base3 ZIPPY_NODE_CO_BASE3 [copy, meta]}
   @{record (struct) Node_Co_Base4 ZIPPY_NODE_CO_BASE4 [paction, presults, action_app_num, focus, meta]}
-  @{record (struct) Node_Co_Base5 ZIPPY_NODE_CO_BASE5 [action_app_num, focus, prio, result_meta]}
+  @{record (struct) Node_Co_Base5 ZIPPY_NODE_CO_BASE5 [action_app_num, focus, prio, gpos_update, result_meta]}
 
   (** alternating zipper skeleton **)
   structure ZLP = Zippy_Lists_Positions_Mixin_Base(
@@ -71,7 +71,8 @@ local
   structure GC = Standard_Zippy_Goal_Cluster
   structure Top_Meta_Vars = Zippy_Top_Meta_Vars
   structure GResults = Zippy_Goal_Results
-  type copy_update_data = Tac.GPU.focus_update
+  structure GPU = Tac.GPU
+  type copy_update_data = GPU.focus_update
   structure ACMeta = Zippy_Action_Cluster_Metadata
   structure AResult = Zippy_Action_Result
   structure AMeta = Zippy_Action_Metadata
@@ -102,7 +103,7 @@ local
       (@{AllT_args} paction, @{AllT_args} presults, AANum.action_app_num, GF.focus, AMeta.metadata)
         Node_Co_Base4.data,
 
-      (AANum.action_app_num, GF.focus, prio, AAMeta.metadata) Node_Co_Base5.data
+      (AANum.action_app_num, GF.focus, prio, Tac.gpos_update, AAMeta.metadata) Node_Co_Base5.data
     ) Z{i}.zipper
   \<close> where sep = "and"\<close>
   end
@@ -112,7 +113,8 @@ local
   type @{AllT_args} inst3 = (@{AllT_args} copy, ACMeta.metadata) Node_Co_Base3.data
   type @{AllT_args} inst4 = (@{AllT_args} paction, @{AllT_args} presults, AANum.action_app_num,
     GF.focus, AMeta.metadata) Node_Co_Base4.data
-  type @{AllT_args} inst5 = (AANum.action_app_num, GF.focus, prio, AAMeta.metadata) Node_Co_Base5.data
+  type @{AllT_args} inst5 = (AANum.action_app_num, GF.focus, prio,
+    Tac.gpos_update, AAMeta.metadata) Node_Co_Base5.data
 in
 
 (*** instantiate data in alternating zipper skeleton ***)
@@ -319,6 +321,9 @@ struct
   structure Prio = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
     type @{AllT_args} data = prio
     fun lens _ = mk_lens NCB.get_prio NCB.map_prio)
+  structure GPos_Update = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = Tac.gpos_update
+    fun lens _ = mk_lens NCB.get_gpos_update NCB.map_gpos_update)
   structure Meta = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
     type @{AllT_args} data = AAMeta.metadata
     fun lens _ = mk_lens NCB.get_result_meta NCB.map_result_meta)
@@ -393,11 +398,10 @@ struct
 end
 
 (* loggers *)
-local structure FIU = Functor_Instance_Util(FIA)
-in
+structure FI = Functor_Instance(FI)
 structure Logging =
 struct
-  val logger = Logger.setup_new_logger zippy_logger FIU.base_name
+  val logger = Logger.setup_new_logger zippy_logger FI.name
   local structure Base = struct val parent_logger = logger end
   in
   structure Copy = Zippy_Logger_Mixin_Base(open Base; val name = "Copy")
@@ -405,12 +409,11 @@ struct
   structure PAction = Zippy_Logger_Mixin_Base(open Base; val name = "PAction")
   structure PAction_Queue = Zippy_Logger_Mixin_Base(open Base; val name = "PAction_Queue")
   structure PAction_PResults = Zippy_Logger_Mixin_Base(open Base; val name = "PAction_PResults")
-  structure LGoals_Tac = Zippy_Logger_Mixin_Base(open Base; val name = "LGoals_Tac")
-  structure LGoals_Tac_Copy = Zippy_Logger_Mixin_Base(open Base; val name = "LGoals_Tac_Copy")
+  structure LGoals = Zippy_Logger_Mixin_Base(open Base; val name = "LGoals")
+  structure LGoals_Pos_Copy = Zippy_Logger_Mixin_Base(open Base; val name = "LGoals_Pos_Copy")
   structure Step = Zippy_Logger_Mixin_Base(open Base; val name = "Step")
   structure Run = Zippy_Logger_Mixin_Base(open Base; val name = "Run")
   end
-end
 end
 
 (* data mixins *)
@@ -458,16 +461,18 @@ end
 (** goals **)
 structure Goals = Zippy_Goals_Mixin_Base(
   structure GClusters = Mixin1.GClusters; structure GCluster = Mixin2.GCluster)
-structure LGoals = Zippy_Lists_Goals_Mixin(structure Z = ZL; structure Goals = Goals)
+structure LGoals = Zippy_Lists_Goals_Mixin(open Base_Mixins; structure Z = ZL;
+  structure Goals = Goals structure Log = Logging.LGoals)
 structure Goals_Results = Zippy_Goals_Results_Mixin_Base(open Goals
   structure GClusters_Results = Mixin1.Results
   structure GCluster_Results = Mixin2.Results)
-structure LGoals_Results = Zippy_Lists_Goals_Results_Mixin(
-  structure Z = ZL; structure Goals_Results = Goals_Results)
-structure LGoals_Results_TMV = Zippy_Lists_Goals_Results_Top_Meta_Vars_Mixin(
+structure LGoals_Results = Zippy_Lists_Goals_Results_Mixin(open Base_Mixins; structure Z = ZL
+  structure Goals_Results = Goals_Results; structure Log_LGoals = Logging.LGoals)
+structure LGoals_Results_TMV = Zippy_Lists_Goals_Results_Top_Meta_Vars_Mixin(open Base_Mixins
   structure Z = ZL
   structure Goals_Results_Top_Meta_Vars = Zippy_Goals_Results_Top_Meta_Vars_Mixin_Base(
-    open Goals_Results; structure Top_Meta_Vars = Mixin2.Top_Meta_Vars))
+    open Goals_Results; structure Top_Meta_Vars = Mixin2.Top_Meta_Vars)
+  structure Log_LGoals = Logging.LGoals)
 
 (** action clusters **)
 local structure L = Lens3
@@ -502,8 +507,8 @@ struct
       structure M = MU.MB
       structure L = L.PAction
       structure AResult = AResult
-      type @{AllT_args} zipper_expand = @{AllT_args} Z5.zipper
-      type @{AllT_args} zipper_trim = @{AllT_args} Z1.zipper
+      type @{AllT_args} zipper_expanded = @{AllT_args} Z5.zipper
+      type @{AllT_args} zipper_changed = @{AllT_args} Z1.zipper
       type prio = prio
       val paction = PAction
       fun run_paction (PAction paction) = paction)
@@ -546,6 +551,15 @@ structure PAction_Queue = Zippy_PAction_Queue_Mixin(open Base_Mixins
   val mk_exn = Library.K exn
   structure Log = Logging.PAction_Queue)
 
+(** goal positions **)
+structure Goals_Pos = Zippy_Goals_Pos_Mixin(structure Z = ZL
+  structure Goals_Pos = Zippy_Goals_Pos_Mixin_Base(open Goals; structure GPU = GPU))
+structure Goals_Pos_Copy = Zippy_Goals_Pos_Copy_Mixin(Zippy_Goals_Pos_Copy_Mixin_Base(
+  open Goals_Pos; structure Copy = Mixin3.Copy))
+structure LGoals_Pos_Copy = Zippy_Lists_Goals_Pos_Copy_Mixin(open Base_Mixins
+  structure Z = ZL; structure GPC = Goals_Pos_Copy; structure Log = Logging.LGoals_Pos_Copy
+  structure Log_LGoals = Logging.LGoals)
+
 (** action applications **)
 local structure L = Lens5
 in
@@ -565,20 +579,8 @@ end
 end
 
 (** tactics **)
-structure Goals_Tac = Zippy_Goals_Tactic_Mixin_Base(open Goals; structure Tac = Tac)
-structure LGoals_Tac = Zippy_Lists_Goals_Tactic_Mixin(open Base_Mixins
-  structure Z = ZL; structure Goals_Tac = Goals_Tac; structure Log = Logging.LGoals_Tac)
-
-structure Goals_Tac_Copy = Zippy_Goals_Tactic_Copy_Mixin(
-  Zippy_Goals_Tactic_Copy_Mixin_Base(open Goals_Tac; structure Copy = Mixin3.Copy))
-structure LGoals_Tac_Copy = Zippy_Lists_Goals_Tactic_Copy_Mixin(open Base_Mixins
-  structure Z = ZL; structure GTC = Goals_Tac_Copy;
-  structure Log = Logging.LGoals_Tac_Copy; structure Log_ECopy = Logging.Enum_Copy)
-
-structure Goals_Tac_Copy_PAction = Zippy_Goals_Tactic_Copy_PAction_Mixin_Base(
-  open Goals_Tac_Copy; structure PAction = Mixin4.PAction)
-structure LGoals_Tac_Copy_PAction = Zippy_Lists_Goals_Tactic_Copy_PAction_Mixin(
-  structure Z = ZL; structure GTCP = Goals_Tac_Copy_PAction)
+structure Tac_AAM = Zippy_Tactic_Action_App_Metadata_Mixin(
+  Zippy_Tactic_Action_App_Metadata_Mixin_Base(structure Meta = Mixin5.Meta; structure Tac = Tac))
 
 (** runs **)
 structure Show =
@@ -596,6 +598,7 @@ structure Step = Zippy_Step_Mixin(open Base_Mixins
     structure PAction_Queue = PAction_Queue)
   val mk_exn = Library.K exn
   structure Log = Logging.Step
+  structure Log_LGoals = Logging.LGoals
   structure Show_Queue_Entry = Show.Queue_Entry)
 
 structure Run = Zippy_Run_Mixin(open Base_Mixins
@@ -608,7 +611,7 @@ structure Run = Zippy_Run_Mixin(open Base_Mixins
     State_MSTrans.eval state #> Ctxt_MSTrans.eval ctxt #> the_default Seq.empty
   fun with_state f = Ctxt.with_ctxt (fn ctxt => State.with_state (fn state =>
     f {ctxt = ctxt, state = state}))
-  structure Log = Logging.Run)
+  structure Log = Logging.Run; structure Log_LGoals = Logging.LGoals)
 end
 end
 

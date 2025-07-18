@@ -2,8 +2,8 @@
 section \<open>Zippers\<close>
 theory ML_Zipper_Utils
   imports
-    ML_Typeclasses.ML_Coroutines
     ML_Zippers
+    ML_Typeclasses.ML_Coroutines
 begin
 
 ML_gen_file\<open>enumerate_zipper.ML\<close>

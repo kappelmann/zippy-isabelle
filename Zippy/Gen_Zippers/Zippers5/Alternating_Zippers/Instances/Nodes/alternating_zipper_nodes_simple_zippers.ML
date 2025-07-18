@@ -45,7 +45,7 @@ fun dest_next{i} (Next{i} x) = x\<close>\<close>
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 structure N{i} =
-\<^eval>\<open>sfx_inst_T_nargs "Instantiate_Node_Succ" (ML_Gen.ZipperT_nargs () + 1)\<close>(
+\<^eval>\<open>sfx_inst_T_nargs "Instantiate_Node_Succ" (ML_Gen.nzippers () + 1)\<close>(
   type @{AllT_args} inst = @{AllT_args} next{i}
   structure N = N{i}
 )\<close>\<close>

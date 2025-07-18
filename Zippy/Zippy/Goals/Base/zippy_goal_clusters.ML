@@ -35,6 +35,7 @@ sig
   val get_cclusters : gclusters -> cterm list
   val get_clusters_goals : gclusters -> term list list
   val get_gcpos_index : gclusters -> goal_pos -> gcpos
+  val get_nclusters : gclusters -> int
   (*returns clusters and associated equivalence classes for the state's goals, including their size*)
   val init : state -> gclusters * (goal_pos list * int) list
 
@@ -66,12 +67,11 @@ fun gcpos cluster goal = GCPos {cluster = cluster, goal = goal}
 fun get_gcpos_cluster (GCPos {cluster,...}) = cluster
 fun get_gcpos_goal (GCPos {goal,...}) = goal
 
-val out_of_bounds_gcpos = gcpos ~1 ~1
-
 fun mk_gcpos_index veclasses = fold_index (fn (cpos, ps) => fold_index
     (fn (gpos, gpos_in) => General_Util.fun_update (equal gpos_in) (gcpos cpos (GU.succ gpos)))
     ps)
-  veclasses (K out_of_bounds_gcpos)
+  veclasses (fn i => error (implode ["Goal position ", string_of_int i, " is out of bounds (1-",
+    string_of_int (fold (length #> curry (op +)) veclasses 0), ")."]))
 
 fun pretty_gcpos gcpos = Show.record [
     ("cluster", pretty_cluster_pos (get_gcpos_cluster gcpos)),
@@ -98,7 +98,7 @@ fun eq_opt_veclass (SOME veclass1, SOME veclass2) = UF.eq (veclass1, veclass2)
   | eq_opt_veclass _ = false
 
 val group_veclasses = map_index (apfst GU.succ #> uncurry pair)
-  #> Library.partition_eq (apply2 snd #> eq_opt_veclass)
+  #> Library.partition_eq (eq_snd eq_opt_veclass)
 val build_veclasses = init_veclasses #> apfst group_veclasses
 
 fun rearrange_veclasses_state veclasses = Drule.rearrange_prems (flat veclasses |> map GU.pred)
@@ -109,12 +109,14 @@ type state = Zippy_Thm_State.state
 datatype gclusters = GClusters of {
     state : state,
     clustered_state : state,
-    gcpos_index : goal_pos -> gcpos
+    gcpos_index : goal_pos -> gcpos,
+    nclusters : int
   }
 
 fun get_state (GClusters {state,...}) = state
 fun get_clustered_state (GClusters {clustered_state,...}) = clustered_state
 fun get_gcpos_index (GClusters {gcpos_index,...}) = gcpos_index
+fun get_nclusters (GClusters {nclusters,...}) = nclusters
 
 val get_thm = get_state #> TS.get_thm
 
@@ -123,7 +125,8 @@ fun pretty_gclusters ctxt gclusters = get_clustered_state gclusters |> TS.pretty
 val get_cclusters = get_clustered_state #> TS.unprotect_prems #> Thm.cprems_of
 val get_clusters_goals = get_cclusters #> map (Thm.term_of #> Logic.dest_conjunctions)
 
-fun init state = Thm.prems_of state
+fun init state =
+  Thm.prems_of state
   |> build_veclasses
   |> fst
   |> map (fn veclass => fold_map (apfst fst #> apsnd GU.succ |> curry) veclass 0)
@@ -134,7 +137,10 @@ fun init state = Thm.prems_of state
         |> mk_conj_list_state ss
         |> TS.protect_prems
       val gcpos_index = mk_gcpos_index (map fst vss)
-    in GClusters {state = state, clustered_state = clustered_state, gcpos_index = gcpos_index} end)
+    in
+      GClusters {state = state, clustered_state = clustered_state, gcpos_index = gcpos_index,
+        nclusters = length veclasses}
+    end)
 
 val is_finished = get_state #> TS.is_finished
 val has_meta_vars = get_state #> TS.has_meta_vars

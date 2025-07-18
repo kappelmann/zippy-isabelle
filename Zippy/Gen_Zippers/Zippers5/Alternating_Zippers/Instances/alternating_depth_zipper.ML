@@ -46,7 +46,7 @@ struct
     open Base
     fun morph x = x |> Z.K.id ()
   end\<close>\<close>
-  structure \<^eval>\<open>"Down" ^ ML_Gen.ZipperT_nargs' ()\<close> =
+  structure \<^eval>\<open>"Down" ^ ML_Gen.nzippers' ()\<close> =
   struct
     open Base
     fun morph x = x + 1 |> Z.K.id ()

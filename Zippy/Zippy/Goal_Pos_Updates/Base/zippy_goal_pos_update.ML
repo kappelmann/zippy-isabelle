@@ -5,7 +5,8 @@ Goal position updates.
 *)
 signature ZIPPY_GOAL_POS_UPDATE_TARGET =
 sig
-  datatype 't target = Gone | Moved of 't | Changed of 't list
+  datatype 't target = Moved of 't | Changed of 't list
+  val empty_changed : 't target
   val pretty : 't SpecCheck_Show.show -> 't target SpecCheck_Show.show
   include \<^eval>\<open>sfx_ParaT_nargs "MONAD_BASE"\<close>
   where type (@{ParaT_args} 'a) t = 'a target
@@ -13,24 +14,20 @@ end
 
 structure Zippy_Goal_Pos_Update_Target : ZIPPY_GOAL_POS_UPDATE_TARGET =
 struct
-datatype 't target = Gone | Moved of 't | Changed of 't list
+datatype 't target = Moved of 't | Changed of 't list
+val empty_changed = Changed []
 
-fun pretty _ Gone = Pretty.str "Gone"
-  | pretty f (Moved t) = Pretty.breaks [Pretty.str "Moved", Pretty.enclose "(" ")" [f t]]
+fun pretty f (Moved t) = Pretty.breaks [Pretty.str "Moved", Pretty.enclose "(" ")" [f t]]
       |> Pretty.block
   | pretty f (Changed ts) = Pretty.breaks [Pretty.str "Changed", SpecCheck_Show.list f ts]
       |> Pretty.block
 
 type (@{ParaT_args} 'a) t = 'a target
-fun map _ Gone = Gone
-  | map f (Moved t) = Moved (f t)
+fun map f (Moved t) = Moved (f t)
   | map f (Changed ts) = Changed (List.map f ts)
 fun pure x = Moved x
-fun bind Gone _ = Gone
-  | bind (Moved t) f = f t
-  | bind (Changed ts) f =
-      List.mapPartial (f #> (fn Gone => NONE | Moved t => SOME [t] | Changed ts => SOME ts)) ts
-      |> flat |> Changed
+fun bind (Moved t) f = f t
+  | bind (Changed ts) f = Library.maps (f #> (fn Moved t => [t] | Changed ts => ts)) ts |> Changed
 fun f <*> x = bind f (fn f => map f x)
 end
 
@@ -48,8 +45,9 @@ sig
   val pure_comp : (GCS.goal_pos -> 't) -> GCS.goal_pos gpos_update -> 't gpos_update
 
   val update : GCS.goal_pos -> 't T.target -> 't gpos_update -> 't gpos_update
+  val update_changed : ('t list -> 't T.target) -> 't gpos_update -> 't gpos_update
 
-  val gclusters_gcpos_update : GCS.gclusters -> GCS.goal_pos gpos_update ->
+  val comp_gclusters_gpos_update : GCS.gclusters -> GCS.goal_pos gpos_update ->
     GCS.gcpos gpos_update
 end
 
@@ -72,8 +70,9 @@ fun comp_pure f g = f o g
 fun pure_comp f g p = g p |> T.map f
 
 fun update p = General_Util.fun_update (equal p)
+fun update_changed f gpos_update = gpos_update #> (fn T.Changed ts => f ts | T.Moved x => T.Moved x)
 
-fun gclusters_gcpos_update gclusters = pure_comp (GCS.get_gcpos_index gclusters)
+fun comp_gclusters_gpos_update gclusters = pure_comp (GCS.get_gcpos_index gclusters)
 
 end
 

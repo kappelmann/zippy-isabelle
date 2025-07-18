@@ -29,6 +29,9 @@ functor Zippy_Lists_Goals_Results_Mixin(
     structure Goals_Results : ZIPPY_GOALS_RESULTS_MIXIN_BASE
     sharing type Goals_Results.GClusters.L.container = Z.Z1.zipper
     sharing type Goals_Results.GCluster.L.container = Z.Z2.zipper
+    structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
+    sharing type Ctxt.M.t =Z.M.t
+    structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
   ) : ZIPPY_LISTS_GOALS_RESULTS_MIXIN =
 struct
 
@@ -39,7 +42,8 @@ structure ZB = Zippy_Base(structure Z = Z; structure Exn = Exn)
 structure GClusters = Zippy_Goal_Clusters_Mixin(GClusters)
 structure GClusters_Results = Zippy_Goal_Results_Mixin(GClusters_Results)
 structure GCluster_Results = Zippy_Goal_Results_Mixin(GCluster_Results)
-structure LGoals = Zippy_Lists_Goals_Mixin(structure Z = Z; structure Goals = Goals_Results)
+structure LGoals = Zippy_Lists_Goals_Mixin(structure Z = Z; structure Goals = Goals_Results
+  structure Ctxt = Ctxt; structure Log = Log_LGoals)
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 type @{AllT_args} zipper{i} = @{AllT_args} Z{i}.zipper\<close>\<close>

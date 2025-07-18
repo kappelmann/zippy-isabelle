@@ -9,6 +9,9 @@ sig
   val single : GCS.goal_pos -> focus
   val none : focus
   val pretty : focus SpecCheck_Show.show
+
+  val focused_goals_none_all : focus -> 'a list -> (GCS.goal_pos * 'a) list
+  val focused_goals_none_no : focus -> 'a list -> (GCS.goal_pos * 'a) list
 end
 
 functor Zippy_Goal_Focus(GCS : ZIPPY_GOAL_CLUSTERS) : ZIPPY_GOAL_FOCUS =
@@ -25,6 +28,21 @@ val none = None
 fun pretty (Goals xs) = Pretty.block [Pretty.str "Goals ", Pretty.block [Show.list Show.int xs]]
   | pretty None = Pretty.str "None"
 
+fun get_indices _ [] _ = []
+  | get_indices i (j :: js) (x :: xs) = if i = j
+      then (i, x) :: get_indices (i + 1) js xs
+      else get_indices (i + 1) (j :: js) xs
+  | get_indices i is _ = error (Pretty.breaks [
+        Pretty.block [Pretty.str "Bad remaining arguments for get_indices."],
+        Pretty.block [Pretty.str "Counter: ", SpecCheck_Show.int i],
+        Pretty.block [Pretty.str "Indices: ", SpecCheck_Show.list SpecCheck_Show.int is]
+      ] |> Pretty.block |> Pretty.string_of)
+
+fun gen_focused_goals fnone None = fnone
+  | gen_focused_goals _ (Goals gposs) = get_indices 1 gposs
+
+fun focused_goals_none_all x = gen_focused_goals (tag_list 1) x
+fun focused_goals_none_no x = gen_focused_goals (K []) x
 end
 
 structure Standard_Zippy_Goal_Focus = Zippy_Goal_Focus(Standard_Zippy_Goal_Clusters)

@@ -52,14 +52,14 @@ sig
 end
 
 functor Eval_Antiquotation(
-    structure FIA : FUNCTOR_INSTANCE_ARGS
+    structure FI : FUNCTOR_INSTANCE_BASE
     val init_args : Eval_Antiquotation_Args.args
   ) : EVAL_ANTIQUOTATION =
 struct
 
 structure EAA = Eval_Antiquotation_Args
 structure PA = EAA.PA
-structure FIU = Functor_Instance_Util(FIA)
+structure FI = Functor_Instance(FI)
 structure MCU = ML_Code_Util
 
 structure Data = Generic_Data(
@@ -76,7 +76,7 @@ val map_parser = map_args o PA.map_parser
 
 fun eval context = get_args context |> EAA.eval
 
-val binding = FIU.mk_binding_id_prefix "eval"
+val binding = Binding.make (FI.prefix_id "eval", FI.pos)
 
 val parse_arg_entries =
   let
@@ -98,14 +98,14 @@ fun attribute (entries, pos) =
       |> map (fn (k, v) => code_from_key k @ MCU.atomic (code_from_entry v))
       |> MCU.list
     val code =
-      FIU.code_struct_op "map_args" @ MCU.atomic (code_PA_op "merge_entries" @
+      FI.code_struct_op "map_args" @ MCU.atomic (code_PA_op "merge_entries" @
       MCU.atomic (code_PA_op "entries_from_entry_list" @ code_entries))
   in ML_Attribute.run_map_context (code, pos) end
 
 val parse_attribute = (parse_arg_entries |> Parse_Util.position) >> attribute
 
 val setup_attribute = Attrib.local_setup binding (Scan.lift (Parse.!!! parse_attribute)) o
-  the_default ("set eval antiquotation arguments (" ^ FIU.FIA.full_name ^ ")")
+  the_default ("set eval antiquotation arguments " ^ enclose "(" ")" FI.long_name)
 
 val setup_antiquotation =
   ML_Antiquotation.declaration binding (`(fst #> eval) #> (fn (parser, x) => parser x))

@@ -35,8 +35,9 @@ sig
   val repeat_res : (@{ParaT_args} 'r, 'a) C.morph -> (@{ParaT_args} 'b, 'r res) C.morph ->
     (@{ParaT_args} 'a, 'b) coroutine -> (@{ParaT_args} 'a, 'r res) C.morph
 
-  val repeat_step_res : (@{ParaT_args} 'b * 'r, 'a) C.morph -> (@{ParaT_args} 'b * 'r, 'r res) C.morph ->
-    (@{ParaT_args} 'a, 'b) coroutine -> (@{ParaT_args} 'a * 'r, ('b * 'r) res) C.morph
+  val repeat_step_res : (@{ParaT_args} 'b * 'r, 'a) C.morph ->
+    (@{ParaT_args} 'b * 'r, 'r res) C.morph -> (@{ParaT_args} 'a, 'b) coroutine ->
+    (@{ParaT_args} 'a * 'r, ('b * 'r) res) C.morph
 
   val repeat_step_res_init : (@{ParaT_args} 'b * 'r, 'a) C.morph ->
     (@{ParaT_args} 'b * 'r, 'r res) C.morph -> (@{ParaT_args} 'b, 'a) C.morph ->

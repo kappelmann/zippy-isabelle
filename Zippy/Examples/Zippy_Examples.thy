@@ -17,11 +17,23 @@ works and not meant for production. When used in practice, one should return res
 there are no more subgoals in one of the tree's branches.\<close>
 
 ML\<open>
-local
-  open Zippy
-  open MU
-  open SC Mo A
+local open Zippy; open MU; open SC Mo A
 in
+  fun cons_cheat_cluster prio focus = Tac_Util.cons_simple_single_ztactic_action_cluster
+    (Mixin3.Meta.Meta.empty @{binding cheat})
+    (Util.copy_update_data_empty_changed #> arr)
+    (Mixin4.Meta.Meta.metadata (@{binding cheat}, "cheat action solving all focused goals"))
+    (Tac_Util.halve_prio_halve_prio_depth_sq_co prio)
+    (Ctxt.with_ctxt (Tac_Util.cheat_ztac #> arr))
+    focus
+
+  fun cons_assume_cluster prio focus = Tac_Util.cons_simple_single_ztactic_action_cluster
+    (Mixin3.Meta.Meta.empty @{binding assume})
+    (Util.copy_update_data_empty_changed #> arr)
+    (Mixin4.Meta.Meta.metadata (@{binding assume}, "solve all focused goals by assumption"))
+    (Tac_Util.halve_prio_halve_prio_depth_sq_co prio)
+    (Ctxt.with_ctxt (Tac_Util.assume_ztac #> arr))
+    focus
 end
 \<close>
 
@@ -29,10 +41,12 @@ lemma silly: "A \<Longrightarrow> B" sorry
 lemma cheat : "A" sorry
 
 declare[[ML_print_depth=100]]
-schematic_goal shows "?A \<and> B" "?C \<and> D"
-ML_prf\<open>open Zippy; open MU; open Mo A\<close>
+schematic_goal shows "?A \<and> B" "C \<and> ?A"
+  (* "?C \<and> D" *)
+ML_prf\<open>open Zippy; open MU; open Mo A SC\<close>
 supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.Run.logger Logger.DEBUG\<close>]]
 supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.Step.logger Logger.DEBUG\<close>]]
+(* supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.logger Logger.ALL\<close>]] *)
 apply (tactic \<open>fn state =>
   let
     val with_ctxt = Ctxt.with_ctxt
@@ -41,37 +55,37 @@ apply (tactic \<open>fn state =>
       (Util.init_thm_state state
       (*add actions*)
       >>= Down1.morph
-      >>= Tac_Util.cons_single_ztactic_action_cluster'
+      (* >>= Tac_Util.cons_simple_single_ztactic_action_cluster
         (Mixin3.Meta.Meta.empty @{binding cluster1})
+        (Util.copy_update_data #> arr)
         (Mixin4.Meta.Meta.empty @{binding action1})
-        (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
-        (with_ctxt
-          (Tac_Util.resolve_changed_ztac Mixin5.Meta.Meta.P.promising @{thms cheat silly} #> arr))
-        (Tac.GPU.F.Goals [1])
-      >>= Up3.morph
-      >>= Tac_Util.cons_single_ztactic_action_cluster'
-        (Mixin3.Meta.Meta.empty @{binding cluster2})
-        (Mixin4.Meta.Meta.empty @{binding action2})
-        (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
-        (with_ctxt (Tac_Util.cheat_ztac #> arr))
-        (Tac.GPU.F.Goals [1])
-      >>= Up3.morph
-      >>= Z2.ZM.Down.morph
-      >>= Tac_Util.cons_single_ztactic_action_cluster'
-        (Mixin3.Meta.Meta.empty @{binding cluster3})
-        (Mixin4.Meta.Meta.empty @{binding action3})
-        (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
-        (with_ctxt (Tac_Util.cheat_ztac #> arr))
-        (Tac.GPU.F.Goals [1])
+        (Tac_Util.halve_prio_halve_prio_depth_sq_co Prio.HIGH)
+        (with_ctxt (Tac_Util.resolve_ztac Mixin5.Meta.Meta.P.promising @{thms conjI cheat} #> arr))
+        (Tac.GPU.F.Goals [1, 2]) *)
+      (* >>= Up3.morph *)
+      (* >>= cons_cheat_cluster Prio.HIGH (Tac.GPU.F.Goals [1]) *)
+      (* >>= Up3.morph *)
+      >>= Tac_Util.cons_resolve_action_cluster
+        (Util.copy_update_data #> arr)
+        @{thm conjI}
+        [Tac.GPU.F.single #> (fn focus => cons_cheat_cluster Prio.HIGH focus >>> Up3.morph),
+        Tac.GPU.F.single #> (fn focus => cons_cheat_cluster Prio.HIGH focus >>> Up3.morph)]
+        Mixin5.Meta.Meta.P.promising
+        (Tac_Util.halve_prio_halve_prio_depth_sq_co Prio.VERY_HIGH)
+        (Tac.GPU.F.Goals [1, 2])
+      (* >>= Up3.morph *)
+      (* >>= Z2.ZM.Down.morph *)
+      (* >>= cons_cheat_cluster Prio.HIGH Tac.GPU.F.None *)
       >>= ZB.top3
       >>= Z1.ZM.Unzip.morph
       (*run best-first-search*)
       >>= Run.init_repeat_step_queue
-        (with_ctxt Run.mk_df_post_unreturned_unfinished_statesq) NONE
+        (with_ctxt Run.mk_df_post_unreturned_unfinished_statesq) (SOME 20)
       )
       |> Run.seq_from_monad {ctxt = @{context}, state = ()}
-      |> Seq.map (Run.get_result_data #> #thm_states) |> Seq.flat |> Tactic_Util.unique_thmsq |> Seq.list_of |> Seq.of_list
-      (* |> Seq.pull |> (fn sq => Seq.make (fn _ => sq)) *)
+      |> Seq.map (Run.get_result_data #> #thm_states) |> Seq.flat |> Tactic_Util.unique_thmsq
+      (* |> Seq.list_of |> Seq.of_list *)
+      |> Seq.pull |> (fn sq => Seq.make (fn _ => sq))
     val (time, ressq) = Timing.timing run () |> apfst @{print}
   in ressq end
 \<close>)
@@ -96,20 +110,16 @@ apply (tactic \<open>fn state =>
       (Util.init_thm_state state
       (*add actions*)
       >>= Down1.morph
-      >>= Tac_Util.cons_single_ztactic_action_cluster'
+      >>= Tac_Util.cons_simple_single_ztactic_action_cluster
         (Mixin3.Meta.Meta.empty @{binding cluster1})
+        (Util.copy_update_data #> arr)
         (Mixin4.Meta.Meta.empty @{binding action1})
-        (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
-        (with_ctxt
-          (Tac_Util.resolve_changed_ztac Mixin5.Meta.Meta.P.promising @{thms conjI impI disjI1 disjI2} #> arr))
+        (Tac_Util.halve_prio_halve_prio_depth_sq_co Prio.HIGH)
+        (with_ctxt (Tac_Util.resolve_ztac Mixin5.Meta.Meta.P.promising
+          @{thms conjI impI disjI1 disjI2} #> arr))
         (Tac.GPU.F.Goals [1])
       >>= Up3.morph
-      >>= Tac_Util.cons_single_ztactic_action_cluster'
-        (Mixin3.Meta.Meta.empty @{binding cluster2})
-        (Mixin4.Meta.Meta.empty @{binding action2})
-        (Tac_Util.halve_prio_halve_prio_depth_res_co Prio.HIGH)
-        (with_ctxt (Tac_Util.assume_gone_ztac #> arr))
-        (Tac.GPU.F.Goals [1])
+      >>= cons_assume_cluster Prio.HIGH (Tac.GPU.F.Goals [1])
       >>= ZB.top3
       >>= Z1.ZM.Unzip.morph
       (*run best-first-search*)

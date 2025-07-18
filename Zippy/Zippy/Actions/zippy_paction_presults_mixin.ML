@@ -17,19 +17,18 @@ sig
     (*action when results are empty*)
     @{AllT_args} PAction.action ->
     (*update zipper with pulled result and the remaining presults*)
-    (PResults.result * @{AllT_args} PResults.presults -> @{AllT_args} PAction.action) ->
+    @{AllT_args} result_tail_presults_action ->
     @{AllT_args} PAction.paction
 
   val paction_from_presults : @{ParaT_args encl = "(" ")"} PAction.Exn.ME.exn ->
-    (PResults.result * @{AllT_args} PResults.presults -> @{AllT_args} PAction.action) ->
-    @{AllT_args} PAction.paction
+    @{AllT_args} result_tail_presults_action -> @{AllT_args} PAction.paction
 
   val result_tail_presults_action :
     (*update with remaining presults*)
     (prio -> @{AllT_args} PResults.presults -> (@{ParaT_args} @{AllT_args} zipper, 'z) morph) ->
     (*update with pulled result*)
     (prio -> PResults.result -> (@{ParaT_args} 'z, @{AllT_args} PAction.action_result) morph) ->
-    PResults.result * @{AllT_args} PResults.presults -> @{AllT_args} PAction.action
+    @{AllT_args} result_tail_presults_action
 end
 
 functor Zippy_PAction_PResults_Mixin(
@@ -61,10 +60,10 @@ fun gen_paction_from_presults get_presults empty_action result_tail_presults_act
     |> PAction.paction
   end
 
-fun paction_from_presults e = gen_paction_from_presults (arr PResults.L.getter)
+fun paction_from_presults exn = gen_paction_from_presults (arr PResults.L.getter)
   (Library.K (Ctxt.with_ctxt (fn ctxt =>
     (@{log Logger.DEBUG} ctxt (fn _ => "PResults empty. Disabling paction.");
-    PAction.disable_paction e >>> arr PAction.AResult.Stagnate))))
+    PAction.disable_paction exn >>> arr PAction.AResult.Unchanged))))
 
 fun result_tail_presults_action update_tail_presults update_result (x, aco) prio =
   update_tail_presults prio aco >>> update_result prio x

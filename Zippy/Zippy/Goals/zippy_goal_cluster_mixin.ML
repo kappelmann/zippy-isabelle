@@ -5,6 +5,7 @@ signature ZIPPY_GOAL_CLUSTER_MIXIN =
 sig
   include ZIPPY_GOAL_CLUSTER_MIXIN_BASE
   val get_state : @{AllT_args} L.container -> GC.GCS.state
+  val get_ngoals : @{AllT_args} L.container -> int
   val has_meta_vars : @{AllT_args} L.container -> bool
 end
 
@@ -16,6 +17,7 @@ struct
 open GCluster
 
 fun get_state x = x |> (L.getter #> GC.get_state)
+fun get_ngoals x = x |> (L.getter #> GC.get_ngoals)
 fun has_meta_vars x = x |> (L.getter #> GC.has_meta_vars)
 
 end

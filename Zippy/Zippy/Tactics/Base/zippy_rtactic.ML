@@ -24,8 +24,9 @@ open R
 type tactic = Tactical.tactic
 type 'm rtactic = state -> 'm result Seq.seq
 
-fun lift_tac f tac state = tac state |> Seq.map (fn state' => result (f (state, state')) state')
-fun lift_tac' f tac i = lift_tac f (tac i)
+fun lift_tac mk_more tac state = tac state
+  |> Seq.map (fn state' => result (mk_more (state, state')) state')
+fun lift_tac' mk_more tac i = lift_tac mk_more (tac i)
 
 fun no_tac _ = Seq.empty
 

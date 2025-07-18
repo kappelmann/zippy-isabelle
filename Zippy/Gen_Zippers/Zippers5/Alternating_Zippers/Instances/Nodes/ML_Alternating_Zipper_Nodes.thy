@@ -10,8 +10,8 @@ ML_gen_file\<open>modify_node_content.ML\<close>
 ML_gen_file\<open>modify_node_next.ML\<close>
 
 setup\<open>fn theory =>
-let val nzippers = Config.get_global theory ML_Gen.nzippers_config + 1
-in Context.theory_map (ML_Gen.setup_nzippers nzippers) theory end\<close>
+let val nzippers = ML_Gen.nzippers () + 1
+in Context.theory_map (ML_Gen.setup_zipper_args' (NONE, NONE) (SOME nzippers, NONE)) theory end\<close>
 
 text \<open>Note: we reload the ML file @{file node.ML}, just with different parameters.\<close>
 ML_gen_file\<open>node.ML\<close>
@@ -21,8 +21,8 @@ ML\<open>
 \<close>
 
 setup\<open>fn theory =>
-let val nzippers = Config.get_global theory ML_Gen.nzippers_config - 1
-in Context.theory_map (ML_Gen.setup_nzippers nzippers) theory end\<close>
+let val nzippers = ML_Gen.nzippers () - 1
+in Context.theory_map (ML_Gen.setup_zipper_args' (NONE, NONE) (SOME nzippers, NONE)) theory end\<close>
 
 context notes [[imap stop = 6]]
 begin

@@ -1,5 +1,10 @@
 (*  Title:      Zippy/pair_morph.ML
     Author:     Kevin Kappelmann
+
+Note: this could be generalised to dependent pairings where the input of the second morphism depends
+on the input/output of the first. In the context of Zippy, this could be used to adjoin content
+and positional dependent information to an existing zipper, such as the sum of costs up to the
+focused node (as needed for an A^* algorithm), for free.
 *)
 signature \<^eval>\<open>sfx_T_nargs "PAIR_MORPH"\<close> =
 sig

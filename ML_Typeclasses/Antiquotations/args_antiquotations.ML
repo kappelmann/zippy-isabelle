@@ -127,7 +127,7 @@ sig
 end
 
 functor Args_Antiquotations(
-    structure FIA : FUNCTOR_INSTANCE_ARGS
+    structure FI : FUNCTOR_INSTANCE_BASE
     val init_args : Args_Antiquotations_Args.args_args
   ) : ARGS_ANTIQUOTATIONS =
 struct
@@ -136,7 +136,7 @@ structure AAA = Args_Antiquotations_Args
 structure PAS = AAA.PAS
 structure PA = AAA.PA
 structure PCA = AAA.PCA
-structure FIU = Functor_Instance_Util(FIA)
+structure FI = Functor_Instance(FI)
 
 structure Data = Generic_Data(
   type T = AAA.args_args
@@ -177,8 +177,8 @@ fun mk_arg_code n ctxt =
   AAA.PA_entries_from_PCA_entries (PCA_entries_from_PAS_entries (get_data (Context.Proof ctxt))) n
   |> AAA.mk_arg_code
 
-val args_binding = FIU.mk_binding_id_prefix "args"
-val arg_binding = FIU.mk_binding_id_prefix "arg"
+val args_binding = Binding.make (FI.prefix_id "args", FI.pos)
+val arg_binding = Binding.make (FI.prefix_id "arg", FI.pos)
 
 val parse_args_entries =
   let
@@ -197,7 +197,7 @@ fun args_attribute entries = Thm.declaration_attribute (K (map_data (PAS.merge_e
 val parse_args_attribute = parse_args_entries >> args_attribute
 
 val setup_args_attribute = Attrib.local_setup args_binding (Parse.!!!! parse_args_attribute) o
-  the_default ("set args antiquotation arguments (" ^ FIU.FIA.full_name ^ ")")
+  the_default ("set args antiquotation arguments " ^ enclose "(" ")" FI.long_name)
 
 val parse_args_antiquotation =
   (parse_args_attribute |> Parse_Util.option')

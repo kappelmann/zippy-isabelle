@@ -6,31 +6,31 @@ theory Gen_ML_Typeclasses_Base
 begin
 
 ML\<open>
-  \<^functor_instance>\<open>struct_name = Para_Type_Args_Antiquotations
-    and functor_name = Args_Antiquotations
-    and id = \<open>"ParaT"\<close>
-    and more_args = \<open>val init_args = {
-      args = SOME ["'p1"],
-      sep = SOME ", ",
-      encl = SOME ("", ""),
-      encl_arg = SOME ("", ""),
-      start = SOME 0,
-      stop = SOME NONE}\<close>\<close>
+\<^functor_instance>\<open>struct_name = Para_Type_Args_Antiquotations
+  and functor_name = Args_Antiquotations
+  and id = \<open>"ParaT"\<close>
+  and more_args = \<open>val init_args = {
+    args = SOME ["'p1"],
+    sep = SOME ", ",
+    encl = SOME ("", ""),
+    encl_arg = SOME ("", ""),
+    start = SOME 0,
+    stop = SOME NONE}\<close>\<close>
 \<close>
 local_setup \<open>Para_Type_Args_Antiquotations.setup_args_attribute
   (SOME "set parameter type args antiquotation arguments")\<close>
 setup \<open>Para_Type_Args_Antiquotations.setup_args_antiquotation\<close>
 setup \<open>Para_Type_Args_Antiquotations.setup_arg_antiquotation\<close>
 
-
 (*functions to create type generic ML code*)
 ML\<open>
 structure ML_Gen =
 struct
   structure ParaT = Para_Type_Args_Antiquotations
-  val ParaT_nargs = Context.the_generic_context #> ParaT.nargs #> string_of_int
+  val ParaT_nargs = Context.the_generic_context #> ParaT.nargs
+  val ParaT_nargs' = ParaT_nargs #> string_of_int
   val mk_name = space_implode "_"
-  fun sfx_ParaT_nargs s = mk_name [s, ParaT_nargs ()]
+  fun sfx_ParaT_nargs s = mk_name [s, ParaT_nargs' ()]
 end
 \<close>
 

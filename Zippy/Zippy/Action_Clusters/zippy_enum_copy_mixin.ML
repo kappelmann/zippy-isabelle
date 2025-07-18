@@ -39,7 +39,7 @@ fun copy_parents mk_exn cud z1 = Ctxt.get_ctxt () >>= (fn ctxt =>
     ] |> Pretty.breaks |> Pretty.block |> Pretty.string_of);
   (Up1.morph >>> Up5.morph >>> Up4.morph >>> Z3.ZM.Unzip.morph >>> Z3.ZM.Zip.morph) z1
   >>= (fn z3 => Co.repeat_step_res (K.arr fst)
-    (AA.uncurry (Copy.get_run_copy_safe cud) >>> K.arr Co.continue) (DF_Post3.enum_zipper mk_exn)
+    (AA.uncurry (Copy.get_run_copy cud) >>> K.arr Co.continue) (DF_Post3.enum_zipper mk_exn)
     (z3, z1))
   >>= K.arr (Co.dest_res #> snd)))
 end

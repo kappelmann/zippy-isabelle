@@ -8,9 +8,6 @@ sig
 
   val get_run_copy : copy_update_data -> @{AllT_args} zipper_from ->
     (@{ParaT_args} @{AllT_args} zipper_to) emorph
-
-  val get_run_copy_safe : copy_update_data -> @{AllT_args} zipper_from ->
-    (@{ParaT_args} @{AllT_args} zipper_to) emorph
 end
 
 functor Zippy_Copy_Mixin(
@@ -38,8 +35,5 @@ fun get_run_copy cud z3 z1 = Ctxt.get_ctxt () >>= (fn ctxt =>
       Pretty.block [Pretty.str "to ", Show_To.pretty ctxt z1]
     ] |> Pretty.block |> Pretty.string_of);
   L.getter z3 |> (run_copy #> (fn copy => copy cud z3 z1))))
-fun get_run_copy_safe cud z3 = Exn.AE.try (get_run_copy cud z3)
 end
-
 end
-

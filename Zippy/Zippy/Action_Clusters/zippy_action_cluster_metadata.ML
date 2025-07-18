@@ -40,9 +40,9 @@ fun empty id = metadata (id, "")
 fun eq_metadata (m1 as Metadata {id = id1, description = description1},
   m2 as Metadata {id = id2, description = description2}) =
   pointer_eq (m1, m2) orelse
-  (Zippy_Identifier.eq_id (id1, id2) andalso description1 = description2)
+  (Zippy_Identifier.eq (id1, id2) andalso description1 = description2)
 fun pretty_metadata (Metadata {id, description}) = Show.record [
-    ("id", Zippy_Identifier.pretty_id id),
+    ("id", Zippy_Identifier.pretty id),
     ("description", Show.string description)
   ]
 

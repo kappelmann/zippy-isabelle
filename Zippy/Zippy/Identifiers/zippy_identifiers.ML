@@ -4,25 +4,27 @@
 signature ZIPPY_IDENTIFIER =
 sig
   type id = binding
-  val eq_id : id * id -> bool
-  val pretty_id : id -> Pretty.T
+  val eq : id * id -> bool
+  val ord : id ord
+  val pretty : id -> Pretty.T
   val quoted_string : id -> string
-  val combine_with : string -> id list -> id
-  val combine : id list -> id
+  val prefix_name : Position.T option -> string -> id -> id
+  val suffix_name : Position.T option -> string -> id -> id
 end
 
 structure Zippy_Identifier : ZIPPY_IDENTIFIER  =
 struct
 
 type id = binding
-val eq_id = Binding.eq_name
-val pretty_id = Binding.pretty
+val string_of = Binding.long_name_of
+val eq = apply2 string_of #> (op =)
+val ord = apply2 string_of #> fast_string_ord
+val pretty = Binding.pretty
 val quoted_string = Binding.print
 
-(*generalised from Binding.ML*)
-fun combine_with _ [b] = b
-  | combine_with sep bs = Binding.name
-    (space_implode sep (map Binding.name_of (filter_out Binding.is_empty bs)))
-val combine = combine_with " "
+fun prefix_name opt_pos s = Binding.prefix_name s
+  #> (Option.map Binding.set_pos opt_pos |> the_default I)
+fun suffix_name opt_pos s = Binding.suffix_name s
+  #> (Option.map Binding.set_pos opt_pos |> the_default I)
 
 end

@@ -108,7 +108,7 @@ sig
 end
 
 functor IMap_Antiquotation(
-    structure FIA : FUNCTOR_INSTANCE_ARGS
+    structure FI : FUNCTOR_INSTANCE_BASE
     val init_args : IMap_Antiquotation_Args.context_args
   ) : IMAP_ANTIQUOTATION =
 struct
@@ -116,7 +116,7 @@ struct
 structure IAA = IMap_Antiquotation_Args
 structure PA = IAA.PA
 structure PCA = IAA.PCA
-structure FIU = Functor_Instance_Util(FIA)
+structure FI = Functor_Instance(FI)
 
 structure Data = Generic_Data(
   type T = IAA.context_args
@@ -145,7 +145,7 @@ val map_stop = map_args o PCA.map_stop
 fun mk_code_context_args entries f = IAA.PA_entries_from_PCA_entries entries f |> IAA.mk_code
 fun mk_code f ctxt = mk_code_context_args (get_args (Context.Proof ctxt)) f ctxt
 
-val binding = FIU.mk_binding_id_prefix "imap"
+val binding = Binding.make (FI.prefix_id "imap", FI.pos)
 
 val parse_entries =
   let
@@ -164,7 +164,7 @@ fun attribute entries = Thm.declaration_attribute (K (map_args (PCA.merge_entrie
 val parse_attribute = parse_entries >> attribute
 
 val setup_attribute = Attrib.local_setup binding (Parse.!!!! parse_attribute) o
-  the_default ("set imap antiquotation arguments (" ^ FIU.FIA.full_name ^ ")")
+  the_default ("set imap antiquotation arguments " ^ enclose "(" ")" FI.long_name)
 
 val parse_antiquotation_args =
   Scan.lift (PA.get_f IAA.arg_parsers)
