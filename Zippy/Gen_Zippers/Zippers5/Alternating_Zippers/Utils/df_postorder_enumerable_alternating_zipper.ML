@@ -36,7 +36,7 @@ fun gen_enum_zipper enum_zipper down back_up enum_zipper_down =
 fun enum_zipper1 mk_exn =
   let
     val back_up = \<^imap>\<open>\<open>{j}\<close> =>\<open>Up\<^eval>\<open>ML_Gen.sub_mod_nzippers' 1 ({j} - 1) ^ "."\<close>morph\<close>
-      where sep = ">>>"\<close>
+      sep: ">>>"\<close>
     fun enum co = Co.resume co >>> catch'
       (fn (z, co) => Down1.morph z
         >>= enum_zipper2 mk_exn
@@ -46,12 +46,12 @@ fun enum_zipper1 mk_exn =
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 and enum_zipper{i} mk_exn =
   let val back_up = \<^imap>\<open>\<open>{j}\<close> =>\<open>Up\<^eval>\<open>ML_Gen.sub_mod_nzippers' 1 ({j} - {i}) ^ "."\<close>morph\<close>
-    where start = {i} and sep = ">>>"\<close>
+    start: {i} sep: ">>>"\<close>
   in
     gen_enum_zipper (E{i}.enum_zipper mk_exn) Down{i}.morph back_up
       (enum_zipper\<^eval>\<open>succ_mod_nzippers {i}\<close> mk_exn)
   end
-\<close> where start = 2 and stop = \<^eval>\<open>string_of_int (ML_Gen.nzippers () - 1)\<close>\<close>
+\<close> start: 2 stop: \<^eval>\<open>string_of_int (ML_Gen.nzippers () - 1)\<close>\<close>
 and \<^eval>\<open>"enum_zipper" ^ ML_Gen.nzippers' ()\<close> mk_exn =
   gen_enum_zipper (\<^eval>\<open>implode ["E", ML_Gen.nzippers' (), ".enum_zipper"]\<close> mk_exn)
     \<^eval>\<open>implode ["Down", ML_Gen.nzippers' (), ".morph"]\<close> Up1.morph

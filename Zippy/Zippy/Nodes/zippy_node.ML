@@ -8,14 +8,14 @@ sig
   sharing type Exn.M.t = M.t
 
   (* misc *)
-  val no_parent : (@{ParaT_args} @{ParaT_args encl = "(" ")"} Exn.AE.exn, 'p) morph
-  val no_next : (@{ParaT_args} @{ParaT_args encl = "(" ")"} Exn.AE.exn, 'n) morph
+  val no_parent : (@{ParaT_args} @{ParaT_args encl: "(" ")"} Exn.AE.exn, 'p) morph
+  val no_next : (@{ParaT_args} @{ParaT_args encl: "(" ")"} Exn.AE.exn, 'n) morph
 
   (* constructors *)
-  val container_no_parent : @{ParaT_args encl = "(" ")"} Exn.AE.exn -> 'c ->
+  val container_no_parent : @{ParaT_args encl: "(" ")"} Exn.AE.exn -> 'c ->
     'c * (@{ParaT_args} 'p) M.t
   \<^imap>\<open>\<open>{i}\<close> => \<open>
-  val node_no_next{i} : @{ParaT_args encl = "(" ")"} Exn.AE.exn -> @{AllT_args} ZN.N{i}.content ->
+  val node_no_next{i} : @{ParaT_args encl: "(" ")"} Exn.AE.exn -> @{AllT_args} ZN.N{i}.content ->
     @{AllT_args} ZN.N{i}.node\<close>\<close>
 
   (* lenses *)
@@ -32,7 +32,7 @@ sig
   where type @{AllT_args} data = @{AllT_args} ZN.N{i}.next
   sharing type Node_Next{i}.container = Z{i}.zipper\<close>\<close>
 
-  val set_no_next : @{ParaT_args encl = "(" ")"} Exn.AE.exn ->
+  val set_no_next : @{ParaT_args encl: "(" ")"} Exn.AE.exn ->
     (@{ParaT_args} 's, (@{ParaT_args} 'i) M.t) L.smodifier -> 's -> 's
 end
 

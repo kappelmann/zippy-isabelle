@@ -94,10 +94,22 @@ fun eresolve_ho_unif_first_ztac progress = single #> eresolve_ho_unif_any_first_
 val eresolve_ho_match_any_first_ztac = gen_resolve_ho_unif_first_ztac (General_Util.flip ematch_tac)
 fun eresolve_ho_match_first_ztac progress = single #> eresolve_ho_match_any_first_ztac progress
 
-val dresolve_ho_unif_any_first_ztac = gen_resolve_ho_unif_first_ztac (General_Util.flip dresolve_tac)
+local
+  fun gen_dresolve_ztac elim_tac =
+    let
+      (*Tactic.make_elim allows no context passing but Thm.biresolution fails to certificate certain
+      theorems without a context*)
+      fun make_elim ctxt thm =
+        let val resolve = Thm.biresolution (SOME ctxt) false [(false, thm)] |> HEADGOAL #> Seq.hd
+        in zero_var_indexes (resolve revcut_rl) end
+      fun tac thms ctxt = elim_tac ctxt (List.map (make_elim ctxt) thms)
+    in gen_resolve_ho_unif_first_ztac tac end
+in
+val dresolve_ho_unif_any_first_ztac = gen_dresolve_ztac eresolve_tac
 fun dresolve_ho_unif_first_ztac progress = single #> dresolve_ho_unif_any_first_ztac progress
-val dresolve_ho_match_any_first_ztac = gen_resolve_ho_unif_first_ztac (General_Util.flip dmatch_tac)
+val dresolve_ho_match_any_first_ztac = gen_dresolve_ztac ematch_tac
 fun dresolve_ho_match_first_ztac progress = single #> dresolve_ho_match_any_first_ztac progress
+end
 
 val fresolve_ho_unif_any_first_ztac = gen_resolve_ho_unif_first_ztac (General_Util.flip forward_tac)
 fun fresolve_ho_unif_first_ztac progress = single #> fresolve_ho_unif_any_first_ztac progress

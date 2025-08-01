@@ -6,10 +6,11 @@ theory ML_Gen_Zippers_Setup
     ML_Typeclasses.ML_Lenses
 begin
 
-declare [[ParaT_args sep = ", " and encl = "" ", " and encl_arg = "" "" and stop = ]]
-and [[ZipperT_args sep = ", " and encl = "" "" and encl_arg = "" "" and stop = ]]
-and [[AllT_args sep = ", " and encl = "(" ")" and encl_arg = "" "" and stop = ]]
-and [[imap start = 1]]
+declare [[ParaT_args sep: ", " encl: "" ", " encl_arg: "" "" stop: ]]
+declare [[ParaT_args sep: ", " encl: "" ", " encl_arg: "" "" stop: ]]
+and [[ZipperT_args sep: ", " encl: "" "" encl_arg: "" "" stop: ]]
+and [[AllT_args sep: ", " encl: "(" ")" encl_arg: "" "" stop: ]]
+and [[imap start: 1]]
 (*setup for 5-alternating zippers*)
 setup\<open>Context.theory_map (ML_Gen.setup_zipper_args' (NONE, NONE) (SOME 5, NONE))\<close>
 

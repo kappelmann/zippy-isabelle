@@ -5,7 +5,7 @@ signature ZIPPY_PRESULTS_MIXIN =
 sig
   include ZIPPY_PRESULTS_MIXIN_BASE
 
-  val empty_presults : @{ParaT_args encl = "(" ")"} Co.ME.exn -> @{AllT_args} presults
+  val empty_presults : @{ParaT_args encl: "(" ")"} Co.ME.exn -> @{AllT_args} presults
 
   val run_presults : @{AllT_args} presults -> (@{ParaT_args} @{AllT_args} zipper,
     prio * (@{ParaT_args} @{AllT_args} zipper, result, prio) Co.Co.acoroutine) morph
@@ -21,7 +21,7 @@ sig
     (@{ParaT_args} @{AllT_args} zipper, result, prio) Co.Co.acoroutine ->
     @{AllT_args} prio_sq_co -> result Seq.seq -> @{AllT_args} presults
 
-  val presults_from_sq : @{ParaT_args encl = "(" ")"} Co.ME.exn -> @{AllT_args} prio_sq_co ->
+  val presults_from_sq : @{ParaT_args encl: "(" ")"} Co.ME.exn -> @{AllT_args} prio_sq_co ->
     result Seq.seq -> @{AllT_args} presults
 
   (* create priorities *)

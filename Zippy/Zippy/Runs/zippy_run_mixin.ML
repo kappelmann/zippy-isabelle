@@ -82,7 +82,7 @@ functor Zippy_Run_Mixin(
     sharing type Run.Step.PAction_Queue.PAction.M.t = Z.M.t
     structure Co : ZIPPY_COROUTINE_MIXIN_BASE
     sharing type Co.M.t = Z.M.t
-    val mk_exn : (unit -> @{ParaT_args encl = "" ""} Co.ME.exn)
+    val mk_exn : (unit -> @{ParaT_args encl: "(" ")"} Co.ME.exn)
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
     structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE

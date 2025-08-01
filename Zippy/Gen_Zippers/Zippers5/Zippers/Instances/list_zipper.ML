@@ -15,7 +15,7 @@ end
 functor \<^eval>\<open>sfx_T_nargs "List_Zipper"\<close>(
     structure L : \<^eval>\<open>sfx_ParaT_nargs "GLIST"\<close>
     where type 'a t = 'a list
-    val mk_exn_horizontal : unit -> (@{ParaT_args} @{ParaT_args encl = "(" ")"} L.M.exn) L.M.t
+    val mk_exn_horizontal : unit -> (@{ParaT_args} @{ParaT_args encl: "(" ")"} L.M.exn) L.M.t
     type @{AllT_args} content
   ) :
     \<^eval>\<open>sfx_T_nargs "LIST_ZIPPER"\<close>

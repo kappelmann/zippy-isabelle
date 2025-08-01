@@ -17,7 +17,7 @@ end
 functor Zippy_Node_Positions_Mixin_Base(
     structure Z : ZIPPY_NODE_BASE
     structure Exn : ZIPPY_EXCEPTION_MIXIN_BASE
-    where type @{ParaT_args encl = "(" ")"} ME.exn = unit
+    where type @{ParaT_args encl: "(" ")"} ME.exn = unit
     sharing type Exn.M.t = Z.M.t
   ) :
   sig

@@ -15,7 +15,7 @@ functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Nodes_Base_Args_Simple_
     \<^imap>\<open>\<open>{i}\<close> => \<open>
     where type @{AllT_args} Z{i}.ZM.container = (@{ParaT_args}
       @{AllT_args} node{i},
-      @{ZipperT_args start = 1}) Z{i}.ZM.container
+      @{ZipperT_args start: 1}) Z{i}.ZM.container
     where type @{AllT_args} N{i}.node = @{AllT_args} node{i}
     where type @{AllT_args} N{i}.content = @{ZipperT_arg \<open>{i} - 1\<close>}\<close>\<close>
     (* where @{AllT_args} Zi.ZD.zcontext = (@{ParaT_args} @{AllT_args} Ni.node, 'a2, ...) Zi.ZD.zcontext *)
@@ -26,18 +26,18 @@ struct
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 structure N{i} = \<^eval>\<open>succ_node_functor\<close>(
-  type (@{AllT_args encl = "" ","} 'n) next = 'n
-  type (@{AllT_args encl = "" ","} 'n) content = @{ZipperT_arg \<open>{i} - 1\<close>})\<close>\<close>
+  type (@{AllT_args encl: "" ","} 'n) next = 'n
+  type (@{AllT_args encl: "" ","} 'n) content = @{ZipperT_arg \<open>{i} - 1\<close>})\<close>\<close>
 
 datatype
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 @{AllT_args} next{i} = Next{i} of (@{ParaT_args}
   (@{ParaT_args}
-    (@{AllT_args encl = "" ","} @{AllT_args} next\<^eval>\<open>succ_mod_nzippers {i}\<close>)
+    (@{AllT_args encl: "" ","} @{AllT_args} next\<^eval>\<open>succ_mod_nzippers {i}\<close>)
       N\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>node,
-    @{ZipperT_args start = 1}) Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>ZM.container)
+    @{ZipperT_args start: 1}) Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>ZM.container)
   Z{i}.ZM.Zip.M.t\<close>
-where sep = "and"\<close>
+sep: "and"\<close>
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 fun next{i} x = Next{i} x

@@ -18,10 +18,10 @@ carefully used (i.e. avoid deep type instantiation chains):
 \<^url>\<open>https://github.com/polyml/polyml/issues/213\<close>\<close>
 
 ML\<open>
-\<^functor_instance>\<open>struct_name = Zipper_Type_Args_Antiquotations
-  and functor_name = Args_Antiquotations
-  and id = \<open>"ZipperT"\<close>
-  and more_args = \<open>val init_args = {
+\<^functor_instance>\<open>struct_name: Zipper_Type_Args_Antiquotations
+  functor_name: Args_Antiquotations
+  id: \<open>"ZipperT"\<close>
+  more_args: \<open>val init_args = {
     args = SOME ["'a1"],
     sep = SOME ", ",
     encl = SOME ("", ""),
@@ -35,10 +35,10 @@ setup \<open>Zipper_Type_Args_Antiquotations.setup_args_antiquotation\<close>
 setup \<open>Zipper_Type_Args_Antiquotations.setup_arg_antiquotation\<close>
 
 ML\<open>
-\<^functor_instance>\<open>struct_name = All_Type_Args_Antiquotations
-  and functor_name = Args_Antiquotations
-  and id = \<open>"AllT"\<close>
-  and more_args = \<open>val init_args = {
+\<^functor_instance>\<open>struct_name: All_Type_Args_Antiquotations
+  functor_name: Args_Antiquotations
+  id: \<open>"AllT"\<close>
+  more_args: \<open>val init_args = {
     args = SOME ["'p1", "'a1"],
     sep = SOME ", ",
     encl = SOME ("(", ")"),

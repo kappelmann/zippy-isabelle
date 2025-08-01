@@ -115,7 +115,7 @@ signature \<^eval>\<open>sfx_T_nargs "SINGLE_CONTENT_ZIPPER"\<close> = \<^eval>\
 
 functor \<^eval>\<open>sfx_T_nargs "Single_Content_Zipper"\<close>(
     structure AE : \<^eval>\<open>sfx_ParaT_nargs "KLEISLI_ARROW_EXCEPTION"\<close>
-    where type @{ParaT_args encl = "(" ")"} exn = unit
+    where type @{ParaT_args encl: "(" ")"} exn = unit
     type @{AllT_args} container
     type @{AllT_args} content
     val zip : (@{ParaT_args} @{AllT_args} container, @{AllT_args} content) AE.morph

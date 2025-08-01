@@ -214,11 +214,11 @@ functor \<^eval>\<open>sfx_ParaT_nargs "Option_Monad_Exception_Trans_Exception"\
     M : \<^eval>\<open>sfx_ParaT_nargs "MONAD_EXCEPTION_BASE"\<close>
   )
   : \<^eval>\<open>sfx_ParaT_nargs "MONAD_EXCEPTION_BASE"\<close>
-    where type @{ParaT_args encl = "(" ")"} exn = @{ParaT_args encl = "(" ")"} M.exn =
+    where type @{ParaT_args encl: "(" ")"} exn = @{ParaT_args encl: "(" ")"} M.exn =
 struct
 
 structure OM = \<^eval>\<open>sfx_ParaT_nargs "Option_Monad_Trans"\<close>(M)
-type @{ParaT_args encl = "(" ")"} exn = @{ParaT_args encl = "(" ")"} M.exn
+type @{ParaT_args encl: "(" ")"} exn = @{ParaT_args encl: "(" ")"} M.exn
 
 fun throw e = e |> OM.lift o M.throw
 fun catch m f = M.catch m f
@@ -260,11 +260,11 @@ functor \<^eval>\<open>sfx_ParaT_nargs "Monad_Exception_Monad_Or"\<close>(
     M : \<^eval>\<open>sfx_ParaT_nargs "MONAD_OR_BASE"\<close>
   ) :
     \<^eval>\<open>sfx_ParaT_nargs "MONAD_EXCEPTION_BASE"\<close>
-    where type @{ParaT_args encl = "(" ")"} exn = unit =
+    where type @{ParaT_args encl: "(" ")"} exn = unit =
 struct
 
 open M
-type @{ParaT_args encl = "(" ")"} exn = unit
+type @{ParaT_args encl: "(" ")"} exn = unit
 
 val throw = zero
 val catch = or_lazy

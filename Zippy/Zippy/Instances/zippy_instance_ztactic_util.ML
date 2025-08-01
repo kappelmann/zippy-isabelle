@@ -46,6 +46,8 @@ sig
     progress : Zippy.Mixin5.Meta.Meta.P.progress,
     prio_sq_co : @{AllT_args} Zippy.Mixin4.PResults.prio_sq_co}
 
+  val eq_resolve_action_data :
+    @{AllT_args} resolve_action_data * @{AllT_args} resolve_action_data -> bool
   val pretty_resolve_action_data : Proof.context -> @{AllT_args} resolve_action_data -> Pretty.T
 
   val cons_resolve_action_cluster :
@@ -131,6 +133,10 @@ type @{AllT_args} resolve_action_data = {
   progress : Mixin5.Meta.Meta.P.progress,
   prio_sq_co : @{AllT_args} Mixin4.PResults.prio_sq_co}
 
+fun eq_resolve_action_data ({thm = thm1, progress = progress1,...},
+  {thm = thm2, progress = progress2,...}) =
+  Thm.eq_thm (thm1, thm2) andalso progress1 = progress2
+
 fun pretty_resolve_action_data ctxt {thm, progress,...} =
   SpecCheck_Show.record [
     ("thm", Thm.pretty_thm ctxt thm),
@@ -142,10 +148,10 @@ fun cons_resolve_action_cluster resolve_tac meta data =
     |> map_index (Library.uncurry (fn i => apsnd (fn {thm, updates, mk_cud, progress, prio_sq_co} =>
       {meta = Mixin4.Meta.Meta.metadata (
         Zippy_Identifier.suffix_name NONE (string_of_int i) (Mixin3.Meta.Meta.Id.getter meta),
-        Pretty.breaks [
-          Pretty.str (Mixin3.Meta.Meta.Descr.getter meta),
+        Lazy.lazy (fn _ => Pretty.breaks [
+          Pretty.str (Mixin3.Meta.Meta.Descr.getter meta |> Lazy.force),
           Pretty.block [Pretty.str "Theorem: ", Thm.pretty_thm ctxt thm]
-        ] |> Pretty.block |> Pretty.string_of),
+        ] |> Pretty.block |> Pretty.string_of)),
       result_tail_presults_action = Util.result_tail_presults_action
         (Util.hom_changed_goals_update_result updates mk_cud),
       prio_sq_co = prio_sq_co,
@@ -155,37 +161,37 @@ fun cons_resolve_action_cluster resolve_tac meta data =
 fun cons_resolve_ho_unif_first_action_cluster x = cons_resolve_action_cluster
   Tac_AAM.resolve_ho_unif_first_ztac
   (Mixin3.Meta.Meta.metadata (@{binding resolve_ho_unif_first},
-    "Resolution with higher-order unification on first possible goal.")) x
+    Lazy.value "Resolution with higher-order unification on first possible goal.")) x
 fun cons_resolve_ho_match_first_action_cluster x = cons_resolve_action_cluster
   Tac_AAM.resolve_ho_match_first_ztac
   (Mixin3.Meta.Meta.metadata (@{binding resolve_ho_match_first},
-    "Resolution with higher-order matching on first possible goal.")) x
+    Lazy.value "Resolution with higher-order matching on first possible goal.")) x
 
 fun cons_eresolve_ho_unif_first_action_cluster x = cons_resolve_action_cluster
   Tac_AAM.eresolve_ho_unif_first_ztac
   (Mixin3.Meta.Meta.metadata (@{binding eresolve_ho_unif_first},
-    "E-resolution with higher-order unification on first possible goal.")) x
+    Lazy.value "E-resolution with higher-order unification on first possible goal.")) x
 fun cons_eresolve_ho_match_first_action_cluster x = cons_resolve_action_cluster
   Tac_AAM.eresolve_ho_match_first_ztac
   (Mixin3.Meta.Meta.metadata (@{binding eresolve_ho_match_first},
-    "E-resolution with higher-order matching on first possible goal.")) x
+    Lazy.value "E-resolution with higher-order matching on first possible goal.")) x
 
 fun cons_dresolve_ho_unif_first_action_cluster x = cons_resolve_action_cluster
   Tac_AAM.dresolve_ho_unif_first_ztac
   (Mixin3.Meta.Meta.metadata (@{binding dresolve_ho_unif_first},
-    "D-resolution with higher-order unification on first possible goal.")) x
+    Lazy.value "D-resolution with higher-order unification on first possible goal.")) x
 fun cons_dresolve_ho_match_first_action_cluster x = cons_resolve_action_cluster
   Tac_AAM.dresolve_ho_match_first_ztac
   (Mixin3.Meta.Meta.metadata (@{binding dresolve_ho_match_first},
-    "D-resolution with higher-order matching on first possible goal.")) x
+    Lazy.value "D-resolution with higher-order matching on first possible goal.")) x
 
 fun cons_fresolve_ho_unif_first_action_cluster x = cons_resolve_action_cluster
   Tac_AAM.fresolve_ho_unif_first_ztac
   (Mixin3.Meta.Meta.metadata (@{binding fresolve_ho_unif_first},
-    "F-resolution with higher-order unification on first possible goal.")) x
+    Lazy.value "F-resolution with higher-order unification on first possible goal.")) x
 fun cons_fresolve_ho_match_first_action_cluster x = cons_resolve_action_cluster
   Tac_AAM.fresolve_ho_match_first_ztac
   (Mixin3.Meta.Meta.metadata (@{binding fresolve_ho_match_first},
-    "F-resolution with higher-order matching on first possible goal.")) x
+    Lazy.value "F-resolution with higher-order matching on first possible goal.")) x
 end
 end

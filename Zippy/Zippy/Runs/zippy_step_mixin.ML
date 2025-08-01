@@ -52,7 +52,7 @@ functor Zippy_Step_Mixin(
     sharing type Step.PAction_Queue.container1 = Z.Z1.ZM.container
     structure Co : ZIPPY_COROUTINE_MIXIN_BASE
     sharing type Co.M.t = Z.M.t
-    val mk_exn : (unit -> @{ParaT_args encl = "" ""} Co.ME.exn)
+    val mk_exn : (unit -> @{ParaT_args encl: "(" ")"} Co.ME.exn)
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t =Z.M.t
     structure Log : ZIPPY_LOGGER_MIXIN_BASE

@@ -8,7 +8,7 @@ signature \<^eval>\<open>sfx_T_nargs "POSITION_ZIPPER"\<close> =
 
 functor \<^eval>\<open>sfx_T_nargs "Position_Zipper"\<close>(
     M : \<^eval>\<open>sfx_ParaT_nargs "MONAD_EXCEPTION_BASE"\<close>
-    where type @{ParaT_args encl = "(" ")"} exn = unit
+    where type @{ParaT_args encl: "(" ")"} exn = unit
   ) : \<^eval>\<open>sfx_T_nargs "POSITION_ZIPPER"\<close> =
 \<^eval>\<open>sfx_T_nargs "Content_Zipper"\<close>(
   structure Pos = Zipper_Position

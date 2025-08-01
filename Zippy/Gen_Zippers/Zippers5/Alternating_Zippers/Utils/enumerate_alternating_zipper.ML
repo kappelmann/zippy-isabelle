@@ -9,12 +9,12 @@ sig
   (*enumerate zippers starting from the first passed zipper*)
   val enum_zipper1 :
     (*exception for empty coroutine*)
-    (unit -> @{ParaT_args encl = "" ""} Co.AE.exn) ->
+    (unit -> @{ParaT_args encl: "(" ")"} Co.AE.exn) ->
     (@{ParaT_args} @{AllT_args} Z.Z1.zipper, @{AllT_args} Z.Z1.zipper) Co.coroutine
   (*returns first zipper and remaining enumeration*)
   \<^imap>\<open>\<open>{i}\<close> => \<open>
-  val enum_zipper{i} : (unit -> @{ParaT_args encl = "" ""} Co.AE.exn) ->
+  val enum_zipper{i} : (unit -> @{ParaT_args encl: "(" ")"} Co.AE.exn) ->
     (@{ParaT_args} @{AllT_args} Z.Z{i}.zipper, @{AllT_args} Z.Z1.zipper *
       (@{ParaT_args} @{AllT_args} Z.Z1.zipper, @{AllT_args} Z.Z1.zipper) Co.coroutine) Z.morph
-  \<close> where start = 2\<close>
+  \<close> start: 2\<close>
 end

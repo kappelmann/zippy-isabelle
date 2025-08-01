@@ -6,7 +6,7 @@ sig
   include \<^eval>\<open>sfx_ParaT_nargs "COROUTINE"\<close>
   structure AE : \<^eval>\<open>sfx_ParaT_nargs "ARROW_EXCEPTION_REPEAT"\<close>
   sharing type AE.morph = C.morph
-  val throw : @{ParaT_args encl = "(" ")"} AE.exn -> (@{ParaT_args} 'a, 'b, 'c) acoroutine
+  val throw : @{ParaT_args encl: "(" ")"} AE.exn -> (@{ParaT_args} 'a, 'b, 'c) acoroutine
   val cons : (@{ParaT_args} 'a, 'b) C.morph -> (@{ParaT_args} 'a, 'c, 'b) acoroutine ->
     (@{ParaT_args} 'a, 'b, 'c) acoroutine
   val append : (@{ParaT_args} 'a, 'b) coroutine -> (@{ParaT_args} 'a, 'b) coroutine ->

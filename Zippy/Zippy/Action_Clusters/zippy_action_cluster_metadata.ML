@@ -3,14 +3,13 @@
 *)
 signature ZIPPY_ACTION_CLUSTER_METADATA =
 sig
-  type description = string
+  type description = string Lazy.lazy
 
   type metadata
   val metadata : Zippy_Identifier.id * description -> metadata
 
   val empty : Zippy_Identifier.id -> metadata
 
-  val eq_metadata : metadata * metadata -> bool
   val pretty_metadata : metadata SpecCheck_Show.show
 
   structure Id : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
@@ -27,7 +26,8 @@ struct
 
 structure Show = SpecCheck_Show_Base
 
-type description = string
+type description = string Lazy.lazy
+
 
 datatype metadata = Metadata of {
   id : Zippy_Identifier.id,
@@ -35,15 +35,11 @@ datatype metadata = Metadata of {
 }
 
 fun metadata (id, description) = Metadata {id = id, description = description}
-fun empty id = metadata (id, "")
+fun empty id = metadata (id, Lazy.value "")
 
-fun eq_metadata (m1 as Metadata {id = id1, description = description1},
-  m2 as Metadata {id = id2, description = description2}) =
-  pointer_eq (m1, m2) orelse
-  (Zippy_Identifier.eq (id1, id2) andalso description1 = description2)
 fun pretty_metadata (Metadata {id, description}) = Show.record [
     ("id", Zippy_Identifier.pretty id),
-    ("description", Show.string description)
+    ("description", Show.string (Lazy.force description))
   ]
 
 structure L = \<^eval>\<open>sfx_ParaT_nargs "SLens_Kleisli_Identity"\<close>

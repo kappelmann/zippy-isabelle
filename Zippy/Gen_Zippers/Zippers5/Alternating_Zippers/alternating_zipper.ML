@@ -10,14 +10,14 @@ sig
   sharing type Down{i}.from = Z{i}.zipper
   sharing type Down{i}.to = Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>zipper
   sharing type Down{i}.M.t = M.t\<close>
-  where start = \<open>ML_Gen.nzippers ()\<close>\<close>
+  start: \<open>ML_Gen.nzippers ()\<close>\<close>
 
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   structure Up{i} : \<^eval>\<open>sfx_T_nargs "MORPH"\<close>
   sharing type Up{i}.from = Z{i}.zipper
   sharing type Up{i}.to = Z\<^eval>\<open>pred_mod_nzippers {i} ^ "."\<close>zipper
   sharing type Up{i}.M.t = M.t\<close>
-  where stop = 1\<close>
+  stop: 1\<close>
 end
 
 functor \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper"\<close>(

@@ -37,7 +37,7 @@ and path_from_zipper{i} z = z |>
     Up{i}.morph >>> path_from_zipper\<^eval>\<open>pred_mod_nzippers {i}\<close>
     >>> K.arr (fn p => Path{i} (get_pos z, p))
   end
-\<close> where start = 2\<close>
+\<close> start: 2\<close>
 end
 end
 

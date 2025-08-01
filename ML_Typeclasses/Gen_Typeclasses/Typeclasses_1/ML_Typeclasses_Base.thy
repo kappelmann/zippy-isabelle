@@ -5,7 +5,7 @@ theory ML_Typeclasses_Base
     ML_Eval_Antiquotation
 begin
 
-declare [[ParaT_args args = ['p1] and sep = ", " and encl = "" ", " and encl_arg = "" "" and stop = ]]
+declare [[ParaT_args args: ['p1] sep: ", " encl: "" ", " encl_arg: "" "" stop: ]]
 
 ML\<open>
   val sfx_ParaT_nargs = ML_Gen.sfx_ParaT_nargs

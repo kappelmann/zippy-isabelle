@@ -6,10 +6,10 @@ theory Gen_ML_Typeclasses_Base
 begin
 
 ML\<open>
-\<^functor_instance>\<open>struct_name = Para_Type_Args_Antiquotations
-  and functor_name = Args_Antiquotations
-  and id = \<open>"ParaT"\<close>
-  and more_args = \<open>val init_args = {
+\<^functor_instance>\<open>struct_name: Para_Type_Args_Antiquotations
+  functor_name: Args_Antiquotations
+  id: \<open>"ParaT"\<close>
+  more_args: \<open>val init_args = {
     args = SOME ["'p1"],
     sep = SOME ", ",
     encl = SOME ("", ""),

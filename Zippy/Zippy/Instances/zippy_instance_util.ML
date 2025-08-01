@@ -4,10 +4,10 @@
 signature ZIPPY_INSTANCE_UTIL =
 sig
   (* misc *)
-  val mk_exn : unit -> @{ParaT_args encl = "" ""} Zippy.Exn.ME.exn
-  val run_monad : {ctxt : Proof.context, state : @{ParaT_args encl = "" ""}} ->
+  val mk_exn : unit -> @{ParaT_args encl: "(" ")"} Zippy.Exn.ME.exn
+  val run_monad : {ctxt : Proof.context, state : @{ParaT_args encl: "(" ")"}} ->
     (@{ParaT_args} 'a) Zippy.M.t ->
-    {result : 'a, ctxt : Proof.context, state : @{ParaT_args encl = "" ""}} option
+    {result : 'a, ctxt : Proof.context, state : @{ParaT_args encl: "(" ")"}} option
 
   (* nodes *)
   val node_co1 : Zippy.Goals.GClusters.GCS.gclusters -> @{AllT_args} Zippy.ZN.ZN.N1.content

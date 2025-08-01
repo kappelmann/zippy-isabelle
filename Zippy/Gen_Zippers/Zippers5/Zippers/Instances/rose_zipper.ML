@@ -21,7 +21,7 @@ end
 functor \<^eval>\<open>sfx_T_nargs "Rose_Zipper"\<close>(
     structure L : \<^eval>\<open>sfx_ParaT_nargs "GLIST"\<close>
     where type 'a t = 'a list
-    where type @{ParaT_args encl = "(" ")"} M.exn = unit
+    where type @{ParaT_args encl: "(" ")"} M.exn = unit
     type @{AllT_args} content
   ) :
     \<^eval>\<open>sfx_T_nargs "ROSE_ZIPPER"\<close>

@@ -8,7 +8,7 @@ sig
   structure Co : ZIPPY_COROUTINE_MIXIN_BASE
   sharing type Co.M.t = M.t
 
-  val copy_parents : (unit -> @{ParaT_args encl = "" ""} Co.ME.exn) ->
+  val copy_parents : (unit -> @{ParaT_args encl: "(" ")"} Co.ME.exn) ->
     copy_update_data -> (@{ParaT_args} @{AllT_args} zipper_to) emorph
 end
 

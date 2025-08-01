@@ -133,18 +133,18 @@ end
 signature \<^eval>\<open>sfx_ParaT_nargs "IARROW_EXCEPTION_BASE"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_BASE"\<close>
-  type @{ParaT_args encl = "(" ")"} exn
+  type @{ParaT_args encl: "(" ")"} exn
 
-  val throw : (@{ParaT_args} 'i, 'i, @{ParaT_args encl = "(" ")"} exn, 'a) morph
+  val throw : (@{ParaT_args} 'i, 'i, @{ParaT_args encl: "(" ")"} exn, 'a) morph
   val catch : (@{ParaT_args} 'i, 'j, 'a, 'b) morph ->
-    (@{ParaT_args} 'i, 'j, 'a * @{ParaT_args encl = "(" ")"} exn, 'b) morph ->
+    (@{ParaT_args} 'i, 'j, 'a * @{ParaT_args encl: "(" ")"} exn, 'b) morph ->
     (@{ParaT_args} 'i, 'j, 'a, 'b) morph
 end
 
 signature \<^eval>\<open>sfx_ParaT_nargs "IARROW_EXCEPTION"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "IARROW_EXCEPTION_BASE"\<close>
-  val throw' : @{ParaT_args encl = "(" ")"} exn -> (@{ParaT_args} 'i, 'i, 'a, 'b) morph
+  val throw' : @{ParaT_args encl: "(" ")"} exn -> (@{ParaT_args} 'i, 'i, 'a, 'b) morph
   val catch' : (@{ParaT_args} 'i, 'j, 'a, 'b) morph -> (@{ParaT_args} 'i, 'j, 'a, 'b) morph ->
     (@{ParaT_args} 'i, 'j, 'a, 'b) morph
   val try : (@{ParaT_args} 'i, 'i, 'a) emorph -> (@{ParaT_args} 'i, 'i, 'a) emorph

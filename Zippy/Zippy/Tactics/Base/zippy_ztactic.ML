@@ -117,7 +117,7 @@ fun zEVERY_FOCUS_NONE_ALL_GOALS no_goals_tac empty_tac madd = gen_lift_tac_focus
 fun zTRY_EVERY1 madd = gen_every_arg
   (fn (acc, tac) => TU.ORELSE (depzTHEN madd (acc, fn m => zTRY m tac), tac)) no_ztac I
 fun zTRY_ALL_GOALS1 madd = with_rev_ngoals (zTRY_EVERY1 madd)
-fun zTRY_EVERY_GOAL1 madd tac = with_rev_goals (zTRY_EVERY1 madd) tac
+fun zTRY_EVERY_GOAL1 madd = with_rev_goals (zTRY_EVERY1 madd)
 fun zTRY_EVERY_FOCUS1 madd = gen_lift_tac_focus (K no_ztac) (zTRY_EVERY_GOAL1 madd)
 fun zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 madd = gen_lift_tac_focus
   (zTRY_ALL_GOALS1 madd) (zTRY_EVERY_GOAL1 madd)

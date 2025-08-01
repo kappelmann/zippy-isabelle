@@ -20,7 +20,7 @@ sig
     @{AllT_args} result_tail_presults_action ->
     @{AllT_args} PAction.paction
 
-  val paction_from_presults : @{ParaT_args encl = "(" ")"} PAction.Exn.ME.exn ->
+  val paction_from_presults : @{ParaT_args encl: "(" ")"} PAction.Exn.ME.exn ->
     @{AllT_args} result_tail_presults_action -> @{AllT_args} PAction.paction
 
   val result_tail_presults_action :

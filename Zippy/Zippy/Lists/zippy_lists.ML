@@ -30,7 +30,7 @@ sig
   val cons_node_move_safe{i} : @{AllT_args} ZN.N\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>node ->
     (@{ParaT_args} @{AllT_args} Z{i}.zipper,
       @{AllT_args} Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>zipper) morph
-  val cons_content_move_safe{i} : @{ParaT_args encl = "(" ")"} Co.Co.AE.exn ->
+  val cons_content_move_safe{i} : @{ParaT_args encl: "(" ")"} Co.Co.AE.exn ->
     @{AllT_args} ZN.N\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>content ->
     (@{ParaT_args} @{AllT_args} Z{i}.zipper,
       @{AllT_args} Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>zipper) morph
@@ -38,11 +38,11 @@ sig
   val snoc_node_move_safe{i} : @{AllT_args} ZN.N\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>node ->
     (@{ParaT_args} @{AllT_args} Z{i}.zipper,
       @{AllT_args} Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>zipper) morph
-  val snoc_content_move_safe{i} : @{ParaT_args encl = "(" ")"} Co.Co.AE.exn ->
+  val snoc_content_move_safe{i} : @{ParaT_args encl: "(" ")"} Co.Co.AE.exn ->
     @{AllT_args} ZN.N\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>content ->
     (@{ParaT_args} @{AllT_args} Z{i}.zipper,
       @{AllT_args} Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>zipper) morph\<close>
-  where stop = 4\<close>
+  stop: 4\<close>
 end
 
 functor Zippy_Lists(
@@ -100,7 +100,7 @@ fun snoc_node_move_safe{i} x = add_node_move_safe modify_snoc_safe (ZNU.Node_Nex
   (Down{i}.morph >>> Co.Co.AE.repeat next\<^eval>\<open>succ_mod_nzippers {i}\<close>) x
 fun snoc_content_move_safe{i} exn n = ZNU.node_no_next\<^eval>\<open>succ_mod_nzippers {i}\<close> exn n
   |> snoc_node_move_safe{i}\<close>
-where stop = 4\<close>
+stop: 4\<close>
 end
 end
 end

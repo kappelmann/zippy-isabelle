@@ -53,7 +53,7 @@ and move_path_if_may_take_more_results{i} (Path.Path{i} (pos, p)) =
   move_path_if_may_take_more_results\<^eval>\<open>pred_mod_nzippers {i}\<close> p
   >>> AC.opt (A.K NONE) (Down\<^eval>\<open>pred_mod_nzippers {i} ^ "."\<close>morph
     >>> PosU.move_pos Z{i}.ZM.Left.morph Z{i}.ZM.Right.morph Z{i}.ZM.Down.morph pos >>> K.arr SOME)
-\<close> where start = 3\<close>
+\<close> start: 3\<close>
 end
 
 end

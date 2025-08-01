@@ -35,7 +35,7 @@ fun move_path1 (Pos pos) = PosU.move_pos Z1.ZM.Left.morph Z1.ZM.Right.morph Z1.Z
 and move_path{i} (Path{i} (pos, p)) = move_path\<^eval>\<open>pred_mod_nzippers {i}\<close> p
   >>> Down\<^eval>\<open>pred_mod_nzippers {i} ^ "."\<close>morph
   >>> PosU.move_pos Z{i}.ZM.Left.morph Z{i}.ZM.Right.morph Z{i}.ZM.Down.morph pos
-\<close> where start = 2\<close>
+\<close> start: 2\<close>
 end
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>

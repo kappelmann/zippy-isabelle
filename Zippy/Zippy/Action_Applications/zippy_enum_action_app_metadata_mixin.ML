@@ -12,9 +12,9 @@ sig
   type @{AllT_args} zipper{i}\<close>\<close>
   (*depth-first postorder enumeration of promising zipper1 children*)
   \<^imap>\<open>\<open>{i}\<close> => \<open>
-  val enum_df_post_promising_children{i} : (unit -> @{ParaT_args encl = "" ""} Co.ME.exn) ->
+  val enum_df_post_promising_children{i} : (unit -> @{ParaT_args encl: "(" ")"} Co.ME.exn) ->
     (@{ParaT_args} @{AllT_args} zipper{i},
-      (@{ParaT_args} unit, @{AllT_args} zipper1) Co.Co.coroutine) morph\<close> where start = 2\<close>
+      (@{ParaT_args} unit, @{AllT_args} zipper1) Co.Co.coroutine) morph\<close> start: 2\<close>
 end
 
 functor Zippy_Enum_Action_App_Metadata_Mixin(
@@ -43,7 +43,7 @@ fun \<^imap>\<open>\<open>{i}\<close> => \<open>
 enum_df_post_promising_children{i} mk_exn = gen_enum_promising_zippers mk_exn Down{i}.morph
   DF_Post\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>enum_zipper
   enum_df_post_promising_children\<^eval>\<open>succ_mod_nzippers {i}\<close>\<close>
-where sep = "and" and start = 2 and stop = 4\<close>
+sep: "and" start: 2 stop: 4\<close>
 and enum_df_post_promising_children5 mk_exn z = z |>
   (if Progress.getter z = Meta.P.Promising
   then Down5.morph >>> arr (Co.enum_co (DF_Post1.enum_zipper mk_exn))

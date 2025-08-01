@@ -32,8 +32,11 @@ end
 signature EVAL_ANTIQUOTATION =
 sig
   structure Data : GENERIC_DATA
-  val get_args : Context.generic -> Data.T
-  val map_args : (Data.T -> Data.T) -> Context.generic -> Context.generic
+  where type T = Eval_Antiquotation_Args.args
+
+  val get_args : Context.generic -> Eval_Antiquotation_Args.args
+  val map_args : (Eval_Antiquotation_Args.args -> Eval_Antiquotation_Args.args) ->
+    Context.generic -> Context.generic
 
   val get_parser : Context.generic -> string context_parser
   val map_parser : (string context_parser -> string context_parser) ->
@@ -43,8 +46,8 @@ sig
 
   val binding : binding
 
-  val attribute : ML_Code_Util.code Eval_Antiquotation_Args.PA.entries * Position.T ->
-    attribute
+  val parse_arg_entries : ML_Code_Util.code Eval_Antiquotation_Args.PA.entries parser
+  val attribute : ML_Code_Util.code Eval_Antiquotation_Args.PA.entries * Position.T -> attribute
   val parse_attribute : attribute parser
   val setup_attribute : string option -> local_theory -> local_theory
 
@@ -82,10 +85,10 @@ val parse_arg_entries =
   let
     val parsers = EAA.arg_parsers
     val parse_value = PA.parse_entry (PA.get_parser parsers)
-    val parse_entry = Parse_Key_Value.parse_entry PA.parse_key Parse_Util.eq parse_value
+    val parse_entry = Parse_Key_Value.parse_entry PA.parse_key (K (Parse.$$$ ":")) parse_value
     val required_keys = []
     val default_entries = PA.empty_entries ()
-  in PA.parse_entries_required Parse.and_list1 required_keys parse_entry default_entries end
+  in PA.parse_entries_required Scan.repeat1 required_keys parse_entry default_entries end
 
 fun attribute (entries, pos) =
   let

@@ -43,7 +43,7 @@ sig
     GPU.GCS.goal_pos GPU.gpos_update -> (@{ParaT_args} @{AllT_args} GClusters.L.container) emorph
 
   type @{AllT_args} node_co
-  val cons_action_cluster : @{ParaT_args encl = "(" ")"} Exn.ME.exn ->
+  val cons_action_cluster : @{ParaT_args encl: "(" ")"} Exn.ME.exn ->
     (*create node content*)
     (@{AllT_args} Copy.copy -> @{AllT_args} node_co) ->
     (*list of pairs of initial focus and updates to perform*)

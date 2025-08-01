@@ -3,11 +3,12 @@
 
 Term index stored in the generic context.
 *)
-@{parse_entries (sig) PARSE_GENERIC_TERM_INDEX_DATA_ARGS [add, del]}
+@{parse_entries (sig) PARSE_GENERIC_TERM_INDEX_DATA_MODE [add, del]}
+
 signature GENERIC_TERM_INDEX_DATA =
 sig
   include HAS_LOGGER
-  structure PA : PARSE_GENERIC_TERM_INDEX_DATA_ARGS
+  structure PM : PARSE_GENERIC_TERM_INDEX_DATA_MODE
   structure TI : TERM_INDEX
 
   type value
@@ -30,10 +31,12 @@ sig
   val delete : term * (term_value -> bool) -> Context.generic -> Context.generic
 
   val binding : Binding.binding
-  val arg_parsers : ((string * ML_Code_Util.code, ML_Code_Util.code) Either.either parser,
-    (string * ML_Code_Util.code, ML_Code_Util.code) Either.either parser) PA.entries
-  val attribute : ((string * ML_Code_Util.code, ML_Code_Util.code) Either.either,
-    (string * ML_Code_Util.code, ML_Code_Util.code) Either.either) PA.entries * Position.T -> attribute
+  val add_arg_parser : (string * ML_Code_Util.code, ML_Code_Util.code) Either.either list parser
+  val del_arg_parser : (string * ML_Code_Util.code, ML_Code_Util.code) Either.either list parser
+  val add_attribute : (string * ML_Code_Util.code, ML_Code_Util.code) Either.either list
+    * Position.T -> attribute
+  val del_attribute : (string * ML_Code_Util.code, ML_Code_Util.code) Either.either list
+    * Position.T -> attribute
   val parse_attribute : attribute parser
   val setup_attribute : string option -> local_theory -> local_theory
 end
@@ -52,10 +55,12 @@ struct
 open A
 structure FI = Functor_Instance(A.FI)
 structure Show = SpecCheck_Show_Base
+structure PU = Parse_Util
+structure MCU = ML_Code_Util
 
 val logger = Logger.setup_new_logger parent_logger FI.name
 
-@{parse_entries (struct) PA [add, del]}
+@{parse_entries (struct) PM [add, del]}
 
 type term_value = term * value
 fun pretty_term_value ctxt = Show.zip (Syntax.pretty_term ctxt) (pretty_value ctxt)
@@ -112,45 +117,50 @@ fun delete (t, select) context = map_index (fn ti =>
 
 val binding = Binding.make (FI.id, FI.pos)
 
-val arg_parsers = {
-  add = SOME (
-    Parse_Util.parenths (Parse.term --| Parse.$$$ "," --
-      Parse_Util.nonempty_code (K "value to add must not be empty"))
+val add_arg_parser =
+  (PU.parenths (Parse.term --| Parse.$$$ "," -- PU.nonempty_code (K "value to add must not be empty"))
     >> Either.Left
-    || Parse_Util.nonempty_code (K "data to add must not be empty") >> Either.Right),
-  del = SOME (
-    Parse_Util.parenths (Parse.term --| Parse.$$$ "," --
-      Parse_Util.nonempty_code (K "selector for deletion must not be empty"))
-    >> Either.Left
-    || Parse_Util.nonempty_code (K "data for deletion must not be empty") >> Either.Right)
-}
+  || PU.nonempty_code (K "data to add must not be empty") >> Either.Right)
+  |> Scan.repeat1
+val del_arg_parser =
+  (PU.parenths (Parse.term --| Parse.$$$ "," --
+    PU.nonempty_code (K "selector for deletion must not be empty")) >> Either.Left
+  || PU.nonempty_code (K "data for deletion must not be empty") >> Either.Right)
+  |> Scan.repeat1
 
-val parse_arg_entries =
+fun prepare_term context =
+  Proof_Context.read_term_pattern (Context.proof_of context) #> ML_Syntax.print_term #> MCU.read
+
+fun add_attribute (data, pos) (x as (context, _)) =
   let
-    val parse_value = PA.parse_entry (PA.get_add arg_parsers) (PA.get_del arg_parsers)
-    val parse_entry = Parse_Key_Value.parse_entry PA.parse_key Parse_Util.eq parse_value
-  in PA.parse_entries_required Parse.and_list1 [] parse_entry (PA.empty_entries ()) end
+    val args_code = map (Either.cases (fn (t, c) => MCU.tuple [prepare_term context t, c]) I) data
+    val code = MCU.read "fold" @ FI.code_struct_op "insert" @ MCU.list args_code
+  in ML_Attribute.run_map_context (code, pos) x end
+
+fun del_attribute (data, pos) (x as (context, _)) =
+  let
+    val args_code = map (Either.cases (fn (t, c) => MCU.tuple [prepare_term context t, c]) I) data
+    val code = MCU.read "fold" @ FI.code_struct_op "delete" @ MCU.list args_code
+  in ML_Attribute.run_map_context (code, pos) x end
+
+val parse_entries =
+  let
+    val parse_value = PM.parse_entry add_arg_parser del_arg_parser
+    val parse_entry = Parse_Key_Value.parse_entry PM.parse_key (K (Parse.$$$ ":")) parse_value
+    val default_entries = PM.empty_entries ()
+  in PM.parse_entries_required Parse.and_list1 [] parse_entry default_entries end
 
 fun attribute (entries, pos) =
   let
-    fun default (context, _) = (SOME context, NONE)
-    val run_code = ML_Attribute.run_map_context o rpair pos
-    fun prepare_term context =
-      let val ctxt = Proof_Context.set_mode Proof_Context.mode_pattern (Context.proof_of context)
-      in Syntax.read_term ctxt #> ML_Syntax.print_term #> ML_Code_Util.read end
-    val add = case PA.get_add_safe entries of
-        SOME res => (fn x as (context, _) =>
-          let val c = Either.cases (fn (t, c) => ML_Code_Util.tuple [prepare_term context t, c]) I res
-          in run_code (FI.code_struct_op "insert" @ c) x end)
-      | NONE => default
-    val del = case PA.get_del_safe entries of
-        SOME res => (fn x as (context, _) =>
-          let val c = Either.cases (fn (t, c) => ML_Code_Util.tuple [prepare_term context t, c]) I res
-          in run_code (FI.code_struct_op "delete" @ c) x end)
-      | NONE => default
-  in ML_Attribute_Util.apply_attribute del #> add end
+    fun default_attr (context, thm) = (SOME context, SOME thm)
+    val add_attr = PM.get_add_safe entries
+      |> (fn SOME entries => add_attribute (entries, pos) | NONE => default_attr)
+    val del_attr = PM.get_del_safe entries
+      |> (fn SOME entries => del_attribute (entries, pos) | NONE => default_attr)
+  in ML_Attribute_Util.apply_attribute del_attr #> add_attr end
 
-val parse_attribute = (parse_arg_entries |> Parse_Util.position) >> attribute
+val parse_attribute = PU.position parse_entries >> attribute
+  || PU.position add_arg_parser >> add_attribute
 
 val setup_attribute = Attrib.local_setup binding
   (Parse.!!! parse_attribute |> Scan.lift) o

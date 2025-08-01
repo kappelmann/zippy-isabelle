@@ -34,7 +34,7 @@ end
 
 functor Zippy_Lists_Base(
     Exn : ZIPPY_EXCEPTION_MIXIN
-    where type @{ParaT_args encl = "(" ")"} ME.exn = unit
+    where type @{ParaT_args encl: "(" ")"} ME.exn = unit
   ) :
     ZIPPY_LISTS_BASE
     \<^imap>\<open>\<open>{i}\<close> => \<open>where type @{AllT_args} ZN.N{i}.content = @{ZipperT_arg \<open>{i} - 1\<close>}\<close>\<close>
@@ -104,6 +104,6 @@ structure ZN_AZ1 : \<^eval>\<open>sfx_T_nargs "SINGLE_CONTENT_ZIPPER"\<close>
 structure ZN_AZ{i} : \<^eval>\<open>sfx_T_nargs "LIST_ZIPPER"\<close>
   where type @{AllT_args} ZD.content = @{AllT_args} ZN.A.Z{i}.ZD.content
 = struct open ZN_AZ{i} ZN.A.Z{i} end\<close>
-where start = 2\<close>
+start: 2\<close>
 
 end

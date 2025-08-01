@@ -69,6 +69,7 @@ argument
 - visiting the same goal twice without an answer -> fail
 
 - say something about implementing A^* with dependent morphism pairings for free.
+- diff to IsaPlanner
 *)
 
 

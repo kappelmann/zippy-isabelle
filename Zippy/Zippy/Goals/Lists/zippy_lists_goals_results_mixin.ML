@@ -21,7 +21,7 @@ sig
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   val update_goal_results_up{i} : GClusters.GCS.state Seq.seq -> Proof.context ->
     (@{ParaT_args} @{AllT_args} zipper{i}, @{AllT_args} zipper1 * Results.results) morph\<close>
-  where start = 2\<close>
+  start: 2\<close>
 end
 
 functor Zippy_Lists_Goals_Results_Mixin(
@@ -101,7 +101,7 @@ and init_goal_results_down{i} ctxt =
     >>> Z\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>ZM.Unzip.morph
     >>> enum_zipper\<^eval>\<open>succ_mod_nzippers {i}\<close>)
     Up\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>morph Results.append (arr without_results)\<close>
-where start = 3\<close>
+start: 3\<close>
 
 local fun go_top_no_goal_results x = x |> (ZB.top1 >>> arr without_results)
 in
@@ -134,7 +134,7 @@ and update_goal_results_up2 statesq ctxt z =
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 and update_goal_results_up{i} statesq ctxt = Up{i}.morph
   >>> update_goal_results_up\<^eval>\<open>pred_mod_nzippers {i}\<close> statesq ctxt\<close>
-where start = 3\<close>
+start: 3\<close>
 
 fun update_goal_results_up ctxt z = if GClusters_Results.has_results z
   then

@@ -24,7 +24,7 @@ setup\<open>fn theory =>
 let val nzippers = ML_Gen.nzippers () - 1
 in Context.theory_map (ML_Gen.setup_zipper_args' (NONE, NONE) (SOME nzippers, NONE)) theory end\<close>
 
-context notes [[imap stop = 6]]
+context notes [[imap stop: 6]]
 begin
 ML_gen_file\<open>instantiate_node_succ.ML\<close>
 end

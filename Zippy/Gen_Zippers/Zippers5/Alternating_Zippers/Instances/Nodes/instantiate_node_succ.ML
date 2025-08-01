@@ -17,32 +17,32 @@ functor \<^eval>\<open>sfx_inst_T_nargs "Instantiate_Node_Succ" {k}\<close>(
   ) :
     \<^eval>\<open>sfx_T_nargs "NODE"\<close>
     where type @{AllT_args} content = (@{ParaT_args}
-      @{ZipperT_args stop = \<open>{k} - 2\<close> and sep = "" and encl_arg = "" ","}
+      @{ZipperT_args stop: \<open>{k} - 2\<close> sep: "" encl_arg: "" ","}
       @{AllT_args} inst
-      @{ZipperT_args start = \<open>{k} - 1\<close> and sep = "" and encl_arg = "," ""}) N.content
+      @{ZipperT_args start: \<open>{k} - 1\<close> sep: "" encl_arg: "," ""}) N.content
     where type @{AllT_args} next = (@{ParaT_args}
-      @{ZipperT_args stop = \<open>{k} - 2\<close> and sep = "" and encl_arg = "" ","}
+      @{ZipperT_args stop: \<open>{k} - 2\<close> sep: "" encl_arg: "" ","}
       @{AllT_args} inst
-      @{ZipperT_args start = \<open>{k} - 1\<close> and sep = "" and encl_arg = "," ""}) N.next
+      @{ZipperT_args start: \<open>{k} - 1\<close> sep: "" encl_arg: "," ""}) N.next
     where type @{AllT_args} node = (@{ParaT_args}
-      @{ZipperT_args stop = \<open>{k} - 2\<close> and sep = "" and encl_arg = "" ","}
+      @{ZipperT_args stop: \<open>{k} - 2\<close> sep: "" encl_arg: "" ","}
       @{AllT_args} inst
-      @{ZipperT_args start = \<open>{k} - 1\<close> and sep = "" and encl_arg = "," ""}) N.node
+      @{ZipperT_args start: \<open>{k} - 1\<close> sep: "" encl_arg: "," ""}) N.node
   =
 struct
 open N
 type @{AllT_args} content = (@{ParaT_args}
-  @{ZipperT_args stop = \<open>{k} - 2\<close> and sep = "" and encl_arg = "" ","}
+  @{ZipperT_args stop: \<open>{k} - 2\<close> sep: "" encl_arg: "" ","}
   @{AllT_args} inst
-  @{ZipperT_args start = \<open>{k} - 1\<close> and sep = "" and encl_arg = "," ""}) N.content
+  @{ZipperT_args start: \<open>{k} - 1\<close> sep: "" encl_arg: "," ""}) N.content
 type @{AllT_args} next = (@{ParaT_args}
-  @{ZipperT_args stop = \<open>{k} - 2\<close> and sep = "" and encl_arg = "" ","}
+  @{ZipperT_args stop: \<open>{k} - 2\<close> sep: "" encl_arg: "" ","}
   @{AllT_args} inst
-  @{ZipperT_args start = \<open>{k} - 1\<close> and sep = "" and encl_arg = "," ""}) N.next
+  @{ZipperT_args start: \<open>{k} - 1\<close> sep: "" encl_arg: "," ""}) N.next
 type @{AllT_args} node = (@{ParaT_args}
-  @{ZipperT_args stop = \<open>{k} - 2\<close> and sep = "" and encl_arg = "" ","}
+  @{ZipperT_args stop: \<open>{k} - 2\<close> sep: "" encl_arg: "" ","}
   @{AllT_args} inst
-  @{ZipperT_args start = \<open>{k} - 1\<close> and sep = "" and encl_arg = "," ""}) N.node
+  @{ZipperT_args start: \<open>{k} - 1\<close> sep: "" encl_arg: "," ""}) N.node
 
 structure Base = struct type @{AllT_args} container = @{AllT_args} node end
 structure Co =

@@ -51,7 +51,7 @@ functor Zippy_PAction_Queue_Mixin(
     sharing type PAction_Queue.PAction.zipper = Z.Z4.zipper
     sharing type PAction_Queue.PAction.zipper_expanded = Z.Z5.zipper
     sharing type PAction_Queue.PAction.M.t = Z.M.t
-    val mk_exn : (unit -> @{ParaT_args encl = "" ""} Z.Co.ME.exn)
+    val mk_exn : (unit -> @{ParaT_args encl: "(" ")"} Z.Co.ME.exn)
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t =Z.M.t
     structure Log : ZIPPY_LOGGER_MIXIN_BASE

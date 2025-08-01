@@ -12,10 +12,10 @@ text \<open>Antiquotation for indexed maps\<close>
 ML_file\<open>imap_antiquotation.ML\<close>
 
 ML\<open>
-\<^functor_instance>\<open>struct_name = Standard_IMap_Antiquotation
-  and functor_name = IMap_Antiquotation
-  and id = \<open>""\<close>
-  and more_args = \<open>val init_args = {
+\<^functor_instance>\<open>struct_name: Standard_IMap_Antiquotation
+  functor_name: IMap_Antiquotation
+  id: \<open>""\<close>
+  more_args: \<open>val init_args = {
     sep = SOME "\n",
     encl = SOME ("", ""),
     encl_inner = SOME ("", ""),

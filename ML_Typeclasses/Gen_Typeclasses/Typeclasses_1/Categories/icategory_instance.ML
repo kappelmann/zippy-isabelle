@@ -141,7 +141,7 @@ functor \<^eval>\<open>sfx_ParaT_nargs "IKleisli_Arrow_Exception_Base"\<close>(
 struct
 structure AA = \<^eval>\<open>sfx_ParaT_nargs "IKleisli_Arrow_Apply_Base"\<close>(ME)
 open AA
-type @{ParaT_args encl = "(" ")"} exn = @{ParaT_args encl = "(" ")"} ME.exn
+type @{ParaT_args encl: "(" ")"} exn = @{ParaT_args encl: "(" ")"} ME.exn
 val throw = ME.throw
 fun catch f g x = ME.catch (f x) (g o pair x)
 end

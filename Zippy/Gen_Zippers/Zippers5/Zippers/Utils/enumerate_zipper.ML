@@ -9,9 +9,9 @@ sig
   (*enumerate zippers starting from the first passed zipper*)
   val enum_zipper :
     (*exception for empty coroutine*)
-    (unit -> @{ParaT_args encl = "" ""} Co.AE.exn) ->
+    (unit -> @{ParaT_args encl: "(" ")"} Co.AE.exn) ->
     (@{ParaT_args} @{AllT_args} Z.zipper, @{AllT_args} Z.zipper) Co.coroutine
   (*enumerate zippers below and including the first passed zipper*)
-  val enum_zipper_down : (unit -> @{ParaT_args encl = "" ""} Co.AE.exn) ->
+  val enum_zipper_down : (unit -> @{ParaT_args encl: "(" ")"} Co.AE.exn) ->
     (@{ParaT_args} @{AllT_args} Z.zipper, @{AllT_args} Z.zipper) Co.coroutine
 end

@@ -22,7 +22,7 @@ end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "GList"\<close>(
     M : \<^eval>\<open>sfx_ParaT_nargs "MONAD_EXCEPTION_BASE"\<close>
-    where type @{ParaT_args encl = "(" ")"} exn = unit
+    where type @{ParaT_args encl: "(" ")"} exn = unit
   ) : \<^eval>\<open>sfx_ParaT_nargs "GLIST"\<close> where type 'a t = 'a list =
 struct
   structure M = M

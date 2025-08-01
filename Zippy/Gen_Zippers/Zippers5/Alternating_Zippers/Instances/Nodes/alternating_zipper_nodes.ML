@@ -84,14 +84,14 @@ datatype
 @{AllT_args} zcontext{i} = ZContext{i} of (
     @{AllT_args} Z{i}.ZD.zcontext,
     (@{ParaT_args} @{AllT_args} pzipper{i}) M.t) lzcontext_parent\<close>
-where sep = \<open>and\<close>\<close>
+sep: \<open>and\<close>\<close>
 withtype
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 @{AllT_args} pzipper{i} = (@{ParaT_args}
     @{AllT_args} N\<^eval>\<open>pred_mod_nzippers {i} ^ "."\<close>content,
     @{AllT_args} zcontext\<^eval>\<open>pred_mod_nzippers {i}\<close>
-    @{ZipperT_args encl_arg = "," "" and sep = "" and start = 2}) ZD.zipper\<close>
-where sep = \<open>and\<close>\<close>
+    @{ZipperT_args encl_arg: "," "" sep: "" start: 2}) ZD.zipper\<close>
+sep: \<open>and\<close>\<close>
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 type @{AllT_args} parent{i} = (@{ParaT_args} @{AllT_args} pzipper{i}) A.Z{i}.M.t\<close>\<close>
@@ -103,15 +103,15 @@ structure PZD{i} :
   where type @{AllT_args} content = (@{ParaT_args}
     @{AllT_args} N\<^eval>\<open>pred_mod_nzippers {i} ^ "."\<close>content,
     @{AllT_args} zcontext\<^eval>\<open>pred_mod_nzippers {i}\<close>
-    @{ZipperT_args encl_arg = "," "" and sep = "" and start = 2}) ZD.content
+    @{ZipperT_args encl_arg: "," "" sep: "" start: 2}) ZD.content
   where type @{AllT_args} zcontext = (@{ParaT_args}
     @{AllT_args} N\<^eval>\<open>pred_mod_nzippers {i} ^ "."\<close>content,
     @{AllT_args} zcontext\<^eval>\<open>pred_mod_nzippers {i}\<close>
-    @{ZipperT_args encl_arg = "," "" and sep = "" and start = 2}) ZD.zcontext
+    @{ZipperT_args encl_arg: "," "" sep: "" start: 2}) ZD.zcontext
   where type @{AllT_args} zipper = (@{ParaT_args}
     @{AllT_args} N\<^eval>\<open>pred_mod_nzippers {i} ^ "."\<close>content,
     @{AllT_args} zcontext\<^eval>\<open>pred_mod_nzippers {i}\<close>
-    @{ZipperT_args encl_arg = "," "" and sep = "" and start = 2}) ZD.zipper
+    @{ZipperT_args encl_arg: "," "" sep: "" start: 2}) ZD.zipper
   = ZD\<close>\<close>
 end
 

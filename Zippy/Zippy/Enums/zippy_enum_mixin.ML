@@ -34,9 +34,9 @@ structure DF_Post{i} = \<^eval>\<open>sfx_T_nargs "DF_Postorder_Enumerate_Zipper
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 structure ADF_Post{i} = \<^eval>\<open>mk_name ["DF_Postorder_Enumerate", pfx_sfx_nargs "Alternating_Zipper"]\<close>(
   structure Z = \<^imap>\<open>\<open>{j}\<close> => \<open>
-    \<^eval>\<open>mk_name ["Rotate", pfx_sfx_nargs "Alternating_Zipper"]\<close>(\<close> where stop = \<open>{i} - 1\<close>\<close>
+    \<^eval>\<open>mk_name ["Rotate", pfx_sfx_nargs "Alternating_Zipper"]\<close>(\<close> stop: \<open>{i} - 1\<close>\<close>
     Z
-    \<^imap>\<open>\<open>{j}\<close> => \<open>)\<close> where stop = \<open>{i} - 1\<close>\<close>
+    \<^imap>\<open>\<open>{j}\<close> => \<open>)\<close> stop: \<open>{i} - 1\<close>\<close>
   \<^imap>\<open>\<open>{j}\<close> => \<open>
   structure E{j} = DF_Post\<^eval>\<open>ML_Gen.add_mod_nzippers' {j} ({i} - 1)\<close>\<close>\<close>)\<close>\<close>
 

@@ -98,8 +98,8 @@ end
 signature \<^eval>\<open>sfx_ParaT_nargs "IMONAD_EXCEPTION_BASE"\<close> =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "IMONAD_BASE"\<close>
-  type @{ParaT_args encl = "(" ")"} exn
-  val throw : @{ParaT_args encl = "(" ")"} exn -> (@{ParaT_args} 'i, 'i, 'a) t
-  val catch : (@{ParaT_args} 'i, 'j, 'a) t -> (@{ParaT_args encl = "(" ")"} exn ->
+  type @{ParaT_args encl: "(" ")"} exn
+  val throw : @{ParaT_args encl: "(" ")"} exn -> (@{ParaT_args} 'i, 'i, 'a) t
+  val catch : (@{ParaT_args} 'i, 'j, 'a) t -> (@{ParaT_args encl: "(" ")"} exn ->
     (@{ParaT_args} 'i, 'j, 'a) t) -> (@{ParaT_args} 'i, 'j, 'a) t
 end

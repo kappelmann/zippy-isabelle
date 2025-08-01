@@ -26,10 +26,10 @@ local
 in
 (* movements *)
 fun top1 x = x |> (AE.repeat
-  (\<^imap>\<open>\<open>{j}\<close> =>\<open>Up\<^eval>\<open>ML_Gen.sub_mod_nzippers' 1 ({j} - 1) ^ "."\<close>morph\<close> where sep = ">>>"\<close>))
+  (\<^imap>\<open>\<open>{j}\<close> =>\<open>Up\<^eval>\<open>ML_Gen.sub_mod_nzippers' 1 ({j} - 1) ^ "."\<close>morph\<close> sep: ">>>"\<close>))
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 fun top{i} x = x |> (Up{i}.morph >>> top\<^eval>\<open>string_of_int ({i} - 1)\<close>)
-\<close> where start = 2\<close>
+\<close> start: 2\<close>
 
 end
 
