@@ -3,15 +3,15 @@
 *)
 signature ZIPPY_ACTION_RESULT =
 sig
-  datatype ('s, 'e, 't) result = Unchanged of 's (*stay at node without structural changes*)
+  datatype ('u, 'e, 'c) result = Unchanged of 'u (*stay at node without structural changes*)
     | Expanded of 'e (*expand without changing existing node paths*)
-    | Changed of 't (*other structural changes*)
-  val merge : ('s -> 'a) -> ('e -> 'a) -> ('t -> 'a) -> ('s, 'e, 't) result -> 'a
+    | Changed of 'c (*other structural or relevant content changes*)
+  val merge : ('u -> 'a) -> ('e -> 'a) -> ('c -> 'a) -> ('u, 'e, 'c) result -> 'a
 end
 
 structure Zippy_Action_Result : ZIPPY_ACTION_RESULT =
 struct
-datatype ('s, 'e, 't) result = Unchanged of 's | Expanded of 'e | Changed of 't
+datatype ('u, 'e, 'c) result = Unchanged of 'u | Expanded of 'e | Changed of 'c
 fun merge f _ _ (Unchanged s) = f s
   | merge _ f _ (Expanded e) = f e
   | merge _ _ f (Changed t) = f t

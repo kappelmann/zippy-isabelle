@@ -10,6 +10,9 @@ sig
 
   val no_action : @{ParaT_args encl: "(" ")"} Exn.AE.exn -> @{AllT_args} action
   val no_paction : @{ParaT_args encl: "(" ")"} Exn.AE.exn -> @{AllT_args} paction
+
+  val set_paction : @{AllT_args} paction -> @{AllT_args} zipper -> @{AllT_args} zipper
+
   val disable_paction : @{ParaT_args encl: "(" ")"} Exn.AE.exn ->
     (@{ParaT_args} @{AllT_args} zipper) emorph
 
@@ -34,17 +37,19 @@ open PAction Log
 structure MU = Zippy_Monad_Util(M); open MU
 structure Exn = Exn; open Exn
 
-fun no_action e _ = AE.throw' e
-fun no_paction e = AE.throw' e |> PAction.paction
+fun no_action exn _ = AE.throw' exn
+fun no_paction exn = AE.throw' exn |> PAction.paction
 
-local open Mo
+local open Mo SC A
 in
-fun disable_paction e z = Ctxt.get_ctxt () >>= K.arr (fn ctxt =>
+fun set_paction paction z = L.set_modify L.modifier (paction, z)
+
+fun disable_paction exn z = Ctxt.get_ctxt () >>= arr (fn ctxt =>
   (@{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
       Pretty.str "Disabling paction of",
       Show.pretty ctxt z
     ] |> Pretty.block |> Pretty.string_of);
-  curry (L.set_modify L.modifier) (no_paction e) z))
+  set_paction (no_paction exn) z))
 
 fun get_run_paction z = Ctxt.get_ctxt () >>= (fn ctxt =>
   (@{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [

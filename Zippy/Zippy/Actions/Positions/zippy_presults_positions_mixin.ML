@@ -5,9 +5,6 @@ signature ZIPPY_PRESULTS_POSITIONS_MIXIN =
 sig
   include ZIPPY_PRESULTS_MIXIN_BASE
 
-  type @{AllT_args} prio_sq_co =
-    (@{ParaT_args} @{AllT_args} zipper * result Seq.seq, prio * result Seq.seq) Co.Co.coroutine
-
   val with_depth_prio_sq_co : (int -> (@{ParaT_args} prio) emorph) -> @{AllT_args} prio_sq_co ->
     @{AllT_args} prio_sq_co
 end

@@ -34,8 +34,8 @@ sig
     (@{ParaT_args} @{AllT_args} PAction_Queue.PAction.action_result,
       (@{AllT_args} GClusters.L.container * Results.results) * @{AllT_args} PAction_Queue.queue) morph
 
-  val step_queue : @{AllT_args} PAction_Queue.queue ->
-    (@{ParaT_args} @{AllT_args} PAction_Queue.container1,
+  type @{AllT_args} container1
+  val step_queue : @{AllT_args} PAction_Queue.queue -> (@{ParaT_args} @{AllT_args} container1,
       (((@{AllT_args} GClusters.L.container * Results.results)) option
       * @{AllT_args} PAction_Queue.queue) option) morph
 end
@@ -49,7 +49,6 @@ functor Zippy_Step_Mixin(
     sharing type Step.PAction_Queue.PAction.zipper = Z.Z4.zipper
     sharing type Step.PAction_Queue.PAction.zipper_expanded = Z.Z5.zipper
     sharing type Step.PAction_Queue.PAction.M.t = Z.M.t
-    sharing type Step.PAction_Queue.container1 = Z.Z1.ZM.container
     structure Co : ZIPPY_COROUTINE_MIXIN_BASE
     sharing type Co.M.t = Z.M.t
     val mk_exn : (unit -> @{ParaT_args encl: "(" ")"} Co.ME.exn)
@@ -57,8 +56,13 @@ functor Zippy_Step_Mixin(
     sharing type Ctxt.M.t =Z.M.t
     structure Log : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
+    structure Log_PAction_Queue : ZIPPY_LOGGER_MIXIN_BASE
+    structure Show_Container1 : ZIPPY_SHOW_MIXIN_BASE
+    sharing type Show_Container1.t = Z.Z1.ZM.container
     structure Show1 : ZIPPY_SHOW_MIXIN_BASE
     sharing type Show1.t = Z.Z1.zipper
+    structure Show4 : ZIPPY_SHOW_MIXIN_BASE
+    sharing type Show4.t = Z.Z4.zipper
     structure Show_Queue_Entry : ZIPPY_SHOW_MIXIN_BASE
     where type @{AllT_args} t = @{AllT_args} Step.PAction_Queue.entry
   ) : ZIPPY_STEP_MIXIN =
@@ -77,6 +81,10 @@ structure TMV = Zippy_Goal_Results_Top_Meta_Vars_Mixin(
   structure Z = Z
   structure Goal_Results_Top_Meta_Vars = Zippy_Goal_Results_Top_Meta_Vars_Mixin_Base(
     structure Results = GCluster_Results; structure Top_Meta_Vars = Top_Meta_Vars))
+structure PAction_Queue = Zippy_PAction_Queue_Mixin(structure Z = ZE
+  structure PAction_Queue = PAction_Queue; val mk_exn = mk_exn structure Ctxt = Ctxt
+  structure Log = Log_PAction_Queue; structure Show_Container1 = Show_Container1
+  structure Show1 = Show1; structure Show4 = Show4)
 
 local open SC Mo A
 in
@@ -105,6 +113,8 @@ fun update_changed queue = update_goal_results_up_changed
   &&& (fn z => PAction_Queue.update_changed z queue)
 fun update_action_result queue = PAction_Queue.PAction.AResult.merge
   (update_unchanged queue) (update_expanded queue) (update_changed queue)
+
+type @{AllT_args} container1 = @{AllT_args} PAction_Queue.container1
 
 fun step_queue queue z = Ctxt.get_ctxt () >>= (fn ctxt => z |>
   let

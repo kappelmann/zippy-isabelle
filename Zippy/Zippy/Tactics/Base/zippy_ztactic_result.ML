@@ -50,4 +50,4 @@ fun map_more f {state, more, gpos_update} = {state = state, more = f more, gpos_
 
 end
 
-structure Standard_ZTactic_Result = Zippy_ZTactic_Result(Standard_Zippy_Goal_Pos_Update_Util)
+structure Standard_Zippy_ZTactic_Result = Zippy_ZTactic_Result(Standard_Zippy_Goal_Pos_Update_Util)

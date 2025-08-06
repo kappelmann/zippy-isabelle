@@ -131,4 +131,4 @@ end
 end
 
 structure Standard_Zippy_ZTactic = Zippy_ZTactic(
-  structure R = Standard_ZTactic_Result; structure RTac = Standard_Zippy_RTactic)
+  structure R = Standard_Zippy_ZTactic_Result; structure RTac = Standard_Zippy_RTactic)

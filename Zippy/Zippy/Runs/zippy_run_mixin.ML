@@ -3,6 +3,7 @@
 *)
 signature ZIPPY_RUN_MIXIN =
 sig
+  include ZIPPY_LOGGER_MIXIN_BASE
   include ZIPPY_RUN_MIXIN_BASE
   include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   sharing type M.t = Step.PAction_Queue.PAction.M.t
@@ -41,31 +42,32 @@ sig
   val mk_df_post_promising_unreturned_unfinished_statesq : Proof.context ->
     (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph
 
+  type @{AllT_args} container1
   (* run *)
   val gen_repeat_step_queue : (@{AllT_args} Step.PAction_Queue.queue ->
-      (@{ParaT_args} @{AllT_args} Step.PAction_Queue.container1,
+      (@{ParaT_args} @{AllT_args} container1,
         (((@{AllT_args} Step.GClusters.L.container * Step.Results.results)) option
         * @{AllT_args} Step.PAction_Queue.queue) option) morph) ->
     (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph ->
     int option -> @{AllT_args} Step.PAction_Queue.queue -> @{AllT_args} state ->
-    @{AllT_args} Step.PAction_Queue.container1 -> @{AllT_args} result_data result Seq.seq
+    @{AllT_args} container1 -> @{AllT_args} result_data result Seq.seq
 
   val repeat_step_queue :
     (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph ->
     int option -> @{AllT_args} Step.PAction_Queue.queue -> @{AllT_args} state ->
-    @{AllT_args} Step.PAction_Queue.container1 -> @{AllT_args} result_data result Seq.seq
+    @{AllT_args} container1 -> @{AllT_args} result_data result Seq.seq
 
   val gen_init_repeat_step_queue : (@{AllT_args} Step.PAction_Queue.queue ->
-      (@{ParaT_args} @{AllT_args} Step.PAction_Queue.container1,
+      (@{ParaT_args} @{AllT_args} container1,
         (((@{AllT_args} Step.GClusters.L.container * Step.Results.results)) option
         * @{AllT_args} Step.PAction_Queue.queue) option) morph) ->
     (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph ->
-    int option -> (@{ParaT_args} @{AllT_args} Step.PAction_Queue.container1,
+    int option -> (@{ParaT_args} @{AllT_args} container1,
       @{AllT_args} result_data result Seq.seq) morph
 
   val init_repeat_step_queue :
     (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph ->
-    int option -> (@{ParaT_args} @{AllT_args} Step.PAction_Queue.container1,
+    int option -> (@{ParaT_args} @{AllT_args} container1,
       @{AllT_args} result_data result Seq.seq) morph
 end
 
@@ -74,23 +76,32 @@ functor Zippy_Run_Mixin(
     structure Run : ZIPPY_RUN_MIXIN_BASE
     sharing type Run.Step.GClusters.L.container = Z.Z1.zipper
     sharing type Run.Step.GCluster.L.container = Z.Z2.zipper
-    sharing type Run.Step.PAction_Queue.container1 = Z.Z1.ZM.container
     sharing type Run.Step.PAction_Queue.PAction.zipper_changed = Z.Z1.zipper
     sharing type Run.Step.PAction_Queue.PAction.zipper = Z.Z4.zipper
     sharing type Run.Step.PAction_Queue.PAction.zipper_expanded = Z.Z5.zipper
     sharing type Run.Action_App_Meta.L.container = Z.Z5.zipper
     sharing type Run.Step.PAction_Queue.PAction.M.t = Z.M.t
+    type @{AllT_args} state
+    val seq_from_monad : @{AllT_args} state -> (@{ParaT_args} 'a Seq.seq) Z.M.t -> 'a Seq.seq
+    val with_state : (@{AllT_args} state -> (@{ParaT_args} 'a, 'b) Z.morph) ->
+      (@{ParaT_args} 'a, 'b) Z.morph
     structure Co : ZIPPY_COROUTINE_MIXIN_BASE
     sharing type Co.M.t = Z.M.t
     val mk_exn : (unit -> @{ParaT_args encl: "(" ")"} Co.ME.exn)
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
-    structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
-    type @{AllT_args} state
-    val seq_from_monad : @{AllT_args} state -> (@{ParaT_args} 'a Seq.seq) Z.M.t -> 'a Seq.seq
-    val with_state : (@{AllT_args} state -> (@{ParaT_args} 'a, 'b) Z.morph) ->
-      (@{ParaT_args} 'a, 'b) Z.morph
     structure Log : ZIPPY_LOGGER_MIXIN_BASE
+    structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
+    structure Log_PAction_Queue : ZIPPY_LOGGER_MIXIN_BASE
+    structure Log_Step : ZIPPY_LOGGER_MIXIN_BASE
+    structure Show_Container1 : ZIPPY_SHOW_MIXIN_BASE
+    sharing type Show_Container1.t = Z.Z1.ZM.container
+    structure Show1 : ZIPPY_SHOW_MIXIN_BASE
+    sharing type Show1.t = Z.Z1.zipper
+    structure Show4 : ZIPPY_SHOW_MIXIN_BASE
+    sharing type Show4.t = Z.Z4.zipper
+    structure Show_Queue_Entry : ZIPPY_SHOW_MIXIN_BASE
+    where type @{AllT_args} t = @{AllT_args} Run.Step.PAction_Queue.entry
   ) : ZIPPY_RUN_MIXIN =
 struct
 
@@ -107,6 +118,15 @@ structure LGoals_Results_TMV = Zippy_Lists_Goals_Results_Top_Meta_Vars_Mixin(str
 structure Action_App_Meta = Zippy_Action_App_Metadata_Mixin(Action_App_Meta)
 structure EAction_App_Meta = Zippy_Enum_Action_App_Metadata_Mixin(
   structure Z = ZE; structure Meta = Action_App_Meta)
+structure PAction_Queue = Zippy_PAction_Queue_Mixin(structure Z = ZE
+  structure PAction_Queue = Step.PAction_Queue; val mk_exn = mk_exn structure Ctxt = Ctxt
+  structure Log = Log_PAction_Queue; structure Show_Container1 = Show_Container1
+  structure Show1 = Show1; structure Show4 = Show4)
+structure Step = Zippy_Step_Mixin(structure Z = Z; structure Step = Step; structure Co = Co
+  val mk_exn = mk_exn; structure Ctxt = Ctxt; structure Log = Log_Step
+  structure Log_LGoals = Log_LGoals; structure Log_PAction_Queue = Log_PAction_Queue
+  structure Show_Container1 = Show_Container1; structure Show1 = Show1; structure Show4 = Show4
+  structure Show_Queue_Entry = Show_Queue_Entry)
 
 type @{AllT_args} state = @{AllT_args} state
 val seq_from_monad = seq_from_monad
@@ -152,9 +172,10 @@ local
   fun unfinished x = Unfinished oooo result_data x
   structure Show = SpecCheck_Show
 in
-type @{AllT_args} container = @{AllT_args} Z1.ZM.container
+type @{AllT_args} container1 = @{AllT_args} Step.container1
 fun pretty_fuel NONE = Pretty.str "Unlimited"
   | pretty_fuel (SOME n) = Show.int n
+
 fun gen_repeat_step_queue step_queue mk_unfinished_statesq =
   let
     fun case_unfinished steps queue = Z1.ZM.Zip.morph
@@ -165,9 +186,7 @@ fun gen_repeat_step_queue step_queue mk_unfinished_statesq =
     fun run steps opt_fuel queue s c = Seq.make (fn _ => Ctxt.get_ctxt () >>= (fn ctxt => c |>
       (if the_default 1 opt_fuel <= 0
       then (@{log Logger.DEBUG} ctxt (fn _ => Pretty.block [
-            Pretty.str "Ran out of fuel after ",
-            Show.int steps,
-            Pretty.str " step(s)."
+            Pretty.str "Ran out of fuel after ", Show.int steps, Pretty.str " step(s)."
         ] |> Pretty.string_of);
         case_unfinished steps queue)
       else Co.AE.catch'
@@ -206,7 +225,7 @@ end
 fun repeat_step_queue x = gen_repeat_step_queue Step.step_queue x
 
 fun gen_init_repeat_step_queue step_queue mk_unfinished_statesq opt_fuel c =
-  Step.PAction_Queue.init_pactions_queue c
+  PAction_Queue.init_pactions_queue c
   >>= with_state (fn s => arr (fn queue =>
     gen_repeat_step_queue step_queue mk_unfinished_statesq opt_fuel queue s c))
 fun init_repeat_step_queue x = gen_init_repeat_step_queue Step.step_queue x

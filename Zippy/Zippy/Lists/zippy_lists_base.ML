@@ -4,6 +4,7 @@
 signature ZIPPY_LISTS_BASE =
 sig
   structure ZN_AZ1 : \<^eval>\<open>sfx_T_nargs "SINGLE_CONTENT_ZIPPER"\<close>
+  sharing type ZN_AZ1.container = ZN_AZ1.content
 
   structure ZN_AZ2 : \<^eval>\<open>sfx_T_nargs "LIST_ZIPPER"\<close>
   where type 'a L.t = 'a list

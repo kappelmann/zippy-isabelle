@@ -9,32 +9,30 @@ sig
   sharing type M.t = PAction.M.t
 
   type @{AllT_args} zipper = @{AllT_args} PAction.zipper
-  type prio = PAction.prio
 
   val gen_paction_from_presults :
-    (*get presults*)
-    (@{ParaT_args} @{AllT_args} zipper, @{AllT_args} PResults.presults) morph ->
     (*action when results are empty*)
     @{AllT_args} PAction.action ->
-    (*update zipper with pulled result and the remaining presults*)
-    @{AllT_args} result_tail_presults_action ->
-    @{AllT_args} PAction.paction
+    (*action with pulled result and the remaining presults*)
+    (PResults.result * @{AllT_args} PResults.presults -> @{AllT_args} PAction.action) ->
+    @{AllT_args} PResults.presults -> @{AllT_args} PAction.paction
 
-  val paction_from_presults : @{ParaT_args encl: "(" ")"} PAction.Exn.ME.exn ->
-    @{AllT_args} result_tail_presults_action -> @{AllT_args} PAction.paction
-
-  val result_tail_presults_action :
-    (*update with remaining presults*)
-    (prio -> @{AllT_args} PResults.presults -> (@{ParaT_args} @{AllT_args} zipper, 'z) morph) ->
-    (*update with pulled result*)
-    (prio -> PResults.result -> (@{ParaT_args} 'z, @{AllT_args} PAction.action_result) morph) ->
-    @{AllT_args} result_tail_presults_action
+  (*recursively sets new action using remaining presults*)
+  val paction_from_presults :
+    @{AllT_args} PAction.action ->
+    (*additional updates with remaining presults*)
+    (@{AllT_args} PResults.presults -> prio -> (@{ParaT_args} @{AllT_args} zipper) emorph) ->
+    (PResults.result -> @{AllT_args} PAction.action) ->
+    @{AllT_args} PResults.presults -> @{AllT_args} PAction.paction
 end
 
 functor Zippy_PAction_PResults_Mixin(
     structure PAction_PResults : ZIPPY_PACTION_PRESULTS_MIXIN_BASE
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = PAction_PResults.PAction.M.t
+    structure Show_PAction_Zipper : ZIPPY_SHOW_MIXIN_BASE
+    sharing type Show_PAction_Zipper.t = PAction_PResults.PAction.zipper
+    structure Log_PAction : ZIPPY_LOGGER_MIXIN_BASE
     structure Log : ZIPPY_LOGGER_MIXIN_BASE
   ) : ZIPPY_PACTION_PRESULTS_MIXIN =
 struct
@@ -42,31 +40,32 @@ struct
 open PAction_PResults Log
 structure MU = Zippy_Monad_Util(PAction.M); open MU MU.MB
 structure Exn = Zippy_Exception_Mixin(PResults.Co)
+structure PAction = Zippy_PAction_Mixin(structure PAction = PAction; structure Exn = Exn
+  structure Ctxt = Ctxt; structure Log = Log_PAction; structure Show = Show_PAction_Zipper)
+structure PResults = Zippy_PResults_Mixin(PResults)
 
 type @{AllT_args} zipper = @{AllT_args} PAction.zipper
 type prio = PAction.prio
 
 local open SC Mo A PResults.Co Exn
 in
-fun gen_paction_from_presults get_presults empty_action result_tail_presults_action =
+fun gen_paction_from_presults empty_action result_tail_presults_action presults =
   let fun update_action rp_aco prio = AE.catch'
     (fn z => Co.resume rp_aco z
       >>= (apsnd PResults.presults #> (fn rpress => result_tail_presults_action rpress prio z)))
-    (empty_action prio)
-  in
-    (get_presults >>> arr PResults.run_presults) &&& id ()
-    >>> AA.app
-    >>> second (arr update_action)
-    |> PAction.paction
-  end
+    (Ctxt.with_ctxt (fn ctxt => (@{log Logger.DEBUG} ctxt (fn _ => "PResults empty.");
+      empty_action prio)))
+  in PResults.run_presults presults >>> second (arr update_action) |> PAction.paction end
 
-fun paction_from_presults exn = gen_paction_from_presults (arr PResults.L.getter)
-  (Library.K (Ctxt.with_ctxt (fn ctxt =>
-    (@{log Logger.DEBUG} ctxt (fn _ => "PResults empty. Disabling paction.");
-    PAction.disable_paction exn >>> arr PAction.AResult.Unchanged))))
-
-fun result_tail_presults_action update_tail_presults update_result (x, aco) prio =
-  update_tail_presults prio aco >>> update_result prio x
+fun paction_from_presults empty_action update_tail_presults result_action =
+  let
+    fun update_tail_presults_set_rec presults prio =
+      PAction.set_paction
+        (paction_from_presults empty_action update_tail_presults result_action presults)
+      #> update_tail_presults presults prio
+    fun result_tail_presults_action (result, presults) prio =
+      update_tail_presults_set_rec presults prio >>> result_action result prio
+  in gen_paction_from_presults empty_action result_tail_presults_action end
 end
 
 end

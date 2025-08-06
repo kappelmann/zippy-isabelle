@@ -9,12 +9,6 @@ sig
 
   val run_presults : @{AllT_args} presults -> (@{ParaT_args} @{AllT_args} zipper,
     prio * (@{ParaT_args} @{AllT_args} zipper, result, prio) Co.Co.acoroutine) morph
-  val get_run_presults : (@{ParaT_args} @{AllT_args} zipper,
-    prio * (@{ParaT_args} @{AllT_args} zipper, result, prio) Co.Co.acoroutine) morph
-
-  type @{AllT_args} prio_sq_co =
-    (*create next priority while (optionally) updating the sequence*)
-    (@{ParaT_args} @{AllT_args} zipper * result Seq.seq, prio * result Seq.seq) Co.Co.coroutine
 
   val gen_presults_from_sq :
     (*coroutine in case of an empty sequence*)
@@ -44,7 +38,6 @@ in
 fun empty_presults e = presults (Co.throw e)
 
 fun run_presults presults = dest_presults presults |> Co.resume
-fun get_run_presults z4 = L.getter z4 |> (fn presults => run_presults presults z4)
 
 fun gen_aco_from_sq aco_empty_sq prio_sq_co sq =
   let
@@ -60,13 +53,10 @@ fun gen_aco_from_sq aco_empty_sq prio_sq_co sq =
     |> Co.acoroutine
   end
 
-type @{AllT_args} prio_sq_co =
-  (@{ParaT_args} @{AllT_args} zipper * result Seq.seq, prio * result Seq.seq) Co.coroutine
-
 fun gen_presults_from_sq aco_empty_sq prio_sq_co sq =
   gen_aco_from_sq aco_empty_sq prio_sq_co sq |> presults
 
-fun presults_from_sq e = gen_presults_from_sq (Co.throw e)
+fun presults_from_sq exn = gen_presults_from_sq (Co.throw exn)
 
 (* create priorities *)
 fun mk_prio_sq_co prio_co = (fn (z, sq) => Co.resume prio_co (z, sq)

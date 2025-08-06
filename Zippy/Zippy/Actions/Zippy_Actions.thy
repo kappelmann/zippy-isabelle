@@ -16,8 +16,6 @@ ML_file\<open>zippy_paction_mixin.ML\<close>
 ML_file\<open>zippy_paction_queue_mixin_base.ML\<close>
 ML_file\<open>zippy_paction_queue_mixin.ML\<close>
 
-ML_file\<open>zippy_prio_mixin_base.ML\<close>
-
 ML_file\<open>zippy_presults_mixin_base.ML\<close>
 ML_file\<open>zippy_presults_mixin.ML\<close>
 

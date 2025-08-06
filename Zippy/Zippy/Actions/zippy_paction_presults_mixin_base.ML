@@ -3,21 +3,20 @@
 *)
 signature ZIPPY_PACTION_PRESULTS_MIXIN_BASE =
 sig
-  structure PAction : ZIPPY_PACTION_MIXIN
+  type prio
+  structure PAction : ZIPPY_PACTION_MIXIN_BASE
+  sharing type PAction.prio = prio
 
-  structure PResults : ZIPPY_PRESULTS_MIXIN
+  structure PResults : ZIPPY_PRESULTS_MIXIN_BASE
   sharing type PResults.M.t = PAction.M.t
   sharing type PResults.zipper = PAction.zipper
-  sharing type PResults.prio = PAction.prio
-
-  type @{AllT_args} result_tail_presults_action =
-    PResults.result * @{AllT_args} PResults.presults -> @{AllT_args} PAction.action
+  sharing type PResults.prio = prio
 end
 
 functor Zippy_PAction_PResults_Mixin_Base(A :
   sig
-    structure PAction : ZIPPY_PACTION_MIXIN
-    structure PResults : ZIPPY_PRESULTS_MIXIN
+    structure PAction : ZIPPY_PACTION_MIXIN_BASE
+    structure PResults : ZIPPY_PRESULTS_MIXIN_BASE
     sharing type PResults.M.t = PAction.M.t
     sharing type PResults.zipper = PAction.zipper
     sharing type PResults.prio = PAction.prio
@@ -26,6 +25,5 @@ functor Zippy_PAction_PResults_Mixin_Base(A :
   =
 struct
 open A
-type @{AllT_args} result_tail_presults_action =
-    PResults.result * @{AllT_args} PResults.presults -> @{AllT_args} PAction.action
+type prio = PAction.prio
 end
