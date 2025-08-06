@@ -3,11 +3,10 @@ theory Zippy_Instance_Auto
   imports
     Generic_Table_Data
     Zippy_Instance_Resolve
-    Main
+    HOL.HOL
 begin
 
 declare[[ML_print_depth=100]]
-(* declare[[ML_map_context \<open>Logger.set_log_levels Logger.root Logger.ALL\<close>]] *)
 
 (*ground polymorphic types since only ground types can be stored in the generic context.*)
 setup\<open>Context.theory_map ML_Gen.ground_zipper_types\<close>
@@ -428,9 +427,9 @@ declare [[zauto_init_ac \<open>
       |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 Tac_AAM.madd
     val mk_cud = Result_Action.copy_update_data
     val action_data = {
+      empty_action = PResults.empty_action Util.exn,
       meta = Mixin4.Meta.Meta.empty id,
-      result_tail_presults_action = Util.result_tail_presults_action
-        (Util.update_result (Library.K (C.id ())) mk_cud),
+      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
       prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH,
       tac = Ctxt.with_ctxt (ztac #> arr)
     }
@@ -505,21 +504,21 @@ end
   "map f xs = map g ys ==> length xs = length ys" *)
 (* apply auto *)
 (* apply blast *)
-(* supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.logger Logger.ALL\<close>]] *)
 (* supply map_eq_imp_length_eq[intro] *)
 lemma choice_eq: "(\<forall>x. \<exists>!y. P x y) = (\<exists>!f. \<forall>x. P x (f x))" (is "?lhs = ?rhs")
-supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Step.logger Logger.ALL\<close>]]
-supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Run.logger Logger.ALL\<close>]]
+(* supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Step.logger Logger.ALL\<close>]] *)
+(* supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Run.logger Logger.ALL\<close>]] *)
+(* supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.logger Logger.ALL\<close>]] *)
 proof (intro iffI allI)
   assume L: ?lhs
   then have \<section>: "\<forall>x. P x (THE y. P x y)"
     apply -
     supply theI'[intro]
-    (* apply (tactic \<open>zippy_tac NONE @{context}\<close>) *)
-done
+    apply (tactic \<open>zippy_tac NONE @{context}\<close>)
+    done
   show ?rhs
     apply (insert L \<section> )
-    (* apply (tactic \<open>zippy_tac NONE @{context}\<close>) *)
+    apply (tactic \<open>zippy_tac NONE @{context}\<close>)
     done
 next
   fix x
@@ -551,6 +550,5 @@ qed
 - induction
 - blast timelimit
 *)
-
 
 end

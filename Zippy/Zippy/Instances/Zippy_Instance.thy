@@ -155,7 +155,7 @@ local
   end
   structure PAction_Queue = Zippy_PAction_Queue_Mixin_Base(
     structure PAction = PAction
-    structure Queue = Leftist_Heap(type prio = Prio.prio; val ord = Prio.ord))
+    structure Queue = Leftist_Heap(type prio = Prio.prio; val ord = Prio.ord #> rev_order))
   structure Show_Queue_Entry = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} PAction_Queue.entry
     fun pretty ctxt {prio, zipper,...} = SpecCheck_Show.record [

@@ -75,7 +75,13 @@ fun fold_pactions update = Co.repeat_step_res_init (arr fst)
   (AE.catch' (first mk_entry >>> update) (arr (snd #> Co.continue))) (AE.id ())
 
 fun insert entry = Queue.insert (#prio entry, entry)
-fun mk_entry_insert z queue = mk_entry z >>= arr (fn entry => insert entry queue)
+fun mk_entry_insert z queue = Ctxt.get_ctxt () >>= (fn ctxt =>
+    (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
+        Pretty.str "Inserting paction of",
+        Show4.pretty ctxt z,
+        Pretty.str "to queue."
+      ] |> Pretty.block |> Pretty.string_of);
+    mk_entry z >>= arr (fn entry => insert entry queue)))
 
 fun insert_pactions_queue co z = AE.try (fn queue =>
   fold_pactions (arr (Library.uncurry insert #> Co.continue))
@@ -96,18 +102,11 @@ fun insert_descendant_pactions_queue c queue = Ctxt.get_ctxt () >>= (fn ctxt =>
     (A.K queue) c))
 fun init_pactions_queue c = insert_descendant_pactions_queue c Queue.empty
 
-local
-  fun mk_entry_insert_log z q = Ctxt.get_ctxt () >>= (fn ctxt =>
-    (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
-        Pretty.str "Inserting paction of",
-        Show4.pretty ctxt z,
-        Pretty.str "to queue."
-      ] |> Pretty.block |> Pretty.string_of);
-    AE.try (mk_entry_insert z) q))
+local fun mk_entry_insert_safe z = AE.try (mk_entry_insert z)
 in
-fun update_unchanged z = mk_entry_insert_log z
+fun update_unchanged z = mk_entry_insert_safe z
 fun update_expanded insert_descendant_pactions_queue z = insert_descendant_pactions_queue z
-  >>> (fn queue => Z.Up5.morph z >>= (fn z => mk_entry_insert_log z queue))
+  >>> (fn queue => Z.Up5.morph z >>= (fn z => mk_entry_insert_safe z queue))
 end
 (*paths of entries in the queue might have changed; we hence re-initialise the queue*)
 fun update_changed z _ = Z1.ZM.Unzip.morph z >>= init_pactions_queue

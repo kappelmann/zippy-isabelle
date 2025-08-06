@@ -100,7 +100,7 @@ fun update_gcluster updates z = Ctxt.get_ctxt () >>= (fn ctxt =>
 
 fun update_gclusters_gclusters updates z = Ctxt.get_ctxt () >>= (fn ctxt =>
   (@{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
-      Pretty.str "Updating goal clusters of of goal clusters",
+      Pretty.str "Updating goal clusters of ",
       Show1.pretty ctxt z
     ] |> Pretty.block |> Pretty.string_of);
   ZB.LF.foldlM (fn (cpos, update_gcluster) =>
