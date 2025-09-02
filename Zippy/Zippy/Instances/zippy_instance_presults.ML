@@ -16,7 +16,7 @@ sig
     where type @{ParaT_args encl: "(" ")"} Co.ME.exn = @{ParaT_args encl: "(" ")"} Exn.ME.exn
     where type (@{ParaT_args} 'a) Co.M.t = (@{ParaT_args} 'a) M.t
 
-    val paction : @{AllT_args} Base_Data.PAction.action ->
+    val paction : (int -> @{AllT_args} Base_Data.PAction.action) ->
       (result -> @{AllT_args} Base_Data.PAction.action) ->
       @{AllT_args} presults -> @{AllT_args} Base_Data.PAction.paction
 
@@ -25,7 +25,7 @@ sig
 
     type @{AllT_args} data = {
       meta : Base_Data.AMeta.metadata,
-      empty_action : @{AllT_args} Base_Data.PAction.action,
+      empty_action : int -> @{AllT_args} Base_Data.PAction.action,
       result_action : result -> @{AllT_args} Base_Data.PAction.action,
       presults : Base_Data.GFocus.focus -> (@{ParaT_args} @{AllT_args} ZLP.Z4.zipper,
         @{AllT_args} presults) morph}
@@ -96,7 +96,7 @@ local open Base_Data
 in
 type @{AllT_args} data = {
   meta : AMeta.metadata,
-  empty_action : @{AllT_args} PAction.action,
+  empty_action : int -> @{AllT_args} PAction.action,
   result_action : result -> @{AllT_args} PAction.action,
   presults : GFocus.focus -> (@{ParaT_args} @{AllT_args} Z4.zipper, @{AllT_args} presults) morph}
 end

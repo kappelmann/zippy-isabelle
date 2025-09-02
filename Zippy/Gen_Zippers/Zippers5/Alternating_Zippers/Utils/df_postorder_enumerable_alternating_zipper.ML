@@ -30,7 +30,7 @@ fun gen_enum_zipper enum_zipper down back_up enum_zipper_down =
     fun enum co = Co.resume co >>> catch'
       (fn (z, co) => down z
         >>= enum_zipper_down
-        >>= second (arr (fn co1 => Co.append co1 (back_up >>> enum co |> Co.coroutine))))
+        >>= second (arr (fn co1 => Co.append_co co1 (back_up >>> enum co |> Co.coroutine))))
       (fn (z, co) => enum co z)
   in enum enum_zipper end
 fun enum_zipper1 mk_exn =
@@ -40,7 +40,7 @@ fun enum_zipper1 mk_exn =
     fun enum co = Co.resume co >>> catch'
       (fn (z, co) => Down1.morph z
         >>= enum_zipper2 mk_exn
-        >>= second (arr (fn co1 => Co.append co1 (Co.cons back_up (enum co |> Co.coroutine)))))
+        >>= second (arr (fn co1 => Co.append_co co1 (Co.cons back_up (enum co |> Co.coroutine)))))
       (second (arr (enum #> Co.coroutine)))
   in enum (E1.enum_zipper mk_exn) |> Co.coroutine end
 \<^imap>\<open>\<open>{i}\<close> => \<open>

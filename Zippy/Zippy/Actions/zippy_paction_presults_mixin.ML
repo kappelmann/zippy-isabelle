@@ -19,7 +19,8 @@ sig
 
   (*recursively sets new action using remaining presults*)
   val paction_from_presults :
-    @{AllT_args} PAction.action ->
+    (*takes number of previously returned results as argument*)
+    (int -> @{AllT_args} PAction.action) ->
     (*additional updates with remaining presults*)
     (@{AllT_args} PResults.presults -> prio -> (@{ParaT_args} @{AllT_args} zipper) emorph) ->
     (PResults.result -> @{AllT_args} PAction.action) ->
@@ -59,13 +60,13 @@ fun gen_paction_from_presults empty_action result_tail_presults_action presults 
 
 fun paction_from_presults empty_action update_tail_presults result_action =
   let
-    fun update_tail_presults_set_rec presults prio =
-      PAction.set_paction
-        (paction_from_presults empty_action update_tail_presults result_action presults)
-      #> update_tail_presults presults prio
-    fun result_tail_presults_action (result, presults) prio =
-      update_tail_presults_set_rec presults prio >>> result_action result prio
-  in gen_paction_from_presults empty_action result_tail_presults_action end
+    fun update_tail_presults_set_rec counter presults prio =
+      PAction.set_paction (run (counter + 1) presults) #> update_tail_presults presults prio
+    and result_tail_presults_action counter (result, presults) prio =
+      update_tail_presults_set_rec counter presults prio >>> result_action result prio
+    and run counter = gen_paction_from_presults (empty_action counter)
+      (result_tail_presults_action counter)
+  in run 0 end
 end
 
 end

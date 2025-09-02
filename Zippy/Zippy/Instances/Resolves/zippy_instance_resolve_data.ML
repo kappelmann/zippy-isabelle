@@ -94,7 +94,7 @@ sig
     val init_focused_goals_none_no_data : ('a -> Data.term_value list) -> 'a list ->
       Base_Data.GFocus.focus -> (Base_Data.GFocus.focus * Data.value) list
 
-    type config_args = (@{AllT_args} Base_Data.PAction.action,
+    type config_args = (int -> @{AllT_args} Base_Data.PAction.action,
       Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph,
       @{AllT_args} Result_Action.mk_copy_update_data,
       Base_Data.AAMeta.P.progress,
@@ -107,9 +107,9 @@ sig
     val get_config_args : Context.generic -> Config_Data.T
     val map_config_args : (Config_Data.T -> Config_Data.T) -> Context.generic -> Context.generic
 
-    val get_empty_action : Context.generic -> @{AllT_args} Base_Data.PAction.action
-    val map_empty_action :
-      (@{AllT_args} Base_Data.PAction.action -> @{AllT_args} Base_Data.PAction.action) ->
+    val get_empty_action : Context.generic -> int -> @{AllT_args} Base_Data.PAction.action
+    val map_empty_action : ((int -> @{AllT_args} Base_Data.PAction.action) ->
+        int -> @{AllT_args} Base_Data.PAction.action) ->
       Context.generic -> Context.generic
 
     val get_default_update : Context.generic -> Base_Data.GCS.goal_pos ->
@@ -135,7 +135,7 @@ sig
     val map_del_select : ((Data.term_value -> bool) -> Data.term_value -> bool) ->
       Context.generic -> Context.generic
 
-    type add_args = (@{AllT_args} Base_Data.PAction.action,
+    type add_args = (int -> @{AllT_args} Base_Data.PAction.action,
       Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph,
       (int * (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph)) list,
       @{AllT_args} Result_Action.mk_copy_update_data,
@@ -180,7 +180,7 @@ functor Zippy_Instance_Resolve_Data(
     structure TI : TERM_INDEX
     val key_of_thm : thm -> term
     val num_new_goals : thm -> int
-    val init_args : (@{AllT_args} Z.Base_Data.PAction.action,
+    val init_args : (int -> @{AllT_args} Z.Base_Data.PAction.action,
       Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLP.Z2.zipper) Z.emorph,
       @{AllT_args} Z.Result_Action.mk_copy_update_data,
       Z.Base_Data.AAMeta.P.progress,
@@ -216,7 +216,7 @@ fun gen_init_focused_goals_data focused_goals lookup x focus = focused_goals foc
 fun init_focused_goals_none_all_data x = gen_init_focused_goals_data GFocus.focused_goals_none_all x
 fun init_focused_goals_none_no_data x = gen_init_focused_goals_data GFocus.focused_goals_none_no x
 
-type config_args = (@{AllT_args} PAction.action,
+type config_args = (int -> @{AllT_args} PAction.action,
   GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z2.zipper) emorph,
   @{AllT_args} Result_Action.mk_copy_update_data,
   AAMeta.P.progress,
@@ -249,7 +249,7 @@ val map_prio_sq_co = map_config_args o PCA.map_prio_sq_co
 val get_del_select = PCA.get_del_select o get_config_args
 val map_del_select = map_config_args o PCA.map_del_select
 
-type add_args = (@{AllT_args} PAction.action,
+type add_args = (int -> @{AllT_args} PAction.action,
   GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z2.zipper) emorph,
   (int * (GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z2.zipper) emorph)) list,
   @{AllT_args} Result_Action.mk_copy_update_data,

@@ -77,32 +77,24 @@ structure F = \<^eval>\<open>sfx_ParaT_nargs "Seq_Foldable_Trans"\<close>(
   \<^eval>\<open>sfx_ParaT_nargs "Identity_Foldable"\<close>)
 
 structure A = \<^eval>\<open>sfx_ParaT_nargs "Applicative"\<close>(T.A)
+(*WARNING: traverse is not lazy*)
 fun traverse f = T.traverse (fn sq => F.foldr (A.liftA2 Seq.cons o f) sq (A.pure Seq.empty))
 
 end
 
-functor \<^eval>\<open>sfx_ParaT_nargs "Seq_Monad_Trans"\<close>(
-    M : \<^eval>\<open>sfx_ParaT_nargs "MONAD_BASE"\<close>
-  ) : \<^eval>\<open>sfx_ParaT_nargs "MONAD_TRANS"\<close> =
+(*note: monad transformer for seq cannot lazily be implemented (it requires traverse) and hence only
+the standard monad instance is given.*)
+structure \<^eval>\<open>sfx_ParaT_nargs "Seq_Monad"\<close> : \<^eval>\<open>sfx_ParaT_nargs "MONAD_BASE"\<close> =
 struct
 
-structure M = M
-structure F = \<^eval>\<open>sfx_ParaT_nargs "Seq_Functor_Trans"\<close>(M)
+structure F = \<^eval>\<open>sfx_ParaT_nargs "Seq_Functor_Trans"\<close>(
+  \<^eval>\<open>sfx_ParaT_nargs "Identity_Monad"\<close>)
 open F
 
-structure F = \<^eval>\<open>sfx_ParaT_nargs "Seq_Functor_Trans"\<close>(\<^eval>\<open>sfx_ParaT_nargs "Identity_Monad"\<close>)
-structure T = \<^eval>\<open>sfx_ParaT_nargs "Seq_Traversable_Trans"\<close>(
-  \<^eval>\<open>sfx_ParaT_nargs "Identity_Traversable"\<close>(M))
+val pure = Seq.single
 
-fun pure x = M.pure (Seq.single x)
-
-local structure M = \<^eval>\<open>sfx_ParaT_nargs "Monad"\<close>(M) open M
-in
-fun f <*> x = x >>= (fn x => f >>= (Seq.maps (fn f => F.map f x) #> M.pure))
-
-fun bind x f = x >>= T.traverse f >>= (Seq.flat #> M.pure)
-end
-
+fun f <*> x = Seq.maps (fn f => map f x) f
+fun bind x f = Seq.maps f x
 end
 
 functor \<^eval>\<open>sfx_ParaT_nargs "List_Functor_Trans"\<close>(F : \<^eval>\<open>sfx_ParaT_nargs "FUNCTOR_BASE"\<close>)

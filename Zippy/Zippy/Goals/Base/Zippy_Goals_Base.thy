@@ -4,6 +4,7 @@ theory Zippy_Goals_Base
     ML_Typeclasses.ML_Typeclasses_Base
     ML_Unification.Unify_Resolve_Tactics_Base
     ML_Union_Find
+    ML_Unification.ML_Unifiers
 begin
 
 ML_file\<open>zippy_thm_state.ML\<close>

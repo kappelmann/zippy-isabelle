@@ -6,6 +6,12 @@ sig
   include ZIPPY_PRESULTS_MIXIN_BASE
 
   val empty_presults : @{ParaT_args encl: "(" ")"} Co.ME.exn -> @{AllT_args} presults
+  (*only appends if pulling of priority fails*)
+  val append_prio : @{ParaT_args encl: "(" ")"} Co.ME.exn -> @{AllT_args} presults ->
+    @{AllT_args} presults -> @{AllT_args} presults
+  (*only uses alternative if pulling of priority fails*)
+  val otherwise_prio : @{ParaT_args encl: "(" ")"} Co.ME.exn -> @{AllT_args} presults ->
+    @{AllT_args} presults -> @{AllT_args} presults
 
   val run_presults : @{AllT_args} presults -> (@{ParaT_args} @{AllT_args} zipper,
     prio * (@{ParaT_args} @{AllT_args} zipper, result, prio) Co.Co.acoroutine) morph
@@ -35,7 +41,11 @@ structure MU = Zippy_Monad_Util(M); open MU
 
 local open Mo SC A Co
 in
-fun empty_presults e = presults (Co.throw e)
+fun empty_presults exn = presults (Co.throw exn)
+fun append_prio exn p1 p2 = Co.append (dest_presults p1) (dest_presults p2) (Co.throw exn)
+  |> presults
+fun otherwise_prio exn p1 p2 = Co.otherwise (dest_presults p1) (dest_presults p2) (Co.throw exn)
+  |> presults
 
 fun run_presults presults = dest_presults presults |> Co.resume
 

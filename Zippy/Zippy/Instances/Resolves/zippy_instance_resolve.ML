@@ -9,7 +9,7 @@ sig
   sig
     (*resolution with single theorem*)
     type @{AllT_args} data = {
-      empty_action : @{AllT_args} Base_Data.PAction.action,
+      empty_action : int -> @{AllT_args} Base_Data.PAction.action,
       thm : thm,
       updates : (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph) list,
       mk_cud : @{AllT_args} Result_Action.mk_copy_update_data,
@@ -85,7 +85,7 @@ struct
 local open Base_Data
 in
 type @{AllT_args} data = {
-  empty_action : @{AllT_args} PAction.action,
+  empty_action : int -> @{AllT_args} PAction.action,
   thm : thm,
   updates : (GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph) list,
   mk_cud : @{AllT_args} Result_Action.mk_copy_update_data,

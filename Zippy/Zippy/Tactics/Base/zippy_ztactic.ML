@@ -51,7 +51,14 @@ sig
   val zIFIRST_GOAL : ('a -> 'm ztactic) -> 'a list -> 'm ztactic
   val zFIRST_GOAL : (GPU.GCS.goal_pos -> 'm ztactic) -> 'm ztactic
   val zFIRST_GOAL_FOCUS : (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus -> 'm ztactic
-  val ZFIRST_GOAL_FOCUS_NONE_FIRST_GOAL : (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus ->
+  val zFIRST_GOAL_FOCUS_NONE_FIRST_GOAL : (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus ->
+    'm ztactic
+
+  (*like FIRST_GOAL but with backtracking to non-first applicable goals*)
+  val zISOME_GOAL : ('a -> 'm ztactic) -> 'a list -> 'm ztactic
+  val zSOME_GOAL : (GPU.GCS.goal_pos -> 'm ztactic) -> 'm ztactic
+  val zSOME_GOAL_FOCUS : (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus -> 'm ztactic
+  val zSOME_GOAL_FOCUS_NONE_SOME_GOAL : (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus ->
     'm ztactic
 end
 
@@ -66,9 +73,7 @@ structure RTac = RTac
 
 type 'm ztactic = state -> 'm result Seq.seq
 
-structure M = \<^eval>\<open>sfx_ParaT_nargs "Monad"\<close>(
-  \<^eval>\<open>sfx_ParaT_nargs "Seq_Monad_Trans"\<close>(
-  \<^eval>\<open>sfx_ParaT_nargs "Identity_Monad"\<close>))
+structure M = \<^eval>\<open>sfx_ParaT_nargs "Monad"\<close>(\<^eval>\<open>sfx_ParaT_nargs "Seq_Monad"\<close>)
 structure A = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Apply"\<close>(M)
 
 local
@@ -125,9 +130,13 @@ fun zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 madd = gen_lift_tac_focus
 fun zIFIRST_GOAL tac = gen_every_arg TU.ORELSE no_ztac tac
 fun zFIRST_GOAL tac st = zIFIRST_GOAL tac (1 upto Thm.nprems_of st) st
 fun zFIRST_GOAL_FOCUS x = gen_lift_tac_focus (K no_ztac) zIFIRST_GOAL x
-fun ZFIRST_GOAL_FOCUS_NONE_FIRST_GOAL x = gen_lift_tac_focus zFIRST_GOAL zIFIRST_GOAL x
-end
+fun zFIRST_GOAL_FOCUS_NONE_FIRST_GOAL x = gen_lift_tac_focus zFIRST_GOAL zIFIRST_GOAL x
 
+fun zISOME_GOAL tac = gen_every_arg TU.APPEND no_ztac tac
+fun zSOME_GOAL tac st = zISOME_GOAL tac (1 upto Thm.nprems_of st) st
+fun zSOME_GOAL_FOCUS x = gen_lift_tac_focus (K no_ztac) zISOME_GOAL x
+fun zSOME_GOAL_FOCUS_NONE_SOME_GOAL x = gen_lift_tac_focus zSOME_GOAL zISOME_GOAL x
+end
 end
 
 structure Standard_Zippy_ZTactic = Zippy_ZTactic(

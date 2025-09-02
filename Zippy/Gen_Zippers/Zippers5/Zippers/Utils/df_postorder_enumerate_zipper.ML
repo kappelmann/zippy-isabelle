@@ -18,8 +18,8 @@ local
   structure M = \<^eval>\<open>sfx_ParaT_nargs "Monad"\<close>(Z.M); open M
   structure A = \<^eval>\<open>sfx_ParaT_nargs "Arrow"\<close>(Co.AE)
 in
-fun snoc mk_exn c1 f = Co.append c1 (Co.cons f (Co.throw (mk_exn ())))
-fun enum_zipper mk_exn = Co.append
+fun snoc mk_exn c1 f = Co.append_co c1 (Co.cons f (Co.throw (mk_exn ())))
+fun enum_zipper mk_exn = Co.append_co
   (enum_zipper_down mk_exn)
   ((fn z => z |> (Right.morph >>> Co.resume (enum_zipper mk_exn))) |> Co.coroutine)
 and enum_zipper_down mk_exn =

@@ -146,17 +146,32 @@ val is_finished = get_state #> TS.is_finished
 val has_meta_vars = get_state #> TS.has_meta_vars
 val meta_vars = get_state #> TS.meta_vars
 
-val finish_cluster_state_tac = Unify_Resolve_Base.unify_resolve_tac
-  Higher_Order_Unification.norms Higher_Order_Unification.unify
+val finish_cluster_state_tac =
+  let
+    (*TODO: create separate modul for this*)
+    val norms = Unification_Util.beta_eta_short_norms_unif
+    fun unify x =
+      let
+        val unify_types = Unification_Util.unify_types
+        val fail_unify = Unification_Combinator.fail_unify
+        val add_fallback = Unification_Combinator.add_fallback_unifier
+        val decomp_comb_higher = add_fallback
+          (Higher_Order_Pattern_Decomp_Unification.e_unify unify) fail_unify
+        val higherp_decomp_comb_higher = add_fallback
+          (Higher_Order_Pattern_Unification.e_unify unify_types decomp_comb_higher) fail_unify
+        val fo_higherp_decomp_comb_higher = add_fallback
+          (First_Order_Unification.e_unify unify_types) higherp_decomp_comb_higher
+      in fo_higherp_decomp_comb_higher x end
+  in Unify_Resolve_Base.unify_resolve_tac norms unify end
 
 fun finish_cluster_states ctxt cluster_states = get_clustered_state
-  #> RANGE (map (fn cluster_state => finish_cluster_state_tac cluster_state ctxt) cluster_states) 1
+  #> HEADGOAL (RANGE (List.map (fn cluster_state => finish_cluster_state_tac cluster_state ctxt)
+    cluster_states))
 
 local
   structure LTS = \<^eval>\<open>sfx_ParaT_nargs "Traversable"\<close>(
     \<^eval>\<open>sfx_ParaT_nargs "List_Traversable_Trans"\<close>(
-      \<^eval>\<open>sfx_ParaT_nargs "Identity_Traversable"\<close>(
-        \<^eval>\<open>sfx_ParaT_nargs "Seq_Monad_Trans"\<close>(\<^eval>\<open>sfx_ParaT_nargs "Identity_Monad"\<close>))))
+      \<^eval>\<open>sfx_ParaT_nargs "Identity_Traversable"\<close>(\<^eval>\<open>sfx_ParaT_nargs "Seq_Monad"\<close>)))
 in
 fun finish_cluster_statesqs ctxt statesqs gcs =
   LTS.sequence statesqs |> Seq.maps (General_Util.flip (finish_cluster_states ctxt) gcs)

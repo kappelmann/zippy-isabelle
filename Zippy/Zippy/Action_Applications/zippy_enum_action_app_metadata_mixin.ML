@@ -34,7 +34,7 @@ type @{AllT_args} zipper{i} = @{AllT_args} Z{i}.zipper\<close>\<close>
 local open SC Mo A Co Exn
   fun gen_enum_promising_zippers mk_exn down enum_children enum_promising_child = down
     >>> (fn z => Co.repeat_step_res (arr fst)
-      (fn (z, co) => AE.catch' (enum_promising_child mk_exn >>> arr (Co.append co #> Co.continue))
+      (fn (z, co) => AE.catch' (enum_promising_child mk_exn >>> arr (Co.append_co co #> Co.continue))
         (K (Co.continue co)) z)
       (enum_children mk_exn) (z, Co.throw (mk_exn ())))
     >>> arr (Co.dest_res #> snd)

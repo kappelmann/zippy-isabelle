@@ -253,5 +253,3 @@ sig
   val lift : (@{ParaT_args} 'a) T.t -> (@{ParaT_args} 'a) t
 end
 
-
-

@@ -3,10 +3,7 @@ theory Zippy_Instance_Auto
   imports
     Generic_Table_Data
     Zippy_Instance_Resolve
-    HOL.HOL
 begin
-
-declare[[ML_print_depth=100]]
 
 (*ground polymorphic types since only ground types can be stored in the generic context.*)
 setup\<open>Context.theory_map ML_Gen.ground_zipper_types\<close>
@@ -54,7 +51,7 @@ struct open Logging
   structure Init_AC_Data : ZIPPY_LOGGER_MIXIN_BASE = Init_AC_Data
 end
 local val init_args = {
-    empty_action = SOME (PResults.empty_action exn),
+    empty_action = SOME (Library.K (PResults.empty_action exn)),
     default_update = NONE,
     mk_cud = SOME Result_Action.copy_update_data_empty_changed,
     prio_sq_co = SOME (PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM),
@@ -361,7 +358,7 @@ and [[zauto_fresolve_match config:
   in Context.theory_of context end
 \<close> *)
 
-declare [[zauto_init_ac \<open>
+(* declare [[zauto_init_ac \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding classical_slow_step}
@@ -456,7 +453,7 @@ declare [[zauto_init_ac \<open>
     fun init_ac _ focus =
       Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, action_data)]
       >>> Up3.morph
-  in (id, init_ac) end\<close>]]
+  in (id, init_ac) end\<close>]] *)
 
 (* declare conjI[zauto_resolve_match_data
   prio_sq_co = \<open>PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.VERY_HIGH\<close>
@@ -487,7 +484,8 @@ fun zippy_tac fuel ctxt state =
       >>= Z1.ZM.Unzip.morph
       (*run best-first-search*)
       >>= Run.init_repeat_step_queue
-        (Ctxt.with_ctxt Run.mk_df_post_promising_unreturned_unfinished_statesq) fuel
+        (Ctxt.with_ctxt Run.mk_df_post_unreturned_unfinished_statesq) fuel
+        (*TODO: return promising sequence*)
       )
       |> Run.seq_from_monad {ctxt = ctxt, state = ()}
       |> Seq.map (Run.get_result_data #> #thm_states) |> Seq.flat
@@ -505,10 +503,12 @@ end
 (* apply auto *)
 (* apply blast *)
 (* supply map_eq_imp_length_eq[intro] *)
-lemma choice_eq: "(\<forall>x. \<exists>!y. P x y) = (\<exists>!f. \<forall>x. P x (f x))" (is "?lhs = ?rhs")
-(* supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Step.logger Logger.ALL\<close>]] *)
-(* supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Run.logger Logger.ALL\<close>]] *)
-(* supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.logger Logger.ALL\<close>]] *)
+
+(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Step.logger Logger.ALL\<close>]] *)
+(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Run.logger Logger.ALL\<close>]] *)
+(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.logger Logger.ALL\<close>]] *)
+
+(* lemma choice_eq: "(\<forall>x. \<exists>!y. P x y) = (\<exists>!f. \<forall>x. P x (f x))" (is "?lhs = ?rhs")
 proof (intro iffI allI)
   assume L: ?lhs
   then have \<section>: "\<forall>x. P x (THE y. P x y)"
@@ -542,12 +542,10 @@ next
         done
     qed
   qed
-qed
+qed *)
 
 (*TODO:
 - A^* (1/prio = cost VS (0, 1))
-- separate priorities for tactic combinations
-- induction
 - blast timelimit
 *)
 

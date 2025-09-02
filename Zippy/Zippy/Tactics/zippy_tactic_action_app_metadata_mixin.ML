@@ -11,12 +11,12 @@ sig
 
   (* liftings *)
   val madd : Meta.Meta.metadata * Meta.Meta.metadata -> Meta.Meta.metadata
-  val lift_tac_progress : Meta.Meta.P.progress -> (int -> tactic) -> int -> ztactic
+  val lift_tac_progress : Meta.Meta.P.progress -> (int -> tactic) -> Tac.GPU.GCS.goal_pos -> ztactic
 
   (* concrete tactics *)
   val all_ztac : Meta.Meta.P.progress -> ztactic
 
-  val assume_ho_unif_ztac : Proof.context -> Tac.GPU.F.focus -> ztactic
+  val assume_some_ho_unif_ztac : Proof.context -> Tac.GPU.F.focus -> ztactic
 
   val resolve_ho_unif_any_first_ztac : Meta.Meta.progress -> thm list -> Proof.context ->
     Tac.GPU.F.focus -> ztactic
@@ -76,15 +76,16 @@ fun lift_tac_progress progress = Tac.RTac.lift_tac' (Library.K (Meta.metadata pr
 (* concrete tactics *)
 fun all_ztac progress = Tac.all_ztac (Meta.metadata progress)
 
-fun gen_assume_ztac assume_tac ctxt = assume_tac ctxt
+fun gen_assume_some_ztac assume_tac ctxt = assume_tac ctxt
   |> lift_tac_progress Meta.P.promising
-  |> Tac.ZFIRST_GOAL_FOCUS_NONE_FIRST_GOAL
-fun assume_ho_unif_ztac ctxt = gen_assume_ztac assume_tac ctxt
+  |> Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
+fun assume_some_ho_unif_ztac ctxt = gen_assume_some_ztac assume_tac ctxt
 
+(*TODO: change first to some?*)
 (** resolution **)
 fun gen_resolve_any_first_ztac resolve_tac progress thms = resolve_tac thms
   #> lift_tac_progress progress
-  #> Tac.ZFIRST_GOAL_FOCUS_NONE_FIRST_GOAL
+  #> Tac.zFIRST_GOAL_FOCUS_NONE_FIRST_GOAL
 
 val resolve_ho_unif_any_first_ztac = gen_resolve_any_first_ztac (General_Util.flip resolve_tac)
 fun resolve_ho_unif_first_ztac progress = single #> resolve_ho_unif_any_first_ztac progress

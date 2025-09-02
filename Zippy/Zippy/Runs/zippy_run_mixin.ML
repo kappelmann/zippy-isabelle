@@ -25,8 +25,7 @@ sig
   val get_result_data : 'a result -> 'a
 
   (* unfinished state sequences *)
-  val filter_unfinished_statesq : Step.GClusters.GCS.state Seq.seq ->
-    Step.GClusters.GCS.state Seq.seq
+  val filter_unfinished_statesq : Step.GClusters.GCS.state Seq.seq -> Step.GClusters.GCS.state Seq.seq
   val mk_unreturned_statesq :
     (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph ->
     (@{ParaT_args} @{AllT_args} Step.GClusters.L.container, Step.GClusters.GCS.state Seq.seq) morph
@@ -157,7 +156,7 @@ fun mk_unreturned_statesq mk_unfinished_statesq z =
 
 fun mk_unfinished_unreturned_statesq enum_gclusters_children ctxt =
   LGoals_Results_TMV.mk_statesq enum_gclusters_children ctxt
-  >>> arr filter_unfinished_statesq |> mk_unreturned_statesq
+  >>> arr (Seq.of_list #> filter_unfinished_statesq) |> mk_unreturned_statesq
 
 fun mk_df_post_unreturned_unfinished_statesq ctxt =
   mk_unfinished_unreturned_statesq (LGoals_Results_TMV.enum_df_post_children2 mk_exn) ctxt

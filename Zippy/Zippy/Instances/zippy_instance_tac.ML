@@ -18,7 +18,7 @@ sig
 
     type @{AllT_args} data = {
       meta : Base_Data.AMeta.metadata,
-      empty_action : @{AllT_args} Base_Data.PAction.action,
+      empty_action : int -> @{AllT_args} Base_Data.PAction.action,
       result_action : Result_Action.result -> @{AllT_args} Base_Data.PAction.action,
       prio_sq_co : @{AllT_args} PResults.prio_sq_co,
       tac : (@{ParaT_args} Base_Data.GFocus.focus, Tac_AAM.ztactic) morph}
@@ -66,7 +66,7 @@ local open Base_Data
 in
 type @{AllT_args} data = {
   meta : AMeta.metadata,
-  empty_action : @{AllT_args} PAction.action,
+  empty_action : int -> @{AllT_args} PAction.action,
   result_action : PResults.result -> @{AllT_args} PAction.action,
   prio_sq_co : @{AllT_args} PResults.prio_sq_co,
   tac : (@{ParaT_args} GFocus.focus, Tac_AAM.ztactic) morph}
