@@ -186,16 +186,15 @@ fun gen_repeat_step_queue step_queue mk_unfinished_statesq =
       (if the_default 1 opt_fuel <= 0
       then (@{log Logger.DEBUG} ctxt (fn _ => Pretty.block [
             Pretty.str "Ran out of fuel after ", Show.int steps, Pretty.str " step(s)."
-        ] |> Pretty.string_of);
+          ] |> Pretty.string_of);
         case_unfinished steps queue)
       else Co.AE.catch'
-        (fn c => c |>
-          (@{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
-            Pretty.str "Running one step.",
-            Pretty.block [Pretty.str "Step count: ", Show.int steps, Pretty.str "."],
-            Pretty.block [Pretty.str "Remaining fuel: ", pretty_fuel opt_fuel]
-          ] |> Pretty.block |> Pretty.string_of);
-          step_queue queue)
+        (fn c => (@{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
+              Pretty.str "Running one step.",
+              Pretty.block [Pretty.str "Step count: ", Show.int steps, Pretty.str "."],
+              Pretty.block [Pretty.str "Remaining fuel: ", pretty_fuel opt_fuel]
+            ] |> Pretty.block |> Pretty.string_of);
+          step_queue queue c)
         >>= (fn x => x |>
           let val steps = steps + 1
           in AC.opt

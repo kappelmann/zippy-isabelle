@@ -193,7 +193,7 @@ val parse_args_entries =
     val parse_entry = Parse_Key_Value.parse_entry' (Scan.lift PAS.parse_key)
       (K (Scan.lift (Parse.$$$ ":"))) parse_value
     val default_entries = PAS.empty_entries ()
-  in PAS.parse_entries_required' Scan.repeat1 [] parse_entry default_entries end
+  in PAS.parse_entries_required' Scan.repeat1 true [] parse_entry default_entries end
 
 fun args_attribute entries = Thm.declaration_attribute (K (map_data (PAS.merge_entries entries)))
 
@@ -219,7 +219,7 @@ val parse_arg_config_entries =
     val parse_entry = Parse_Key_Value.parse_entry' (Scan.lift PACA.parse_key)
       (K (Scan.lift (Parse.$$$ ":"))) parse_value
     val default_entries = PACA.empty_entries ()
-  in PACA.parse_entries_required' Scan.repeat1 [] parse_entry default_entries end
+  in PACA.parse_entries_required' Scan.repeat1 true [] parse_entry default_entries end
 
 fun arg_config_attribute entries=
   Thm.declaration_attribute (K (map_data (PAS.merge_entries (PAA_entries_from_PACA_entries entries))))

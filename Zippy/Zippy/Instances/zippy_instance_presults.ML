@@ -23,8 +23,18 @@ sig
     val empty_action : @{ParaT_args encl: "(" ")"} Exn.ME.exn ->
       @{AllT_args} Base_Data.PAction.action
 
+    (*sets passed paction if no successful action applications have been made;
+    otherwise returns passed action*)
+    val orelse_empty_action : @{AllT_args} Base_Data.PAction.action -> Base_Data.AMeta.metadata ->
+      (prio -> (@{ParaT_args} @{AllT_args} zipper, @{AllT_args} Base_Data.PAction.paction) morph) ->
+      int -> @{AllT_args} Base_Data.PAction.action
+    val orelse_empty_action_focus : @{AllT_args} Base_Data.PAction.action -> Base_Data.AMeta.metadata ->
+      (Base_Data.GFocus.focus -> @{AllT_args} Base_Data.PAction.paction) ->
+      int -> @{AllT_args} Base_Data.PAction.action
+
     type @{AllT_args} data = {
       meta : Base_Data.AMeta.metadata,
+      (*taking counter of successful action applications*)
       empty_action : int -> @{AllT_args} Base_Data.PAction.action,
       result_action : result -> @{AllT_args} Base_Data.PAction.action,
       presults : Base_Data.GFocus.focus -> (@{ParaT_args} @{AllT_args} ZLP.Z4.zipper,
@@ -91,6 +101,16 @@ fun paction empty_action = PAction_PResults.paction_from_presults empty_action
   (fn _ => fn _ => arr Action_App_Num.inc_action_app_num)
 
 fun empty_action exn _ = PAction_More.disable_paction exn >>> arr PAction_More.AResult.Unchanged
+
+fun orelse_empty_action empty_action meta_else paction_else counter = if counter = 0
+  then (fn p => fn z => paction_else p z
+    >>= arr (fn paction_else => Lens4.PAction.modifier (Library.K paction_else, z)
+    |> (fn z => Lens4.Meta.modifier (Library.K meta_else, z))
+    |> Mixin4.PAction.AResult.Unchanged))
+  else empty_action
+
+fun orelse_empty_action_focus empty_action meta_else paction_else =
+  orelse_empty_action empty_action meta_else (Library.K (arr (Lens4.Focus.getter #> paction_else)))
 
 local open Base_Data
 in

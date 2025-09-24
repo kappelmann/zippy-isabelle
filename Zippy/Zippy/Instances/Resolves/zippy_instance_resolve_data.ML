@@ -45,15 +45,14 @@ val default_update_parser = PU.nonempty_code (K "default update must not be empt
 val update_parser = PU.nonempty_code (K "update must not be empty")
 val update_key_parser = PU.filter (curry (op <=) 0) (PU.fail (K "index must be greater than 0"))
   Parse.nat
-val opt_updates_parser = Parse.list (Parse.underscore >> K NONE || update_parser >> SOME)
+val opt_updates_parser = Parse.list (Parse.maybe update_parser)
 val key_updates_parser =
   PU.distinct_list (eq_fst (op =)) (K (K "updates must not contain duplicate keys"))
   (Parse.list (update_key_parser --| Parse.$$$ ":" -- update_parser))
-val updates_parser = (Parse.$$$ "["
-  |-- (PU.nonempty_list (K "") key_updates_parser
-  || opt_updates_parser >>
-    (tag_list 1 #> map_filter (fn (_, NONE) => NONE | (i, SOME x) => SOME (i, x))))
-  --| Parse.$$$ "]")
+val updates_parser = Args.bracks (
+  PU.nonempty_list (K "") key_updates_parser
+  || (opt_updates_parser
+    >> (tag_list 1 #> map_filter (fn (_, NONE) => NONE | (i, SOME x) => SOME (i, x)))))
 
 val mk_cud_parser = PU.nonempty_code (K "copy update data function must not be empty")
 val prio_sq_co_parser = PU.nonempty_code (K "priority result sequence coroutine must not be empty")
@@ -175,7 +174,7 @@ sig
 end
 
 functor Zippy_Instance_Resolve_Data(
-    structure FI_Resolve_Data : FUNCTOR_INSTANCE_BASE (*target structure for Resolve_Data*)
+    structure FI_Resolve_Data : FUNCTOR_INSTANCE_BASE (*target path for Resolve_Data*)
     structure Z : ZIPPY_INSTANCE_RESOLVE
     structure TI : TERM_INDEX
     val key_of_thm : thm -> term
@@ -185,8 +184,7 @@ functor Zippy_Instance_Resolve_Data(
       @{AllT_args} Z.Result_Action.mk_copy_update_data,
       Z.Base_Data.AAMeta.P.progress,
       @{AllT_args} Z.PResults.prio_sq_co,
-      term * @{AllT_args} Z.Resolve.data -> bool)
-      Zippy_Instance_Resolve_Data_Args.PCA.entries
+      term * @{AllT_args} Z.Resolve.data -> bool) Zippy_Instance_Resolve_Data_Args.PCA.entries
     structure Log : ZIPPY_LOGGER_MIXIN_BASE
   ) : ZIPPY_INSTANCE_RESOLVE_DATA =
 struct
@@ -322,8 +320,8 @@ val parse_add_arg_entries =
     val parse_value = PAA.parse_entry (PAA.get_empty_action parsers)
       (PAA.get_default_update parsers) (PAA.get_updates parsers)
       (PAA.get_mk_cud parsers) (PAA.get_progress parsers) (PAA.get_prio_sq_co parsers)
-    val parse_entry = Parse_Key_Value.parse_entry PAA.parse_key (K PU.eq) parse_value
-  in PAA.parse_entries_required Scan.repeat1 [] parse_entry add_default_entries end
+    val parse_entry = Parse_Key_Value.parse_entry PAA.parse_key (K (Parse.$$$ ":")) parse_value
+  in PAA.parse_entries_required Scan.repeat true [] parse_entry add_default_entries end
 
 fun ZRDArgs_substructure_op substructure operation =
   MCU.flat_read ["Zippy_Instance_Resolve_Data_Args.", substructure, ".", operation]
@@ -358,9 +356,9 @@ val parse_config_arg_entries =
     val parse_value = PCA.parse_entry (PCA.get_empty_action parsers)
       (PCA.get_default_update parsers) (PCA.get_mk_cud parsers) (PCA.get_progress parsers)
       (PCA.get_prio_sq_co parsers) (PCA.get_del_select parsers)
-    val parse_entry = Parse_Key_Value.parse_entry PCA.parse_key (K PU.eq) parse_value
+    val parse_entry = Parse_Key_Value.parse_entry PCA.parse_key (K (Parse.$$$ ":")) parse_value
     val default_entries = PCA.empty_entries ()
-  in PCA.parse_entries_required Scan.repeat1 [] parse_entry default_entries end
+  in PCA.parse_entries_required Scan.repeat1 true [] parse_entry default_entries end
 
 fun config_attribute (entries, pos) =
   let
@@ -382,11 +380,11 @@ fun config_attribute (entries, pos) =
 
 val parse_entries =
   let
-    val parse_value = PM.parse_entry parse_add_arg_entries (Scan.option del_arg_parser)
+    val parse_value = PM.parse_entry parse_add_arg_entries (PU.option del_arg_parser)
       parse_config_arg_entries
-    val parse_entry = Parse_Key_Value.parse_entry PM.parse_key (K (Parse.$$$ ":")) parse_value
+    val parse_entry = Parse_Key_Value.parse_entry PM.parse_key (K (Scan.succeed "")) parse_value
     val default_entries = PM.empty_entries ()
-  in PM.parse_entries_required Scan.repeat1 [] parse_entry default_entries end
+  in PM.parse_entries_required Parse.and_list1 true [] parse_entry default_entries end
 
 fun attribute (entries, pos) =
   let
@@ -394,7 +392,7 @@ fun attribute (entries, pos) =
     val add_attr = PM.get_add_safe entries
       |> (fn SOME entries => add_attribute (entries, pos) | NONE => default_attr)
     val del_attr = PM.get_del_safe entries
-      |> (fn SOME entries => del_attribute (entries, pos) | NONE => default_attr)
+      |> (fn SOME sel => del_attribute (sel, pos) | NONE => default_attr)
     val config_attr = PM.get_config_safe entries
       |> (fn SOME entries => config_attribute (entries, pos) | NONE => default_attr)
   in AU.apply_attribute config_attr #> AU.apply_attribute del_attr #> add_attr end

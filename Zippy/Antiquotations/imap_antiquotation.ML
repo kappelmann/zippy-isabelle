@@ -163,10 +163,10 @@ val parse_config_args =
     val parse_value = PCA.parse_entry (Scan.lift (PA.get_sep parsers))
       (Scan.lift (PA.get_encl parsers)) (Scan.lift (PA.get_encl_inner parsers))
       (PA.get_start parsers) (PA.get_stop parsers)
-    val parse_entry = Parse_Key_Value.parse_entry'
-      (Scan.lift PCA.parse_key) (K (Scan.lift (Parse.$$$ ":"))) parse_value
+    val parse_entry = Parse_Key_Value.parse_entry' (Scan.lift PCA.parse_key)
+      (K (Scan.lift (Parse.$$$ ":"))) parse_value
     val default_entries = PCA.empty_entries ()
-  in PCA.parse_entries_required' Scan.repeat1 [] parse_entry default_entries end
+  in PCA.parse_entries_required' Scan.repeat1 true [] parse_entry default_entries end
 
 fun attribute entries = Thm.declaration_attribute (K (map_config_args (PCA.merge_entries entries)))
 

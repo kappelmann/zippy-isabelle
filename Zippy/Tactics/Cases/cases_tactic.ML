@@ -123,4 +123,5 @@ fun cases_pattern_tac simp match opt_rule patterns facts ctxt =
       val ps = map (Option.map select) patterns
     in cases_find_insts_tac simp opt_rule ps facts ctxt i st end
   in Tactic_Util.SUBGOAL_DATA I tac end
+
 end

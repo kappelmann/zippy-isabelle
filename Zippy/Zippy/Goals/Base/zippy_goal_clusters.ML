@@ -146,23 +146,13 @@ val is_finished = get_state #> TS.is_finished
 val has_meta_vars = get_state #> TS.has_meta_vars
 val meta_vars = get_state #> TS.meta_vars
 
+(*TODO: double-check if first-order matching would be sufficient*)
 val finish_cluster_state_tac =
   let
-    (*TODO: create separate modul for this*)
-    val norms = Unification_Util.beta_eta_short_norms_unif
-    fun unify x =
-      let
-        val unify_types = Unification_Util.unify_types
-        val fail_unify = Unification_Combinator.fail_unify
-        val add_fallback = Unification_Combinator.add_fallback_unifier
-        val decomp_comb_higher = add_fallback
-          (Higher_Order_Pattern_Decomp_Unification.e_unify unify) fail_unify
-        val higherp_decomp_comb_higher = add_fallback
-          (Higher_Order_Pattern_Unification.e_unify unify_types decomp_comb_higher) fail_unify
-        val fo_higherp_decomp_comb_higher = add_fallback
-          (First_Order_Unification.e_unify unify_types) higherp_decomp_comb_higher
-      in fo_higherp_decomp_comb_higher x end
-  in Unify_Resolve_Base.unify_resolve_tac norms unify end
+    val norms = Mixed_Unification.norms_first_higherp_match
+    val match = Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match
+      |> Unification_Combinator.flip_match
+  in Unify_Resolve_Base.unify_resolve_tac norms match end
 
 fun finish_cluster_states ctxt cluster_states = get_clustered_state
   #> HEADGOAL (RANGE (List.map (fn cluster_state => finish_cluster_state_tac cluster_state ctxt)

@@ -5,145 +5,24 @@ imports
   HOL.Lifting_Set
   Cases_Tactics_HOL
   Induction_Tactics
-  Zippy_Instance_Auto
+  Zippy_Instance_Auto_HOL
 begin
 
 (* ML\<open>
   Options.put_default "editor_tracing_messages" "8000"
 \<close> *)
 
+ML\<open>val zippy_tac = Zippy_Auto.Run.zippy_tac\<close>
+
 ML\<open>
 local open Zippy; open ZLP MU; open Mo SC A
 in
-fun orelse_empty_action empty_action meta_else paction_else counter = if counter = 0
-  then (fn _ => fn z => paction_else z
-    >>= arr (fn paction_else => Lens4.PAction.modifier (Library.K paction_else, z)
-    |> (fn z => Lens4.Meta.modifier (Library.K meta_else, z))
-    |> Mixin4.PAction.AResult.Unchanged))
-  else empty_action
-fun orelse_empty_action_focus empty_action meta_else paction_else =
-  orelse_empty_action empty_action meta_else (arr (Lens4.Focus.getter #> paction_else))
 val cases_tac = Cases_Tactic_HOL.cases_pattern_tac false
-  (Mixed_Unification.first_higherp_decomp_e_match Unification_Combinator.fail_match)
+  (Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match)
 val induct_tac = Induction_Tactic_HOL.induct_pattern_tac false
-  (Mixed_Unification.first_higherp_decomp_e_match Unification_Combinator.fail_match)
+  (Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match)
 end
 \<close>
-
-declare [[zauto_init_ac \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding classical_slow_step}
-    fun descr tac = Lazy.lazy (fn _ => Pretty.breaks [
-        Pretty.str "Classical.slow_step ORELSE Object_Logic.atomize_prems.",
-        Pretty.block [Pretty.str "Current: ", Pretty.str tac]
-      ] |> Pretty.block |> Pretty.string_of)
-    val empty_action = PResults.empty_action Util.exn
-    val result_action = Result_Action.action (Library.K (C.id ())) Result_Action.copy_update_data
-    fun atomize_prems_ztac ctxt = Object_Logic.atomize_prems_tac ctxt #> CHANGED
-      |> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
-      |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 Tac_AAM.madd
-    val {meta = atomize_meta, paction = atomize_paction} = {
-      empty_action = Library.K empty_action,
-      meta = Mixin4.Meta.Meta.metadata (id, descr "atomize_prems"),
-      result_action = result_action,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH,
-      tac = Ctxt.with_ctxt (atomize_prems_ztac #> arr)}
-      |> Tac.paction_data_from_data Util.exn
-    fun unsafe_ztac ctxt = Classical.appWrappers ctxt
-        (Classical.inst_step_tac ctxt APPEND' Classical.unsafe_step_tac ctxt)
-      |> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val {meta = unsafe_meta, paction = unsafe_paction} = {
-      empty_action = orelse_empty_action_focus empty_action atomize_meta atomize_paction,
-      meta = Mixin4.Meta.Meta.metadata (id, descr "inst_step APPEND unsafe_step"),
-      result_action = result_action,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM,
-      tac = Ctxt.with_ctxt (unsafe_ztac #> arr)}
-      |> Tac.paction_data_from_data Util.exn
-    fun safe_ztac ctxt = Classical.safe_tac ctxt |> SELECT_GOAL
-      |> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
-      |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 Tac_AAM.madd
-    val data = {
-      empty_action = orelse_empty_action_focus empty_action unsafe_meta unsafe_paction,
-      meta = Mixin4.Meta.Meta.metadata (id, descr "safe_tac"),
-      result_action = result_action,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.VERY_HIGH,
-      tac = Ctxt.with_ctxt (safe_ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
-
-
-declare [[zauto_init_ac \<open>
-  let
-    open Zippy; open ZLP MU; open Mo SC A
-    val id = @{binding asm_full_simp}
-    fun descr tac = Lazy.lazy (fn _ => Pretty.breaks [
-        Pretty.str "safe_asm_full_simp_tac ORELSE unsafe safe_asm_full_simp_tac.",
-        Pretty.block [Pretty.str "Current: ", Pretty.str tac]
-      ] |> Pretty.block |> Pretty.string_of)
-    val empty_action = PResults.empty_action Util.exn
-    fun unsafe_ztac ctxt = asm_full_simp_tac ctxt #> CHANGED
-      |> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val {meta = unsafe_meta, paction = unsafe_paction} = {
-      empty_action = Library.K empty_action,
-      meta = Mixin4.Meta.Meta.metadata (id, descr "asm_full_simp_tac"),
-      result_action = Result_Action.action (Library.K (C.id ())) Result_Action.copy_update_data,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH,
-      tac = Ctxt.with_ctxt (unsafe_ztac #> arr)}
-      |> Tac.paction_data_from_data Util.exn
-    fun safe_ztac ctxt = safe_asm_full_simp_tac ctxt #> CHANGED
-      |> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
-      |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 Tac_AAM.madd
-    val safe_empty_action = orelse_empty_action_focus empty_action unsafe_meta unsafe_paction
-    val data = {
-      empty_action = safe_empty_action,
-      meta = Mixin4.Meta.Meta.metadata (id, descr "safe_asm_full_simp_tac"),
-      result_action = Result_Action.action (Library.K (C.id ())) Result_Action.copy_update_data,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH1,
-      tac = Ctxt.with_ctxt (safe_ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
-(* declare [[zauto_init_ac \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding auto_tac}
-    fun tac ctxt = auto_tac ctxt |> CHANGED |> SELECT_GOAL
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising (tac ctxt)
-      |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 Tac_AAM.madd
-    val mk_cud = Result_Action.copy_update_data
-    val action_data = {
-      empty_action = PResults.empty_action Util.exn,
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH,
-      tac = Ctxt.with_ctxt (ztac #> arr)
-    }
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, action_data)]
-      >>> Up3.morph
-  in (id, init_ac) end\<close>]] *)
-declare [[zauto_init_ac \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding blast}
-    (* TODO depth and time limit?*)
-    fun tac ctxt i state = Seq.make (fn _ => Blast.depth_tac ctxt 4 i state |> Seq.pull)
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising (tac ctxt)
-      |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 Tac_AAM.madd
-    val mk_cud = Result_Action.copy_update_data
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.LOW,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
 
 ML\<open>
   val HEADGOAL_SOLVED = HEADGOAL o SOLVED'
@@ -242,7 +121,7 @@ primrec butlast :: "'a list \<Rightarrow> 'a list" where
 
 lemma set_rec: "set xs = rec_list {} (\<lambda>x _. insert x) xs"
   supply
-  [[zauto_init_ac \<open>
+  [[zippy_init_gcs \<open>
     let
       open Zippy; open ZLP MU; open SC A
       val id = @{binding induct}
@@ -1013,7 +892,7 @@ hide_const (open) coset
 
 subsubsection \<open>\<^const>\<open>Nil\<close> and \<^const>\<open>Cons\<close>\<close>
 
-declare [[zauto_init_ac \<open>
+declare [[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding induct}
@@ -1090,7 +969,7 @@ by (tactic \<open>timed_tacs NONE @{context}\<close>)
 
 lemma length_tl [simp]: "length (tl xs) = length xs - 1"
 supply
-[[zauto_init_ac \<open>
+[[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding cases}
@@ -1134,7 +1013,7 @@ by (metis Suc_le_D[of n] Suc_le_mono[of n] Suc_length_conv[of _ xs])
 lemma impossible_Cons: "length xs \<le> length ys \<Longrightarrow> xs = x # ys = False"
 by (tactic \<open>timed_tacs NONE @{context}\<close>)
 
-declare [[zauto_init_ac \<open>
+declare [[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding cases}
@@ -1188,7 +1067,7 @@ next
   case (Cons x xs ys zs ws) then show ?case
   apply -
 supply
-[[zauto_init_ac \<open>
+[[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding cases2}
@@ -1209,7 +1088,7 @@ supply
       Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
   in (id, init_ac) end\<close>]]
 supply
-[[zauto_init_ac \<open>
+[[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding cases3}
@@ -1230,7 +1109,7 @@ supply
       Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
   in (id, init_ac) end\<close>]]
 supply
-[[zauto_init_ac \<open>
+[[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding cases4}
@@ -1311,8 +1190,8 @@ proof (induct xs arbitrary: ys zs ts)
   case (Cons x xs)
   then show ?case
     apply -
-    supply [[zauto_init_ac del: \<open>@{binding cases}\<close>]]
-supply [[zauto_init_ac \<open>
+    supply [[zippy_init_gcs del: \<open>@{binding cases}\<close>]]
+supply [[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding cases}
@@ -1607,8 +1486,8 @@ lemma singleton_rev_conv [simp]: "([x] = rev xs) = ([x] = xs)"
 by (cases xs) (tactic \<open>timed_tacs NONE @{context}\<close>)
 
 lemma rev_is_rev_conv [iff]: "(rev xs = rev ys) = (xs = ys)"
-supply [[zauto_init_ac del: \<open>@{binding induct}\<close>]]
-supply [[zauto_init_ac \<open>
+supply [[zippy_init_gcs del: \<open>@{binding induct}\<close>]]
+supply [[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding induct}
@@ -1630,8 +1509,8 @@ supply [[zauto_init_ac \<open>
     fun init_ac _ focus =
       Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
   in (id, init_ac) end\<close>]]
-supply [[zauto_init_ac del: \<open>@{binding cases}\<close>]]
-supply [[zauto_init_ac \<open>
+supply [[zippy_init_gcs del: \<open>@{binding cases}\<close>]]
+supply [[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding cases}
@@ -1785,7 +1664,7 @@ next
       (* apply slow_step *)
       (* apply slow_step *)
       (* apply slow_step *)
-      supply [[zauto_init_ac del: \<open>@{binding cases}\<close>]]
+      supply [[zippy_init_gcs del: \<open>@{binding cases}\<close>]]
       (* supply [[ML_map_context \<open>Logger.set_log_levels zippy_base_logger Logger.DEBUG\<close>]] *)
      apply (tactic \<open>zippy_tac NONE @{context}\<close>)
      done
@@ -1933,8 +1812,8 @@ lemma concat_eq_concat_iff: "\<forall>(x, y) \<in> set (zip xs ys). length x = l
 proof (induct xs arbitrary: ys)
   case (Cons x xs ys)
   thus ?case apply -
-    supply [[zauto_init_ac del: \<open>@{binding cases}\<close>]]
-supply [[zauto_init_ac \<open>
+    supply [[zippy_init_gcs del: \<open>@{binding cases}\<close>]]
+supply [[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding cases2}
@@ -2347,7 +2226,7 @@ next
     with n obtain n' where n': "length xs - n = Suc n'"
       apply -
       (* apply (cases "length xs - n") *)
-supply [[zauto_init_ac \<open>
+supply [[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding cases'}
@@ -2561,7 +2440,7 @@ lemma last_list_update:
 lemma butlast_list_update:
   "butlast(xs[k:=x]) =
   (if k = size xs - 1 then butlast xs else (butlast xs)[k:=x])"
-supply [[zauto_init_ac \<open>
+supply [[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding cases'}
@@ -2632,7 +2511,7 @@ lemma take_Suc: "xs \<noteq> [] \<Longrightarrow> take (Suc n) xs = hd xs # take
   by(clarsimp simp add:neq_Nil_conv)
 
 lemma drop_Suc: "drop (Suc n) xs = drop n (tl xs)"
-supply [[zauto_init_ac \<open>
+supply [[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding cases'}
@@ -2753,7 +2632,7 @@ qed
 
 lemma take_drop: "take n (drop m xs) = drop m (take (n + m) xs)"
 apply (induct m arbitrary: xs n)
-supply [[zauto_init_ac \<open>
+supply [[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding cases'}
@@ -3164,7 +3043,7 @@ proof (induct xs)
   case (Cons a xs)
   then show ?case
   apply -
-  supply [[zauto_init_ac \<open>
+  supply [[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open Mo SC A
     val id = @{binding subst}
@@ -3968,7 +3847,7 @@ proof (induct m arbitrary: i)
   then show ?case
     (* by (subst take_Suc_conv_app_nth) auto *)
   apply -
-  supply [[zauto_init_ac \<open>
+  supply [[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open Mo SC A
     val id = @{binding subst}
@@ -7697,7 +7576,7 @@ qed
 lemma lexord_lex: "(x,y) \<in> lex r = ((x,y) \<in> lexord r \<and> length x = length y)"
 proof (induction x arbitrary: y)
 (* apply (induction x arbitrary: y) *)
-  (* supply [[zauto_init_ac del: \<open>@{binding blast}\<close>]] *)
+  (* supply [[zippy_init_gcs del: \<open>@{binding blast}\<close>]] *)
 (* apply (tactic \<open>zippy_tac NONE @{context}\<close>) *)
   case (Cons a x y) then show ?case
     by (cases y) (force+)
@@ -8275,7 +8154,8 @@ proof -
 qed
 
 theorem equiv_listrel: "equiv A r \<Longrightarrow> equiv (lists A) (listrel r)"
-  by (simp add: equiv_def listrel_refl_on listrel_sym listrel_trans)
+  sorry
+  (* by (simp add: equiv_def listrel_refl_on listrel_sym listrel_trans) *)
 
 lemma listrel_rtrancl_refl[iff]: "(xs,xs) \<in> listrel(r\<^sup>*)"
   using listrel_refl_on[of UNIV, OF refl_rtrancl]

@@ -116,9 +116,10 @@ end
 
 val fresolve_ho_unif_any_first_ztac = gen_resolve_any_first_ztac (General_Util.flip forward_tac)
 fun fresolve_ho_unif_first_ztac progress = single #> fresolve_ho_unif_any_first_ztac progress
-local structure HOPU = Higher_Order_Pattern_Unification
+local structure Match = Mixed_Unification (*FIXME: use same matcher as in other match tactics*)
 in
-val fmatch_tac = Unify_Resolve_Base.unify_fresolve_any_tac HOPU.norms_match HOPU.match
+val fmatch_tac = Unify_Resolve_Base.unify_fresolve_any_tac Match.norms_first_higherp_match
+  (Match.first_higherp_e_match Unification_Combinator.fail_match)
 end
 val fresolve_ho_match_any_first_ztac = gen_resolve_any_first_ztac fmatch_tac
 fun fresolve_ho_match_first_ztac progress = single #> fresolve_ho_match_any_first_ztac progress

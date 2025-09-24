@@ -38,6 +38,8 @@ text \<open>Setup alternative @{command ML_file} command to avoid errors when lo
 This is needed since we provide ML files whose source depends on context variables and that should
 be loadable in different contexts.\<close>
 
+(*FIXME: generalise loading capabilities such that ML code can be reloaded from different places
+and with different contexts.*)
 ML\<open>
   let
     (*adapted from Pure/ML/ml_file.ML (removed duplicated file-loading check by skipping "provide")*)

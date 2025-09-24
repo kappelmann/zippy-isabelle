@@ -186,7 +186,8 @@ sig
     val cons4 : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.AMeta.metadata ->
       @{AllT_args} Base_Data.PAction.paction -> Base_Data.GFocus.focus ->
       (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper, @{AllT_args} ZLP.Z4.zipper) morph
-    (*note: results are added to the back since this keeps the paths of existing nodes unchanged.*)
+    (*Note: results are added to the back since this keeps the paths of existing nodes (e.g. those
+    stored in a queue during search) unchanged.*)
     val snoc5 : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.AAMeta.metadata ->
       Base_Data.Tac_Res.gpos_update -> Base_Data.PAction.prio ->
       (@{ParaT_args} @{AllT_args} ZLP.Z4.zipper, @{AllT_args} ZLP.Z5.zipper) morph

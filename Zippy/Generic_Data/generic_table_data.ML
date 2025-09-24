@@ -120,17 +120,16 @@ val parse_entries =
     val parse_value = PM.parse_entry add_arg_parser del_arg_parser
     val parse_entry = Parse_Key_Value.parse_entry PM.parse_key (K (Parse.$$$ ":")) parse_value
     val default_entries = PM.empty_entries ()
-  in PM.parse_entries_required Parse.and_list1 [] parse_entry default_entries end
+  in PM.parse_entries_required Parse.and_list1 true [] parse_entry default_entries end
 
 fun attribute (entries, pos) =
   let
     fun default_attr (context, thm) = (SOME context, SOME thm)
-    fun apply_attribute attr (x, y) = attr (x, y) |> (fn (x', y') => (the_default x x', the_default y y'))
     val add_attr = PM.get_add_safe entries
       |> (fn SOME entries => add_attribute (entries, pos) | NONE => default_attr)
     val del_attr = PM.get_del_safe entries
       |> (fn SOME entries => del_attribute (entries, pos) | NONE => default_attr)
-  in apply_attribute del_attr #> add_attr end
+  in ML_Attribute_Util.apply_attribute del_attr #> add_attr end
 
 val parse_attribute = PU.position parse_entries >> attribute
   || PU.position add_arg_parser >> add_attribute

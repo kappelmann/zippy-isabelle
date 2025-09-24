@@ -1,7 +1,7 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory Zippy_Instance
   imports
-    ML_Unification.ML_Priorities
+    ML_Unification.ML_Costs_Priorities
     Zippy_Actions_Positions
     Zippy_Lists_Goal_Pos_Updates
     Zippy_Runs
@@ -29,20 +29,20 @@ local
   structure ME = \<^eval>\<open>sfx_ParaT_nargs "Monad_Exception_State_Trans"\<close>(
     structure M = ME; structure S = Ctxt_MSTrans)
 
-  (** arbitrary state **)
-  structure MS = \<^eval>\<open>sfx_ParaT_nargs "IState_Trans"\<close>(
+  (** arbitrary state (not needed for now) **)
+  (* structure MS = \<^eval>\<open>sfx_ParaT_nargs "IState_Trans"\<close>(
     structure M = Ctxt_MSTrans; structure SR = Pair_State_Result_Base)
   structure ME = \<^eval>\<open>sfx_ParaT_nargs "IMonad_Exception_State_Trans"\<close>(
     structure M = ME; structure S = MS)
   structure ME : \<^eval>\<open>sfx_ParaT_nargs "MONAD_EXCEPTION_BASE"\<close> =
   struct open ME; type (@{ParaT_args} 'a) t = (unit, @{ParaT_arg 0}, @{ParaT_arg 0}, 'a) t end
   structure MCtxt = \<^eval>\<open>sfx_ParaT_nargs "IMonad_State_State_Trans"\<close>(
-    type ParaT = unit; structure M = Ctxt_MSTrans; structure S = MS)
-  structure Ctxt = Zippy_Ctxt_State_Mixin(Zippy_Ctxt_State_Mixin_Base(MCtxt))
+    type ParaT = unit; structure M = Ctxt_MSTrans; structure S = ME) *)
 
-  val exn : @{ParaT_args encl: "(" ")"} ME.exn = ()
+  structure Ctxt = Zippy_Ctxt_State_Mixin(Zippy_Ctxt_State_Mixin_Base(Ctxt_MSTrans))
 
 (* instance and utilities *)
+  val exn : @{ParaT_args encl: "(" ")"} ME.exn = ()
   structure Zippy_Base = Zippy_Instance_Base(structure ME = ME; type prio = Prio.prio)
   structure Logging =
   struct
@@ -84,14 +84,15 @@ open Zippy_Base Zippy Zippy_PAction Zippy_PResults Zippy_Tac
 (** add loggers **)
 structure Logging = Logging
 (** add monads and priority **)
-structure State_MSTrans = MS
-structure State = Zippy_State_Mixin(Zippy_State_Mixin_Base(MS))
+(* structure State_MSTrans = MS
+structure State = Zippy_State_Mixin(Zippy_State_Mixin_Base(MS)) *)
 structure Ctxt_MSTrans = Ctxt_MSTrans
 structure Ctxt = Ctxt
 structure Prio = Prio
 (** add instance specific utilities **)
 structure Util =
 struct
+  val exn = exn
   local
     open ZLP
     structure ZN = Zippy_Node(structure Z = ZLP; structure Exn = Exn)
@@ -104,16 +105,16 @@ struct
     fun node_no_next2 parent_top_meta_vars gcluster = ZN.node_no_next2 exn
       (Node.co2 parent_top_meta_vars gcluster)
   in
-  val exn = exn
-  fun run_monad {ctxt : Proof.context, state : @{ParaT_arg 0}} :
-    (@{ParaT_args} 'a) M.t -> {ctxt : Proof.context, state : @{ParaT_arg 0}, result : 'a} option =
-    State_MSTrans.run state #> Ctxt_MSTrans.run ctxt #> Option.map (fn x =>
+  fun run_monad {ctxt : Proof.context(*, state : @{ParaT_arg 0}*)} :
+    (@{ParaT_args} 'a) M.t -> {ctxt : Proof.context(*, state : @{ParaT_arg 0}*), result : 'a} option =
+    (*State_MSTrans.run state #>*) Ctxt_MSTrans.run ctxt #> Option.map (fn x =>
       let
         val ctxt = Ctxt_MSTrans.SR.state x
-        val x = Ctxt_MSTrans.SR.value x
+        (* val x = Ctxt_MSTrans.SR.value x
         val state = State_MSTrans.SR.state x
-        val result = State_MSTrans.SR.value x
-      in {ctxt = ctxt, state = state, result = result} end)
+        val result = State_MSTrans.SR.value x *)
+        val result = Ctxt_MSTrans.SR.value x
+      in {ctxt = ctxt(*, state = state*), result = result} end)
   fun init_thm_state (state : Zippy_Thm_State.state) : (@{ParaT_args} @{AllT_args} Z1.zipper) M.t =
     LGoals.init_state
       (node_no_next1 #> ZN.container_no_parent exn #> Container.init_container1 #> Z1.ZM.Zip.morph)
@@ -140,8 +141,8 @@ local
     structure GClusters = Mixin1.GClusters; structure GCluster = Mixin2.GCluster)
   structure Goals_Results = Zippy_Goals_Results_Mixin_Base(open Goals
     structure GClusters_Results = Mixin1.Results; structure GCluster_Results = Mixin2.Results)
-  structure Goals_Results_TMV = Zippy_Goals_Results_Top_Meta_Vars_Mixin_Base(
-      open Goals_Results; structure Top_Meta_Vars = Mixin2.Top_Meta_Vars)
+  structure Goals_Results_TMV = Zippy_Goals_Results_Top_Meta_Vars_Mixin_Base( open Goals_Results
+    structure Top_Meta_Vars = Mixin2.Top_Meta_Vars)
   structure PAction = Zippy_PAction_Mixin(open Base_Mixins
     structure PAction = Mixin4.PAction; structure Log = Logging.PAction; structure Show = Show4)
   structure Logging =
@@ -168,11 +169,11 @@ local
     structure Z = ZLP
     structure Run = Zippy_Run_Mixin_Base(
       structure Step = Step; structure Action_App_Meta = Mixin5.Meta)
-    type @{AllT_args} state = {ctxt : Proof.context, state : @{ParaT_arg 0}}
-    fun seq_from_monad {ctxt, state} =
-      State_MSTrans.eval state #> Ctxt_MSTrans.eval ctxt #> the_default Seq.empty
-    fun with_state f = Ctxt.with_ctxt (fn ctxt => State.with_state (fn state =>
-      f {ctxt = ctxt, state = state}))
+    type @{AllT_args} state = {ctxt : Proof.context(*, state : @{ParaT_arg 0}*)}
+    fun seq_from_monad {ctxt(*, state*)} =
+      (*State_MSTrans.eval state #>*) Ctxt_MSTrans.eval ctxt #> the_default Seq.empty
+    fun with_state f = Ctxt.with_ctxt (fn ctxt => (*State.with_state (fn state =>*)
+      f {ctxt = ctxt(*, state = state*)})
     val mk_exn = Library.K Util.exn
     structure Log = Logging.Run; structure Log_LGoals = Zippy.Logging.LGoals
     structure Log_PAction_Queue = Logging.PAction_Queue; structure Log_Step = Logging.Step
@@ -185,18 +186,6 @@ struct
   open Run
 end
 end
-end
-\<close>
-
-(*grounding utilities needed to store zippy data/functions as context data*)
-ML\<open>
-structure ML_Gen =
-struct
-open ML_Gen
-val ground_zipper_types =
-  let val mk_groundT = K "unit"
-  in ML_Gen.setup_zipper_args' (NONE, SOME mk_groundT) (NONE, SOME mk_groundT) end
-val reset_zipper_types = ML_Gen.setup_zipper_args' (NONE, NONE) (NONE, NONE)
 end
 \<close>
 

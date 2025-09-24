@@ -110,7 +110,8 @@ fun delete (t, select) context = map_index (fn ti =>
     TI.delete select key ti)
     handle Term_Index_Base.DELETE =>
       (@{log Logger.WARN} (Context.proof_of context) (fn _ => Pretty.block [
-        Pretty.str "No matching data for key ", Syntax.pretty_term ctxt key, Pretty.str " found."
+        Pretty.str "No data for key ", Syntax.pretty_term ctxt key,
+        Pretty.str " and given selector found."
       ] |> Pretty.string_of);
       ti)
   end) context
@@ -118,12 +119,12 @@ fun delete (t, select) context = map_index (fn ti =>
 val binding = Binding.make (FI.id, FI.pos)
 
 val add_arg_parser =
-  (PU.parenths (Parse.term --| Parse.$$$ "," -- PU.nonempty_code (K "value to add must not be empty"))
+  (Args.parens (Parse.term --| Parse.$$$ "," -- PU.nonempty_code (K "value to add must not be empty"))
     >> Either.Left
   || PU.nonempty_code (K "data to add must not be empty") >> Either.Right)
   |> Scan.repeat1
 val del_arg_parser =
-  (PU.parenths (Parse.term --| Parse.$$$ "," --
+  (Args.parens (Parse.term --| Parse.$$$ "," --
     PU.nonempty_code (K "selector for deletion must not be empty")) >> Either.Left
   || PU.nonempty_code (K "data for deletion must not be empty") >> Either.Right)
   |> Scan.repeat1
@@ -148,7 +149,7 @@ val parse_entries =
     val parse_value = PM.parse_entry add_arg_parser del_arg_parser
     val parse_entry = Parse_Key_Value.parse_entry PM.parse_key (K (Parse.$$$ ":")) parse_value
     val default_entries = PM.empty_entries ()
-  in PM.parse_entries_required Parse.and_list1 [] parse_entry default_entries end
+  in PM.parse_entries_required Parse.and_list1 true [] parse_entry default_entries end
 
 fun attribute (entries, pos) =
   let

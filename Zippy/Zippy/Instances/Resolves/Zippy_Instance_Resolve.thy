@@ -13,6 +13,7 @@ in structure Zippy = struct open Zippy Zippy_Resolve end end\<close>
 (*ground polymorphic types since only ground types can be stored in the generic context.*)
 setup\<open>Context.theory_map ML_Gen.ground_zipper_types\<close>
 ML_file\<open>zippy_instance_resolve_data.ML\<close>
+ML_file\<open>zippy_instance_resolves_data.ML\<close>
 (*reset grounding*)
 setup\<open>Context.theory_map ML_Gen.reset_zipper_types\<close>
 

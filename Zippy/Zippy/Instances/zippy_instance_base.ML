@@ -75,7 +75,7 @@ functor Zippy_Instance_Base(
     include ZIPPY_INSTANCE_BASE
     structure Container :
     sig
-     \<^imap>\<open>\<open>{i}\<close> => \<open>
+      \<^imap>\<open>\<open>{i}\<close> => \<open>
       val container{i} : @{AllT_args} ZLP.ZP.ZGPos.Z{i}.ZM.container ->
         @{AllT_args} ZLP.ZP.ZLPos.Z{i}.ZM.container -> @{AllT_args} ZLP.ZP.ZDepth.Z{i}.ZM.container ->
         @{AllT_args} ZLP.ZN.Z{i}.ZM.container -> @{AllT_args} ZLP.Z{i}.ZM.container

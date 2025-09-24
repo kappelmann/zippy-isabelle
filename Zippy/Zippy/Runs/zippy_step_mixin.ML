@@ -93,12 +93,11 @@ fun move_entry_if_may_take_more_results {zipper,...} z = ZP.path_from_zipper4 zi
 
 fun update_goal_results_up_unchanged z = z |> (ZB.top4 >>> arr (rpair Results.empty))
 fun update_goal_results_up_expanded z = Down5.morph z
-  >>= Ctxt.with_ctxt (fn ctxt => fn z => z |>
-    (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
-      Pretty.str "Updating goal results upwards from",
-      Show1.pretty ctxt z
-    ] |> Pretty.block |> Pretty.string_of);
-    LGoals_Results.update_goal_results_up ctxt))
+  >>= Ctxt.with_ctxt (fn ctxt => fn z => (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
+        Pretty.str "Updating goal results upwards from",
+        Show1.pretty ctxt z
+      ] |> Pretty.block |> Pretty.string_of);
+    LGoals_Results.update_goal_results_up ctxt z))
 fun update_goal_results_up_changed z = z |> (ZB.top1 >>> arr (rpair Results.empty))
 
 fun update_unchanged queue = update_goal_results_up_unchanged
@@ -117,16 +116,13 @@ fun update_action_result queue = PAction_Queue.PAction.AResult.merge
 type @{AllT_args} container1 = @{AllT_args} PAction_Queue.container1
 
 fun step_queue queue z = Ctxt.get_ctxt () >>= (fn ctxt => z |>
-  let
-    val _ = @{log Logger.TRACE} ctxt (fn _ => "Pulling minimal entry from queue.")
+  let val _ = @{log Logger.TRACE} ctxt (fn _ => "Pulling minimal entry from queue.")
   in case PAction_Queue.Queue.min_elem queue of
-    NONE => (@{log Logger.DEBUG} ctxt (fn _ => "No more entries in queue.");
-      K NONE)
-  | SOME ((_, e), queue) =>
-      (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
-        Pretty.str "Pulled and moving to entry",
-        Show_Queue_Entry.pretty ctxt e
-      ] |> Pretty.block |> Pretty.string_of);
+    NONE => (@{log Logger.DEBUG} ctxt (fn _ => "No more entries in queue."); K NONE)
+  | SOME ((_, e), queue) => (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
+          Pretty.str "Pulled and moving to entry",
+          Show_Queue_Entry.pretty ctxt e
+        ] |> Pretty.block |> Pretty.string_of);
       Z1.ZM.Zip.morph
       >>> move_entry_if_may_take_more_results e
       >>> Ctxt.with_ctxt (fn ctxt => AC.opt

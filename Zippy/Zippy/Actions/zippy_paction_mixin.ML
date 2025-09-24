@@ -8,12 +8,12 @@ sig
   structure Exn : ZIPPY_EXCEPTION_MIXIN
   sharing type Exn.M.t = M.t
 
-  val no_action : @{ParaT_args encl: "(" ")"} Exn.AE.exn -> @{AllT_args} action
-  val no_paction : @{ParaT_args encl: "(" ")"} Exn.AE.exn -> @{AllT_args} paction
+  val no_action : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> @{AllT_args} action
+  val no_paction : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> @{AllT_args} paction
 
   val set_paction : @{AllT_args} paction -> @{AllT_args} zipper -> @{AllT_args} zipper
 
-  val disable_paction : @{ParaT_args encl: "(" ")"} Exn.AE.exn ->
+  val disable_paction : @{ParaT_args encl: "(" ")"} Exn.ME.exn ->
     (@{ParaT_args} @{AllT_args} zipper) emorph
 
   val get_run_paction : (@{ParaT_args} @{AllT_args} zipper, prio * @{AllT_args} action) morph

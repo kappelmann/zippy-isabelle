@@ -88,7 +88,7 @@ val parse_arg_entries =
     val parse_entry = Parse_Key_Value.parse_entry PA.parse_key (K (Parse.$$$ ":")) parse_value
     val required_keys = []
     val default_entries = PA.empty_entries ()
-  in PA.parse_entries_required Scan.repeat1 required_keys parse_entry default_entries end
+  in PA.parse_entries_required Scan.repeat1 true required_keys parse_entry default_entries end
 
 fun attribute (entries, pos) =
   let
