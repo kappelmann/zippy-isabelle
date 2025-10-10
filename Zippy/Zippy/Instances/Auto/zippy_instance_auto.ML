@@ -3,14 +3,21 @@
 *)
 functor Zippy_Instance_Auto(
     structure FI : FUNCTOR_INSTANCE_BASE
-    structure Z : ZIPPY_INSTANCE_RESOLVE
+    structure Z : ZIPPY_INSTANCE_TACTIC
     structure TI : TERM_INDEX
-    val resolve_init_args : (int -> @{AllT_args} Z.Base_Data.PAction.action,
+    val resolve_init_args : (Z.Base_Data.AAMeta.P.progress,
+      int -> @{AllT_args} Z.Base_Data.PAction.action,
       Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLP.Z2.zipper) Z.emorph,
       @{AllT_args} Z.Result_Action.mk_copy_update_data,
-      Z.Base_Data.AAMeta.P.progress,
       @{AllT_args} Z.PResults.prio_sq_co,
-      term * @{AllT_args} Z.Resolve.data -> bool) Zippy_Instance_Resolve_Data_Args.PCA.entries
+      thm * (term * (thm,
+        Z.Base_Data.AAMeta.P.progress,
+        int -> @{AllT_args} Z.Base_Data.PAction.action,
+        (Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLP.Z2.zipper) Z.emorph) list,
+        @{AllT_args} Z.Result_Action.mk_copy_update_data,
+        @{AllT_args} Z.PResults.prio_sq_co)
+        Zippy_Instance_Hom_Changed_Goals_Data_Args.PD.entries) -> bool)
+        Zippy_Instance_Hom_Changed_Goals_Data_Args.PDC.entries
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
   ) =
@@ -32,6 +39,36 @@ end
     structure TI = Discrimination_Tree
     val init_args = resolve_init_args
     structure Log = Logging\<close>\<close>
+
+structure Simp =
+struct
+  val logger = Logger.setup_new_logger Logging.logger "Simp"
+  \<^functor_instance>\<open>struct_name: Extended_Data
+    functor_name: Extended_Simp_Data
+    id: \<open>FI.prefix_id "simp"\<close>
+    path: \<open>FI.struct_op "Simp"\<close>
+    more_args: \<open>
+      structure Z = Z
+      val init_args = {timeout = SOME 7.0}
+      val parent_logger = logger\<close>\<close>
+  local
+    (*modified version of old section parser in Method that allows backtracking to alternatives
+    when parsing theorems*)
+    fun app {init, attribute,...} thms context =
+      fold_map (Thm.apply_attribute attribute) thms (Context.map_proof init context)
+    fun section ss = Scan.lift (Scan.first ss) --
+      (Scan.repeats (Scan.unless (Scan.lift (Scan.first ss)) Parse_Util.multi_thm))
+      :|-- (fn (m, ths) => Scan.depend (fn context => Scan.succeed (snd (app m ths context), ())))
+
+    fun parse_simp_modifiers more_mods = Simplifier.simp_modifiers' @ more_mods |> section
+    val parse_extended_data = Scan.depend (fn context => Extended_Data.parse_attribute
+      >> (fn attr => (ML_Attribute_Util.attribute_map_context attr context, ())))
+  in
+  fun parse_extended more_mods = Scan.repeat1 (parse_extended_data || parse_simp_modifiers more_mods
+      || Parse_Util.fail (K "extended simp modifers expected"))
+    >> K ()
+  end
+end
 
 local
   open Z

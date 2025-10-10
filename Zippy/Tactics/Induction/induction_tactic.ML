@@ -9,7 +9,7 @@ sig
   val induct_find_tac : bool -> thm option -> (term -> bool) option list -> (term -> bool) ->
     term option list -> thm list -> Proof.context -> int -> tactic
   val induct_pattern_tac : bool -> Unification_Base.matcher -> thm option ->
-    (term * term list) option list -> (term list * term list) option -> term option list ->
+    (term * term list) option list -> term list * term list -> term option list ->
     thm list -> Proof.context -> int -> tactic
 end
 
@@ -85,7 +85,7 @@ fun induct_tac simp opt_rules def_insts arbitrary taking facts ctxt i st =
   Seq.make (fn _ =>
   let
     val _  = @{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
-        Pretty.block [Pretty.str "Running induction tactic for rule ",
+        Pretty.block [Pretty.str "Running induction tactic for rules ",
           Show.option (Show.list (Show.thm ctxt)) opt_rules],
         Pretty.block [Pretty.str "instances: ", pretty_insts ctxt def_insts],
         Pretty.block [Pretty.str "arbitraries: ",
@@ -182,7 +182,7 @@ fun induct_find_tac simp opt_rule inst_ps arbitrary_p taking facts ctxt =
     end)
   in Tactic_Util.SUBGOAL_DATA I tac end
 
-fun induct_pattern_tac simp match opt_rule inst_patterns opt_arbitrary_pattern taking facts ctxt =
+fun induct_pattern_tac simp match opt_rule inst_patterns arbitrary_pattern taking facts ctxt =
   let fun tac subgoal i st =
     let
       val params = Logic.strip_params subgoal
@@ -202,8 +202,7 @@ fun induct_pattern_tac simp match opt_rule inst_patterns opt_arbitrary_pattern t
       fun inst_select p t = not (loose_bvar (t, 0)) andalso matches_pattern p t
       val inst_ps = map (Option.map (apfst single #> prepare_entry #> inst_select)) inst_patterns
       fun arbitrary_select p t = can dest_Free t andalso matches_pattern p t
-      val arbitrary_p = Option.map (prepare_entry #> arbitrary_select) opt_arbitrary_pattern
-        |> the_default (K false)
+      val arbitrary_p = prepare_entry arbitrary_pattern |> arbitrary_select
     in induct_find_tac simp opt_rule inst_ps arbitrary_p taking facts ctxt i st end
   in Tactic_Util.SUBGOAL_DATA I tac end
 

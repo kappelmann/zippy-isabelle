@@ -17,8 +17,6 @@ ML\<open>val zippy_tac = Zippy_Auto.Run.zippy_tac\<close>
 ML\<open>
 local open Zippy; open ZLP MU; open Mo SC A
 in
-val cases_tac = Cases_Tactic_HOL.cases_pattern_tac false
-  (Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match)
 val induct_tac = Induction_Tactic_HOL.induct_pattern_tac false
   (Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match)
 end
@@ -127,7 +125,7 @@ lemma set_rec: "set xs = rec_list {} (\<lambda>x _. insert x) xs"
       val id = @{binding induct}
       val read = Proof_Context.read_term_pattern @{context}
       val inst = [SOME (read "xs :: _", [])]
-      val arbitrary = SOME ([read "_ :: _"], [read "xs"])
+      val arbitrary = ([read "_ :: _"], [read "xs"])
       val taking = []
       val opt_rule = NONE
       fun tac ctxt = induct_tac opt_rule inst arbitrary taking [] ctxt
@@ -898,7 +896,7 @@ declare [[zippy_init_gcs \<open>
     val id = @{binding induct}
     val read = Proof_Context.read_term_pattern @{context}
     val inst = [SOME (read "xs :: _", [])]
-    val arbitrary = SOME ([read "_ :: _"], [read "xs :: _"])
+    val arbitrary = ([read "_ :: _"], [read "xs :: _"])
     val taking = []
     val opt_rule = NONE
     fun tac ctxt = induct_tac opt_rule inst arbitrary taking [] ctxt
@@ -968,29 +966,7 @@ lemma length_rev [simp]: "length (rev xs) = length xs"
 by (tactic \<open>timed_tacs NONE @{context}\<close>)
 
 lemma length_tl [simp]: "length (tl xs) = length xs - 1"
-supply
-[[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding cases}
-    val read = Proof_Context.read_term_pattern @{context}
-    val inst = [SOME (read "xs :: _ list", [])]
-    val opt_rule = NONE
-    fun tac ctxt = cases_tac opt_rule inst [] ctxt
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.LOW,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
-apply (tactic \<open>zippy_tac NONE @{context}\<close>)
-done
+  by (zippy cases xs)
 
 lemma length_0_conv [iff]: "(length xs = 0) = (xs = [])"
 by (tactic \<open>timed_tacs NONE @{context}\<close>)
@@ -1013,26 +989,7 @@ by (metis Suc_le_D[of n] Suc_le_mono[of n] Suc_length_conv[of _ xs])
 lemma impossible_Cons: "length xs \<le> length ys \<Longrightarrow> xs = x # ys = False"
 by (tactic \<open>timed_tacs NONE @{context}\<close>)
 
-declare [[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding cases}
-    val read = Proof_Context.read_term_pattern @{context}
-    val inst = [SOME (read "_ :: _ list", [read "[]", read "_ # _", read "_ @ _"])]
-    val opt_rule = SOME @{thm list.exhaust}
-    fun tac ctxt = cases_tac opt_rule inst [] ctxt
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.VERY_LOW,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
+declare list.exhaust[zippy_cases (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
 
 lemma list_induct2 [consumes 1, case_names Nil Cons]:
   "length xs = length ys \<Longrightarrow> P [] [] \<Longrightarrow>
@@ -1040,6 +997,10 @@ lemma list_induct2 [consumes 1, case_names Nil Cons]:
    \<Longrightarrow> P xs ys"
 apply (induct xs arbitrary: ys)
  by(tactic \<open>zippy_tac NONE @{context}\<close>)
+
+(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Step.logger Logger.ALL\<close>]] *)
+(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Run.logger Logger.ALL\<close>]] *)
+(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.logger Logger.ALL\<close>]] *)
 
 lemma list_induct3 [consumes 2, case_names Nil Cons]:
   "length xs = length ys \<Longrightarrow> length ys = length zs \<Longrightarrow> P [] [] [] \<Longrightarrow>
@@ -1063,74 +1024,10 @@ proof (induct xs arbitrary: ys zs ws)
 (* apply (tactic \<open>zippy_tac NONE @{context}\<close>) *)
   case Nil then show ?case by simp
 next
-  (* case (Cons x xs ys zs ws) then show ?case  *)
   case (Cons x xs ys zs ws) then show ?case
-  apply -
-supply
-[[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding cases2}
-    val read = Proof_Context.read_term_pattern @{context}
-    val inst = [SOME (read "ys", [])]
-    val opt_rule = NONE
-    fun tac ctxt = cases_tac opt_rule inst [] ctxt
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.LOW,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
-supply
-[[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding cases3}
-    val read = Proof_Context.read_term_pattern @{context}
-    val inst = [SOME (read "ws", [])]
-    val opt_rule = NONE
-    fun tac ctxt = cases_tac opt_rule inst [] ctxt
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.LOW,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
-supply
-[[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding cases4}
-    val read = Proof_Context.read_term_pattern @{context}
-    val inst = [SOME (read "zs", [])]
-    val opt_rule = SOME @{thm list.exhaust}
-    fun tac ctxt = cases_tac opt_rule inst [] ctxt
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.LOW,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
-    apply (tactic \<open>zippy_tac NONE @{context}\<close>)
-    done
+  supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "?f _ :: _ list")]
+  apply (zippy cases ys and ws and zs)
+  done
 qed
 
 lemma list_induct2':
@@ -1189,30 +1086,8 @@ lemma append_eq_append_conv2: "(xs @ ys = zs @ ts) =
 proof (induct xs arbitrary: ys zs ts)
   case (Cons x xs)
   then show ?case
-    apply -
-    supply [[zippy_init_gcs del: \<open>@{binding cases}\<close>]]
-supply [[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding cases}
-    val read = Proof_Context.read_term_pattern @{context}
-    val inst = [SOME (read "zs :: 'a list", [read "[]", read "_ # _", read "_ @ _"])]
-    val opt_rule = NONE
-    fun tac ctxt = cases_tac opt_rule inst [] ctxt
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
-    (* apply (cases zs)  *)
-    apply (tactic \<open>zippy_tac NONE @{context}\<close>)
+    supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "?f _ :: _ list")]
+    apply (zippy cases zs)
     done
 qed fastforce
 
@@ -1368,7 +1243,7 @@ by (tactic \<open>zippy_tac NONE @{context}\<close>)
 
 lemma Cons_eq_map_conv:
   "(x#xs = map f ys) = (\<exists>z zs. ys = z#zs \<and> x = f z \<and> xs = map f zs)"
-by (cases ys) auto
+by (zippy cases ys)
 
 lemmas map_eq_Cons_D = map_eq_Cons_conv [THEN iffD1]
 lemmas Cons_eq_map_D = Cons_eq_map_conv [THEN iffD1]
@@ -1400,7 +1275,8 @@ proof (induct rule: list_induct2)
   then show ?case
     apply -
     supply sym[intro]
-    by (tactic \<open>timed_tacs NONE @{context}\<close>) (*slow time*)
+    (*slow time*)
+    by (tactic \<open>timed_tacs NONE @{context}\<close>)
 qed (tactic \<open>timed_tacs NONE @{context}\<close>)
 
 lemma inj_on_map_eq_map:
@@ -1480,10 +1356,10 @@ by (induct xs) auto
 lemmas Nil_is_rev_conv [iff] = rev_is_Nil_conv[THEN eq_iff_swap]
 
 lemma rev_singleton_conv [simp]: "(rev xs = [x]) = (xs = [x])"
-by (cases xs) (tactic \<open>timed_tacs NONE @{context}\<close>)
+by zippy
 
 lemma singleton_rev_conv [simp]: "([x] = rev xs) = ([x] = xs)"
-by (cases xs) (tactic \<open>timed_tacs NONE @{context}\<close>)
+by zippy
 
 lemma rev_is_rev_conv [iff]: "(rev xs = rev ys) = (xs = ys)"
 supply [[zippy_init_gcs del: \<open>@{binding induct}\<close>]]
@@ -1493,7 +1369,7 @@ supply [[zippy_init_gcs \<open>
     val id = @{binding induct}
     val read = Proof_Context.read_term_pattern @{context}
     val inst = [SOME (read "xs :: _", [])]
-    val arbitrary = SOME ([read "_ :: _"], [read "xs :: _"])
+    val arbitrary = ([read "_ :: _"], [read "xs :: _"])
     val taking = []
     val opt_rule = NONE
     fun tac ctxt = induct_tac opt_rule inst arbitrary taking [] ctxt
@@ -1509,30 +1385,35 @@ supply [[zippy_init_gcs \<open>
     fun init_ac _ focus =
       Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
   in (id, init_ac) end\<close>]]
-supply [[zippy_init_gcs del: \<open>@{binding cases}\<close>]]
+  (*TODO: prios for cases*)
+supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "?f _ :: _ list")]
 supply [[zippy_init_gcs \<open>
   let
     open Zippy; open ZLP MU; open SC A
-    val id = @{binding cases}
+    val id = @{binding cases2}
     val read = Proof_Context.read_term_pattern @{context}
     val inst = [SOME (read "_ :: 'a list", [read "[]", read "_ # _", read "_ @ _"])]
     val opt_rule = SOME @{thm list.exhaust}
-    fun tac ctxt = cases_tac opt_rule inst [] ctxt
+    val match = can Seq.hd oooo Type_Unification.e_unify Unification_Util.unify_types
+        (Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match)
+    fun tac ctxt = Cases_Tactic_HOL.cases_pattern_tac true match opt_rule inst [] ctxt
     fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
       |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
     val mk_cud = Result_Action.copy_update_data
+    val update_result = Library.maps snd
+      #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
+    val mk_cud = Result_Action.copy_update_data_empty_changed
     val data = {
       empty_action = Library.K (PResults.empty_action Util.exn),
       meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM,
+      result_action = Result_Action.changed_goals_action update_result mk_cud,
+      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH,
       tac = Ctxt.with_ctxt (ztac #> arr)}
     fun init_ac _ focus =
       Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
   in (id, init_ac) end\<close>]]
-apply (tactic \<open>zippy_tac NONE @{context}\<close>)
+  apply zippy
 done
-(* apply (tactic \<open>zippy_tac NONE @{context}\<close>) *)
 
 lemma rev_eq_append_conv: "rev xs = ys @ zs \<longleftrightarrow> xs = rev zs @ rev ys"
 by (metis rev_append rev_rev_ident)
@@ -1659,14 +1540,23 @@ next
     assume "x \<noteq> a" thus ?case using Cons
       apply -
       supply Cons_eq_appendI[intro!]
-      (* apply slow_step *)
-      (* apply slow_step *)
-      (* apply slow_step *)
-      (* apply slow_step *)
-      (* apply slow_step *)
-      supply [[zippy_init_gcs del: \<open>@{binding cases}\<close>]]
-      (* supply [[ML_map_context \<open>Logger.set_log_levels zippy_base_logger Logger.DEBUG\<close>]] *)
-     apply (tactic \<open>zippy_tac NONE @{context}\<close>)
+      supply [[zippy_init_gcs del: \<open>@{binding cases}\<close> \<open>@{binding induct}\<close>]]
+      supply [[zippy_init_gcs del: \<open>@{binding asm_full_simp}\<close>]]
+supply [[zippy_init_gcs \<open>
+  let
+    open Zippy; open ZLP MU; open SC
+    val id = @{binding asm_full_simp}
+    val update = Library.maps snd
+      #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
+    val mk_cud = Result_Action.copy_update_data_empty_changed
+    val prio_sq_co_safe = PResults.enum_halve_prio_halve_prio_depth_sq_co (Prio.VERY_HIGH |> funpow 3 Prio.double)
+    val prio_sq_co_unsafe = PResults.enum_halve_prio_halve_prio_depth_sq_co (Prio.VERY_HIGH |> funpow 3 Prio.double)
+    val data = Simp.asm_full_simp_data Util.exn id update mk_cud prio_sq_co_safe prio_sq_co_unsafe
+    fun init _ focus = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)]
+      >>> Up3.morph
+  in (id, init) end\<close>]]
+      apply simp
+      apply (tactic \<open>timed_tacs NONE @{context}\<close>)
      done
   qed
 qed
@@ -1688,7 +1578,52 @@ next
     apply (tactic \<open>zippy_tac NONE @{context}\<close>)
     done
   next
-    assume "x \<noteq> a" thus ?case using snoc by fastforce
+    assume "x \<noteq> a" thus ?case using snoc
+      apply -
+      (* apply clarsimp  *)
+      (* apply simp
+      apply clarify *)
+      (* apply (tactic \<open>(Simplifier.safe_asm_full_simp_tac @{context}
+        THEN_ALL_NEW Classical.clarify_tac (addSss @{context})) 1\<close>) *)
+
+(* supply [[zippy_init_gcs del: \<open>@{binding asm_full_simp}\<close>]]
+supply [[zippy_init_gcs \<open>
+  let
+    open Zippy; open ZLP MU; open SC
+    val name = "asm_full_simp"
+    val tacs = (safe_asm_full_simp_tac, asm_full_simp_tac)
+    val id = Zippy_Identifier.make (SOME @{here}) name
+    val update = Library.maps snd
+      #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
+    val mk_cud = Result_Action.copy_update_data_empty_changed
+    val prio_sq_co_safe = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH1
+    val prio_sq_co_unsafe = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH
+    fun f_timeout ctxt i state n time = (@{log Logger.WARN Zippy_Auto.Simp.logger} ctxt
+      (fn _ => Pretty.breaks [
+          Pretty.block [Pretty.str (name ^ " timeout at pull number "), SpecCheck_Show.int n,
+            Pretty.str " after ", Pretty.str (Time.print time), Pretty.str " seconds."],
+          Pretty.block [Pretty.str "Called on subgoal ", SpecCheck_Show.int i, Pretty.str " of state ",
+            Thm.pretty_thm ctxt state],
+          Pretty.str (implode ["Consider removing ", name,
+            " for this proof, increase/disable the timeout, or check for looping simp rules."])
+        ] |> Pretty.block0 |> Pretty.string_of);
+      NONE)
+    fun wrap_tac tac ctxt i state = Zippy_Auto.Simp.Extended_Data.wrap_simp_tac
+      (f_timeout ctxt i state) tac ctxt i state
+    val (safe_tac, tac) = apply2 wrap_tac tacs
+    val data = Simp.gen_data name safe_tac tac Util.exn id update mk_cud
+      prio_sq_co_safe prio_sq_co_unsafe
+    fun init _ focus = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)]
+      >>> Up3.morph
+  in (id, init) end\<close>]] *)
+      apply (tactic \<open>(Simplifier.safe_asm_full_simp_tac @{context} ) 1\<close>)
+      apply clarify_step
+      apply clarify_step
+      apply clarify_step
+      apply clarify_step
+      apply (tactic \<open>(Simplifier.safe_asm_full_simp_tac @{context} ) 1\<close>)
+      by (zippy)
+      (*TODO: DFS faster*)
   qed
 qed
 
@@ -1811,29 +1746,8 @@ by (induction xs) auto
 lemma concat_eq_concat_iff: "\<forall>(x, y) \<in> set (zip xs ys). length x = length y \<Longrightarrow> length xs = length ys \<Longrightarrow> (concat xs = concat ys) = (xs = ys)"
 proof (induct xs arbitrary: ys)
   case (Cons x xs ys)
-  thus ?case apply -
-    supply [[zippy_init_gcs del: \<open>@{binding cases}\<close>]]
-supply [[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding cases2}
-    val read = Proof_Context.read_term_pattern @{context}
-    val inst = [SOME (read "ys", [])]
-    val opt_rule = NONE
-    fun tac ctxt = cases_tac opt_rule inst [] ctxt
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.LOW,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
-  apply (tactic \<open>zippy_tac NONE @{context}\<close>)
+  thus ?case
+  apply (zippy cases ys)
   done
 qed (tactic \<open>zippy_tac NONE @{context}\<close>)
 
@@ -2137,7 +2051,7 @@ lemma nth_tl: "n < length (tl xs) \<Longrightarrow> tl xs ! n = xs ! Suc n"
   by (induction xs) auto
 
 lemma hd_conv_nth: "xs \<noteq> [] \<Longrightarrow> hd xs = xs!0"
-  by(cases xs) simp_all
+  by zippy
 
 lemma list_eq_iff_nth_eq:
   "(xs = ys) = (length xs = length ys \<and> (\<forall>i<length xs. xs!i = ys!i))"
@@ -2146,7 +2060,14 @@ proof (induct xs arbitrary: ys)
   show ?case
   proof (cases ys)
     case (Cons y ys)
-    with Cons.hyps show ?thesis by fastforce
+    with Cons.hyps show ?thesis
+      apply clarsimp
+      apply safe
+      apply simp_all
+      (*slow*)
+      (* by (zippy blast depth: -1) *)
+      apply fastforce+
+      done
   qed simp
 qed force
 
@@ -2224,29 +2145,7 @@ next
   moreover
   { assume "n < length xs"
     with n obtain n' where n': "length xs - n = Suc n'"
-      apply -
-      (* apply (cases "length xs - n") *)
-supply [[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding cases'}
-    val read = Proof_Context.read_term_pattern @{context}
-    val inst = [SOME (read "length xs - n", [])]
-    val opt_rule = NONE
-    fun tac ctxt = cases_tac opt_rule inst [] ctxt
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.VERY_LOW,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
-      apply (tactic \<open>zippy_tac NONE @{context}\<close>)
+      apply (zippy cases "length xs - n")
       done
     moreover
     from n' have "length xs - Suc n = n'" by simp
@@ -2440,33 +2339,13 @@ lemma last_list_update:
 lemma butlast_list_update:
   "butlast(xs[k:=x]) =
   (if k = size xs - 1 then butlast xs else (butlast xs)[k:=x])"
-supply [[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding cases'}
-    val read = Proof_Context.read_term_pattern @{context}
-    val inst = [SOME (read "xs", [])]
-    val opt_rule = SOME @{thm rev_cases}
-    fun tac ctxt = cases_tac opt_rule inst [] ctxt
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.VERY_LOW,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
   supply list_update_append[simp]
   supply nat.splits[split]
-  apply (tactic \<open>zippy_tac NONE @{context}\<close>)
+  apply zippy
   done
 
 lemma last_map: "xs \<noteq> [] \<Longrightarrow> last (map f xs) = f (last xs)"
-  by (cases xs rule: rev_cases) simp_all
+  by zippy
 
 lemma map_butlast: "map f (butlast xs) = butlast (map f xs)"
   by (induct xs) simp_all
@@ -2511,27 +2390,7 @@ lemma take_Suc: "xs \<noteq> [] \<Longrightarrow> take (Suc n) xs = hd xs # take
   by(clarsimp simp add:neq_Nil_conv)
 
 lemma drop_Suc: "drop (Suc n) xs = drop n (tl xs)"
-supply [[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding cases'}
-    val read = Proof_Context.read_term_pattern @{context}
-    val inst = [SOME (read "n", [])]
-    val opt_rule = NONE
-    fun tac ctxt = cases_tac opt_rule inst [] ctxt
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.VERY_LOW,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
-  by(tactic \<open>zippy_tac NONE @{context}\<close>)
+  by zippy
 
 lemma hd_take[simp]: "j > 0 \<Longrightarrow> hd (take j xs) = hd xs"
   by (metis gr0_conv_Suc list.sel(1) take.simps(1) take_Suc)
@@ -2543,7 +2402,7 @@ lemma drop_tl: "drop n (tl xs) = tl(drop n xs)"
   by(induct xs arbitrary: n, simp_all add:drop_Cons drop_Suc split:nat.split)
 
 lemma tl_take: "tl (take n xs) = take (n - 1) (tl xs)"
-  by (cases n, simp, cases xs, auto)
+  by (zippy cases n and xs)
 
 lemma tl_drop: "tl (drop n xs) = drop n (tl xs)"
   by (simp only: drop_tl)
@@ -2558,18 +2417,13 @@ proof (induct xs arbitrary: i)
   then show ?case by simp
 next
   case Cons
-  then show ?case by (cases i) auto
+  then show ?case by (zippy cases i)
 qed
 
 lemma Cons_nth_drop_Suc:
   "i < length xs \<Longrightarrow> (xs!i) # (drop (Suc i) xs) = drop i xs"
 proof (induct xs arbitrary: i)
-  case Nil
-  then show ?case by simp
-next
-  case Cons
-  then show ?case by (cases i) auto
-qed
+qed (zippy cases (pat) "_ :: nat")
 
 lemma length_take [simp]: "length (take n xs) = min (length xs) n"
   apply (induct n arbitrary: xs)
@@ -2618,7 +2472,7 @@ proof (induct m arbitrary: xs n)
   then show ?case by simp
 next
   case Suc
-  then show ?case by (cases xs; cases n) simp_all
+  then show ?case by (zippy cases xs and n)
 qed
 
 lemma drop_drop [simp]: "drop n (drop m xs) = drop (n + m) xs"
@@ -2632,27 +2486,7 @@ qed
 
 lemma take_drop: "take n (drop m xs) = drop m (take (n + m) xs)"
 apply (induct m arbitrary: xs n)
-supply [[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding cases'}
-    val read = Proof_Context.read_term_pattern @{context}
-    val inst = [SOME (read "n :: nat", [])]
-    val opt_rule = NONE
-    fun tac ctxt = cases_tac opt_rule inst [] ctxt
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.VERY_LOW,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
-apply (tactic \<open>zippy_tac NONE @{context}\<close>)
+apply zippy
 done
 (* proof (induct m arbitrary: xs n)
   case 0
@@ -2711,10 +2545,11 @@ next
 qed
 
 lemma drop_rev: "drop n (rev xs) = rev (take (length xs - n) xs)"
-  by (cases "length xs < n") (auto simp: rev_take)
+  by (zippy cases "length xs < n" where simp add: rev_take)
 
 lemma take_rev: "take n (rev xs) = rev (drop (length xs - n) xs)"
-  by (cases "length xs < n") (auto simp: rev_drop)
+  apply (zippy cases "length xs < n" where simp add: rev_drop)
+  done
 
 lemma nth_take [simp]: "i < n \<Longrightarrow> (take n xs)!i = xs!i"
 proof (induct xs arbitrary: i n)
@@ -2722,7 +2557,7 @@ proof (induct xs arbitrary: i n)
   then show ?case by simp
 next
   case Cons
-  then show ?case by (cases n; cases i) simp_all
+  then show ?case by (zippy cases n and i)
 qed
 
 lemma nth_drop [simp]:
@@ -2785,7 +2620,7 @@ lemma append_eq_conv_conj:
   "(xs @ ys = zs) = (xs = take (length xs) zs \<and> ys = drop (length xs) zs)"
 proof (induct xs arbitrary: zs)
   case (Cons x xs zs) then show ?case
-    by (cases zs, auto)
+    by (zippy cases zs)
 qed auto
 
 lemma map_eq_append_conv:
@@ -2849,19 +2684,12 @@ proof -
 qed
 
 lemma take_update_swap: "take m (xs[n := x]) = (take m xs)[n := x]"
-proof (cases "n \<ge> length xs")
-  case False
-  then show ?thesis
-    by (simp add: upd_conv_take_nth_drop take_Cons drop_take min_def diff_Suc split: nat.split)
-qed auto
+  by (zippy cases "n \<ge> length xs"
+  where simp add: upd_conv_take_nth_drop take_Cons drop_take min_def diff_Suc split: nat.split)
 
 lemma drop_update_swap:
   assumes "m \<le> n" shows "drop m (xs[n := x]) = (drop m xs)[n-m := x]"
-proof (cases "n \<ge> length xs")
-  case False
-  with assms show ?thesis
-    by (simp add: upd_conv_take_nth_drop drop_take)
-qed auto
+  using assms by (zippy cases "n \<ge> length xs" where simp add: upd_conv_take_nth_drop drop_take)
 
 lemma nth_image: "l \<le> size xs \<Longrightarrow> nth xs ` {0..<l} = set(take l xs)"
   by (simp add: set_conv_nth) force
@@ -3041,32 +2869,7 @@ lemma dropWhile_neq_rev: "\<lbrakk>distinct xs; x \<in> set xs\<rbrakk> \<Longri
   dropWhile (\<lambda>y. y \<noteq> x) (rev xs) = x # rev (takeWhile (\<lambda>y. y \<noteq> x) xs)"
 proof (induct xs)
   case (Cons a xs)
-  then show ?case
-  apply -
-  supply [[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open Mo SC A
-    val id = @{binding subst}
-    val thms = @{thms dropWhile_append2}
-    fun descr ctxt = Lazy.lazy (fn _ => Pretty.block [
-        Pretty.str "eqsubst_tac with",
-        Pretty.list "[" "]" (List.map (Thm.pretty_thm ctxt) thms)
-      ] |> Pretty.string_of)
-    fun tac ctxt = EqSubst.eqsubst_tac ctxt [0] thms
-    val ztac = tac #> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
-      #> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    fun data ctxt = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.metadata (id, descr ctxt),
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.LOW,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus = Ctxt.with_ctxt (fn ctxt =>
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data ctxt)]
-      >>> Up3.morph)
-  in (id, init_ac) end\<close>]]
-    by (tactic \<open>zippy_tac NONE @{context}\<close>)
+  then show ?case by (zippy subst dropWhile_append2)
 qed simp
 
 lemma takeWhile_not_last:
@@ -3156,14 +2959,7 @@ lemma zip_rev:
 
 lemma zip_map_map:
   "zip (map f xs) (map g ys) = map (\<lambda> (x, y). (f x, g y)) (zip xs ys)"
-proof (induct xs arbitrary: ys)
-  case (Cons x xs) note Cons_x_xs = Cons.hyps
-  show ?case
-  proof (cases ys)
-    case (Cons y ys')
-    show ?thesis unfolding Cons using Cons_x_xs by simp
-  qed simp
-qed simp
+  by (induct xs arbitrary: ys) zippy
 
 lemma zip_map1:
   "zip (map f xs) ys = map (\<lambda>(x, y). (f x, y)) (zip xs ys)"
@@ -3220,7 +3016,7 @@ proof (induct n arbitrary: xs ys)
   then show ?case by simp
 next
   case Suc
-  then show ?case by (cases xs; cases ys) simp_all
+  then show ?case by (zippy cases xs and ys)
 qed
 
 lemma drop_zip: "drop n (zip xs ys) = zip (drop n xs) (drop n ys)"
@@ -3247,7 +3043,8 @@ proof (induct xs arbitrary: ys)
   then show ?case by simp
 next
   case Cons
-  then show ?case by (cases ys) auto
+  then show ?case
+    by zippy
 qed
 
 lemma set_zip_leftD: "(x,y)\<in> set (zip xs ys) \<Longrightarrow> x \<in> set xs"
@@ -3292,7 +3089,7 @@ qed
 
 lemma zip_eq_Nil_iff[simp]:
   "zip xs ys = [] \<longleftrightarrow> xs = [] \<or> ys = []"
-  by (cases xs; cases ys) simp_all
+  by (zippy cases xs and ys)
 
 lemmas Nil_eq_zip_iff[simp] = zip_eq_Nil_iff[THEN eq_iff_swap]
 
@@ -3364,7 +3161,7 @@ lemma hd_zip:
 lemma last_zip:
   \<open>last (zip xs ys) = (last xs, last ys)\<close> if \<open>xs \<noteq> []\<close> and \<open>ys \<noteq> []\<close>
     and \<open>length xs = length ys\<close>
-  using that by (cases xs rule: rev_cases; cases ys rule: rev_cases) simp_all
+  using that by zippy
 
 
 subsubsection \<open>\<^const>\<open>list_all2\<close>\<close>
@@ -3407,7 +3204,7 @@ lemma list_all2_rev [iff]:
 
 lemma list_all2_rev1:
   "list_all2 P (rev xs) ys = list_all2 P xs (rev ys)"
-  by (subst list_all2_rev [symmetric]) simp
+  by (zippy subst list_all2_rev[symmetric])
 
 lemma list_all2_append1:
   "list_all2 P (xs @ ys) zs =
@@ -3501,7 +3298,7 @@ lemma list_all2_refl [intro?]:
 
 lemma list_all2_update_cong:
   "\<lbrakk> list_all2 P xs ys; P x y \<rbrakk> \<Longrightarrow> list_all2 P (xs[i:=x]) (ys[i:=y])"
-  by (cases "i < length ys") (auto simp add: list_all2_conv_all_nth nth_list_update)
+  by (zippy cases "i < length ys" where simp add: list_all2_conv_all_nth nth_list_update)
 
 lemma list_all2_takeI [simp,intro?]:
   "list_all2 P xs ys \<Longrightarrow> list_all2 P (take n xs) (take n ys)"
@@ -3546,7 +3343,7 @@ lemma zip_left_commute:
   by(rule list_all2_all_nthI[where P="(=)", unfolded list.rel_eq]) simp_all
 
 lemma zip_replicate2: "zip xs (replicate n y) = map (\<lambda>x. (x, y)) (take n xs)"
-  by(subst zip_commute)(simp add: zip_replicate1)
+  by (zippy subst zip_commute where simp add: zip_replicate1)
 
 subsubsection \<open>\<^const>\<open>List.product\<close> and \<^const>\<open>product_lists\<close>\<close>
 
@@ -3794,7 +3591,7 @@ lemma upt_rec[code]: "[i..<j] = (if i<j then i#[Suc i..<j] else [])"
 lemmas upt_rec_numeral[simp] = upt_rec[of "numeral m" "numeral n"] for m n
 
 lemma upt_conv_Nil [simp]: "j \<le> i \<Longrightarrow> [i..<j] = []"
-  by (subst upt_rec) simp
+  by (zippy subst upt_rec)
 
 lemma upt_eq_Nil_conv[simp]: "([i..<j] = []) = (j = 0 \<or> j \<le> i)"
   by(induct j)simp_all
@@ -3816,11 +3613,7 @@ lemma upt_conv_Cons: "i < j \<Longrightarrow> [i..<j] = i # [Suc i..<j]"
 
 lemma upt_conv_Cons_Cons: \<comment> \<open>no precondition\<close>
   "m # n # ns = [m..<q] \<longleftrightarrow> n # ns = [Suc m..<q]"
-proof (cases "m < q")
-  case False then show ?thesis by simp
-next
-  case True then show ?thesis by (simp add: upt_conv_Cons)
-qed
+  by (zippy cases "m < q" where simp add: upt_conv_Cons)
 
 lemma upt_add_eq_append: "i<=j \<Longrightarrow> [i..<j+k] = [i..<j]@[j..<j+k]"
   \<comment> \<open>LOOPS as a simprule, since \<open>j \<le> j\<close>.\<close>
@@ -3845,32 +3638,7 @@ lemma take_upt [simp]: "i+m \<le> n \<Longrightarrow> take m [i..<n] = [i..<i+m]
 proof (induct m arbitrary: i)
   case (Suc m)
   then show ?case
-    (* by (subst take_Suc_conv_app_nth) auto *)
-  apply -
-  supply [[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open Mo SC A
-    val id = @{binding subst}
-    val thms = @{thms take_Suc_conv_app_nth}
-    fun descr ctxt = Lazy.lazy (fn _ => Pretty.block [
-        Pretty.str "eqsubst_tac with",
-        Pretty.list "[" "]" (List.map (Thm.pretty_thm ctxt) thms)
-      ] |> Pretty.string_of)
-    fun tac ctxt = EqSubst.eqsubst_tac ctxt [0] thms
-    val ztac = tac #> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
-      #> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    fun data ctxt = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.metadata (id, descr ctxt),
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.LOW,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus = Ctxt.with_ctxt (fn ctxt =>
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data ctxt)]
-      >>> Up3.morph)
-  in (id, init_ac) end\<close>]]
-    by (tactic \<open>zippy_tac NONE @{context}\<close>)
+    by (zippy subst take_Suc_conv_app_nth)
 qed simp
 
 lemma drop_upt[simp]: "drop m [i..<j] = [i+m..<j]"
@@ -4367,11 +4135,8 @@ by (induct xs) simp_all
 lemma distinct_butlast:
   assumes "distinct xs"
   shows "distinct (butlast xs)"
-proof (cases "xs = []")
-  case False
-    from \<open>xs \<noteq> []\<close> obtain ys y where "xs = ys @ [y]" by (cases xs rule: rev_cases) auto
-    with \<open>distinct xs\<close> show ?thesis by simp
-qed (auto)
+proof (cases xs rule: rev_cases)
+qed (use assms in auto)
 
 lemma remdups_map_remdups:
   "remdups (map f (remdups xs)) = remdups (map f xs)"
@@ -4432,7 +4197,7 @@ proof
     let ?cond = "x1 = x2"
     define zs where "zs = remdups_adj (x2 # xs)"
     from 3(1-2)[of zs]
-    obtain f where p: "?p f (x2 # xs) zs" unfolding zs_def by (cases ?cond) auto
+    obtain f where p: "?p f (x2 # xs) zs" unfolding zs_def by (zippy cases ?cond)
     then have f0: "f 0 = 0"
       by (intro mono_image_least[where f=f]) blast+
     from p have mono: "mono f" and f_xs_zs: "f ` {0..<length (x2 # xs)} = {0..<length zs}" by auto
@@ -4586,7 +4351,7 @@ lemma remdups_adj_adjacent:
   "Suc i < length (remdups_adj xs) \<Longrightarrow> remdups_adj xs ! i \<noteq> remdups_adj xs ! Suc i"
 proof (induction xs arbitrary: i rule: remdups_adj.induct)
   case (3 x y xs i)
-  thus ?case by (cases i, cases "x = y") (simp, auto simp: hd_conv_nth[symmetric])
+  thus ?case by (zippy simp: hd_conv_nth[symmetric] where cases "x = y" and i)
 qed simp_all
 
 lemma remdups_adj_rev[simp]: "remdups_adj (rev xs) = rev (remdups_adj xs)"
@@ -4674,7 +4439,7 @@ lemma remdups_adj_singleton_iff:
 proof safe
   assume *: "xs = replicate (length xs) (hd xs)" and [simp]: "xs \<noteq> []"
   show "length (remdups_adj xs) = Suc 0"
-    by (subst *) (auto simp: remdups_adj_replicate)
+    by (zippy subst * where simp add: remdups_adj_replicate)
 next
   assume "length (remdups_adj xs) = Suc 0"
   thus "xs = replicate (length xs) (hd xs)"
@@ -4687,7 +4452,7 @@ by (cases ys) (simp_all add: remdups_adj_Cons')
 
 lemma remdups_adj_append_dropWhile:
   "remdups_adj (xs @ y # ys) = remdups_adj (xs @ [y]) @ remdups_adj (dropWhile (\<lambda>x. x = y) ys)"
-by (subst remdups_adj_append) (simp add: tl_remdups_adj)
+by (zippy subst remdups_adj_append where simp add: tl_remdups_adj)
 
 lemma remdups_adj_append':
   assumes "xs = [] \<or> ys = [] \<or> last xs \<noteq> hd ys"
@@ -4703,7 +4468,7 @@ proof -
     thus ?thesis by (simp add: xs)
   qed
   thus ?thesis using assms
-    by (cases "xs = []"; cases "ys = []") auto
+    by (zippy cases "xs = []" and "ys = []")
 qed
 
 lemma remdups_adj_append'': "xs \<noteq> []
@@ -5312,7 +5077,7 @@ by (induct n) (simp_all)
 
 lemma fold_replicate [simp]:
   "fold f (replicate n x) = f x ^^ n"
-by (subst foldr_fold [symmetric]) simp_all
+by (zippy subst foldr_fold [symmetric])
 
 
 subsubsection \<open>\<^const>\<open>enumerate\<close>\<close>
@@ -5370,7 +5135,7 @@ lemma enumerate_append_eq:
 
 lemma enumerate_map_upt:
   "enumerate n (map f [n..<m]) = map (\<lambda>k. (k, f k)) [n..<m]"
-by (cases "n \<le> m") (simp_all add: zip_map2 zip_same_conv_map enumerate_eq_zip)
+by (zippy cases "n \<le> m" where simp add: zip_map2 zip_same_conv_map enumerate_eq_zip)
 
 
 subsubsection \<open>\<^const>\<open>rotate1\<close> and \<^const>\<open>rotate\<close>\<close>
@@ -5463,11 +5228,7 @@ lemma rotate_is_Nil_conv[simp]: "(rotate n xs = []) = (xs = [])"
 
 lemma rotate_rev:
   "rotate n (rev xs) = rev(rotate (length xs - (n mod length xs)) xs)"
-proof (cases "length xs = 0 \<or> n mod length xs = 0")
-  case False
-  then show ?thesis
-    by(simp add:rotate_drop_take rev_drop rev_take)
-qed force
+  by (zippy simp add:rotate_drop_take rev_drop rev_take where cases "length xs = 0 \<or> n mod length xs = 0")
 
 lemma hd_rotate_conv_nth:
   assumes "xs \<noteq> []" shows "hd(rotate n xs) = xs!(n mod length xs)"
@@ -5500,12 +5261,12 @@ proof (safe, simp_all)
   fix xs :: "'a list" show "xs \<in> range rotate1"
   proof (cases xs rule: rev_exhaust)
     case Nil
-    hence "xs = rotate1 []" by auto
-    thus ?thesis by fast
+    hence "xs = rotate1 []" by zippy
+    thus ?thesis by zippy
   next
     case (snoc as a)
-    hence "xs = rotate1 (a#as)" by force
-    thus ?thesis by fast
+    hence "xs = rotate1 (a#as)" by zippy
+    thus ?thesis by zippy
   qed
 qed
 
@@ -5856,8 +5617,9 @@ proof (cases "(filter (\<lambda>ys. ys \<noteq> []) xss) = []")
   hence "foldr (\<lambda>xs. max (length xs)) xss 0 = 0"
   proof (induct xss)
     case (Cons x xs)
-    then have "x = []" by (cases x) auto
-    with Cons show ?case by auto
+    with Cons show ?case
+    supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "?f _ :: _ list")]
+    by (zippy cases x)
   qed simp
   thus ?thesis using True by simp
 next
@@ -5998,8 +5760,7 @@ lemma card_lists_length_le:
 proof -
   have "(\<Sum>i\<le>n. card A^i) = card (\<Union>i\<le>n. {xs. set xs \<subseteq> A \<and> length xs = i})"
     using \<open>finite A\<close>
-    by (subst card_UN_disjoint)
-       (auto simp add: card_lists_length_eq finite_lists_length_eq)
+    by (zippy subst card_UN_disjoint where simp add: card_lists_length_eq finite_lists_length_eq)
   also have "(\<Union>i\<le>n. {xs. set xs \<subseteq> A \<and> length xs = i}) = {xs. set xs \<subseteq> A \<and> length xs \<le> n}"
     by auto
   finally show ?thesis by simp
@@ -6040,7 +5801,7 @@ next
     by (auto simp: length_Suc_conv)
   moreover have "Suc (card A - Suc k) = card A - k" using Suc.prems by simp
   then have "(card A - k) * \<Prod>{Suc (card A - k)..card A} = \<Prod>{Suc (card A - Suc k)..card A}"
-    by (subst prod.insert[symmetric]) (simp add: atLeastAtMost_insertL)+
+    by (zippy subst prod.insert[symmetric] where simp add: atLeastAtMost_insertL)
   ultimately show ?case
     by (simp add: card_image inj_Cons card_UN_disjoint Suc.hyps algebra_simps)
 qed
@@ -6328,7 +6089,7 @@ lemma sorted_dropWhile: "sorted xs \<Longrightarrow> sorted (dropWhile P xs)"
   by (auto dest: sorted_wrt_drop simp add: dropWhile_eq_drop)
 
 lemma sorted_takeWhile: "sorted xs \<Longrightarrow> sorted (takeWhile P xs)"
-  by (subst takeWhile_eq_take) (auto dest: sorted_wrt_take)
+  by (zippy subst takeWhile_eq_take where clasimp dest: sorted_wrt_take)
 
 lemma sorted_filter:
   "sorted (map f xs) \<Longrightarrow> sorted (map f (filter P xs))"
@@ -6505,8 +6266,8 @@ using assms proof (induct xs)
   then show ?case
   proof (cases "x = a")
     case False
-    then have "f x \<noteq> f a" using Cons.prems by auto
-    then have "f x < f a" using Cons.prems by auto
+    then have "f x \<noteq> f a" using Cons.prems by zippy
+    then have "f x < f a" using Cons.prems by zippy
     with \<open>f x \<noteq> f a\<close> show ?thesis using Cons by (auto simp: insort_is_Cons)
   qed (auto simp: insort_is_Cons)
 qed simp
@@ -6606,7 +6367,7 @@ next
     with Cons show ?thesis by (auto intro: Min_eqI [symmetric])
   next
     case False then have "{y. (y = x \<or> y \<in> set xs) \<and> P y} = {y \<in> set xs. P y}"
-      by auto
+      by zippy
     with Cons False show ?thesis by (simp_all)
   qed
 qed
@@ -6657,13 +6418,8 @@ lemma length_transpose_sorted:
   fixes xs :: "'a list list"
   assumes sorted: "sorted (rev (map length xs))"
   shows "length (transpose xs) = (if xs = [] then 0 else length (xs ! 0))"
-proof (cases "xs = []")
-  case False
-  thus ?thesis
-    using foldr_max_sorted[OF sorted] False
-    unfolding length_transpose foldr_map comp_def
-    by simp
-qed simp
+  using foldr_max_sorted[OF sorted] unfolding length_transpose foldr_map comp_def
+  by (zippy cases "xs = []")
 
 lemma nth_nth_transpose_sorted[simp]:
   fixes xs :: "'a list list"
@@ -7282,7 +7038,18 @@ proof (induction n)
     from r obtain xys where r': "?len (Suc n) xs" "?len (Suc n) ys" "?P xs ys xys" by auto
     then show ?thesis
       using r' Suc
-      by (cases xys; fastforce simp: image_Collect lex_prod_def)
+      apply (cases xys)
+      (* apply (fastforce simp: image_Collect lex_prod_def)+ *)
+      apply (zippy simp: image_Collect lex_prod_def)[1]
+      apply (fastforce simp: image_Collect lex_prod_def)
+      (* apply (zippy 100 simp: image_Collect lex_prod_def)
+      apply slow_step
+      apply slow_step
+      apply slow_step
+      (*TODO: can be improved? DFS*)
+      apply slow_step
+      apply zippy *)
+      done
   qed
   moreover have "(xs,ys) \<in> ?L (Suc n) \<Longrightarrow> (xs,ys) \<in> ?R (Suc n)" for xs ys
     using Suc by (auto simp add: image_Collect lex_prod_def)(blast, meson Cons_eq_appendI)
@@ -7389,8 +7156,7 @@ proof -
   proof -
     obtain pre x xs' y ys' where "x\<noteq>y" and xs: "xs = pre @ [x] @ xs'" and ys: "ys = pre @ [y] @ys'"
       using len \<open>xs \<noteq> ys\<close> same_length_different
-      apply -
-      by (tactic \<open>zippy_tac NONE @{context}\<close>)
+      by (zippy blast depth: 10)
       (* apply meson *)
     then consider "(x,y) \<in> r" | "(y,x) \<in> r"
       using UNIV_I assms total_on_def[simp]
@@ -7401,6 +7167,7 @@ proof -
     apply -
     apply (insert len)
     supply lexn_conv[simp] xs[simp] ys[simp]
+    supply [[zippy_blast depth: 10]]
     apply (tactic \<open>timed_tacs NONE @{context}\<close>)
     done
     (* apply force *)
@@ -7521,7 +7288,7 @@ next
   (* apply (insert Cons_eq_appendI) *)
   supply Cons_eq_appendI[intro]
   supply lexord_def[simp]
-  apply (tactic \<open>zippy_tac NONE @{context}\<close>)
+  apply (zippy blast depth: 10)
   done
   (* apply (auto simp add: lexord_def; (blast | meson Cons_eq_appendI)) *)
   (* apply (use lexord_def[simp] in \<open>tactic \<open>zippy_tac (SOME 100) @{context}\<close>\<close>) *)
@@ -7579,7 +7346,7 @@ proof (induction x arbitrary: y)
   (* supply [[zippy_init_gcs del: \<open>@{binding blast}\<close>]] *)
 (* apply (tactic \<open>zippy_tac NONE @{context}\<close>) *)
   case (Cons a x y) then show ?case
-    by (cases y) (force+)
+    by (zippy cases y)
 qed auto
 
 lemma lexord_sufI:
@@ -7632,7 +7399,7 @@ lemma lexord_partial_trans:
    \<Longrightarrow>  (xs,ys) \<in> lexord r  \<Longrightarrow>  (ys,zs) \<in> lexord r \<Longrightarrow>  (xs,zs) \<in> lexord r"
 proof (induct xs arbitrary: ys zs)
   case Nil
-  from Nil(3) show ?case unfolding lexord_def by (cases zs, auto)
+  from Nil(3) show ?case unfolding lexord_def by (zippy)
 next
   case (Cons x xs yys zzs)
   from Cons(3) obtain y ys where yys: "yys = y # ys" unfolding lexord_def
@@ -7778,7 +7545,7 @@ lemma lexordp_simps [simp, code]:
   "lexordp [] ys = (ys \<noteq> [])"
   "lexordp xs [] = False"
   "lexordp (x # xs) (y # ys) \<longleftrightarrow> x < y \<or> \<not> y < x \<and> lexordp xs ys"
-by(subst lexordp.simps, fastforce simp add: neq_Nil_conv)+
+by(zippy subst lexordp.simps where simp add: neq_Nil_conv)
 
 inductive lexordp_eq :: "'a list \<Rightarrow> 'a list \<Rightarrow> bool" where
   Nil: "lexordp_eq [] ys"
@@ -7790,7 +7557,7 @@ lemma lexordp_eq_simps [simp, code]:
   "lexordp_eq xs [] \<longleftrightarrow> xs = []"
   "lexordp_eq (x # xs) [] = False"
   "lexordp_eq (x # xs) (y # ys) \<longleftrightarrow> x < y \<or> \<not> y < x \<and> lexordp_eq xs ys"
-by(subst lexordp_eq.simps, fastforce)+
+by(zippy subst lexordp_eq.simps)
 
 lemma lexordp_append_rightI: "ys \<noteq> Nil \<Longrightarrow> lexordp xs (xs @ ys)"
   by(induct xs)(auto simp add: neq_Nil_conv)
@@ -7847,7 +7614,7 @@ lemma lexordp_cases [consumes 1, case_names Nil Cons Cons_eq, cases pred: lexord
   obtains (Nil) y ys' where "xs = []" "ys = y # ys'"
   | (Cons) x xs' y ys' where "xs = x # xs'" "ys = y # ys'" "x < y"
   | (Cons_eq) x xs' ys' where "xs = x # xs'" "ys = x # ys'" "lexordp xs' ys'"
-using assms by cases (fastforce simp add: not_less_iff_gr_or_eq)+
+  by (zippy simp add: not_less_iff_gr_or_eq where cases facts: assms)
 
 lemma lexordp_induct [consumes 1, case_names Nil Cons Cons_eq, induct pred: lexordp]:
   assumes major: "lexordp xs ys"

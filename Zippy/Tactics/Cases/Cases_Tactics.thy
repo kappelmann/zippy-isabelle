@@ -6,5 +6,6 @@ theory Cases_Tactics
 begin
 
 ML_file\<open>cases_tactic.ML\<close>
+ML_file\<open>cases_data.ML\<close>
 
 end

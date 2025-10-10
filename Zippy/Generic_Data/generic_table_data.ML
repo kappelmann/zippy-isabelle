@@ -35,7 +35,7 @@ sig
   val add_attribute : ML_Code_Util.code list * Position.T -> attribute
   val del_attribute : ML_Code_Util.code list * Position.T -> attribute
   val parse_attribute : attribute parser
-  val setup_attribute : string option -> local_theory -> local_theory
+  val setup_attribute : (string, string) Either.either -> local_theory -> local_theory
 end
 
 functor Generic_Table_Data(A : sig
@@ -136,5 +136,5 @@ val parse_attribute = PU.position parse_entries >> attribute
 
 val setup_attribute = Attrib.local_setup binding
   (Parse.!!! parse_attribute |> Scan.lift) o
-  the_default ("add/del table data " ^ enclose "(" ")" FI.long_name)
+  (Either.cases I (fn what => "configure " ^ what ^ " data " ^ enclose "(" ")" FI.long_name))
 end

@@ -34,7 +34,7 @@ sig
 
     type @{AllT_args} data = {
       meta : Base_Data.AMeta.metadata,
-      (*taking counter of successful action applications*)
+      (*first argument is the number of successful action applications before the empty action*)
       empty_action : int -> @{AllT_args} Base_Data.PAction.action,
       result_action : result -> @{AllT_args} Base_Data.PAction.action,
       presults : Base_Data.GFocus.focus -> (@{ParaT_args} @{AllT_args} ZLP.Z4.zipper,

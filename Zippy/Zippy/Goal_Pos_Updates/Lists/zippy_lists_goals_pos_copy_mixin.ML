@@ -17,16 +17,16 @@ sig
     (@{ParaT_args} @{AllT_args} GCluster.L.container) emorph
 
   val update_gclusters_gclusters :
-    (GClusters.GCS.cluster_pos * (@{ParaT_args} @{AllT_args} GCluster.L.container) emorph) list ->
+    (GPU.GCS.cluster_pos * (@{ParaT_args} @{AllT_args} GCluster.L.container) emorph) list ->
     (@{ParaT_args} @{AllT_args} GClusters.L.container) emorph
 
   val partition_update_gclusters_gclusters :
     ('a list -> (@{ParaT_args} @{AllT_args} GCluster.L.container) emorph) ->
-    (GClusters.GCS.cluster_pos * 'a) list ->
+    (GPU.GCS.cluster_pos * 'a) list ->
     (@{ParaT_args} @{AllT_args} GClusters.L.container) emorph
 
   val partition_update_gcposs_gclusters_gclusters :
-    (GClusters.GCS.goal_pos list -> (@{ParaT_args} @{AllT_args} GCluster.L.container) emorph) ->
+    (GPU.GCS.goal_pos list -> (@{ParaT_args} @{AllT_args} GCluster.L.container) emorph) ->
     GPU.GCS.gcpos list -> (@{ParaT_args} @{AllT_args} GClusters.L.container) emorph
 
   val update_hom_gcposs_gclusters_gclusters :

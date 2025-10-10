@@ -1,5 +1,7 @@
 (*  Title:      Zippy/cases_tactic.ML
     Author:     Kevin Kappelmann
+
+Cases tactic supporting loose bvars and searching of subterms in the goal.
 *)
 signature CASES_TACTIC =
 sig
@@ -9,7 +11,8 @@ sig
   val cases_find_insts_tac : bool -> thm option -> (term -> bool) option list -> thm list ->
     Proof.context -> int -> tactic
 
-  val cases_pattern_tac : bool -> Unification_Base.matcher -> thm option ->
+  val cases_pattern_tac : bool ->
+    (term Binders.binders -> Proof.context -> term * term -> Envir.env -> bool) -> thm option ->
     (term * term list) option list -> thm list -> Proof.context -> int -> tactic
 end
 
@@ -106,18 +109,14 @@ fun cases_pattern_tac simp match opt_rule patterns facts ctxt =
   let fun tac subgoal i st =
     let
       val params = Logic.strip_params subgoal
-      val (paramTs, (binders, binderTs, nbinders)) = fold_map
-        (fn p => fn (rev_ps, rev_psT, i) => let val pT = snd p
-          in (pT, (p :: rev_ps, pT :: rev_psT, i + 1)) end)
-        params ([], [], 0)
+      val (paramTs, (binders, nbinders)) = fold_map
+        (fn p => fn (rev_ps, i) => (snd p, (p :: rev_ps, i + 1))) params ([], 0)
       val (binders, ctxt) = Binders.fix_binders binders ctxt
       val prepare_pattern = Logic.incr_indexes (paramTs, Thm.maxidx_of st + 1)
         #> `(Term.maxidx_of_term #> Envir.empty)
       val patterns = patterns
         |> map (Option.map (fn (p, no_ps) => (prepare_pattern p, map prepare_pattern no_ps)))
-      val matches = can (fn ((env, p), t) =>
-        Unification_Util.unify_types ctxt (apply2 (curry type_of1 binderTs) (p, t)) env
-        |> match binders ctxt (p, t) |> Seq.hd)
+      fun matches ((env, p), t) = match binders ctxt (p, t) env
       fun select (p, no_ps) t = not (loose_bvar (t, nbinders)) andalso matches (p, t)
         andalso forall (fn p => not (matches (p, t))) no_ps
       val ps = map (Option.map select) patterns

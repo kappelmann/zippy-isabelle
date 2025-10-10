@@ -1,7 +1,7 @@
-(*  Title:      Zippy/zippy_instance_tac.ML
+(*  Title:      Zippy/zippy_instance_tactic.ML
     Author:     Kevin Kappelmann
 *)
-signature ZIPPY_INSTANCE_TAC =
+signature ZIPPY_INSTANCE_TACTIC =
 sig
   include ZIPPY_INSTANCE_PRESULTS
 
@@ -36,12 +36,12 @@ sig
   end
 end
 
-functor Zippy_Instance_Tac(
+functor Zippy_Instance_Tactic(
     structure Z : ZIPPY_INSTANCE_PRESULTS
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
     structure Log_PAction : ZIPPY_LOGGER_MIXIN_BASE
-  ) : ZIPPY_INSTANCE_TAC =
+  ) : ZIPPY_INSTANCE_TACTIC =
 struct
 open Z; open ZLP MU
 structure GCluster = Zippy_Goal_Cluster_Mixin(Mixin2.GCluster)

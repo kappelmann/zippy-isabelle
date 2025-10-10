@@ -200,7 +200,7 @@ fun args_attribute entries = Thm.declaration_attribute (K (map_data (PAS.merge_e
 val parse_args_attribute = parse_args_entries >> args_attribute
 
 val setup_args_attribute = Attrib.local_setup args_binding (Parse.!!!! parse_args_attribute) o
-  the_default ("set args antiquotation arguments " ^ enclose "(" ")" FI.long_name)
+  the_default ("configure args antiquotation data " ^ enclose "(" ")" FI.long_name)
 
 val parse_args_antiquotation =
   (parse_args_attribute |> PU.option')

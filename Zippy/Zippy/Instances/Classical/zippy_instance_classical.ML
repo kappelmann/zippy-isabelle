@@ -3,18 +3,20 @@
 *)
 signature ZIPPY_INSTANCE_CLASSICAL =
 sig
-  include ZIPPY_INSTANCE_TAC
+  include ZIPPY_INSTANCE_TACTIC
 
   structure Classical :
   sig
     val slow_step_atomize_prems_data : @{ParaT_args encl: "(" ")"} Exn.ME.exn ->
-      Zippy_Identifier.id -> @{AllT_args} PResults.prio_sq_co -> @{AllT_args} PResults.prio_sq_co ->
-      @{AllT_args} PResults.prio_sq_co -> @{AllT_args} Tac.data
+      Zippy_Identifier.id -> ((Base_Data.GCS.goal_pos * Base_Data.GCS.gcpos list) list ->
+        (@{ParaT_args} @{AllT_args} ZLP.Z1.zipper) emorph) ->
+      @{AllT_args} Result_Action.mk_copy_update_data -> @{AllT_args} PResults.prio_sq_co ->
+      @{AllT_args} PResults.prio_sq_co -> @{AllT_args} PResults.prio_sq_co -> @{AllT_args} Tac.data
   end
 end
 
 functor Zippy_Instance_Classical(
-    structure Z : ZIPPY_INSTANCE_TAC
+    structure Z : ZIPPY_INSTANCE_TACTIC
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
   ) : ZIPPY_INSTANCE_CLASSICAL =
@@ -23,9 +25,10 @@ open Z
 
 structure Classical =
 struct
-local open MU; open Mo A
+local open MU; open A
 in
-fun slow_step_atomize_prems_data exn id prio_sq_co_safe prio_sq_co_unsafe prio_sq_co_atomize_prems =
+fun slow_step_atomize_prems_data exn id update_result mk_cud prio_sq_co_safe prio_sq_co_unsafe
+  prio_sq_co_atomize_prems =
   let
     fun descr tac = Lazy.lazy (fn _ => Pretty.breaks [
         Pretty.str "Classical.slow_step ORELSE Object_Logic.atomize_prems.",
@@ -33,7 +36,7 @@ fun slow_step_atomize_prems_data exn id prio_sq_co_safe prio_sq_co_unsafe prio_s
       ] |> Pretty.block |> Pretty.string_of)
 
     val empty_action = PResults.empty_action exn
-    val result_action = Result_Action.action (Library.K (A.id ())) Result_Action.copy_update_data
+    val result_action = Result_Action.changed_goals_action update_result mk_cud
 
     fun atomize_prems_ztac ctxt = Object_Logic.atomize_prems_tac ctxt #> CHANGED
       |> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising

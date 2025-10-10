@@ -108,7 +108,7 @@ fun attribute (entries, pos) =
 val parse_attribute = (parse_arg_entries |> Parse_Util.position) >> attribute
 
 val setup_attribute = Attrib.local_setup binding (Scan.lift (Parse.!!! parse_attribute)) o
-  the_default ("set eval antiquotation arguments " ^ enclose "(" ")" FI.long_name)
+  the_default ("configure eval antiquotation data " ^ enclose "(" ")" FI.long_name)
 
 val setup_antiquotation =
   ML_Antiquotation.declaration binding (`(fst #> eval) #> (fn (parser, x) => parser x))

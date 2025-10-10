@@ -173,7 +173,7 @@ fun attribute entries = Thm.declaration_attribute (K (map_config_args (PCA.merge
 val parse_attribute = parse_config_args >> attribute
 
 val setup_attribute = Attrib.local_setup binding (Parse.!!!! parse_attribute) o
-  the_default ("set imap antiquotation arguments " ^ enclose "(" ")" FI.long_name)
+  the_default ("configure imap antiquotation data " ^ enclose "(" ")" FI.long_name)
 
 val parse_antiquotation_args =
   Scan.lift (PA.get_f IAA.arg_parsers)
