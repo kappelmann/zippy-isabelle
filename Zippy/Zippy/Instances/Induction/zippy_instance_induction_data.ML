@@ -1,76 +1,88 @@
-(*  Title:      Zippy/zippy_instance_cases_data.ML
+(*  Title:      Zippy/zippy_instance_induction_data.ML
     Author:     Kevin Kappelmann
 *)
-@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_CASES_DATA_MODE [add, del, config]}
-@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_CASES_DATA
-  [insts, rule, simp, facts, match, progress, empty_action, updates, mk_cud, prio_sq_co]}
-@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_CASES_DATA_ADD_ARGS
-  [insts, rule, simp, facts, match, progress, empty_action, default_update, updates, mk_cud,
+@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_INDUCTION_DATA_MODE [add, del, config]}
+@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_INDUCTION_DATA
+  [insts, rule, arbitrary, taking, simp, facts, match, progress, empty_action, updates, mk_cud,
   prio_sq_co]}
-@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_CASES_DATA_DEL_ARGS [insts, rule, simp, facts, progress]}
-@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_CASES_DATA_CONFIG
+@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_INDUCTION_DATA_ADD_ARGS
+  [insts, rule, arbitrary, taking, simp, facts, match, progress, empty_action, default_update,
+  updates, mk_cud, prio_sq_co]}
+@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_INDUCTION_DATA_DEL_ARGS
+  [insts, rule, arbitrary, taking, simp, facts, progress]}
+@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_INDUCTION_DATA_CONFIG
   [simp, match, progress, empty_action, default_update, mk_cud, prio_sq_co]}
 
-signature ZIPPY_INSTANCE_CASES_DATA_ARGS =
+signature ZIPPY_INSTANCE_INDUCTION_DATA_ARGS =
 sig
-  structure PM : PARSE_ZIPPY_INSTANCE_CASES_DATA_MODE
-  structure PD : PARSE_ZIPPY_INSTANCE_CASES_DATA
-  structure PAA : PARSE_ZIPPY_INSTANCE_CASES_DATA_ADD_ARGS
-  structure PDA : PARSE_ZIPPY_INSTANCE_CASES_DATA_DEL_ARGS
-  structure PDC : PARSE_ZIPPY_INSTANCE_CASES_DATA_CONFIG
+  structure PM : PARSE_ZIPPY_INSTANCE_INDUCTION_DATA_MODE
+  structure PD : PARSE_ZIPPY_INSTANCE_INDUCTION_DATA
+  structure PAA : PARSE_ZIPPY_INSTANCE_INDUCTION_DATA_ADD_ARGS
+  structure PDA : PARSE_ZIPPY_INSTANCE_INDUCTION_DATA_DEL_ARGS
+  structure PDC : PARSE_ZIPPY_INSTANCE_INDUCTION_DATA_CONFIG
 
-  val PD_entries_from_PAA_entries : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k) PAA.entries ->
-    ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'i, 'j, 'k) PD.entries
-  val PDA_entries_from_PAA_entries : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k) PAA.entries ->
-    ('a, 'b, 'c, 'd, 'f) PDA.entries
-  val PDC_entries_from_PAA_entries : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k) PAA.entries ->
-    ('c, 'e, 'f, 'g, 'h, 'j, 'k) PDC.entries
-  val cases_PD_entries_from_PD_entries : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j) PD.entries ->
-    ('a, 'b, 'c, 'd, 'e) Cases_Data_Args.PD.entries
+  val PD_entries_from_PAA_entries : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k, 'l, 'm) PAA.entries ->
+    ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'k, 'l, 'm) PD.entries
+  val PDA_entries_from_PAA_entries : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k, 'l, 'm) PAA.entries ->
+    ('a, 'b, 'c, 'd, 'e, 'f, 'h) PDA.entries
+  val PDC_entries_from_PAA_entries : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'k, 'l, 'm) PAA.entries ->
+    ('e, 'g, 'h, 'i, 'j, 'l, 'm) PDC.entries
+  val induct_PD_entries_from_PD_entries : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i, 'j, 'l, 'm) PD.entries ->
+    ('a, 'b, 'c, 'd, 'e, 'f, 'g) Induction_Data_Args.PD.entries
 
-  val add_arg_parsers : (unit context_parser ->
-      (term option list, (term * term list) option list, ML_Code_Util.code option list)
+  val add_arg_parsers : (unit context_parser -> (Induction_Tactic_Base.def_inst option list,
+      (term * term list) option list, ML_Code_Util.code option list)
+      Cases_Data_Args.PIM.entry context_parser,
+    thm context_parser,
+    unit context_parser ->
+      ((string * typ) list, term list * term list, ML_Code_Util.code)
         Cases_Data_Args.PIM.entry context_parser,
-    thm context_parser, bool parser, thm list context_parser, ML_Code_Util.code parser,
+    unit context_parser -> Induction_Data_Args.taking context_parser,
+    bool parser, thm list context_parser, ML_Code_Util.code parser,
     ML_Code_Util.code parser, ML_Code_Util.code parser, ML_Code_Util.code parser,
     (int * ML_Code_Util.code) list parser, ML_Code_Util.code parser,
     ML_Code_Util.code parser) PAA.entries
 end
 
-structure Zippy_Instance_Cases_Data_Args : ZIPPY_INSTANCE_CASES_DATA_ARGS =
+structure Zippy_Instance_Induction_Data_Args : ZIPPY_INSTANCE_INDUCTION_DATA_ARGS =
 struct
 
-structure CDA = Cases_Data_Args
+structure IDA = Induction_Data_Args
 structure HCGD = Zippy_Instance_Hom_Changed_Goals_Data_Args
 
 @{parse_entries (struct) PM [add, del, config]}
 @{parse_entries (struct) PD
-  [insts, rule, simp, facts, match, progress, empty_action, updates, mk_cud, prio_sq_co]}
+  [insts, rule, arbitrary, taking, simp, facts, match, progress, empty_action, updates, mk_cud, prio_sq_co]}
 @{parse_entries (struct) PAA
-  [insts, rule, simp, facts, match, progress, empty_action, default_update, updates, mk_cud,
+  [insts, rule, arbitrary, taking, simp, facts, match, progress, empty_action, default_update, updates, mk_cud,
   prio_sq_co]}
-@{parse_entries (struct) PDA [insts, rule, simp, facts, progress]}
+@{parse_entries (struct) PDA [insts, rule, arbitrary, taking, simp, facts, progress]}
 @{parse_entries (struct) PDC
   [simp, match, progress, empty_action, default_update, mk_cud, prio_sq_co]}
 
-fun PD_entries_from_PAA_entries {insts, rule, simp, facts, match, progress, empty_action, updates,
-  mk_cud, prio_sq_co,...} =
-  {insts = insts, rule = rule, simp = simp, facts = facts, match = match, progress = progress,
-  empty_action = empty_action, updates = updates, mk_cud = mk_cud, prio_sq_co = prio_sq_co}
-fun PDA_entries_from_PAA_entries {insts, rule, simp, facts, progress,...} =
-  {insts = insts, rule = rule, simp = simp, facts = facts, progress = progress}
+fun PD_entries_from_PAA_entries {insts, rule, arbitrary, taking, simp, facts, match, progress,
+  empty_action, updates, mk_cud, prio_sq_co,...} =
+  {insts = insts, rule = rule, arbitrary = arbitrary, taking = taking, simp = simp, facts = facts,
+  match = match, progress = progress, empty_action = empty_action, updates = updates,
+  mk_cud = mk_cud, prio_sq_co = prio_sq_co}
+fun PDA_entries_from_PAA_entries {insts, rule, arbitrary, taking, simp, facts, progress,...} =
+  {insts = insts, rule = rule, arbitrary = arbitrary, taking = taking, simp = simp, facts = facts,
+  progress = progress}
 fun PDC_entries_from_PAA_entries {simp, match, progress, empty_action, default_update, mk_cud,
   prio_sq_co,...} = {simp = simp, match = match, progress = progress, empty_action = empty_action,
   default_update = default_update, mk_cud = mk_cud, prio_sq_co = prio_sq_co}
-fun cases_PD_entries_from_PD_entries {insts, rule, simp, facts, match,...} =
-  {insts = insts, rule = rule, simp = simp, facts = facts, match = match}
+fun induct_PD_entries_from_PD_entries {insts, rule, arbitrary, taking, simp, facts, match,...} =
+  {insts = insts, rule = rule, arbitrary = arbitrary, taking = taking, simp = simp, facts = facts,
+  match = match}
 
 val add_arg_parsers = {
-  insts = SOME (CDA.PD.get_insts CDA.data_parsers),
-  rule = SOME (CDA.PD.get_rule CDA.data_parsers),
-  simp = SOME (CDA.PD.get_simp CDA.data_parsers),
-  facts = SOME (CDA.PD.get_facts CDA.data_parsers),
-  match = SOME (CDA.PD.get_match CDA.data_parsers),
+  insts = SOME (IDA.PD.get_insts IDA.data_parsers),
+  rule = SOME (IDA.PD.get_rule IDA.data_parsers),
+  arbitrary = SOME (IDA.PD.get_arbitrary IDA.data_parsers),
+  taking = SOME (IDA.PD.get_taking IDA.data_parsers),
+  simp = SOME (IDA.PD.get_simp IDA.data_parsers),
+  facts = SOME (IDA.PD.get_facts IDA.data_parsers),
+  match = SOME (IDA.PD.get_match IDA.data_parsers),
   progress = SOME (HCGD.PAA.get_progress HCGD.add_arg_parsers),
   empty_action = SOME (HCGD.PAA.get_empty_action HCGD.add_arg_parsers),
   default_update = SOME (HCGD.PAA.get_default_update HCGD.add_arg_parsers),
@@ -80,11 +92,11 @@ val add_arg_parsers = {
 
 end
 
-signature ZIPPY_INSTANCE_CASES_DATA =
+signature ZIPPY_INSTANCE_INDUCTION_DATA =
 sig
   include ZIPPY_INSTANCE_TACTIC
 
-  structure Cases_Data :
+  structure Induction_Data :
   sig
     structure Log : ZIPPY_LOGGER_MIXIN_BASE
 
@@ -93,7 +105,7 @@ sig
       int -> @{AllT_args} Base_Data.PAction.action,
       Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph,
       @{AllT_args} Result_Action.mk_copy_update_data,
-      @{AllT_args} PResults.prio_sq_co) Zippy_Instance_Cases_Data_Args.PDC.entries
+      @{AllT_args} PResults.prio_sq_co) Zippy_Instance_Induction_Data_Args.PDC.entries
 
     structure Config_Data : GENERIC_DATA
     where type T = config
@@ -132,12 +144,13 @@ sig
     val map_prio_sq_co : (@{AllT_args} PResults.prio_sq_co ->
       @{AllT_args} PResults.prio_sq_co) -> Context.generic -> Context.generic
 
-    type data = (Cases_Data_Args.insts, thm option, bool, thm list, Cases_Data_Args.match,
+    type data = (Induction_Data_Args.insts, thm option, Induction_Data_Args.arbitrary,
+      Induction_Data_Args.taking, bool, thm list, Cases_Data_Args.match,
       Base_Data.AAMeta.P.progress,
       int -> @{AllT_args} Base_Data.PAction.action,
       (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph) list option,
       @{AllT_args} Result_Action.mk_copy_update_data,
-      @{AllT_args} PResults.prio_sq_co) Zippy_Instance_Cases_Data_Args.PD.entries
+      @{AllT_args} PResults.prio_sq_co) Zippy_Instance_Induction_Data_Args.PD.entries
 
     val data_ord : data ord
     val eq_data : data * data -> bool
@@ -148,21 +161,23 @@ sig
     structure Data : GENERIC_DATA
     where type T = data Ord_List.T
 
-    type add_args = (Cases_Data_Args.insts, thm option, bool, thm list, Cases_Data_Args.match,
+    type add_args = (Induction_Data_Args.insts, thm option, Induction_Data_Args.arbitrary,
+      Induction_Data_Args.taking, bool, thm list, Cases_Data_Args.match,
       Base_Data.AAMeta.P.progress,
       int -> @{AllT_args} Base_Data.PAction.action,
       Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph,
       (int * (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph)) list option,
       @{AllT_args} Result_Action.mk_copy_update_data,
-      @{AllT_args} PResults.prio_sq_co) Zippy_Instance_Cases_Data_Args.PAA.entries
+      @{AllT_args} PResults.prio_sq_co) Zippy_Instance_Induction_Data_Args.PAA.entries
 
     val insert : data -> Context.generic -> Context.generic
     val insert_declaration_attribute : add_args -> thm -> Context.generic -> Context.generic
     val insert_declaration_attribute_context_defaults : add_args -> thm -> Context.generic ->
       Context.generic
 
-    type del_args = (Cases_Data_Args.insts, thm option, bool, thm list,
-      Base_Data.AAMeta.P.progress) Zippy_Instance_Cases_Data_Args.PDA.entries
+    type del_args = (Induction_Data_Args.insts, thm option, Induction_Data_Args.arbitrary,
+      Induction_Data_Args.taking, bool, thm list, Base_Data.AAMeta.P.progress)
+      Zippy_Instance_Induction_Data_Args.PDA.entries
 
     val delete : data -> Context.generic -> Context.generic
     val delete_declaration_attribute : del_args -> thm -> Context.generic -> Context.generic
@@ -170,48 +185,51 @@ sig
       Context.generic
 
     val binding : Binding.binding
-    val parse_add_arg_entries_attribute : ((term option list, (term * term list) option list,
-        ML_Code_Util.code option list) Cases_Data_Args.PIM.entry,
-      thm, bool, thm list, ML_Code_Util.code,
-      ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code,
-      (int * ML_Code_Util.code) list, ML_Code_Util.code, ML_Code_Util.code)
-      Zippy_Instance_Cases_Data_Args.PAA.entries context_parser
-    val parse_add_arg_entries : ((term option list, (term * term list) option list,
-        ML_Code_Util.code option list) Cases_Data_Args.PIM.entry,
-      thm, bool, thm list, ML_Code_Util.code,
-      ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code,
-      (int * ML_Code_Util.code) list, ML_Code_Util.code, ML_Code_Util.code)
-      Zippy_Instance_Cases_Data_Args.PAA.entries context_parser
+    val parse_add_arg_entries_attribute : ((Induction_Tactic_Base.def_inst option list,
+      (term * term list) option list, ML_Code_Util.code option list) Cases_Data_Args.PIM.entry, thm,
+      ((string * typ) list, term list * term list, ML_Code_Util.code) Cases_Data_Args.PIM.entry,
+      Induction_Data_Args.taking, bool, thm list, ML_Code_Util.code, ML_Code_Util.code,
+      ML_Code_Util.code, ML_Code_Util.code, (int * ML_Code_Util.code) list, ML_Code_Util.code,
+      ML_Code_Util.code) Zippy_Instance_Induction_Data_Args.PAA.entries context_parser
+    val parse_add_arg_entries : ((Induction_Tactic_Base.def_inst option list,
+      (term * term list) option list, ML_Code_Util.code option list) Cases_Data_Args.PIM.entry, thm,
+      ((string * typ) list, term list * term list, ML_Code_Util.code) Cases_Data_Args.PIM.entry,
+      Induction_Data_Args.taking, bool, thm list, ML_Code_Util.code, ML_Code_Util.code,
+      ML_Code_Util.code, ML_Code_Util.code, (int * ML_Code_Util.code) list, ML_Code_Util.code,
+      ML_Code_Util.code) Zippy_Instance_Induction_Data_Args.PAA.entries context_parser
 
     structure Facts_Data_Internal : GENERIC_DATA
 
-    val add_attribute : ((term option list, (term * term list) option list,
-          ML_Code_Util.code option list) Cases_Data_Args.PIM.entry,
-        thm, bool, thm list, ML_Code_Util.code,
-        ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code,
-        (int * ML_Code_Util.code) list, ML_Code_Util.code, ML_Code_Util.code)
-        Zippy_Instance_Cases_Data_Args.PAA.entries * Position.T -> attribute
+    val add_attribute : ((Induction_Tactic_Base.def_inst option list,
+          (term * term list) option list, ML_Code_Util.code option list) Cases_Data_Args.PIM.entry,
+        thm, ((string * typ) list, term list * term list, ML_Code_Util.code) Cases_Data_Args.PIM.entry,
+        Induction_Data_Args.taking, bool, thm list, ML_Code_Util.code, ML_Code_Util.code,
+        ML_Code_Util.code, ML_Code_Util.code, (int * ML_Code_Util.code) list, ML_Code_Util.code,
+        ML_Code_Util.code) Zippy_Instance_Induction_Data_Args.PAA.entries * Position.T -> attribute
 
-    val parse_del_arg_entries_attribute : ((term option list, (term * term list) option list,
-        ML_Code_Util.code option list) Cases_Data_Args.PIM.entry,
-      thm, bool, thm list, ML_Code_Util.code)
-      Zippy_Instance_Cases_Data_Args.PDA.entries context_parser
-    val parse_del_arg_entries : ((term option list, (term * term list) option list,
-        ML_Code_Util.code option list) Cases_Data_Args.PIM.entry,
-      thm, bool, thm list, ML_Code_Util.code)
-      Zippy_Instance_Cases_Data_Args.PDA.entries context_parser
+    val parse_del_arg_entries_attribute : ((Induction_Tactic_Base.def_inst option list,
+      (term * term list) option list, ML_Code_Util.code option list) Cases_Data_Args.PIM.entry, thm,
+      ((string * typ) list, term list * term list, ML_Code_Util.code) Cases_Data_Args.PIM.entry,
+      Induction_Data_Args.taking, bool, thm list, ML_Code_Util.code)
+      Zippy_Instance_Induction_Data_Args.PDA.entries context_parser
+    val parse_del_arg_entries : ((Induction_Tactic_Base.def_inst option list,
+      (term * term list) option list, ML_Code_Util.code option list) Cases_Data_Args.PIM.entry, thm,
+      ((string * typ) list, term list * term list, ML_Code_Util.code) Cases_Data_Args.PIM.entry,
+      Induction_Data_Args.taking, bool, thm list, ML_Code_Util.code)
+      Zippy_Instance_Induction_Data_Args.PDA.entries context_parser
 
-    val del_attribute : ((term option list, (term * term list) option list,
-          ML_Code_Util.code option list) Cases_Data_Args.PIM.entry,
-        thm, bool, thm list, ML_Code_Util.code)
-        Zippy_Instance_Cases_Data_Args.PDA.entries * Position.T -> attribute
+    val del_attribute : ((Induction_Tactic_Base.def_inst option list,
+          (term * term list) option list, ML_Code_Util.code option list) Cases_Data_Args.PIM.entry,
+        thm, ((string * typ) list, term list * term list, ML_Code_Util.code) Cases_Data_Args.PIM.entry,
+        Induction_Data_Args.taking, bool, thm list, ML_Code_Util.code)
+        Zippy_Instance_Induction_Data_Args.PDA.entries * Position.T -> attribute
 
     val parse_config_arg_entries : (bool, ML_Code_Util.code,
       ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code,
-      ML_Code_Util.code, ML_Code_Util.code) Zippy_Instance_Cases_Data_Args.PDC.entries parser
+      ML_Code_Util.code, ML_Code_Util.code) Zippy_Instance_Induction_Data_Args.PDC.entries parser
     val config_attribute : (bool, ML_Code_Util.code,
       ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code,
-      ML_Code_Util.code, ML_Code_Util.code) Zippy_Instance_Cases_Data_Args.PDC.entries * Position.T ->
+      ML_Code_Util.code, ML_Code_Util.code) Zippy_Instance_Induction_Data_Args.PDC.entries * Position.T ->
       attribute
 
     val parse_attribute : attribute context_parser
@@ -225,7 +243,7 @@ sig
 
     (* action data *)
     val tac_data_from_data : Base_Data.AMeta.metadata ->
-      (Base_Data.AAMeta.P.progress -> Cases_Data_Args.data -> (@{ParaT_args} Base_Data.GFocus.focus,
+      (Base_Data.AAMeta.P.progress -> Induction_Data_Args.data -> (@{ParaT_args} Base_Data.GFocus.focus,
         Tac_AAM.ztactic) morph) ->
       (@{AllT_args} Result_Action.mk_copy_update_data -> Result_Action.result ->
         @{AllT_args} Base_Data.PAction.action) option ->
@@ -233,14 +251,14 @@ sig
 
     val paction_data_from_data : @{ParaT_args encl: "(" ")"} Exn.ME.exn ->
       Base_Data.AMeta.metadata ->
-      (Base_Data.AAMeta.P.progress -> Cases_Data_Args.data -> (@{ParaT_args} Base_Data.GFocus.focus,
+      (Base_Data.AAMeta.P.progress -> Induction_Data_Args.data -> (@{ParaT_args} Base_Data.GFocus.focus,
         Tac_AAM.ztactic) morph) ->
       (@{AllT_args} Result_Action.mk_copy_update_data -> Result_Action.result ->
         @{AllT_args} Base_Data.PAction.action) option ->
       data -> @{AllT_args} PAction.data
 
     val cons_action : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.AMeta.metadata ->
-      (Base_Data.AAMeta.P.progress -> Cases_Data_Args.data -> (@{ParaT_args} Base_Data.GFocus.focus,
+      (Base_Data.AAMeta.P.progress -> Induction_Data_Args.data -> (@{ParaT_args} Base_Data.GFocus.focus,
         Tac_AAM.ztactic) morph) ->
       (@{AllT_args} Result_Action.mk_copy_update_data -> Result_Action.result ->
         @{AllT_args} Base_Data.PAction.action) option ->
@@ -248,7 +266,7 @@ sig
         @{AllT_args} ZLP.Z4.zipper) morph
 
     val cons_action_cluster : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
-      (Base_Data.AAMeta.P.progress -> Cases_Data_Args.data -> (@{ParaT_args} Base_Data.GFocus.focus,
+      (Base_Data.AAMeta.P.progress -> Induction_Data_Args.data -> (@{ParaT_args} Base_Data.GFocus.focus,
         Tac_AAM.ztactic) morph) ->
       (@{AllT_args} Result_Action.mk_copy_update_data -> Result_Action.result ->
         @{AllT_args} Base_Data.PAction.action) option ->
@@ -257,8 +275,8 @@ sig
   end
 end
 
-functor Zippy_Instance_Cases_Data(
-    structure FI_Cases_Data : FUNCTOR_INSTANCE_BASE (*target path for Cases_Data*)
+functor Zippy_Instance_Induction_Data(
+    structure FI_Induction_Data : FUNCTOR_INSTANCE_BASE (*target path for Induction_Data*)
     structure Z : ZIPPY_INSTANCE_TACTIC
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
@@ -267,11 +285,11 @@ functor Zippy_Instance_Cases_Data(
       int -> @{AllT_args} Z.Base_Data.PAction.action,
       Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLP.Z2.zipper) Z.emorph,
       @{AllT_args} Z.Result_Action.mk_copy_update_data,
-      @{AllT_args} Z.PResults.prio_sq_co) Zippy_Instance_Cases_Data_Args.PDC.entries
+      @{AllT_args} Z.PResults.prio_sq_co) Zippy_Instance_Induction_Data_Args.PDC.entries
     structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals_Pos_Copy : ZIPPY_LOGGER_MIXIN_BASE
     structure Log : ZIPPY_LOGGER_MIXIN_BASE
-  ) : ZIPPY_INSTANCE_CASES_DATA =
+  ) : ZIPPY_INSTANCE_INDUCTION_DATA =
 struct
 open Z
 
@@ -280,17 +298,18 @@ structure MCU = ML_Code_Util
 structure PU = Parse_Util
 structure SShow = SpecCheck_Show
 
+structure IDA = Induction_Data_Args
 structure CDA = Cases_Data_Args
 structure HCGD = Zippy_Instance_Hom_Changed_Goals_Data_Args
 
-structure Cases_Data =
+structure Induction_Data =
 struct
-structure FI = Functor_Instance(FI_Cases_Data)
+structure FI = Functor_Instance(FI_Induction_Data)
 
-local open Zippy_Instance_Cases_Data_Args ZLP Base_Data
+local open Zippy_Instance_Induction_Data_Args ZLP Base_Data
 in
 
-structure Log = Zippy_Logger_Mixin_Base(val parent_logger = Log.logger; val name = "Cases_Data")
+structure Log = Zippy_Logger_Mixin_Base(val parent_logger = Log.logger; val name = "Induction_Data")
 open Log
 
 type config = (bool, CDA.match,
@@ -329,7 +348,7 @@ val map_mk_cud = map_config o PDC.map_mk_cud
 val get_prio_sq_co = PDC.get_prio_sq_co o get_config
 val map_prio_sq_co = map_config o PDC.map_prio_sq_co
 
-type data = (CDA.insts, thm option, bool, thm list, CDA.match,
+type data = (IDA.insts, thm option, IDA.arbitrary, IDA.taking, bool, thm list, CDA.match,
   Base_Data.AAMeta.P.progress,
   int -> @{AllT_args} Base_Data.PAction.action,
   (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph) list option,
@@ -337,7 +356,9 @@ type data = (CDA.insts, thm option, bool, thm list, CDA.match,
   @{AllT_args} PResults.prio_sq_co) PD.entries
 
 val data_ord = option_ord Thm.thm_ord o apply2 PD.get_rule
-  ||| CDA.insts_ord o apply2 PD.get_insts
+  ||| IDA.insts_ord o apply2 PD.get_insts
+  ||| IDA.arbitrary_ord o apply2 PD.get_arbitrary
+  ||| IDA.taking_ord o apply2 PD.get_taking
   ||| list_ord Thm.thm_ord o apply2 PD.get_facts
   ||| bool_ord o apply2 PD.get_simp
   ||| Base_Data.AAMeta.P.ord o apply2 PD.get_progress
@@ -345,7 +366,9 @@ val data_ord = option_ord Thm.thm_ord o apply2 PD.get_rule
 val eq_data = is_equal o data_ord
 fun pretty_data ctxt data = SShow.record [
   ("rule", SShow.option (SShow.thm ctxt) (PD.get_rule data)),
-  ("insts", CDA.pretty_insts ctxt (PD.get_insts data)),
+  ("insts", IDA.pretty_insts ctxt (PD.get_insts data)),
+  ("arbitrary", IDA.pretty_arbitrary ctxt (PD.get_arbitrary data)),
+  ("taking", IDA.pretty_taking ctxt (PD.get_taking data)),
   ("facts", SShow.list (SShow.thm ctxt) (PD.get_facts data)),
   ("simp", SShow.bool (PD.get_simp data)),
   ("progress", Base_Data.AAMeta.P.pretty (PD.get_progress data))
@@ -358,7 +381,7 @@ structure Data = Generic_Data(
   val empty = []
   val merge = Ord_List.merge data_ord)
 
-type add_args = (CDA.insts, thm option, bool, thm list, CDA.match,
+type add_args = (IDA.insts, thm option, IDA.arbitrary, IDA.taking, bool, thm list, CDA.match,
   Base_Data.AAMeta.P.progress,
   int -> @{AllT_args} Base_Data.PAction.action,
   Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph,
@@ -389,7 +412,7 @@ fun insert args context = context |>
       in
         Data.map (fn data => if Ord_List.member data_ord data args
           then (@{log Logger.WARN} ctxt (fn _ => Pretty.breaks [
-                Pretty.str "Similar cases data already added. Skipping insertion of",
+                Pretty.str "Similar induction data already added. Skipping insertion of",
                 pretty_data ctxt args
               ] |> Pretty.block |> Pretty.string_of);
             data)
@@ -406,7 +429,7 @@ fun insert_declaration_attribute args thm context =
     val (updates, rule) = case prepare_attr_rule thm of
         NONE => let val _ = if length updates > 0
             then @{log Logger.WARN} ctxt (fn _ =>
-              "Passed updates will be ignored since no cases rule was passed.")
+              "Passed updates will be ignored since no induction rule was passed.")
             else ()
           in (NONE, NONE) end
       | SOME rule =>
@@ -432,20 +455,23 @@ fun add_args_context_defaults args = get_config
 fun insert_declaration_attribute_context_defaults args thm context =
   insert_declaration_attribute (add_args_context_defaults args context) thm context
 
-type del_args = (CDA.insts, thm option, bool, thm list, Base_Data.AAMeta.P.progress) PDA.entries
+type del_args = (IDA.insts, thm option, IDA.arbitrary, IDA.taking, bool, thm list,
+  Base_Data.AAMeta.P.progress) PDA.entries
 
 fun delete args context = Data.map (fn data => if Ord_List.member data_ord data args
   then Ord_List.remove data_ord args data
   else let val ctxt = Context.proof_of context
     in
       (@{log Logger.WARN} ctxt (fn _ => Pretty.breaks [
-          Pretty.str "Cases data", pretty_data ctxt args, Pretty.str "not found. Skipping deletion."
+          Pretty.str "Induction data", pretty_data ctxt args, Pretty.str "not found. Skipping deletion."
         ] |> Pretty.block |> Pretty.string_of);
       data)
     end) context
 
 fun delete_declaration_attribute args thm =
   [PD.insts (PDA.get_insts args),
+    PD.arbitrary (PDA.get_arbitrary args),
+    PD.taking (PDA.get_taking args),
     PD.simp (PDA.get_simp args),
     PD.facts (PDA.get_facts args),
     PD.progress (PDA.get_progress args),
@@ -461,7 +487,7 @@ fun del_args_context_defaults args = get_config
 fun delete_declaration_attribute_context_defaults args thm context =
   delete_declaration_attribute (del_args_context_defaults args context) thm context
 
-val binding = Binding.make (FI.prefix_id "cases", FI.pos)
+val binding = Binding.make (FI.prefix_id "induct", FI.pos)
 
 fun gen_filter_arg_entries get_insts get_match_safe =
   let
@@ -489,17 +515,21 @@ fun gen_parse_key keys key_to_string key_from_string except = Parse_Key_Value.pa
 fun gen_parse_add_arg_entries parse_rule =
   let
     val parsers = add_arg_parsers
-    val parse_value = PAA.parse_entry Scan.fail
+    fun parse_value x = PAA.parse_entry Scan.fail
       (if parse_rule then PAA.get_rule parsers else Scan.fail)
-      (Scan.lift (PAA.get_simp parsers)) (PAA.get_facts parsers) (Scan.lift (PAA.get_match parsers))
+      (PAA.get_arbitrary parsers parse_entry_unit) (PAA.get_taking parsers parse_entry_unit)
+      (Scan.lift (PAA.get_simp parsers))
+      (PAA.get_facts parsers) (Scan.lift (PAA.get_match parsers))
       (Scan.lift (PAA.get_progress parsers)) (Scan.lift (PAA.get_empty_action parsers))
       (Scan.lift (PAA.get_default_update parsers)) (Scan.lift (PAA.get_updates parsers))
-      (Scan.lift (PAA.get_mk_cud parsers)) (Scan.lift (PAA.get_prio_sq_co parsers))
-    val parse_key = gen_parse_key PAA.keys PAA.key_to_string PAA.key_from_string
-      (map PAA.key (PAA.insts :: (if parse_rule then [] else [PAA.rule])))
-    val parse_entry = Parse_Key_Value.parse_entry' (Scan.lift parse_key)
-      (K (Scan.lift (Parse.$$$ ":"))) parse_value
-    val default_entries = PAA.entries_from_entry_list [PAA.updates [], PAA.facts []]
+      (Scan.lift (PAA.get_mk_cud parsers)) (Scan.lift (PAA.get_prio_sq_co parsers)) x
+    and parse_key x = gen_parse_key PAA.keys PAA.key_to_string PAA.key_from_string
+      (map PAA.key (PAA.insts :: (if parse_rule then [] else [PAA.rule]))) x
+    and parse_entry x = Parse_Key_Value.parse_entry' (Scan.lift parse_key)
+      (K (Scan.lift (Parse.$$$ ":"))) parse_value x
+    and parse_entry_unit x = (parse_entry >> K ()) x
+    val default_entries = PAA.entries_from_entry_list [PAA.updates [], PAA.facts [],
+      PAA.arbitrary (CDA.PIM.fix []), PAA.taking []]
   in
     gen_parse_add_del_arg_entries PAA.parse_entries_required' parse_entry default_entries
       PAA.map_insts_safe
@@ -509,7 +539,7 @@ val parse_add_arg_entries_attribute = gen_parse_add_arg_entries false
 val parse_add_arg_entries = gen_parse_add_arg_entries true
 
 fun Args_substructure_op substructure operation =
-  MCU.flat_read ["Zippy_Instance_Cases_Data_Args.", substructure, ".", operation]
+  MCU.flat_read ["Zippy_Instance_Induction_Data_Args.", substructure, ".", operation]
 
 structure Facts_Data_Internal = Generic_Data(
   type T = thm list
@@ -534,7 +564,9 @@ fun add_attribute (entries, pos) (context, thm) =
     val code_from_key = code_PAA_op o PAA.key_to_string
     val context = Facts_Data_Internal.put (PAA.get_facts entries) context
     fun code_from_entry (PAA.simp b) = code_bool b
-      | code_from_entry (PAA.insts insts) = CDA.code_insts insts
+      | code_from_entry (PAA.insts insts) = IDA.code_insts insts
+      | code_from_entry (PAA.arbitrary arbitrary) = IDA.code_arbitrary arbitrary
+      | code_from_entry (PAA.taking taking) = IDA.code_taking taking
       | code_from_entry (PAA.facts _) = code_get_facts
       | code_from_entry (PAA.match c) = c
       | code_from_entry (PAA.progress c) = c
@@ -543,7 +575,7 @@ fun add_attribute (entries, pos) (context, thm) =
       | code_from_entry (PAA.updates updates) = MCU.option (SOME (HCGD.code_updates updates))
       | code_from_entry (PAA.mk_cud c) = c
       | code_from_entry (PAA.prio_sq_co c) = c
-      | code_from_entry (PAA.rule _) = error "rule may not be passed to add cases attribute"
+      | code_from_entry (PAA.rule _) = error "rule may not be passed to add induction attribute"
     val code_entries = PAA.key_entry_entries_from_entries entries
       |> map (fn (k, v) => code_from_key k @ MCU.atomic (code_from_entry v))
       |> MCU.list
@@ -553,15 +585,18 @@ fun add_attribute (entries, pos) (context, thm) =
 fun gen_parse_del_arg_entries parse_rule =
   let
     val parsers = PDA_entries_from_PAA_entries add_arg_parsers
-    val parse_value = PDA.parse_entry Scan.fail
+    fun parse_value x = PDA.parse_entry Scan.fail
       (if parse_rule then PDA.get_rule parsers else Scan.fail)
+      (PDA.get_arbitrary parsers parse_entry_unit) (PDA.get_taking parsers parse_entry_unit)
       (Scan.lift (PDA.get_simp parsers)) (PDA.get_facts parsers)
-      (Scan.lift (PDA.get_progress parsers))
-    val parse_key = gen_parse_key PDA.keys PDA.key_to_string PDA.key_from_string
-      (map PDA.key (PDA.insts :: (if parse_rule then [] else [PDA.rule])))
-    val parse_entry = Parse_Key_Value.parse_entry' (Scan.lift parse_key)
-      (K (Scan.lift (Parse.$$$ ":"))) parse_value
-    val default_entries = PDA.entries_from_entry_list [PDA.facts []]
+      (Scan.lift (PDA.get_progress parsers)) x
+    and parse_key x = gen_parse_key PDA.keys PDA.key_to_string PDA.key_from_string
+      (map PDA.key (PDA.insts :: (if parse_rule then [] else [PDA.rule]))) x
+    and parse_entry x = Parse_Key_Value.parse_entry' (Scan.lift parse_key)
+      (K (Scan.lift (Parse.$$$ ":"))) parse_value x
+    and parse_entry_unit x = (parse_entry >> K ()) x
+    val default_entries = PDA.entries_from_entry_list [PDA.facts [], PDA.arbitrary (CDA.PIM.fix []),
+      PDA.taking []]
   in
     gen_parse_add_del_arg_entries PDA.parse_entries_required' parse_entry default_entries
       PDA.map_insts_safe
@@ -575,10 +610,12 @@ fun del_attribute (entries, pos) (context, thm) =
     val code_from_key = code_PDA_op o PDA.key_to_string
     val context = Facts_Data_Internal.put (PDA.get_facts entries) context
     fun code_from_entry (PDA.simp b) = code_bool b
-      | code_from_entry (PDA.insts insts) = CDA.code_insts insts
+      | code_from_entry (PDA.insts insts) = IDA.code_insts insts
+      | code_from_entry (PDA.arbitrary arbitrary) = IDA.code_arbitrary arbitrary
+      | code_from_entry (PDA.taking taking) = IDA.code_taking taking
       | code_from_entry (PDA.facts _) = code_get_facts
       | code_from_entry (PDA.progress c) = c
-      | code_from_entry (PDA.rule _) = error "rule may not be passed to del cases attribute"
+      | code_from_entry (PDA.rule _) = error "rule may not be passed to del induction attribute"
     val code_entries = PDA.key_entry_entries_from_entries entries
       |> map (fn (k, v) => code_from_key k @ MCU.atomic (code_from_entry v))
       |> MCU.list
@@ -637,7 +674,7 @@ val parse_attribute = PU.position' parse_entries >> attribute
   || PU.position' parse_add_arg_entries_attribute >> add_attribute
 
 val setup_attribute = Attrib.local_setup binding (Parse.!!!! parse_attribute) o
-  the_default ("configure cases data " ^ enclose "(" ")" FI.long_name)
+  the_default ("configure induction data " ^ enclose "(" ")" FI.long_name)
 
 local
   fun run_attr attr (context, opt_thm) = (case opt_thm of
@@ -694,7 +731,7 @@ fun tac_data_from_data meta tac opt_default_update_action data =
     empty_action = PD.get_empty_action data,
     result_action = result_action (PD.get_mk_cud data),
     prio_sq_co = PD.get_prio_sq_co data,
-    tac = tac (PD.get_progress data) (cases_PD_entries_from_PD_entries data)}
+    tac = tac (PD.get_progress data) (induct_PD_entries_from_PD_entries data)}
   end
 
 fun paction_data_from_data exn meta tac opt_default_update_action =
@@ -711,8 +748,8 @@ fun cons_action_cluster exn meta tac opt_default_update_action ctxt =
       Zippy_Identifier.suffix_name NONE (string_of_int i) (ACMeta.Id.getter meta),
       Lazy.lazy (fn _ => Pretty.breaks [
           Pretty.str (ACMeta.Descr.getter meta |> Lazy.force),
-          Pretty.block [Pretty.str "Cases data: ",
-            CDA.pretty_data ctxt (cases_PD_entries_from_PD_entries data)]
+          Pretty.block [Pretty.str "Induction data: ",
+            IDA.pretty_data ctxt (induct_PD_entries_from_PD_entries data)]
         ] |> Pretty.block |> Pretty.string_of))
     in cons_action exn meta tac opt_default_update_action data focus >>> Up4.morph end)))
   #> Node.cons3 exn meta

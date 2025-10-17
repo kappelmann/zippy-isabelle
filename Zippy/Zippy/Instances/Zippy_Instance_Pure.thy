@@ -46,6 +46,7 @@ local
     structure LGoals = Zippy_Logger_Mixin_Base(open Base; val name = "LGoals")
     structure LGoals_Pos_Copy = Zippy_Logger_Mixin_Base(open Base; val name = "LGoals_Pos_Copy")
     structure PAction_PResults = Zippy_Logger_Mixin_Base(open Base; val name = "PAction_PResults")
+    structure Result_Action = Zippy_Logger_Mixin_Base(open Base; val name = "Result_Action")
     end
   end
   structure Zippy = Zippy_Instance(
@@ -57,9 +58,9 @@ local
   structure Zippy_PAction = Zippy_Instance_PAction(
     structure Z = Zippy
     val mk_exn = Library.K exn
-    structure Ctxt = Ctxt; structure Log_LGoals = Logging.LGoals
-    structure Log_LGoals_Pos_Copy = Logging.LGoals_Pos_Copy; structure Log_Copy = Logging.Copy
-    structure Log_Enum_Copy = Logging.Enum_Copy)
+    structure Ctxt = Ctxt; structure Log_Result_Action = Logging.Result_Action;
+    structure Log_LGoals = Logging.LGoals structure Log_LGoals_Pos_Copy = Logging.LGoals_Pos_Copy;
+    structure Log_Copy = Logging.Copy structure Log_Enum_Copy = Logging.Enum_Copy)
   structure Zippy_PResults = Zippy_Instance_PResults(
     structure Z = Zippy_PAction
     val halve = Prio.halve

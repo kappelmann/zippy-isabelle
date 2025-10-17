@@ -25,7 +25,8 @@ sig
   val PAA_entries_from_PDC_entries : ('a, 'b, 'c, 'd, 'e, 'f) PDC.entries -> 'u option ->
     ('a, 'b, 'c, 'u, 'd, 'e) PAA.entries
 
-  val updates_parser : (int * ML_Code_Util.code) list parser
+  val mk_updates_default : (thm -> int) -> thm -> 'a -> (int * 'a) list -> Proof.context -> 'a list
+
   val add_arg_parsers : (ML_Code_Util.code parser, ML_Code_Util.code parser,
     ML_Code_Util.code parser, (int * ML_Code_Util.code) list parser, ML_Code_Util.code parser,
     ML_Code_Util.code parser) PAA.entries
@@ -33,12 +34,15 @@ sig
   val config_data_parsers : (ML_Code_Util.code parser, ML_Code_Util.code parser,
     ML_Code_Util.code parser, ML_Code_Util.code parser, ML_Code_Util.code parser,
     ML_Code_Util.code parser) PDC.entries
+
+  val code_updates : (int * ML_Code_Util.code) list -> ML_Code_Util.code
 end
 
 structure Zippy_Instance_Hom_Changed_Goals_Data_Args : ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_ARGS =
 struct
 
 structure PU = Parse_Util
+structure MCU = ML_Code_Util
 
 @{parse_entries (struct) PM [add, del, config]}
 @{parse_entries (struct) PD [thm, progress, empty_action, updates, mk_cud, prio_sq_co]}
@@ -53,6 +57,27 @@ fun PAA_entries_from_PDC_entries {progress, empty_action, default_update, mk_cud
   updates = {
   progress = progress, empty_action = empty_action, default_update = default_update,
   mk_cud = mk_cud, prio_sq_co = prio_sq_co, updates = updates}
+
+fun mk_updates_default num_new_goals thm default_update updates ctxt =
+  let
+    val num_new_goals = num_new_goals thm
+    fun mk_updates i [] = if i <= num_new_goals + 1
+          then replicate (num_new_goals + 1 - i) default_update
+          else error (Pretty.breaks [
+              Pretty.block [Pretty.str "Too many updates ",
+                Pretty.enclose "(" ")." [SpecCheck_Show.int (i - 1)]],
+              Pretty.block [Pretty.str "Theorem ", Thm.pretty_thm ctxt thm,
+                Pretty.str " creates only ",
+                Pretty.enclose "(" ")" [SpecCheck_Show.int num_new_goals],
+                Pretty.str " new goals."]
+            ] |> Pretty.block |> Pretty.string_of)
+      | mk_updates i (ups as ((j, update) :: updates))= if i < j
+          then default_update :: mk_updates (i + 1) ups
+          else if i = j then update :: mk_updates (i + 1) updates
+          else error (Pretty.block [
+              Pretty.str "Invalid update indices (non-positive or duplicates)."
+            ] |> Pretty.string_of)
+  in sort (apply2 fst #> int_ord) updates |> mk_updates 1 end
 
 val empty_action_parser = PU.nonempty_code (K "action in case of empty results must not be empty")
 val default_update_parser = PU.nonempty_code (K "default update must not be empty")
@@ -91,6 +116,8 @@ val config_data_parsers = {
   mk_cud = SOME mk_cud_parser,
   prio_sq_co = SOME prio_sq_co_parser,
   del_select = SOME del_select_parser}
+
+val code_updates = map (fn (i, update) => MCU.tuple [MCU.read (string_of_int i), update]) #> MCU.list
 end
 
 signature ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA =
@@ -193,6 +220,8 @@ sig
     val parse_add_context_update : unit context_parser
     val parse_del_context_update : unit context_parser
     val parse_config_context_update : unit context_parser
+    val parse_entry_context_update : unit context_parser
+    val parse_context_update : unit context_parser
 
     (* action data *)
     val focused_data_none_each : ('a -> Data.term_value list) -> 'a list ->
@@ -341,26 +370,8 @@ fun insert data context =
   end
 
 fun insert_add_args args thm context =
-  let
-    val num_new_goals = num_new_goals thm
-    val default_update = PAA.get_default_update args
-    fun mk_updates i [] = if i <= num_new_goals + 1
-          then replicate (num_new_goals + 1 - i) default_update
-          else error (Pretty.breaks [
-              Pretty.block [Pretty.str "Too many updates ",
-                Pretty.enclose "(" ")." [SpecCheck_Show.int (i - 1)]],
-              Pretty.block [Pretty.str "Theorem ", Thm.pretty_thm (Context.proof_of context) thm,
-                Pretty.str " creates only ",
-                Pretty.enclose "(" ")" [SpecCheck_Show.int num_new_goals],
-                Pretty.str " new goals."]
-            ] |> Pretty.block |> Pretty.string_of)
-      | mk_updates i (ups as ((j, update) :: updates))= if i < j
-          then default_update :: mk_updates (i + 1) ups
-          else if i = j then update :: mk_updates (i + 1) updates
-          else error (Pretty.block [
-              Pretty.str "Invalid update indices (non-positive or duplicates)."
-            ] |> Pretty.string_of)
-    val updates = PAA.get_updates args |> sort (apply2 fst #> int_ord) |> mk_updates 1
+  let val updates = mk_updates_default num_new_goals thm (PAA.get_default_update args)
+    (PAA.get_updates args) (Context.proof_of context)
   in insert (PD_entries_from_PAA_entries (PAA.map_updates (K updates) args) thm) context end
 
 fun insert_add_args_context_defaults entries thm context =
@@ -376,7 +387,7 @@ fun delete_context_defaults opt_select thm context =
 
 val binding = Binding.make (FI.id, FI.pos)
 
-val add_default_entries = PAA.empty_entries () |> fold PAA.set_entry [PAA.updates []]
+val add_default_entries = PAA.entries_from_entry_list [PAA.updates []]
 
 val parse_add_arg_entry =
   let
@@ -401,9 +412,7 @@ fun add_attribute (entries, pos) =
     fun code_from_entry (PAA.progress c) = c
       | code_from_entry (PAA.empty_action c) = c
       | code_from_entry (PAA.default_update c) = c
-      | code_from_entry (PAA.updates updates) = updates
-          |> List.map (fn (i, update) => MCU.tuple [MCU.read (string_of_int i), update])
-          |> MCU.list
+      | code_from_entry (PAA.updates updates) = code_updates updates
       | code_from_entry (PAA.mk_cud c) = c
       | code_from_entry (PAA.prio_sq_co c) = c
     val code_entries = PAA.key_entry_entries_from_entries entries
@@ -496,7 +505,7 @@ val parse_add_context_update = parse_thms parse_add_arg_entry --
   :|-- parse_run_attr
 val parse_del_context_update = parse_thms parse_del_arg_entry
   -- (parse_opt_sep :|-- (fn opt_sep =>
-      let val repeat = case opt_sep of NONE => Scan.repeat | SOME _ => Scan.repeat1
+      let val repeat = if is_none opt_sep then Scan.repeat else Scan.repeat1
       in
         Scan.lift (PU.position (parse_del_arg_entries repeat)
         >> (apfst PDA.get_select_safe #> del_attribute))
@@ -506,6 +515,12 @@ val parse_config_context_update = Scan.succeed []
   -- Scan.lift (PU.position parse_config_arg_entries >> config_attribute)
   :|-- parse_run_attr
 end
+
+val parse_entry_context_update =
+  Scan.optional (Scan.lift PM.parse_key) (PM.key PM.add)
+  :|-- (fn PM.add _ => parse_add_context_update | PM.del _ => parse_del_context_update
+    | PM.config _ => parse_config_context_update)
+val parse_context_update = Parse.and_list1' parse_entry_context_update >> K ()
 
 (* action data *)
 fun gen_focused_data focused_goals lookup x focus = focused_goals focus x

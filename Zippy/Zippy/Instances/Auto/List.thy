@@ -3,8 +3,6 @@ theory List
 imports
   HOL.Sledgehammer
   HOL.Lifting_Set
-  Cases_Tactics_HOL
-  Induction_Tactics
   Zippy_Instance_Auto_HOL
 begin
 
@@ -13,14 +11,6 @@ begin
 \<close> *)
 
 ML\<open>val zippy_tac = Zippy_Auto.Run.zippy_tac\<close>
-
-ML\<open>
-local open Zippy; open ZLP MU; open Mo SC A
-in
-val induct_tac = Induction_Tactic_HOL.induct_pattern_tac false
-  (Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match)
-end
-\<close>
 
 ML\<open>
   val HEADGOAL_SOLVED = HEADGOAL o SOLVED'
@@ -118,31 +108,7 @@ primrec butlast :: "'a list \<Rightarrow> 'a list" where
 "butlast (x # xs) = (if xs = [] then [] else x # butlast xs)"
 
 lemma set_rec: "set xs = rec_list {} (\<lambda>x _. insert x) xs"
-  supply
-  [[zippy_init_gcs \<open>
-    let
-      open Zippy; open ZLP MU; open SC A
-      val id = @{binding induct}
-      val read = Proof_Context.read_term_pattern @{context}
-      val inst = [SOME (read "xs :: _", [])]
-      val arbitrary = ([read "_ :: _"], [read "xs"])
-      val taking = []
-      val opt_rule = NONE
-      fun tac ctxt = induct_tac opt_rule inst arbitrary taking [] ctxt
-      fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-        |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-      val mk_cud = Result_Action.copy_update_data
-      val data = {
-        empty_action = Library.K (PResults.empty_action Util.exn),
-        meta = Mixin4.Meta.Meta.empty id,
-        result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-        prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH,
-        tac = Ctxt.with_ctxt (ztac #> arr)}
-      fun init_ac _ focus =
-        Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-    in (id, init_ac) end\<close>]]
-  (* supply [[ML_map_context \<open>Logger.set_log_levels Induction_Tactic_HOL.logger Logger.ALL\<close>]] *)
-  by (tactic \<open>timed_tacs NONE @{context}\<close>)
+  by (zippy induct xs rule: list.induct)
 
 definition coset :: "'a list \<Rightarrow> 'a set" where
 [simp]: "coset xs = - set xs"
@@ -493,14 +459,12 @@ definition stable_sort_key :: "(('b \<Rightarrow> 'a) \<Rightarrow> 'b list \<Ri
   "stable_sort_key sk =
    (\<forall>f xs k. filter (\<lambda>y. f y = k) (sk f xs) = filter (\<lambda>y. f y = k) xs)"
 
-ML\<open>
-  Induct.gen_induct_setup \<^binding>\<open>induction\<close> Induction.induction_context_tactic
-\<close>
-
 lemma strict_sorted_iff: "sorted_wrt (<) l \<longleftrightarrow> sorted l \<and> distinct l"
   supply antisym_conv1[iff]
-  apply (induction l)
-  by (tactic \<open>timed_tacs NONE @{context}\<close>)
+  (*TODO: slow without lower prio*)
+  by (zippy induct l rule: list.induct
+  prio_sq_co: \<open>Zippy.PResults.enum_halve_prio_halve_prio_depth_sq_co (Prio.halve Prio.VERY_LOW)\<close>)
+  (* by (tactic \<open>timed_tacs NONE @{context}\<close>) *)
 
 lemma strict_sorted_imp_sorted: "sorted_wrt (<) xs \<Longrightarrow> sorted xs"
   supply strict_sorted_iff[simp]
@@ -890,43 +854,19 @@ hide_const (open) coset
 
 subsubsection \<open>\<^const>\<open>Nil\<close> and \<^const>\<open>Cons\<close>\<close>
 
-declare [[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding induct}
-    val read = Proof_Context.read_term_pattern @{context}
-    val inst = [SOME (read "xs :: _", [])]
-    val arbitrary = ([read "_ :: _"], [read "xs :: _"])
-    val taking = []
-    val opt_rule = NONE
-    fun tac ctxt = induct_tac opt_rule inst arbitrary taking [] ctxt
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.VERY_LOW,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
-
 lemma not_Cons_self [simp]:
   "xs \<noteq> x # xs"
-by (tactic \<open>timed_tacs NONE @{context}\<close>)
+  by (zippy induct xs)
+  (* by (zippy induct (pat) "_ :: _ list") *)
 
 lemma not_Cons_self2 [simp]: "x # xs \<noteq> xs"
 by (rule not_Cons_self [symmetric])
 
 lemma neq_Nil_conv: "(xs \<noteq> []) = (\<exists>y ys. xs = y # ys)"
-by (tactic \<open>timed_tacs NONE @{context}\<close>)
+by (zippy cases xs)
 
 lemma tl_Nil: "tl xs = [] \<longleftrightarrow> xs = [] \<or> (\<exists>x. xs = [x])"
-supply list.exhaust[of xs, intro]
-(* apply tforce *)
-by (tactic \<open>zippy_tac NONE @{context}\<close>)
+by (zippy cases xs)
 
 lemmas Nil_tl = tl_Nil[THEN eq_iff_swap]
 
@@ -940,7 +880,7 @@ by induction_schema (pat_completeness, lexicographic_order)
 
 lemma list_nonempty_induct [consumes 1, case_names single cons]:
   "\<lbrakk> xs \<noteq> []; \<And>x. P [x]; \<And>x xs. xs \<noteq> [] \<Longrightarrow> P xs \<Longrightarrow> P (x # xs)\<rbrakk> \<Longrightarrow> P xs"
-by(induction xs rule: induct_list012) (tactic \<open>timed_tacs NONE @{context}\<close>)
+by (zippy induct xs rule: induct_list012)
 
 lemma inj_split_Cons: "inj_on (\<lambda>(xs, n). n#xs) X"
   supply inj_onI[intro!]
@@ -949,12 +889,13 @@ lemma inj_split_Cons: "inj_on (\<lambda>(xs, n). n#xs) X"
 lemma inj_on_Cons1 [simp]: "inj_on ((#) x) A"
 by(simp add: inj_on_def)
 
-
 subsubsection \<open>\<^const>\<open>length\<close>\<close>
 
 text \<open>
   Needs to come before \<open>@\<close> because of theorem \<open>append_eq_append_conv\<close>.
 \<close>
+
+declare list.induct[zippy_induct (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
 
 lemma length_append [simp]: "length (xs @ ys) = length xs + length ys"
 by (tactic \<open>timed_tacs NONE @{context}\<close>)
@@ -975,7 +916,7 @@ lemma length_greater_0_conv [iff]: "(0 < length xs) = (xs \<noteq> [])"
 by (tactic \<open>timed_tacs NONE @{context}\<close>)
 
 lemma length_pos_if_in_set: "x \<in> set xs \<Longrightarrow> length xs > 0"
-by force+
+by (tactic \<open>timed_tacs NONE @{context}\<close>)
 
 lemma length_Suc_conv: "(length xs = Suc n) = (\<exists>y ys. xs = y # ys \<and> length ys = n)"
 by (tactic \<open>timed_tacs NONE @{context}\<close>)
@@ -984,7 +925,8 @@ lemmas Suc_length_conv = length_Suc_conv[THEN eq_iff_swap]
 
 lemma Suc_le_length_iff:
   "(Suc n \<le> length xs) = (\<exists>x ys. xs = x # ys \<and> n \<le> length ys)"
-by (metis Suc_le_D[of n] Suc_le_mono[of n] Suc_length_conv[of _ xs])
+(* by (metis Suc_le_D[of n] Suc_le_mono[of n] Suc_length_conv[of _ xs]) *)
+by zippy
 
 lemma impossible_Cons: "length xs \<le> length ys \<Longrightarrow> xs = x # ys = False"
 by (tactic \<open>timed_tacs NONE @{context}\<close>)
@@ -995,8 +937,7 @@ lemma list_induct2 [consumes 1, case_names Nil Cons]:
   "length xs = length ys \<Longrightarrow> P [] [] \<Longrightarrow>
    (\<And>x xs y ys. length xs = length ys \<Longrightarrow> P xs ys \<Longrightarrow> P (x#xs) (y#ys))
    \<Longrightarrow> P xs ys"
-apply (induct xs arbitrary: ys)
- by(tactic \<open>zippy_tac NONE @{context}\<close>)
+  by (zippy induct xs arbitrary: ys)
 
 (* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Step.logger Logger.ALL\<close>]] *)
 (* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Run.logger Logger.ALL\<close>]] *)
@@ -1025,7 +966,8 @@ proof (induct xs arbitrary: ys zs ws)
   case Nil then show ?case by simp
 next
   case (Cons x xs ys zs ws) then show ?case
-  supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "?f _ :: _ list")]
+  supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
+  supply list.induct[zippy_induct del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
   apply (zippy cases ys and ws and zs)
   done
 qed
@@ -1036,17 +978,17 @@ lemma list_induct2':
   \<And>y ys. P [] (y#ys);
    \<And>x xs y ys. P xs ys  \<Longrightarrow> P (x#xs) (y#ys) \<rbrakk>
  \<Longrightarrow> P xs ys"
-apply (induct xs arbitrary: ys)
-apply (tactic \<open>zippy_tac NONE @{context}\<close>)
+supply list.induct[zippy_induct del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
+apply (zippy induct xs arbitrary: ys)
 done
 (* (case_tac x, auto)+ *)
 
 lemma list_all2_iff:
   "list_all2 P xs ys \<longleftrightarrow> length xs = length ys \<and> (\<forall>(x, y) \<in> set (zip xs ys). P x y)"
-by (induct xs ys rule: list_induct2') (tactic \<open>timed_tacs NONE @{context}\<close>)
+by (zippy induct xs ys rule: list_induct2')
 
 lemma neq_if_length_neq: "length xs \<noteq> length ys \<Longrightarrow> (xs = ys) == False"
-by (rule Eq_FalseI) (tactic \<open>timed_tacs NONE @{context}\<close>)
+by (tactic \<open>timed_tacs NONE @{context}\<close>)
 
 
 subsubsection \<open>\<open>@\<close> -- append\<close>
@@ -1076,20 +1018,23 @@ by (tactic \<open>timed_tacs NONE @{context}\<close>)
 
 lemmas self_append_conv [iff] = append_self_conv[THEN eq_iff_swap]
 
+declare list.induct[zippy_induct del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
+
 lemma append_eq_append_conv [simp]:
   "length xs = length ys \<or> length us = length vs
   \<Longrightarrow> (xs@us = ys@vs) = (xs=ys \<and> us=vs)"
-  by (induct xs arbitrary: ys; case_tac ys; (tactic \<open>timed_tacs NONE @{context}\<close>))
+  by (zippy induct xs arbitrary: ys)
+  (* by (induct xs arbitrary: ys; case_tac ys; (tactic \<open>timed_tacs NONE @{context}\<close>)) *)
 
 lemma append_eq_append_conv2: "(xs @ ys = zs @ ts) =
   (\<exists>us. xs = zs @ us \<and> us @ ys = ts \<or> xs @ us = zs \<and> ys = us @ ts)"
 proof (induct xs arbitrary: ys zs ts)
   case (Cons x xs)
   then show ?case
-    supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "?f _ :: _ list")]
+    supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
     apply (zippy cases zs)
     done
-qed fastforce
+qed zippy
 
 lemma same_append_eq [iff, induct_simp]: "(xs @ ys = xs @ zs) = (ys = zs)"
 by simp
@@ -1276,6 +1221,7 @@ proof (induct rule: list_induct2)
     apply -
     supply sym[intro]
     (*slow time*)
+      supply [[zippy_init_gcs del: \<open>@{binding cases_some}\<close>]]
     by (tactic \<open>timed_tacs NONE @{context}\<close>)
 qed (tactic \<open>timed_tacs NONE @{context}\<close>)
 
@@ -1362,57 +1308,7 @@ lemma singleton_rev_conv [simp]: "([x] = rev xs) = ([x] = xs)"
 by zippy
 
 lemma rev_is_rev_conv [iff]: "(rev xs = rev ys) = (xs = ys)"
-supply [[zippy_init_gcs del: \<open>@{binding induct}\<close>]]
-supply [[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding induct}
-    val read = Proof_Context.read_term_pattern @{context}
-    val inst = [SOME (read "xs :: _", [])]
-    val arbitrary = ([read "_ :: _"], [read "xs :: _"])
-    val taking = []
-    val opt_rule = NONE
-    fun tac ctxt = induct_tac opt_rule inst arbitrary taking [] ctxt
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.VERY_HIGH,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
-  (*TODO: prios for cases*)
-supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "?f _ :: _ list")]
-supply [[zippy_init_gcs \<open>
-  let
-    open Zippy; open ZLP MU; open SC A
-    val id = @{binding cases2}
-    val read = Proof_Context.read_term_pattern @{context}
-    val inst = [SOME (read "_ :: 'a list", [read "[]", read "_ # _", read "_ @ _"])]
-    val opt_rule = SOME @{thm list.exhaust}
-    val match = can Seq.hd oooo Type_Unification.e_unify Unification_Util.unify_types
-        (Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match)
-    fun tac ctxt = Cases_Tactic_HOL.cases_pattern_tac true match opt_rule inst [] ctxt
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear (tac ctxt)
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    val mk_cud = Result_Action.copy_update_data
-    val update_result = Library.maps snd
-      #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
-    val mk_cud = Result_Action.copy_update_data_empty_changed
-    val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.empty id,
-      result_action = Result_Action.changed_goals_action update_result mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH,
-      tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] >>> Up3.morph
-  in (id, init_ac) end\<close>]]
-  apply zippy
+  apply (zippy induct xs arbitrary: ys)
 done
 
 lemma rev_eq_append_conv: "rev xs = ys @ zs \<longleftrightarrow> xs = rev zs @ rev ys"
@@ -1449,17 +1345,8 @@ lemma rev_nonempty_induct [consumes 1, case_names single snoc]:
   and single: "\<And>x. P [x]"
   and snoc': "\<And>x xs. xs \<noteq> [] \<Longrightarrow> P xs \<Longrightarrow> P (xs@[x])"
   shows "P xs"
-using \<open>xs \<noteq> []\<close> proof (induct xs rule: rev_induct)
-  case (snoc x xs) then show ?case
-  proof (cases xs)
-    case Nil thus ?thesis by (simp add: single)
-  next
-    case Cons with snoc show ?thesis
-      apply -
-      supply snoc'[intro!]
-      by (tactic \<open>timed_tacs NONE @{context}\<close>)
-  qed
-qed simp
+  using \<open>xs \<noteq> []\<close>
+  by (zippy induct xs rule: rev_induct where clasimp simp add: single intro!: snoc')
 
 lemma rev_induct2:
   "\<lbrakk> P [] [];
@@ -1485,6 +1372,8 @@ subsubsection \<open>\<^const>\<open>set\<close>\<close>
 
 declare list.set[code_post]  \<comment> \<open>pretty output\<close>
 
+declare list.induct[zippy_induct (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
+
 lemma finite_set [iff]: "finite (set xs)"
 by (tactic \<open>timed_tacs NONE @{context}\<close>)
 
@@ -1501,7 +1390,7 @@ lemma set_ConsD: "y \<in> set (x # xs) \<Longrightarrow> y=x \<or> y \<in> set x
 by (tactic \<open>timed_tacs NONE @{context}\<close>)
 
 lemma set_empty [iff]: "(set xs = {}) = (xs = [])"
-by (induct xs) (tactic \<open>timed_tacs NONE @{context}\<close>)
+by zippy
 
 lemmas set_empty2[iff] = set_empty[THEN eq_iff_swap]
 
@@ -1512,18 +1401,15 @@ lemma set_map [simp]: "set (map f xs) = f`(set xs)"
 by (induct xs) (tactic \<open>timed_tacs NONE @{context}\<close>)
 
 lemma set_filter [simp]: "set (filter P xs) = {x. x \<in> set xs \<and> P x}"
-by (induct xs) (tactic \<open>timed_tacs NONE @{context}\<close>)
+by zippy
 
 lemma set_upt [simp]: "set[i..<j] = {i..<j}"
-by (induct j) (tactic \<open>timed_tacs NONE @{context}\<close>)
+by (zippy induct j)
 
+declare list.induct[zippy_induct del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
 
 lemma split_list: "x \<in> set xs \<Longrightarrow> \<exists>ys zs. xs = ys @ x # zs"
-proof (induct xs)
-  case Nil thus ?case by simp
-next
-  case Cons thus ?case by (auto intro: Cons_eq_appendI)
-qed
+by (zippy induct xs where clasimp intro!: Cons_eq_appendI)
 
 lemma in_set_conv_decomp: "x \<in> set xs \<longleftrightarrow> (\<exists>ys zs. xs = ys @ x # zs)"
   by (auto elim: split_list)
@@ -1540,7 +1426,7 @@ next
     assume "x \<noteq> a" thus ?case using Cons
       apply -
       supply Cons_eq_appendI[intro!]
-      supply [[zippy_init_gcs del: \<open>@{binding cases}\<close> \<open>@{binding induct}\<close>]]
+      supply [[zippy_init_gcs del: \<open>@{binding cases_some}\<close>]]
       supply [[zippy_init_gcs del: \<open>@{binding asm_full_simp}\<close>]]
 supply [[zippy_init_gcs \<open>
   let
@@ -1683,7 +1569,7 @@ next
   case (snoc x xs)
   show ?case
   proof cases
-    assume "P x" thus ?thesis by (auto intro!: exI)
+    assume "P x" thus ?thesis by (zippy intro!: exI)
   next
     assume "\<not> P x"
     hence "\<exists>x\<in>set xs. P x" using snoc(2) by simp
@@ -1703,7 +1589,7 @@ lemma split_list_last_prop_iff:
 
 
 lemma finite_list: "finite A \<Longrightarrow> \<exists>xs. set xs = A"
-  by (erule finite_induct) (auto simp add: list.set(2)[symmetric] simp del: list.set(2))
+  by (erule finite_induct) (zippy simp add: list.set(2)[symmetric] simp del: list.set(2))
 
 lemma card_length: "card (set xs) \<le> length xs"
 by (induct xs) (auto simp add: card_insert_if)
@@ -1749,7 +1635,7 @@ proof (induct xs arbitrary: ys)
   thus ?case
   apply (zippy cases ys)
   done
-qed (tactic \<open>zippy_tac NONE @{context}\<close>)
+qed zippy
 
 lemma concat_injective: "concat xs = concat ys \<Longrightarrow> length xs = length ys \<Longrightarrow> \<forall>(x, y) \<in> set (zip xs ys). length x = length y \<Longrightarrow> xs = ys"
   by (simp add: concat_eq_concat_iff)
@@ -1777,7 +1663,7 @@ lemma concat_eq_append_conv:
   "concat xss = ys @ zs \<longleftrightarrow>
   (if xss = [] then ys = [] \<and> zs = []
    else \<exists>xss1 xs xs' xss2. xss = xss1 @ (xs @ xs') # xss2 \<and> ys = concat xss1 @ xs \<and> zs = xs' @ concat xss2)"
-  by(auto dest: concat_eq_appendD)
+  by(zippy dresolve concat_eq_appendD)
 
 lemma hd_concat: "\<lbrakk>xs \<noteq> []; hd xs \<noteq> []\<rbrakk> \<Longrightarrow> hd (concat xs) = hd (hd xs)"
   by (metis concat.simps(2) hd_Cons_tl hd_append2)
@@ -1857,12 +1743,8 @@ by (induct xs) simp_all
 lemmas empty_filter_conv = filter_empty_conv[THEN eq_iff_swap]
 
 lemma filter_id_conv: "(filter P xs = xs) = (\<forall>x\<in>set xs. P x)"
-proof (induct xs)
-  case (Cons x xs)
-  then show ?case
-    using length_filter_le
-    by (simp add: impossible_Cons)
-qed auto
+using length_filter_le
+by (zippy simp add: impossible_Cons where induct xs)
 
 lemma filter_map: "filter P (map f xs) = map f (filter (P \<circ> f) xs)"
 by (induct xs) simp_all
@@ -1876,12 +1758,12 @@ by auto
 
 lemma length_filter_less:
   "\<lbrakk> x \<in> set xs; \<not> P x \<rbrakk> \<Longrightarrow> length(filter P xs) < length xs"
+using Suc_le_eq
 proof (induct xs)
-  case Nil thus ?case by simp
-next
   case (Cons x xs) thus ?case
-    using Suc_le_eq by fastforce
-qed
+    supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
+    by (zippy blast depth: 0) (*slow proof*)
+qed zippy
 
 lemma length_filter_conv_card:
   "length(filter p xs) = card{i. i < length xs \<and> p(xs!i)}"
@@ -1964,7 +1846,7 @@ lemma inj_on_filter_key_eq:
 
 lemma filter_cong[fundef_cong]:
   "xs = ys \<Longrightarrow> (\<And>x. x \<in> set ys \<Longrightarrow> P x = Q x) \<Longrightarrow> filter P xs = filter Q ys"
-  by (induct ys arbitrary: xs) auto
+  by (zippy induct ys arbitrary: xs)
 
 
 subsubsection \<open>List partitioning\<close>
@@ -2065,7 +1947,8 @@ proof (induct xs arbitrary: ys)
       apply safe
       apply simp_all
       (*slow*)
-      (* by (zippy blast depth: -1) *)
+      (* supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")] *)
+      (* apply (zippy blast depth: -1) *)
       apply fastforce+
       done
   qed simp
@@ -2178,11 +2061,11 @@ qed
 subsubsection \<open>\<^const>\<open>list_update\<close>\<close>
 
 lemma length_list_update [simp]: "length(xs[i:=x]) = length xs"
-  by (induct xs arbitrary: i) (auto split: nat.split)
+  by (zippy induct xs arbitrary: i where clasimp split: nat.split)
 
 lemma nth_list_update:
   "i < length xs\<Longrightarrow> (xs[i:=x])!j = (if i = j then x else xs!j)"
-  by (induct xs arbitrary: i j) (auto simp add: nth_Cons split: nat.split)
+  by (zippy induct xs arbitrary: i j where clasimp simp add: nth_Cons split: nat.split)
 
 lemma nth_list_update_eq [simp]: "i < length xs \<Longrightarrow> (xs[i:=x])!i = x"
   by (simp add: nth_list_update)
@@ -2301,6 +2184,7 @@ lemma length_butlast [simp]: "length (butlast xs) = length xs - 1"
 
 lemma butlast_append:
   "butlast (xs @ ys) = (if ys = [] then butlast xs else xs @ butlast ys)"
+  supply list.induct[zippy_induct (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
   by (tactic \<open>zippy_tac NONE @{context}\<close>)
 
 lemma append_butlast_last_id [simp]:
@@ -2336,12 +2220,15 @@ lemma last_list_update:
   "xs \<noteq> [] \<Longrightarrow> last(xs[k:=x]) = (if k = size xs - 1 then x else last xs)"
   by (auto simp: last_conv_nth)
 
+declare list.induct[zippy_induct (pat) ("_ :: _ list", "[]" "_ _ :: _ list")
+  arbitrary: (pat) ("_", "_ :: _ list")]
+
 lemma butlast_list_update:
   "butlast(xs[k:=x]) =
   (if k = size xs - 1 then butlast xs else (butlast xs)[k:=x])"
   supply list_update_append[simp]
   supply nat.splits[split]
-  apply zippy
+  apply (zippy)
   done
 
 lemma last_map: "xs \<noteq> [] \<Longrightarrow> last (map f xs) = f (last xs)"
@@ -2412,13 +2299,7 @@ lemma nth_via_drop: "drop n xs = y#ys \<Longrightarrow> xs!n = y"
 
 lemma take_Suc_conv_app_nth:
   "i < length xs \<Longrightarrow> take (Suc i) xs = take i xs @ [xs!i]"
-proof (induct xs arbitrary: i)
-  case Nil
-  then show ?case by simp
-next
-  case Cons
-  then show ?case by (zippy cases i)
-qed
+  by (zippy induct xs arbitrary: i where cases (pat) "_ :: nat")
 
 lemma Cons_nth_drop_Suc:
   "i < length xs \<Longrightarrow> (xs!i) # (drop (Suc i) xs) = drop i xs"
@@ -2426,13 +2307,11 @@ proof (induct xs arbitrary: i)
 qed (zippy cases (pat) "_ :: nat")
 
 lemma length_take [simp]: "length (take n xs) = min (length xs) n"
-  apply (induct n arbitrary: xs)
+  by (zippy induct n arbitrary: xs)
   (* apply (auto, case_tac xs, auto) *)
-  apply (tactic \<open>zippy_tac NONE @{context}\<close>)
-  done
 
 lemma length_drop [simp]: "length (drop n xs) = (length xs - n)"
-  by (induct n arbitrary: xs) (auto, case_tac xs, auto)
+  by (zippy induct n arbitrary: xs)
 
 lemma take_all [simp]: "length xs \<le> n \<Longrightarrow> take n xs = xs"
   by (induct n arbitrary: xs) (auto, case_tac xs, auto)
@@ -2476,18 +2355,17 @@ next
 qed
 
 lemma drop_drop [simp]: "drop n (drop m xs) = drop (n + m) xs"
-proof (induct m arbitrary: xs)
+  by (zippy induct m arbitrary: xs)
+(* proof (zippy induct m arbitrary: xs)
   case 0
   then show ?case by simp
 next
   case Suc
   then show ?case by (cases xs) simp_all
-qed
+qed *)
 
 lemma take_drop: "take n (drop m xs) = drop m (take (n + m) xs)"
-apply (induct m arbitrary: xs n)
-apply zippy
-done
+ by (zippy induct m arbitrary: xs n)
 (* proof (induct m arbitrary: xs n)
   case 0
   then show ?case by simp
@@ -2562,13 +2440,13 @@ qed
 
 lemma nth_drop [simp]:
   "n \<le> length xs \<Longrightarrow> (drop n xs)!i = xs!(n + i)"
-proof (induct n arbitrary: xs)
-  case 0
+ by (zippy induct n arbitrary: xs)
+  (* case 0
   then show ?case by simp
 next
   case Suc
   then show ?case by (cases xs) simp_all
-qed
+qed *)
 
 lemma butlast_take:
   "n \<le> length xs \<Longrightarrow> butlast (take n xs) = take (n - 1) xs"
@@ -2593,7 +2471,31 @@ lemma set_take_subset_set_take:
   "m \<le> n \<Longrightarrow> set(take m xs) \<le> set(take n xs)"
 proof (induct xs arbitrary: m n)
   case (Cons x xs m n) then show ?case
-    by (cases n) (auto simp: take_Cons)
+    apply (cases n)
+    supply take_Cons[simp]
+  supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
+  (* apply (zippy) *)
+  apply clarsimp
+  apply slow_step
+  supply [[zippy_init_gcs del:
+  \<open>@{binding blast}\<close>
+  \<open>@{binding induct_some}\<close>
+  \<open>@{binding cases_some}\<close>
+  \<open>@{binding resolve_ho_unif_first}\<close> \<open>@{binding resolve_ho_match_first}\<close>
+  \<open>@{binding eresolve_ho_unif_first}\<close> \<open>@{binding eresolve_ho_match_first}\<close>
+  \<open>@{binding dresolve_ho_unif_first}\<close> \<open>@{binding dresolve_ho_match_first}\<close>
+  \<open>@{binding subst_asm_some}\<close> \<open>@{binding subst_concl_some}\<close>
+  ]]
+  supply [[ML_map_context \<open>Logger.set_log_levels Logger.root Logger.ALL\<close>]]
+  apply (zippy 10)
+    (* apply (tactic \<open>timed_tacs NONE @{context}\<close>) why is it slow? *)
+  apply simp
+  apply (zippy 100)
+  apply slow_step
+  (*)
+  apply (zippy 20)
+    apply (tactic \<open>timed_tacs NONE @{context}\<close>) (*why is it slow?*)
+    done
 qed simp
 
 lemma set_take_subset: "set(take n xs) \<subseteq> set xs"
@@ -2636,10 +2538,10 @@ qed
 lemmas append_eq_map_conv = map_eq_append_conv[THEN eq_iff_swap]
 
 lemma take_add:  "take (i+j) xs = take i xs @ take j (drop i xs)"
-proof (induct xs arbitrary: i)
-  case (Cons x xs i) then show ?case
-    by (cases i, auto)
-qed auto
+  by (zippy induct xs arbitrary: i where cases (pat)("_ :: nat", "_ _"))
+  (* case (Cons x xs i) then show ?case *)
+    (* by (cases i, auto) *)
+(* qed auto *)
 
 lemma append_eq_append_conv_if:
   "(xs\<^sub>1 @ xs\<^sub>2 = ys\<^sub>1 @ ys\<^sub>2) =
@@ -2648,7 +2550,7 @@ lemma append_eq_append_conv_if:
    else take (size ys\<^sub>1) xs\<^sub>1 = ys\<^sub>1 \<and> drop (size ys\<^sub>1) xs\<^sub>1 @ xs\<^sub>2 = ys\<^sub>2)"
 proof (induct xs\<^sub>1 arbitrary: ys\<^sub>1)
   case (Cons a xs\<^sub>1 ys\<^sub>1) then show ?case
-    by (cases ys\<^sub>1, auto)
+    by (zippy cases ys\<^sub>1)
 qed auto
 
 lemma take_hd_drop:
@@ -5296,11 +5198,7 @@ lemma length_nths:
 lemma nths_shift_lemma_Suc:
   "map fst (filter (\<lambda>p. P(Suc(snd p))) (zip xs is)) =
    map fst (filter (\<lambda>p. P(snd p)) (zip xs (map Suc is)))"
-proof (induct xs arbitrary: "is")
-  case (Cons x xs "is")
-  show ?case
-    by (cases "is") (auto simp add: Cons.hyps)
-qed simp
+by (zippy induct xs arbitrary: "is" where cases (pat) "_ :: nat list")
 
 lemma nths_shift_lemma:
   "map fst (filter (\<lambda>p. snd p \<in> A) (zip xs [i..<i + length xs])) =
@@ -5499,7 +5397,9 @@ proof (induction xs ys arbitrary: zs rule: shuffles.induct)
   show ?case
   proof (cases zs)
     case (Cons z zs')
-    with "3.prems" and "3.IH"[of zs'] show ?thesis by (force dest: set_shuffles)
+    with "3.prems" and "3.IH"[of zs'] show ?thesis
+    supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
+    by (zippy dest: set_shuffles)
   qed simp_all
 qed simp_all
 
@@ -5618,7 +5518,7 @@ proof (cases "(filter (\<lambda>ys. ys \<noteq> []) xss) = []")
   proof (induct xss)
     case (Cons x xs)
     with Cons show ?case
-    supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "?f _ :: _ list")]
+    supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
     by (zippy cases x)
   qed simp
   thus ?thesis using True by simp
@@ -6073,7 +5973,11 @@ proof -
   next
     case (2 x xs y ys)
     then show ?case
-      by (cases \<open>x = y\<close>) (auto simp add: insert_eq_iff)
+      apply (cases \<open>x = y\<close>)
+      supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
+      supply insert_eq_iff[simp]
+      apply (tactic \<open>timed_tacs NONE @{context}\<close>) (*TODO: slow time*)
+      done
   qed
 qed
 
@@ -6103,7 +6007,11 @@ proof (induct xs)
   case (Cons x xs)
   then have "sorted (rev xs)" using sorted_append by auto
   with Cons show ?case
-    by (cases xs) (auto simp add: sorted_append max_def)
+    apply (cases xs)
+    supply sorted_append[simp] max_def[simp]
+    supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
+    apply (tactic \<open>timed_tacs NONE @{context}\<close>) (*TODO: slow time*)
+    done
 qed simp
 
 lemma filter_equals_takeWhile_sorted_rev:
@@ -6180,7 +6088,7 @@ by (induct xs) (auto simp add: assms dest: order.antisym)
 
 lemma insort_left_comm:
   "insort x (insort y xs) = insort y (insort x xs)"
-by (cases "x = y") (auto intro: insort_key_left_comm)
+by (zippy cases "x = y" where clasimp intro: insort_key_left_comm)
 
 lemma comp_fun_commute_insort: "comp_fun_commute insort"
 proof
@@ -7144,9 +7052,10 @@ lemma lenlex_conv:
                  length xs = length ys \<and> (xs, ys) \<in> lex r}"
   supply lenlex_def[simp] Id_on_def[simp]  lex_prod_def[simp]  inv_image_def[simp]
   by (tactic \<open>timed_tacs NONE @{context}\<close>)
-ML\<open>
-  Meson.meson_tac
-\<close>
+
+declare list.induct[zippy_induct del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")
+  arbitrary: (pat) ("_", "_ :: _ list")]
+
 lemma total_lenlex:
   assumes "total r"
   shows "total (lenlex r)"
@@ -7156,8 +7065,8 @@ proof -
   proof -
     obtain pre x xs' y ys' where "x\<noteq>y" and xs: "xs = pre @ [x] @ xs'" and ys: "ys = pre @ [y] @ys'"
       using len \<open>xs \<noteq> ys\<close> same_length_different
-      by (zippy blast depth: 10)
-      (* apply meson *)
+      (* by (zippy blast depth: 10) *)
+      by meson
     then consider "(x,y) \<in> r" | "(y,x) \<in> r"
       using UNIV_I assms total_on_def[simp]
       apply -
@@ -7659,7 +7568,7 @@ lemma lexordp_trans:
   by (induct arbitrary: zs) (case_tac zs; auto)+
 
 lemma lexordp_linear: "lexordp xs ys \<or> xs = ys \<or> lexordp ys xs"
-  by(induct xs arbitrary: ys; case_tac ys; fastforce)
+  by(induct xs arbitrary: ys; case_tac ys; zippy)
 
 lemma lexordp_conv_lexordp_eq: "lexordp xs ys \<longleftrightarrow> lexordp_eq xs ys \<and> \<not> lexordp_eq ys xs"
   (is "?lhs \<longleftrightarrow> ?rhs")
@@ -7677,7 +7586,7 @@ lemma lexordp_eq_conv_lexord: "lexordp_eq xs ys \<longleftrightarrow> xs = ys \<
 by(auto simp add: lexordp_conv_lexordp_eq lexordp_eq_refl dest: lexordp_eq_antisym)
 
 lemma lexordp_eq_linear: "lexordp_eq xs ys \<or> lexordp_eq ys xs"
-  by (induct xs arbitrary: ys) (case_tac ys; auto)+
+  by (zippy induct xs arbitrary: ys)
 
 lemma lexordp_linorder: "class.linorder lexordp_eq lexordp"
   apply unfold_locales

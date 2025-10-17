@@ -34,6 +34,7 @@ type container2 = @{AllT_args} Z.Z2.ZM.container
 
 local open SC Mo A
 in
+(*TODO: use functions from LGoals_Pos_Copy instead of init and init_all*)
 fun init focus = Ctxt.with_ctxt (fn ctxt => fn z =>
   let
     val state = GCluster.get_state z

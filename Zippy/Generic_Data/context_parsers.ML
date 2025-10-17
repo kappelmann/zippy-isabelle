@@ -153,11 +153,11 @@ val setup_attribute = Attrib.local_setup binding
   (Parse.!!! parse_attribute |> Scan.lift) o
   the_default ("configure context parsers data " ^ enclose "(" ")" FI.long_name)
 
+fun parse_key keys table = PKV.parse_key keys
+  (Id.make NONE #> Option.filter (Parsers_Data.Table.defined table))
+
 fun fail_undefined_key key = Scan.fail_with
   (fn _ => fn _ => "no parser registered for " ^ Id.quoted_string key)
-
-fun parse_key keys table = PKV.parse_key keys (Id.make NONE #> (fn key =>
-  if Parsers_Data.Table.defined table key then key else fail_undefined_key key ()))
 
 fun parse_value table key = Parsers_Data.Table.lookup table key
   |> the_default (fail_undefined_key key)

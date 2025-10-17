@@ -154,9 +154,9 @@ fun mk_unreturned_statesq mk_unfinished_statesq z =
   then pure Seq.empty (*result state already returned*)
   else mk_unfinished_statesq z (*return unfinished states*)
 
-fun mk_unfinished_unreturned_statesq enum_gclusters_children ctxt =
-  LGoals_Results_TMV.mk_statesq enum_gclusters_children ctxt
-  >>> arr (Seq.of_list #> filter_unfinished_statesq) |> mk_unreturned_statesq
+fun mk_unfinished_unreturned_statesq enum_gclusters_children ctxt = mk_unreturned_statesq
+  (LGoals_Results_TMV.mk_statesq enum_gclusters_children ctxt
+  >>> arr filter_unfinished_statesq)
 
 fun mk_df_post_unreturned_unfinished_statesq ctxt =
   mk_unfinished_unreturned_statesq (LGoals_Results_TMV.enum_df_post_children2 mk_exn) ctxt
@@ -206,9 +206,8 @@ fun gen_repeat_step_queue step_queue mk_unfinished_statesq =
                 NONE => Ctxt.get_ctxt () >>= (fn ctxt =>
                   (@{log Logger.DEBUG} ctxt (fn _ => "No zipper changes. Continuing with next step.");
                   arr nextsq c))
-              | SOME (z, results) => Z1.ZM.Unzip.morph z
-                  >>= Ctxt.with_ctxt (fn ctxt => arr (nextsq #>
-                    (if Step.Results.has_results results
+              | SOME (z, results) => Z1.ZM.Unzip.morph z >>= Ctxt.with_ctxt (fn ctxt =>
+                  arr (nextsq #> (if Step.Results.has_results results
                     then (@{log Logger.DEBUG} ctxt (fn _ => "Returning new results.");
                       Step.Results.get_states results |> finished steps queue z s |> Seq.cons)
                     else (@{log Logger.DEBUG} ctxt (fn _ => "No new results. Continuing with next step.");

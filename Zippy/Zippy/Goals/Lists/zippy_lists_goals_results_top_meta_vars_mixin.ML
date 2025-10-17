@@ -8,13 +8,12 @@ sig
   structure Co : ZIPPY_COROUTINE_MIXIN_BASE
   sharing type Co.M.t = M.t
 
-  (*TODO: naming seq -> list*)
   val mk_statesq :
     (*enumerate gcluster children of given gcluster*)
     (@{ParaT_args} @{AllT_args} GCluster.L.container,
       (@{ParaT_args} unit, @{AllT_args} GClusters.L.container) Co.Co.coroutine) morph ->
     Proof.context -> (@{ParaT_args} @{AllT_args} GClusters.L.container,
-      GClusters.GCS.state list) morph
+      GClusters.GCS.state Seq.seq) morph
 
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   type @{AllT_args} zipper{i}\<close>\<close>
@@ -26,7 +25,7 @@ sig
 
   val mk_statesq_df_post : (unit -> @{ParaT_args encl: "(" ")"} Co.ME.exn) ->
     Proof.context -> (@{ParaT_args} @{AllT_args} GClusters.L.container,
-      GClusters.GCS.state list) morph
+      GClusters.GCS.state  Seq.seq) morph
 end
 
 functor Zippy_Lists_Goals_Results_Top_Meta_Vars_Mixin(
@@ -57,23 +56,20 @@ local open SC A Mo Co Exn
   structure LTSM = \<^eval>\<open>sfx_ParaT_nargs "Traversable"\<close>(
     \<^eval>\<open>sfx_ParaT_nargs "List_Traversable_Trans"\<close>(
     \<^eval>\<open>sfx_ParaT_nargs "Identity_Traversable"\<close>(
-    \<^eval>\<open>sfx_ParaT_nargs "List_Monad_Trans"\<close>(M))))
-  val empty = []
-  fun append x y = x @ y
-  val single = Library.single
-  val maps = Library.maps
-  val from_seq = Seq.list_of
+    \<^eval>\<open>sfx_ParaT_nargs "Seq_Applicative_Trans"\<close>(M))))
+  val empty = Seq.empty
+  fun append x y = Seq.append x y
+  val single = Seq.single
+  val maps = Seq.maps
 in
-fun mk_statesq enum_gclusters_children ctxt z =
-  let val gcs = GClusters.L.getter z
+fun mk_statesq enum_gclusters_children ctxt z = let val gcs = GClusters.L.getter z
   in
     if GClusters.GCS.is_finished gcs
     then pure (single (GClusters.GCS.get_state gcs))
     else AE.catch'
       (get_gcluster_list_statesq enum_gclusters_children ctxt
-      >>> arr (maps
-        (fn gcluster_states => GClusters.GCS.finish_cluster_states ctxt gcluster_states gcs
-        |> from_seq)))
+      >>> arr (maps (fn gcluster_states =>
+        GClusters.GCS.finish_cluster_states ctxt gcluster_states gcs)))
       (K empty) z
   end
 and get_gcluster_list_statesq enum_gclusters_children ctxt =
@@ -92,7 +88,7 @@ and mk_statesq_gcluster enum_gclusters_children ctxt z = z |>
       >>> arr (Co.dest_res #> snd))
       (K empty)
     >>> arr (fn gcs_statesq => GCluster.get_state z |> single |> append gcs_statesq)
-  else arr (GCluster_Results.get_states #> from_seq))
+  else arr GCluster_Results.get_states)
 
 local
   fun gen_enum_zippers mk_exn down enum_children enum_child = down

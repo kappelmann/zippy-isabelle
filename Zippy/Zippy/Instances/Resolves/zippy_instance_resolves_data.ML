@@ -151,9 +151,6 @@ local
   fun gen_setup_attribute binding what parse_attribute = Attrib.local_setup binding
     (Parse.!!! parse_attribute |> Scan.lift) o
     the_default ("configure " ^ what ^ " data " ^ enclose "(" ")" FI.long_name)
-  fun gen_parse_entry parse_add parse_del parse_config =
-    Scan.optional (Scan.lift PMD.parse_key) (PMD.key PMD.add)
-    :|-- (fn PMD.add _ => parse_add | PMD.del _ => parse_del | PMD.config _ => parse_config)
   fun gen_parse_method match unif =
     let val parse = Scan.lift parse_mode_opt_default
       :|-- (fn PM.match _ => match | PM.unif _ => unif)
@@ -183,25 +180,13 @@ val setup_fresolve_attribute = gen_setup_attribute
   fresolve_binding "f-resolution" parse_fresolve_attribute
 
 val parse_resolve_method = gen_parse_method
-  (gen_parse_entry Resolve_Match.parse_add_context_update Resolve_Match.parse_del_context_update
-    Resolve_Match.parse_config_context_update)
-  (gen_parse_entry Resolve_Unif.parse_add_context_update Resolve_Unif.parse_del_context_update
-    Resolve_Unif.parse_config_context_update)
+  Resolve_Match.parse_entry_context_update Resolve_Unif.parse_entry_context_update
 val parse_eresolve_method = gen_parse_method
-  (gen_parse_entry EResolve_Match.parse_add_context_update EResolve_Match.parse_del_context_update
-    EResolve_Match.parse_config_context_update)
-  (gen_parse_entry EResolve_Unif.parse_add_context_update EResolve_Unif.parse_del_context_update
-    EResolve_Unif.parse_config_context_update)
+  EResolve_Match.parse_entry_context_update EResolve_Unif.parse_entry_context_update
 val parse_dresolve_method = gen_parse_method
-  (gen_parse_entry DResolve_Match.parse_add_context_update DResolve_Match.parse_del_context_update
-    DResolve_Match.parse_config_context_update)
-  (gen_parse_entry DResolve_Unif.parse_add_context_update DResolve_Unif.parse_del_context_update
-    DResolve_Unif.parse_config_context_update)
+  DResolve_Match.parse_entry_context_update DResolve_Unif.parse_entry_context_update
 val parse_fresolve_method = gen_parse_method
-  (gen_parse_entry FResolve_Match.parse_add_context_update FResolve_Match.parse_del_context_update
-    FResolve_Match.parse_config_context_update)
-  (gen_parse_entry FResolve_Unif.parse_add_context_update FResolve_Unif.parse_del_context_update
-    FResolve_Unif.parse_config_context_update)
+  FResolve_Match.parse_entry_context_update FResolve_Unif.parse_entry_context_update
 end
 end
 end

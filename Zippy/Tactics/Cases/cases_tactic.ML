@@ -55,6 +55,13 @@ fun cases_lifted_insts_tac simp opt_rule insts facts ctxt =
             |> map (Option.map (curry Logic.rlist_abs binders #> Thm.cterm_of ctxt))
             |> append (replicate nvars_subgoal_prems NONE)
           val r_lifted = Drule.infer_instantiate' ctxt insts r_lifted
+            handle exn as THM _ => (@{log Logger.ERR} ctxt (fn _ => Pretty.breaks [
+                Pretty.block [Pretty.str "Ill-typed instantion for rule ",
+                  Show.thm ctxt r_lifted],
+                Pretty.block [Pretty.str "instances: ",
+                  pretty_insts ctxt (map (Option.map Thm.term_of) insts)]
+              ] |> Pretty.block0 |> Pretty.string_of);
+              Exn.reraise exn)
           val comp_nprems = let val nprems_diff = Thm.nprems_of r - Thm.nprems_of r_lifted
             in fn r_lifted_resolved => Thm.nprems_of r_lifted_resolved + nprems_diff end
         in

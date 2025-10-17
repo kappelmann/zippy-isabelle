@@ -81,9 +81,6 @@ local
   fun gen_setup_attribute binding what parse_attribute = Attrib.local_setup binding
     (Parse.!!! parse_attribute |> Scan.lift) o
     the_default ("configure " ^ what ^ " data " ^ enclose "(" ")" FI.long_name)
-  fun gen_parse_entry parse_add parse_del parse_config =
-    Scan.optional (Scan.lift PMD.parse_key) (PMD.key PMD.add)
-    :|-- (fn PMD.add _ => parse_add | PMD.del _ => parse_del | PMD.config _ => parse_config)
   fun gen_parse_method asm concl =
     let val parse = Scan.lift parse_mode_opt_default :|-- (fn PM.asm _ => asm | PM.concl _ => concl)
     in Parse.and_list1' parse >> K () end
@@ -93,11 +90,7 @@ val parse_attribute = gen_parse_attribute Asm.parse_attribute Concl.parse_attrib
 val binding = Binding.make (FI.prefix_id "subst", FI.pos)
 val setup_attribute = gen_setup_attribute binding "subst" parse_attribute
 
-val parse_method = gen_parse_method
-  (gen_parse_entry Asm.parse_add_context_update Asm.parse_del_context_update
-    Asm.parse_config_context_update)
-  (gen_parse_entry Concl.parse_add_context_update Concl.parse_del_context_update
-    Concl.parse_config_context_update)
+val parse_method = gen_parse_method Asm.parse_entry_context_update Concl.parse_entry_context_update
 end
 end
 end

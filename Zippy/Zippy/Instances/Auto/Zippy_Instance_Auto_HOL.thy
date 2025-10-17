@@ -3,9 +3,11 @@ theory Zippy_Instance_Auto_HOL
   imports
     Cases_Tactics_HOL
     Extended_Blast_Data
+    Zippy_Instance_Cases
     Zippy_Instance_Classical
-    Zippy_Instance_Auto_Pure
+    Zippy_Instance_Induction
     Zippy_Instance_Subst
+    Zippy_Instance_Auto_Pure
 begin
 
 paragraph \<open>Simplifier\<close>
@@ -212,60 +214,89 @@ declare [[zippy_init_gcs \<open>
 
 declare [[zippy_parse \<open>(@{binding subst}, Zippy_Auto.Subst.parse_method)\<close>]]
 
-paragraph \<open>Cases\<close>
+paragraph \<open>Cases and Induction\<close>
 
 ML\<open>
 structure Zippy_Auto =
 struct open Zippy_Auto
 local open Zippy
-in
-\<^functor_instance>\<open>struct_name: Cases
-  functor_name: Cases_Data
-  id: \<open>FI.id\<close>
-  path: \<open>FI.long_name\<close>
-  more_args: \<open>
-    structure Cases = Cases_Tactic_HOL
-    val init_config_data = {
+  structure Base_Args =
+  struct
+    structure Z = Zippy
+    structure Ctxt = Ctxt
+    fun mk_init_args prio = {
       simp = SOME true,
       match = SOME (can Seq.hd oooo Type_Unification.e_unify Unification_Util.unify_types
-        (Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match))}
-    val parent_logger = Logger.root\<close>\<close>
+        (Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match)),
+      empty_action = SOME (Library.K (PResults.empty_action Util.exn)),
+      default_update = SOME Zippy_Auto.Run.init_gpos,
+      mk_cud = SOME Result_Action.copy_update_data_empty_changed,
+      prio_sq_co = SOME (PResults.enum_halve_prio_halve_prio_depth_sq_co prio),
+      progress = SOME Base_Data.AAMeta.P.Unclear}
+    structure Log_LGoals_Pos_Copy = Logging.LGoals_Pos_Copy
+    structure Log_LGoals = Logging.LGoals
+    structure Log = Logging
+  end
+in
+\<^functor_instance>\<open>struct_name: Cases
+  functor_name: Zippy_Instance_Cases_Data
+  FI_struct_name: FI_Cases_Data
+  id: \<open>FI.id\<close>
+  path: \<open>FI.long_name\<close>
+  more_args: \<open>open Base_Args
+    val init_args = mk_init_args Prio.LOW
+  \<close>\<close>
+structure Cases = Cases.Cases_Data
+\<^functor_instance>\<open>struct_name: Induction
+  functor_name: Zippy_Instance_Induction_Data
+  FI_struct_name: FI_Induction_Data
+  id: \<open>FI.id\<close>
+  path: \<open>FI.long_name\<close>
+  more_args: \<open>open Base_Args
+    val init_args = mk_init_args Prio.VERY_LOW
+  \<close>\<close>
+structure Induction = Induction.Induction_Data
 end
 end
 \<close>
 local_setup \<open>Zippy_Auto.Cases.setup_attribute NONE\<close>
+local_setup \<open>Zippy_Auto.Induction.setup_attribute NONE\<close>
 
 declare [[zippy_init_gcs \<open>
-  let
-    open Zippy Zippy_Auto.Cases; open ZLP MU; open SC A
-    val id = @{binding cases}
-    val prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.LOW
-    val update_result = Library.maps snd
-      #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
-    val mk_cud = Result_Action.copy_update_data_empty_changed
-    val tac = cases_tac (fn simp => fn opt_rule => fn insts => fn facts => fn ctxt =>
-      Induct.cases_tac ctxt simp [insts] opt_rule facts)
-    fun ztac args = tac args
-      #> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear
-      #> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
-    fun mk_data ctxt args = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.metadata (id, Lazy.lazy (fn _ => Pretty.breaks [
-          Pretty.str "cases on some goal with data",
-          Cases_Data_Args.pretty_data ctxt args
-        ] |> Pretty.block |> Pretty.string_of)),
-      result_action = Result_Action.changed_goals_action update_result mk_cud,
-      prio_sq_co = prio_sq_co,
-      tac = Ctxt.with_ctxt (ztac args #> arr)}
-    fun init _ focus = Ctxt.with_ctxt (fn ctxt =>
-      let val update_focus_list = Data.get (Context.Proof ctxt)
-        |> map (Cases_Data_Args.transfer_data (Proof_Context.theory_of ctxt) #> mk_data ctxt
-          #> pair focus)
-      in
-        Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) update_focus_list
-        >>> Up3.morph
-      end)
+  let open Zippy Zippy_Auto.Cases; open ZLP MU; open SC A
+    val id = @{binding cases_some}
+    val descr = Lazy.value "cases on some goal"
+    val tac = Cases_Data_Args_Tactic_HOL.cases_tac (fn simp => fn opt_rule => fn insts =>
+      fn facts => fn ctxt => Induct.cases_tac ctxt simp [insts] opt_rule facts)
+    fun ztac progress data = Ctxt.with_ctxt (fn ctxt => tac data ctxt
+      |> Tac_AAM.lift_tac_progress progress
+      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
+      |> arr)
+    val opt_default_update_action = NONE
+    fun mk_data focus ctxt = Data.get (Context.Proof ctxt)
+      |> List.map (transfer_data (Proof_Context.theory_of ctxt) #> pair focus)
+    fun init _ focus = Ctxt.with_ctxt (fn ctxt => cons_action_cluster Util.exn
+        (Base_Data.ACMeta.metadata (id, descr)) ztac opt_default_update_action ctxt
+        (mk_data focus ctxt))
+      >>> Up3.morph
+  in (id, init) end\<close>]]
+declare [[zippy_init_gcs \<open>let open Zippy Zippy_Auto.Induction; open ZLP MU; open SC A
+    val id = @{binding induct_some}
+    val descr = Lazy.value "induction on some goal"
+    val tac = Induction_Data_Args_Tactic_HOL.induct_tac false
+    fun ztac progress data = Ctxt.with_ctxt (fn ctxt => tac data ctxt
+      |> Tac_AAM.lift_tac_progress progress
+      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
+      |> arr)
+    val opt_default_update_action = NONE
+    fun mk_data focus ctxt = Data.get (Context.Proof ctxt)
+      |> List.map (transfer_data (Proof_Context.theory_of ctxt) #> pair focus)
+    fun init _ focus = Ctxt.with_ctxt (fn ctxt => cons_action_cluster Util.exn
+        (Base_Data.ACMeta.metadata (id, descr)) ztac opt_default_update_action ctxt
+        (mk_data focus ctxt))
+      >>> Up3.morph
   in (id, init) end\<close>]]
 declare [[zippy_parse \<open>(@{binding cases}, Zippy_Auto.Cases.parse_context_update)\<close>]]
+declare [[zippy_parse \<open>(@{binding induct}, Zippy_Auto.Induction.parse_context_update)\<close>]]
 
 end

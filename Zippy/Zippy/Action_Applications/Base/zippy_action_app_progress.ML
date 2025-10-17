@@ -7,6 +7,7 @@ sig
   val promising : progress
   val unclear : progress
   val pretty : progress SpecCheck_Show.show
+  val ord : progress ord
 end
 
 structure Zippy_Action_App_Progress : ZIPPY_ACTION_APP_PROGRESS =
@@ -19,5 +20,9 @@ val unclear = Unclear
 
 fun pretty Promising = Pretty.str "Promising"
   | pretty Unclear = Pretty.str "Unclear"
+
+fun ord (Promising, Unclear) = LESS
+  | ord (Unclear, Promising) = GREATER
+  | ord _ = EQUAL
 
 end

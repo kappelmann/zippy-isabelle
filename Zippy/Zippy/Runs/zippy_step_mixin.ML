@@ -98,8 +98,13 @@ fun update_goal_results_up_expanded z = Down5.morph z
         Show1.pretty ctxt z
       ] |> Pretty.block |> Pretty.string_of);
     LGoals_Results.update_goal_results_up ctxt z))
+(*NB. no results are returned here; actions that change structure and create new results
+must be split into actions changing just structure and just expanding nodes*)
 fun update_goal_results_up_changed z = z |> (ZB.top1 >>> arr (rpair Results.empty))
 
+(*FUTURE TODO: allow actions to manipulate queue and results themselves by putting them in a state
+monad; this would allow more expressive actions, e.g. ones that change structure and expand at the
+same time or ones that expand multiple nodes*)
 fun update_unchanged queue = update_goal_results_up_unchanged
   &&& (fn z => PAction_Queue.update_unchanged z queue)
 fun update_expanded queue =

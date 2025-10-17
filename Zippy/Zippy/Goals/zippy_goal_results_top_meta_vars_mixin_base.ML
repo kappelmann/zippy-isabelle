@@ -3,11 +3,9 @@
 *)
 signature ZIPPY_GOAL_RESULTS_TOP_META_VARS_MIXIN_BASE =
 sig
-  type @{AllT_args} zipper
   structure Results : ZIPPY_GOAL_RESULTS_MIXIN_BASE
-  sharing type Results.L.container = zipper
   structure Top_Meta_Vars : ZIPPY_TOP_META_VARS_MIXIN_BASE
-  sharing type Top_Meta_Vars.L.container = zipper
+  sharing type Top_Meta_Vars.L.container = Results.L.container
 end
 
 functor Zippy_Goal_Results_Top_Meta_Vars_Mixin_Base(A :
@@ -16,8 +14,4 @@ functor Zippy_Goal_Results_Top_Meta_Vars_Mixin_Base(A :
     structure Top_Meta_Vars : ZIPPY_TOP_META_VARS_MIXIN_BASE
     sharing type Top_Meta_Vars.L.container = Results.L.container
   end) : ZIPPY_GOAL_RESULTS_TOP_META_VARS_MIXIN_BASE
-  =
-struct
-open A
-type @{AllT_args} zipper = @{AllT_args} Results.L.container
-end
+  = A

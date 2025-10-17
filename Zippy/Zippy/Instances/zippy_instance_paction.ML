@@ -19,6 +19,7 @@ sig
 
   structure Result_Action :
   sig
+    include ZIPPY_LOGGER_MIXIN_BASE
     (* result actions *)
     type result = Base_Data.AAMeta.metadata Base_Data.Tac_Res.result
     val init : Base_Data.PAction.prio -> result -> (@{ParaT_args} @{AllT_args} ZLP.Z4.zipper,
@@ -51,6 +52,7 @@ functor Zippy_Instance_PAction(
     val mk_exn : (unit -> @{ParaT_args encl: "(" ")"} Z.Exn.ME.exn)
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
+    structure Log_Result_Action : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals_Pos_Copy : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_Copy : ZIPPY_LOGGER_MIXIN_BASE
@@ -106,6 +108,7 @@ end
 
 structure Result_Action =
 struct
+open Log_Result_Action
 (* result actions *)
 type result = Base_Data.AAMeta.metadata Base_Data.Tac_Res.result
 
@@ -138,8 +141,13 @@ fun init_copy_parents mk_cud prio result = init prio result
 
 fun action update mk_cud result prio = init_copy_parents mk_cud prio result
   >>> update result
-  >>> Ctxt.with_ctxt LGoals_Results.init_goal_results_down1 >>> arr fst
-  >>> Up1.morph >>> arr Mixin4.PAction.AResult.Expanded
+  >>> Ctxt.with_ctxt (fn ctxt => fn z =>
+    (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
+        Pretty.str "Initialising goal results downwards from",
+        Show.Zipper1.pretty ctxt z
+      ] |> Pretty.block |> Pretty.string_of);
+    LGoals_Results.init_goal_results_down1 ctxt z))
+  >>> arr fst >>> Up1.morph >>> arr Mixin4.PAction.AResult.Expanded
 fun changed_goals_action update = action
   (#gpos_update #> LGoals_Pos_Copy.update_changed_goals_gclusters_gclusters update)
 fun hom_changed_goals_action updates = action

@@ -7,7 +7,7 @@ sig
   include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   structure Path : \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER_PATH"\<close>
 
-  val may_take_more_results : @{AllT_args} zipper -> bool
+  val may_take_more_results : @{AllT_args} Results.L.container -> bool
 
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   type @{AllT_args} zipper{i}
@@ -18,7 +18,7 @@ end
 functor Zippy_Goal_Results_Top_Meta_Vars_Mixin(
     structure Z : ZIPPY_BASE_BASE
     structure Goal_Results_Top_Meta_Vars : ZIPPY_GOAL_RESULTS_TOP_META_VARS_MIXIN_BASE
-    sharing type Goal_Results_Top_Meta_Vars.zipper = Z.Z2.zipper
+    sharing type Goal_Results_Top_Meta_Vars.Results.L.container = Z.Z2.zipper
   ) : ZIPPY_GOAL_RESULTS_TOP_META_VARS_MIXIN =
 struct
 
