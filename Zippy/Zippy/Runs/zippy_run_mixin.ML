@@ -175,6 +175,7 @@ type @{AllT_args} container1 = @{AllT_args} Step.container1
 fun pretty_fuel NONE = Pretty.str "Unlimited"
   | pretty_fuel (SOME n) = Show.int n
 
+(*TODO: decouple unfinished case*)
 fun gen_repeat_step_queue step_queue mk_unfinished_statesq =
   let
     fun case_unfinished steps queue = Z1.ZM.Zip.morph

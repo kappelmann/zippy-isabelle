@@ -92,8 +92,11 @@ structure PZ2 = \<^eval>\<open>mk_name ["Pair", pfx_sfx_nargs "Alternating_Zippe
   structure AZ1 = ZGPos; structure AZ2 = PZ1)
 structure Z = \<^eval>\<open>mk_name ["Pair", pfx_sfx_nargs "Alternating_Zipper"]\<close>(
   structure AZ1 = Z; structure AZ2 = PZ2)
-
-open Z
+structure ZB = Zippy_Base_Base(\<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Util"\<close>(
+  structure Z = Z
+  structure AE = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Exception_Repeat"\<close>(
+    \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Exception"\<close>(ME))))
+open ZB
 
 structure SZ = Z.SZ1
 structure SZGPos = \<^eval>\<open>pfx_sfx_nargs "Sub_Alternating_Zipper_Trans"\<close>(

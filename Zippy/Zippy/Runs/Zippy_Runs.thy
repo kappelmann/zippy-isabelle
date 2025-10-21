@@ -5,7 +5,6 @@ theory Zippy_Runs
     Zippy_Actions
     Zippy_Lists_Goals
     Zippy_Lists_Positions
-    Zippy_States
 begin
 
 ML_file\<open>zippy_step_mixin_base.ML\<close>

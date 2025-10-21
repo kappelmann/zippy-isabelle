@@ -5,9 +5,6 @@ theory Zippy_Actions
     Zippy_Actions_Base
     Zippy_Enums
     Zippy_Identifiers
-    Zippy_Loggers
-    Zippy_States
-    Zippy_Shows
 begin
 
 ML_file\<open>zippy_paction_mixin_base.ML\<close>

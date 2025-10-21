@@ -92,7 +92,7 @@ sig
   sharing type Co.M.t = M.t
 
   (** data **)
-  structure Mixin1 :
+  structure Mixin_Base1 :
   sig
     structure GClusters : ZIPPY_GOAL_CLUSTERS_MIXIN_BASE
     where type @{AllT_args} L.container = @{AllT_args} Lens1.GClusters.container
@@ -102,7 +102,7 @@ sig
     where type @{AllT_args} L.container = @{AllT_args} Lens1.Results.container
     where type R.results = Base_Data.GResults.results
   end
-  structure Mixin2 :
+  structure Mixin_Base2 :
   sig
     structure GCluster : ZIPPY_GOAL_CLUSTER_MIXIN_BASE
     where type @{AllT_args} L.container = @{AllT_args} Lens2.GCluster.container
@@ -115,7 +115,7 @@ sig
     structure Top_Meta_Vars : ZIPPY_TOP_META_VARS_MIXIN_BASE
     where type @{AllT_args} L.container = @{AllT_args} Lens2.Top_Meta_Vars.container
   end
-  structure Mixin3 :
+  structure Mixin_Base3 :
   sig
     structure Copy : ZIPPY_COPY_MIXIN_BASE
     where type @{AllT_args} L.container = @{AllT_args} Lens3.Copy.container
@@ -128,7 +128,7 @@ sig
     where type @{AllT_args} L.container = @{AllT_args} Lens3.Meta.container
     where type Meta.metadata = Base_Data.ACMeta.metadata
   end
-  structure Mixin4 :
+  structure Mixin_Base4 :
   sig
     structure PAction : ZIPPY_PACTION_MIXIN_BASE
     where type @{AllT_args} L.container = @{AllT_args} Lens4.PAction.container
@@ -150,7 +150,7 @@ sig
     where type @{AllT_args} L.container = @{AllT_args} Lens4.Meta.container
     where type Meta.metadata = Base_Data.AMeta.metadata
   end
-  structure Mixin5 :
+  structure Mixin_Base5 :
   sig
     structure Action_App_Num : ZIPPY_ACTION_APP_NUM_MIXIN_BASE
     where type @{AllT_args} L.container = @{AllT_args} Lens5.Action_App_Num.container
@@ -182,7 +182,7 @@ sig
     val cons3 : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
       (Base_Data.GFocus.focus * (Base_Data.GFocus.focus ->
         (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper) emorph)) list ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper) morph
+      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper option) morph
     val cons4 : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.AMeta.metadata ->
       @{AllT_args} Base_Data.PAction.paction -> Base_Data.GFocus.focus ->
       (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper, @{AllT_args} ZLP.Z4.zipper) morph
@@ -198,6 +198,7 @@ functor Zippy_Instance(
     structure Z : ZIPPY_INSTANCE_BASE
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
+    structure Log_Base : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals_Pos_Copy : ZIPPY_LOGGER_MIXIN_BASE
     structure Show_Prio : ZIPPY_SHOW_MIXIN_BASE
@@ -411,7 +412,7 @@ in
 (** data **)
 local structure L = Lens1
 in
-structure Mixin1 =
+structure Mixin_Base1 =
 struct
   structure GClusters = Zippy_Goal_Clusters_Mixin_Base(structure GCS = GCS; structure L = L.GClusters)
   structure Results = Zippy_Goal_Results_Mixin_Base(structure R = GResults; structure L = L.Results)
@@ -420,7 +421,7 @@ end
 
 local structure L = Lens2
 in
-structure Mixin2 =
+structure Mixin_Base2 =
 struct
   structure GCluster = Zippy_Goal_Cluster_Mixin_Base(structure GC = GC; structure L = L.GCluster)
   structure Results = Zippy_Goal_Results_Mixin_Base(structure R = GResults; structure L = L.Results)
@@ -431,7 +432,7 @@ end
 
 local structure L = Lens3
 in
-structure Mixin3 =
+structure Mixin_Base3 =
 struct
   structure Copy = Base_Data.Copy
   structure Meta = Zippy_Action_Cluster_Metadata_Mixin_Base(
@@ -441,7 +442,7 @@ end
 
 local structure L = Lens4
 in
-structure Mixin4 =
+structure Mixin_Base4 =
 struct
   structure PAction = Base_Data.PAction
   structure Action_App_Num = Zippy_Action_App_Num_Mixin_Base(
@@ -454,12 +455,12 @@ end
 
 local structure L = Lens5
 in
-structure Mixin5 =
+structure Mixin_Base5 =
 struct
   structure Action_App_Num = Zippy_Action_App_Num_Mixin_Base(
     structure AANum = AANum; structure L = L.Action_App_Num)
   structure Focus = Zippy_Goal_Focus_Mixin_Base(structure F = GFocus; structure L = L.Focus)
-  structure Prio = Zippy_Prio_Mixin_Base(type prio = Mixin4.PAction.prio; structure L = L.Prio)
+  structure Prio = Zippy_Prio_Mixin_Base(type prio = Mixin_Base4.PAction.prio; structure L = L.Prio)
   structure Meta = Zippy_Action_App_Metadata_Mixin_Base(
     structure Meta = AAMeta; structure L = L.Meta)
 end
@@ -468,16 +469,13 @@ end
 (** compound **)
 structure Base_Mixins = struct structure Exn = Exn; structure Co = Co; structure Ctxt = Ctxt end
 structure ZL = Zippy_Lists(open Base_Mixins; structure Z = ZLP)
-structure Goals = Zippy_Goals_Mixin_Base(
-  structure GClusters = Mixin1.GClusters; structure GCluster = Mixin2.GCluster)
-structure Goals_Pos = Zippy_Goals_Pos_Mixin(structure Z = ZLP
-  structure Goals_Pos = Zippy_Goals_Pos_Mixin_Base(open Goals; structure GPU = Base_Data.Tac_Res.GPU))
+structure Goals = Zippy_Goals_Mixin_Base(open Mixin_Base1 Mixin_Base2)
+structure Goals_Pos = Zippy_Goals_Pos_Mixin_Base(open Goals; structure GPU = Base_Data.Tac_Res.GPU)
 structure Goals_Pos_Copy = Zippy_Goals_Pos_Copy_Mixin(Zippy_Goals_Pos_Copy_Mixin_Base(open Goals_Pos
-  structure Copy = Mixin3.Copy))
+  structure Copy = Mixin_Base3.Copy))
 structure LGoals_Pos_Copy = Zippy_Lists_Goals_Pos_Copy_Mixin(open Base_Mixins; structure Z = ZL
-  structure GPC = Goals_Pos_Copy;
-  structure Log = Log_LGoals_Pos_Copy; structure Log_LGoals = Log_LGoals
-  structure Show1 = Show.Zipper1; structure Show2 = Show.Zipper2; structure Show3 = Show.Zipper3)
+  structure GPC = Goals_Pos_Copy; structure Log = Log_LGoals_Pos_Copy; structure Log_Base = Log_Base
+  structure Log_LGoals = Log_LGoals; \<^imap>\<open>\<open>{i}\<close> => \<open>structure Show{i} = Show.Zipper{i}\<close>\<close>)
 
 (* nodes *)
 structure Node =

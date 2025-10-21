@@ -27,7 +27,7 @@ ML\<open>
     let
       fun run _ = (*TODO: check if successful*)
         (Timeout.apply (seconds 6.0) tac state |> Seq.pull
-          |> tap (fn NONE => writeln "Proof failed" | _ => ())
+          |> tap (fn NONE => writeln "Proof failed" | SOME (thm, _) => if Thm.no_prems thm then () else writeln "Proof failed")
           |> Library.K |> Seq.make)
         handle Timeout.TIMEOUT _ => (writeln ("Timeout of " ^ descr); Seq.empty)
       val _ = writeln ("Running " ^ descr)
@@ -461,9 +461,7 @@ definition stable_sort_key :: "(('b \<Rightarrow> 'a) \<Rightarrow> 'b list \<Ri
 
 lemma strict_sorted_iff: "sorted_wrt (<) l \<longleftrightarrow> sorted l \<and> distinct l"
   supply antisym_conv1[iff]
-  (*TODO: slow without lower prio*)
-  by (zippy induct l rule: list.induct
-  prio_sq_co: \<open>Zippy.PResults.enum_halve_prio_halve_prio_depth_sq_co (Prio.halve Prio.VERY_LOW)\<close>)
+  by (zippy induct l rule: list.induct)
   (* by (tactic \<open>timed_tacs NONE @{context}\<close>) *)
 
 lemma strict_sorted_imp_sorted: "sorted_wrt (<) xs \<Longrightarrow> sorted xs"
@@ -939,10 +937,6 @@ lemma list_induct2 [consumes 1, case_names Nil Cons]:
    \<Longrightarrow> P xs ys"
   by (zippy induct xs arbitrary: ys)
 
-(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Step.logger Logger.ALL\<close>]] *)
-(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Run.logger Logger.ALL\<close>]] *)
-(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.logger Logger.ALL\<close>]] *)
-
 lemma list_induct3 [consumes 2, case_names Nil Cons]:
   "length xs = length ys \<Longrightarrow> length ys = length zs \<Longrightarrow> P [] [] [] \<Longrightarrow>
    (\<And>x xs y ys z zs. length xs = length ys \<Longrightarrow> length ys = length zs \<Longrightarrow> P xs ys zs \<Longrightarrow> P (x#xs) (y#ys) (z#zs))
@@ -1034,7 +1028,7 @@ proof (induct xs arbitrary: ys zs ts)
     supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
     apply (zippy cases zs)
     done
-qed zippy
+qed (zippy blast depth: 1)
 
 lemma same_append_eq [iff, induct_simp]: "(xs @ ys = xs @ zs) = (ys = zs)"
 by simp
@@ -1220,8 +1214,8 @@ proof (induct rule: list_induct2)
   then show ?case
     apply -
     supply sym[intro]
-    (*slow time*)
-      supply [[zippy_init_gcs del: \<open>@{binding cases_some}\<close>]]
+    (*TODO: slow time*)
+      supply [[zippy_init_gc del: \<open>@{binding cases_some}\<close>]]
     by (tactic \<open>timed_tacs NONE @{context}\<close>)
 qed (tactic \<open>timed_tacs NONE @{context}\<close>)
 
@@ -1233,7 +1227,7 @@ by (tactic \<open>timed_tacs NONE @{context}\<close>)
 lemma map_injective:
   "map f xs = map f ys \<Longrightarrow> inj f \<Longrightarrow> xs = ys"
 apply (induct ys arbitrary: xs)
-supply injD[dest!]
+supply injD[dest]
 by (tactic \<open>timed_tacs NONE @{context}\<close>)
 
 lemma inj_map_eq_map[simp]: "inj f \<Longrightarrow> (map f xs = map f ys) = (xs = ys)"
@@ -1426,11 +1420,11 @@ next
     assume "x \<noteq> a" thus ?case using Cons
       apply -
       supply Cons_eq_appendI[intro!]
-      supply [[zippy_init_gcs del: \<open>@{binding cases_some}\<close>]]
-      supply [[zippy_init_gcs del: \<open>@{binding asm_full_simp}\<close>]]
-supply [[zippy_init_gcs \<open>
+      supply [[zippy_init_gc del: \<open>@{binding cases_some}\<close>]]
+      supply [[zippy_init_gc del: \<open>@{binding asm_full_simp}\<close>]]
+supply [[zippy_init_gc \<open>
   let
-    open Zippy; open ZLP MU; open SC
+    open Zippy; open ZLP MU; open SC A Mo
     val id = @{binding asm_full_simp}
     val update = Library.maps snd
       #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
@@ -1438,10 +1432,12 @@ supply [[zippy_init_gcs \<open>
     val prio_sq_co_safe = PResults.enum_halve_prio_halve_prio_depth_sq_co (Prio.VERY_HIGH |> funpow 3 Prio.double)
     val prio_sq_co_unsafe = PResults.enum_halve_prio_halve_prio_depth_sq_co (Prio.VERY_HIGH |> funpow 3 Prio.double)
     val data = Simp.asm_full_simp_data Util.exn id update mk_cud prio_sq_co_safe prio_sq_co_unsafe
-    fun init _ focus = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)]
-      >>> Up3.morph
+    fun init _ focus z = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
       apply simp
+      supply [[zippy_blast depth: 0]]
+      (*TODO: slow time*)
       apply (tactic \<open>timed_tacs NONE @{context}\<close>)
      done
   qed
@@ -1472,8 +1468,8 @@ next
       (* apply (tactic \<open>(Simplifier.safe_asm_full_simp_tac @{context}
         THEN_ALL_NEW Classical.clarify_tac (addSss @{context})) 1\<close>) *)
 
-(* supply [[zippy_init_gcs del: \<open>@{binding asm_full_simp}\<close>]]
-supply [[zippy_init_gcs \<open>
+(* supply [[zippy_init_gc del: \<open>@{binding asm_full_simp}\<close>]]
+supply [[zippy_init_gc \<open>
   let
     open Zippy; open ZLP MU; open SC
     val name = "asm_full_simp"
@@ -1762,7 +1758,7 @@ using Suc_le_eq
 proof (induct xs)
   case (Cons x xs) thus ?case
     supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
-    by (zippy blast depth: 0) (*slow proof*)
+    by (zippy blast depth: 0)
 qed zippy
 
 lemma length_filter_conv_card:
@@ -1946,7 +1942,7 @@ proof (induct xs arbitrary: ys)
       apply clarsimp
       apply safe
       apply simp_all
-      (*slow*)
+      (*TODO: slow time*)
       (* supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")] *)
       (* apply (zippy blast depth: -1) *)
       apply fastforce+
@@ -2469,34 +2465,10 @@ lemma hd_drop_conv_nth: "n < length xs \<Longrightarrow> hd(drop n xs) = xs!n"
 
 lemma set_take_subset_set_take:
   "m \<le> n \<Longrightarrow> set(take m xs) \<le> set(take n xs)"
-proof (induct xs arbitrary: m n)
-  case (Cons x xs m n) then show ?case
-    apply (cases n)
-    supply take_Cons[simp]
-  supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
-  (* apply (zippy) *)
-  apply clarsimp
-  apply slow_step
-  supply [[zippy_init_gcs del:
-  \<open>@{binding blast}\<close>
-  \<open>@{binding induct_some}\<close>
-  \<open>@{binding cases_some}\<close>
-  \<open>@{binding resolve_ho_unif_first}\<close> \<open>@{binding resolve_ho_match_first}\<close>
-  \<open>@{binding eresolve_ho_unif_first}\<close> \<open>@{binding eresolve_ho_match_first}\<close>
-  \<open>@{binding dresolve_ho_unif_first}\<close> \<open>@{binding dresolve_ho_match_first}\<close>
-  \<open>@{binding subst_asm_some}\<close> \<open>@{binding subst_concl_some}\<close>
-  ]]
-  supply [[ML_map_context \<open>Logger.set_log_levels Logger.root Logger.ALL\<close>]]
-  apply (zippy 10)
-    (* apply (tactic \<open>timed_tacs NONE @{context}\<close>) why is it slow? *)
-  apply simp
-  apply (zippy 100)
-  apply slow_step
-  (*)
-  apply (zippy 20)
-    apply (tactic \<open>timed_tacs NONE @{context}\<close>) (*why is it slow?*)
-    done
-qed simp
+supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
+supply take_Cons[simp]
+apply (induct xs arbitrary: m n)
+by (zippy cases (pat) "_ :: nat")
 
 lemma set_take_subset: "set(take n xs) \<subseteq> set xs"
   by(induct xs arbitrary: n)(auto simp:take_Cons split:nat.split)
@@ -6010,7 +5982,7 @@ proof (induct xs)
     apply (cases xs)
     supply sorted_append[simp] max_def[simp]
     supply list.exhaust[zippy_cases del (pat) ("_ :: _ list", "[]" "_ _ :: _ list")]
-    apply (tactic \<open>timed_tacs NONE @{context}\<close>) (*TODO: slow time*)
+    apply (tactic \<open>timed_tacs NONE @{context}\<close>)
     done
 qed simp
 
@@ -6949,6 +6921,7 @@ proof (induction n)
       apply (cases xys)
       (* apply (fastforce simp: image_Collect lex_prod_def)+ *)
       apply (zippy simp: image_Collect lex_prod_def)[1]
+      (*TODO: too slow*)
       apply (fastforce simp: image_Collect lex_prod_def)
       (* apply (zippy 100 simp: image_Collect lex_prod_def)
       apply slow_step
@@ -7252,7 +7225,7 @@ qed
 lemma lexord_lex: "(x,y) \<in> lex r = ((x,y) \<in> lexord r \<and> length x = length y)"
 proof (induction x arbitrary: y)
 (* apply (induction x arbitrary: y) *)
-  (* supply [[zippy_init_gcs del: \<open>@{binding blast}\<close>]] *)
+  (* supply [[zippy_init_gc del: \<open>@{binding blast}\<close>]] *)
 (* apply (tactic \<open>zippy_tac NONE @{context}\<close>) *)
   case (Cons a x y) then show ?case
     by (zippy cases y)

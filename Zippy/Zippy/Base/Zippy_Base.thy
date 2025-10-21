@@ -4,6 +4,9 @@ theory Zippy_Base
   imports
     ML_Alternating_Zipper_Utils
     Zippy_Exceptions
+    Zippy_Loggers
+    Zippy_Shows
+    Zippy_States
 begin
 
 ML_file\<open>zippy_monad_util.ML\<close>

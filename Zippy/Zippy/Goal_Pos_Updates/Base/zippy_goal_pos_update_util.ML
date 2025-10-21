@@ -11,7 +11,7 @@ sig
   val single_goal_gpos_update : GCS.goal_pos -> int -> GCS.goal_pos gpos_update
 
   type focus_update = F.focus -> (GCS.cluster_pos * F.focus) list
-  val focus_update : int -> GCS.gcpos gpos_update -> focus_update
+  val focus_update : GCS.gcpos gpos_update -> focus_update
   val focus_update_comp_gclusters : GCS.gclusters -> GCS.goal_pos gpos_update -> focus_update
 end
 
@@ -37,14 +37,12 @@ local
   fun dest_gpos_update gpos_update gpos = gpos_update gpos
     |> T.map (SA.A.&&& (GCS.get_gcpos_cluster, GCS.get_gcpos_goal))
 in
-fun focus_update _ gpos_update (F.Goals gpos) = gpos
-      |> Library.maps (dest_gpos_update gpos_update #> (fn T.Moved t => [t] | T.Changed ts => ts))
-      |> partition_eq (eq_fst (op =))
-      |> map (SA.A.&&& (hd #> fst, map snd #> sort int_ord #> F.Goals))
-  | focus_update ngclusters _ F.None = fold_range (rpair F.none #> cons) ngclusters []
+fun focus_update gpos_update (F.Goals gpos) = gpos
+  |> Library.maps (dest_gpos_update gpos_update #> (fn T.Moved t => [t] | T.Changed ts => ts))
+  |> partition_eq (eq_fst (op =))
+  |> map (SA.A.&&& (hd #> fst, map snd #> F.sort_goals))
 
-fun focus_update_comp_gclusters gclusters = comp_gclusters_gpos_update gclusters
-  #> focus_update (GCS.get_nclusters gclusters)
+fun focus_update_comp_gclusters gclusters = comp_gclusters_gpos_update gclusters #> focus_update
 end
 end
 

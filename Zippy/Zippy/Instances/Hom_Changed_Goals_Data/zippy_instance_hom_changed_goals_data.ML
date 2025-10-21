@@ -224,9 +224,7 @@ sig
     val parse_context_update : unit context_parser
 
     (* action data *)
-    val focused_data_none_each : ('a -> Data.term_value list) -> 'a list ->
-      Base_Data.GFocus.focus -> (Base_Data.GFocus.focus * Data.value) list
-    val focused_data_none_no : ('a -> Data.term_value list) -> 'a list ->
+    val lookup_each_focused_data : ('a -> Data.term_value list) -> 'a list ->
       Base_Data.GFocus.focus -> (Base_Data.GFocus.focus * Data.value) list
 
     val tac_data_from_data : Base_Data.AMeta.metadata ->
@@ -245,12 +243,17 @@ sig
         Tac_AAM.ztactic) morph) ->
       data -> Base_Data.GFocus.focus -> (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper,
         @{AllT_args} ZLP.Z4.zipper) morph
+    val cons_nth_action : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
+      (Base_Data.AAMeta.P.progress -> thm -> (@{ParaT_args} Base_Data.GFocus.focus,
+        Tac_AAM.ztactic) morph) ->
+      Proof.context -> int -> data -> Base_Data.GFocus.focus ->
+      (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper, @{AllT_args} ZLP.Z4.zipper) morph
 
     val cons_action_cluster : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
       (Base_Data.AAMeta.P.progress -> thm -> (@{ParaT_args} Base_Data.GFocus.focus,
         Tac_AAM.ztactic) morph) ->
       Proof.context -> (Base_Data.GFocus.focus * data) list ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper) morph
+      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper option) morph
   end
 end
 
@@ -297,7 +300,7 @@ type data = (thm,
 fun eq_data data = Thm.eq_thm (apply2 PD.get_thm data) andalso (op =) (apply2 PD.get_progress data)
 fun pretty_data ctxt data = SpecCheck_Show.record [
     ("thm", Thm.pretty_thm ctxt (PD.get_thm data)),
-    ("progress", Mixin5.Meta.Meta.P.pretty (PD.get_progress data))
+    ("progress", Mixin_Base5.Meta.Meta.P.pretty (PD.get_progress data))
   ]
 fun transfer_data thy = PD.map_thm (Thm.transfer thy)
 
@@ -523,10 +526,8 @@ val parse_entry_context_update =
 val parse_context_update = Parse.and_list1' parse_entry_context_update >> K ()
 
 (* action data *)
-fun gen_focused_data focused_goals lookup x focus = focused_goals focus x
+fun lookup_each_focused_data lookup x focus = GFocus.focused_data focus x
   |> maps (apsnd lookup #> (fn (i, datas) => List.map (snd #> pair (GFocus.single i)) datas))
-fun focused_data_none_each x = gen_focused_data GFocus.focused_data_none_each x
-fun focused_data_none_no x = gen_focused_data GFocus.focused_data_none_no x
 
 fun tac_data_from_data meta tac data = {
   meta = meta,
@@ -540,17 +541,20 @@ fun paction_data_from_data exn meta tac = tac_data_from_data meta tac
 
 fun cons_action exn meta tac = paction_data_from_data exn meta tac #> Z.PAction.cons_action
 
+fun cons_nth_action exn meta tac ctxt i data =
+  let val meta = AMeta.metadata (
+    Zippy_Identifier.suffix_name NONE (string_of_int i) (ACMeta.Id.getter meta),
+    Lazy.lazy (fn _ => Pretty.breaks [
+        Pretty.str (ACMeta.Descr.getter meta |> Lazy.force),
+        Pretty.block [Pretty.str "Theorem: ", Thm.pretty_thm ctxt (PD.get_thm data)]
+      ] |> Pretty.block |> Pretty.string_of))
+  in cons_action exn meta tac data end
+
 local open MU.SC
 in
 fun cons_action_cluster exn meta tac ctxt =
   map_index (Library.uncurry (fn i => apsnd (fn data => fn focus =>
-    let val meta = AMeta.metadata (
-      Zippy_Identifier.suffix_name NONE (string_of_int i) (ACMeta.Id.getter meta),
-      Lazy.lazy (fn _ => Pretty.breaks [
-          Pretty.str (ACMeta.Descr.getter meta |> Lazy.force),
-          Pretty.block [Pretty.str "Theorem: ", Thm.pretty_thm ctxt (PD.get_thm data)]
-        ] |> Pretty.block |> Pretty.string_of))
-    in cons_action exn meta tac data focus >>> Up4.morph end)))
+    cons_nth_action exn meta tac ctxt i data focus >>> Up4.morph)))
   #> Node.cons3 exn meta
 end
 end

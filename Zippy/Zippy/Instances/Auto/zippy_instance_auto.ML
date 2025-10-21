@@ -20,14 +20,15 @@ functor Zippy_Instance_Auto(
         Zippy_Instance_Hom_Changed_Goals_Data_Args.PDC.entries
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
+    structure Log_Base : ZIPPY_LOGGER_MIXIN_BASE
   ) =
 struct
 structure FI =  Functor_Instance(FI)
 structure Logging =
 struct
   val logger = Logger.setup_new_logger zippy_base_logger FI.name
-  structure Init_Goal_Clusters = Zippy_Logger_Mixin_Base(val parent_logger = logger
-    val name = "Init_Goal_Clusters")
+  structure Update_Goal_Cluster = Zippy_Logger_Mixin_Base(val parent_logger = logger
+    val name = "Update_Goal_Cluster")
 end
 
 \<^functor_instance>\<open>struct_name: Resolves
@@ -73,18 +74,19 @@ end
 local
   open Z
   structure Goals = Zippy_Goals_Mixin_Base(
-    structure GClusters = Mixin1.GClusters; structure GCluster = Mixin2.GCluster)
+    structure GClusters = Mixin_Base1.GClusters; structure GCluster = Mixin_Base2.GCluster)
   structure Goals_Pos = Zippy_Goals_Pos_Mixin_Base(open Goals; structure GPU = Base_Data.Tac_Res.GPU)
 in
-structure Init_Goal_Clusters = Zippy_Init_Goal_Clusters_Mixin(
+structure Init_Goal_Cluster = Zippy_Update_Goal_Cluster_Mixin(
   structure Z = Zippy_Enum_Mixin(Zippy_Enum_Mixin_Base(structure Z = ZLP; structure Co = Co))
-  structure IGC = \<^functor_instance>\<open>
-    functor_name: Zippy_Init_Goal_Clusters_Mixin_Base
-    id: \<open>FI.prefix_id "init_gcs"\<close>
-    path: \<open>FI.struct_op "Init_Goal_Clusters"\<close>
+  structure UGC = \<^functor_instance>\<open>
+    functor_name: Zippy_Update_Goal_Cluster_Mixin_Base
+    id: \<open>FI.prefix_id "init_gc"\<close>
+    path: \<open>FI.struct_op "Init_Goal_Cluster"\<close>
     more_args: \<open>open Goals_Pos
       structure M = Z
-      structure Log = Logging.Init_Goal_Clusters\<close>\<close>
-  structure Ctxt = Ctxt)
+      structure Log = Logging.Update_Goal_Cluster\<close>\<close>
+  structure Ctxt = Ctxt; structure Log = Logging; structure Log_Base = Log_Base
+  \<^imap>\<open>\<open>{i}\<close> => \<open>structure Show{i} = Show.Zipper{i}\<close>\<close>)
 end
 end

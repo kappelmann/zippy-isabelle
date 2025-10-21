@@ -38,29 +38,31 @@ local
   structure Logging =
   struct
     val logger = Logger.setup_new_logger zippy_base_logger "Zippy"
-    local structure Base = struct val parent_logger = logger end
+    local structure Shared = struct val parent_logger = logger end
     in
-    structure Copy = Zippy_Logger_Mixin_Base(open Base; val name = "Copy")
-    structure Enum_Copy = Zippy_Logger_Mixin_Base(open Base; val name = "Enum_Copy")
-    structure PAction = Zippy_Logger_Mixin_Base(open Base; val name = "PAction")
-    structure LGoals = Zippy_Logger_Mixin_Base(open Base; val name = "LGoals")
-    structure LGoals_Pos_Copy = Zippy_Logger_Mixin_Base(open Base; val name = "LGoals_Pos_Copy")
-    structure PAction_PResults = Zippy_Logger_Mixin_Base(open Base; val name = "PAction_PResults")
-    structure Result_Action = Zippy_Logger_Mixin_Base(open Base; val name = "Result_Action")
+    structure Base = Zippy_Logger_Mixin_Base(open Shared; val name = "Base")
+    structure Copy = Zippy_Logger_Mixin_Base(open Shared; val name = "Copy")
+    structure Enum_Copy = Zippy_Logger_Mixin_Base(open Shared; val name = "Enum_Copy")
+    structure PAction = Zippy_Logger_Mixin_Base(open Shared; val name = "PAction")
+    structure LGoals = Zippy_Logger_Mixin_Base(open Shared; val name = "LGoals")
+    structure LGoals_Pos_Copy = Zippy_Logger_Mixin_Base(open Shared; val name = "LGoals_Pos_Copy")
+    structure PAction_PResults = Zippy_Logger_Mixin_Base(open Shared; val name = "PAction_PResults")
+    structure Result_Action = Zippy_Logger_Mixin_Base(open Shared; val name = "Result_Action")
     end
   end
   structure Zippy = Zippy_Instance(
-    structure Z = Zippy_Base; structure Ctxt = Ctxt structure Log_LGoals = Logging.LGoals
-    structure Log_LGoals_Pos_Copy = Logging.LGoals_Pos_Copy
+    structure Z = Zippy_Base; structure Ctxt = Ctxt; structure Log_Base = Logging.Base
+    structure Log_LGoals = Logging.LGoals; structure Log_LGoals_Pos_Copy = Logging.LGoals_Pos_Copy
     structure Show_Prio = Zippy_Show_Mixin_Base(
       type @{AllT_args} t = Prio.prio
       val pretty = Library.K Prio.pretty))
   structure Zippy_PAction = Zippy_Instance_PAction(
     structure Z = Zippy
     val mk_exn = Library.K exn
-    structure Ctxt = Ctxt; structure Log_Result_Action = Logging.Result_Action;
-    structure Log_LGoals = Logging.LGoals structure Log_LGoals_Pos_Copy = Logging.LGoals_Pos_Copy;
-    structure Log_Copy = Logging.Copy structure Log_Enum_Copy = Logging.Enum_Copy)
+    structure Ctxt = Ctxt; structure Log_Base = Logging.Base;
+    structure Log_Result_Action = Logging.Result_Action; structure Log_LGoals = Logging.LGoals
+    structure Log_LGoals_Pos_Copy = Logging.LGoals_Pos_Copy; structure Log_Copy = Logging.Copy
+    structure Log_Enum_Copy = Logging.Enum_Copy)
   structure Zippy_PResults = Zippy_Instance_PResults(
     structure Z = Zippy_PAction
     val halve = Prio.halve
@@ -84,18 +86,20 @@ structure Prio = Prio
 (** add compound mixins **)
 local
   structure Base_Mixins = struct structure Exn = Exn; structure Co = Co; structure Ctxt = Ctxt end
-  structure ZL = Zippy_Lists(open Base_Mixins; structure Z = ZLP)
   structure Goals = Zippy_Goals_Mixin_Base(
-    structure GClusters = Mixin1.GClusters; structure GCluster = Mixin2.GCluster)
+    structure GClusters = Mixin_Base1.GClusters; structure GCluster = Mixin_Base2.GCluster)
   structure Goals_Pos = Zippy_Goals_Pos_Mixin(structure Z = ZLP
     structure Goals_Pos = Zippy_Goals_Pos_Mixin_Base(open Goals; structure GPU = Base_Data.Tac_Res.GPU))
   structure Goals_Pos_Copy = Zippy_Goals_Pos_Copy_Mixin(Zippy_Goals_Pos_Copy_Mixin_Base(open Goals_Pos
-    structure Copy = Mixin3.Copy))
+    structure Copy = Mixin_Base3.Copy))
 in
+structure ZB = Zippy_Base(open Base_Mixins; structure Z = ZLP; structure Log = Logging.Base
+  \<^imap>\<open>\<open>{i}\<close> => \<open>structure Show{i} = Show.Zipper{i}\<close>\<close>)
+structure ZL = Zippy_Lists(open Base_Mixins; structure Z = ZLP)
 structure LGoals_Pos_Copy = Zippy_Lists_Goals_Pos_Copy_Mixin(open Base_Mixins; structure Z = ZL
   structure GPC = Goals_Pos_Copy;
-  structure Log = Logging.LGoals_Pos_Copy; structure Log_LGoals = Logging.LGoals
-  structure Show1 = Show.Zipper1; structure Show2 = Show.Zipper2; structure Show3 = Show.Zipper3)
+  structure Log = Logging.LGoals_Pos_Copy; structure Log_Base = Logging.Base;
+  structure Log_LGoals = Logging.LGoals; \<^imap>\<open>\<open>{i}\<close> => \<open>structure Show{i} = Show.Zipper{i}\<close>\<close>)
 end
 (** add instance specific utilities **)
 structure Util =
@@ -106,7 +110,7 @@ struct
     structure ZN = Zippy_Node(structure Z = ZLP; structure Exn = Exn)
     structure ZL = Zippy_Lists(structure Z = ZLP; structure Co = Co)
     structure Goals = Zippy_Goals_Mixin_Base(
-      structure GClusters = Mixin1.GClusters; structure GCluster = Mixin2.GCluster)
+      structure GClusters = Mixin_Base1.GClusters; structure GCluster = Mixin_Base2.GCluster)
     structure LGoals = Zippy_Lists_Goals_Mixin(structure Z = ZL; structure Goals = Goals
       structure Ctxt = Ctxt; structure Log = Logging.LGoals)
     fun node_no_next1 gclusters = ZN.node_no_next1 exn (Node.co1 gclusters)
@@ -146,11 +150,11 @@ local
     structure Show_Container{i} = Show.Container{i}\<close>\<close>
   end
   structure Goals_Results = Zippy_Goals_Results_Mixin_Base(open LGoals_Pos_Copy
-    structure GClusters_Results = Mixin1.Results; structure GCluster_Results = Mixin2.Results)
+    structure GClusters_Results = Mixin_Base1.Results; structure GCluster_Results = Mixin_Base2.Results)
   structure Goals_Results_TMV = Zippy_Goals_Results_Top_Meta_Vars_Mixin_Base(open Goals_Results
-    structure Top_Meta_Vars = Mixin2.Top_Meta_Vars)
+    structure Top_Meta_Vars = Mixin_Base2.Top_Meta_Vars)
   structure PAction = Zippy_PAction_Mixin(open Base_Mixins
-    structure PAction = Mixin4.PAction; structure Log = Logging.PAction; structure Show = Show4)
+    structure PAction = Mixin_Base4.PAction; structure Log = Logging.PAction; structure Show = Show4)
   structure Logging =
   struct
     local structure Base = struct val parent_logger = Logging.logger end
@@ -174,7 +178,7 @@ local
   structure Run = Zippy_Run_Mixin(open Base_Mixins
     structure Z = ZLP
     structure Run = Zippy_Run_Mixin_Base(
-      structure Step = Step; structure Action_App_Meta = Mixin5.Meta)
+      structure Step = Step; structure Action_App_Meta = Mixin_Base5.Meta)
     type @{AllT_args} state = {ctxt : Proof.context(*, state : @{ParaT_arg 0}*)}
     fun seq_from_monad {ctxt(*, state*)} =
       (*State_MSTrans.eval state #>*) Ctxt_MSTrans.eval ctxt #> the_default Seq.empty

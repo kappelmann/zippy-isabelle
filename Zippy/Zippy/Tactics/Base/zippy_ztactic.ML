@@ -18,7 +18,7 @@ sig
 
   val lift_rtac_single_goal : (int -> 'm RTac.rtactic) -> GPU.GCS.goal_pos -> 'm ztactic
 
-  val gen_lift_tac_focus : ((GPU.GCS.goal_pos -> 'a -> 'b Seq.seq) -> 'a -> 'b Seq.seq) ->
+  val gen_lift_tac_focus :
     ((GPU.GCS.goal_pos -> 'a -> 'b Seq.seq) -> GPU.GCS.goal_pos list -> 'a -> 'b Seq.seq) ->
     (GPU.GCS.goal_pos -> 'a -> 'b Seq.seq) -> GPU.F.focus -> 'a -> 'b Seq.seq
 
@@ -35,8 +35,6 @@ sig
     GPU.GCS.goal_pos list -> 'm ztactic
   val zEVERY_FOCUS : 'm ztactic -> ('m * 'm -> 'm) -> (GPU.GCS.goal_pos -> 'm ztactic) ->
     GPU.F.focus -> 'm ztactic
-  val zEVERY_FOCUS_NONE_ALL_GOALS : 'm ztactic -> 'm ztactic -> ('m * 'm -> 'm) ->
-    (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus -> 'm ztactic
 
   (*EVERY where each tactic may fail but at least one must succeed*)
   val zTRY_EVERY1 : ('m * 'm -> 'm) -> 'm ztactic list -> 'm ztactic
@@ -45,21 +43,15 @@ sig
     GPU.GCS.goal_pos list -> 'm ztactic
   val zTRY_EVERY_FOCUS1 : ('m * 'm -> 'm) -> (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus ->
     'm ztactic
-  val zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 : ('m * 'm -> 'm) -> (GPU.GCS.goal_pos -> 'm ztactic) ->
-    GPU.F.focus -> 'm ztactic
 
   val zIFIRST_GOAL : ('a -> 'm ztactic) -> 'a list -> 'm ztactic
   val zFIRST_GOAL : (GPU.GCS.goal_pos -> 'm ztactic) -> 'm ztactic
   val zFIRST_GOAL_FOCUS : (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus -> 'm ztactic
-  val zFIRST_GOAL_FOCUS_NONE_FIRST_GOAL : (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus ->
-    'm ztactic
 
   (*like FIRST_GOAL but with backtracking to non-first applicable goals*)
   val zISOME_GOAL : ('a -> 'm ztactic) -> 'a list -> 'm ztactic
   val zSOME_GOAL : (GPU.GCS.goal_pos -> 'm ztactic) -> 'm ztactic
   val zSOME_GOAL_FOCUS : (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus -> 'm ztactic
-  val zSOME_GOAL_FOCUS_NONE_SOME_GOAL : (GPU.GCS.goal_pos -> 'm ztactic) -> GPU.F.focus ->
-    'm ztactic
 end
 
 functor Zippy_ZTactic(
@@ -89,8 +81,7 @@ fun lift_rtac_single_goal tac i state = tac i state
     |> single_goal_gpos_update i
     |> result more state')
 
-fun gen_lift_tac_focus f_none _ tac F.None = f_none tac
-  | gen_lift_tac_focus _ f_goals tac (F.Goals is) = f_goals tac is
+fun gen_lift_tac_focus f_goals tac (F.Goals is) = f_goals tac is
 
 fun zTRY m tac = TU.ORELSE (tac, all_ztac m)
 fun zTRY' m tac = TU.ORELSE' (tac, Library.K (all_ztac m))
@@ -115,27 +106,21 @@ fun with_rev_goals f tac goals = fold (tac #> cons) goals [] |> f
 fun zEVERY empty_tac madd = gen_every_arg (zTHEN madd) empty_tac I
 fun zALL_GOALS no_goals_tac madd = with_rev_ngoals (zEVERY no_goals_tac madd)
 fun zEVERY_GOAL empty_tac madd tac = with_rev_goals (zEVERY empty_tac madd) tac
-fun zEVERY_FOCUS empty_tac madd = gen_lift_tac_focus (K no_ztac) (zEVERY_GOAL empty_tac madd)
-fun zEVERY_FOCUS_NONE_ALL_GOALS no_goals_tac empty_tac madd = gen_lift_tac_focus
-  (zALL_GOALS no_goals_tac madd) (zEVERY_GOAL empty_tac madd)
+fun zEVERY_FOCUS empty_tac madd = gen_lift_tac_focus (zEVERY_GOAL empty_tac madd)
 
 fun zTRY_EVERY1 madd = gen_every_arg
   (fn (acc, tac) => TU.ORELSE (depzTHEN madd (acc, fn m => zTRY m tac), tac)) no_ztac I
 fun zTRY_ALL_GOALS1 madd = with_rev_ngoals (zTRY_EVERY1 madd)
 fun zTRY_EVERY_GOAL1 madd = with_rev_goals (zTRY_EVERY1 madd)
-fun zTRY_EVERY_FOCUS1 madd = gen_lift_tac_focus (K no_ztac) (zTRY_EVERY_GOAL1 madd)
-fun zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 madd = gen_lift_tac_focus
-  (zTRY_ALL_GOALS1 madd) (zTRY_EVERY_GOAL1 madd)
+fun zTRY_EVERY_FOCUS1 madd = gen_lift_tac_focus (zTRY_EVERY_GOAL1 madd)
 
 fun zIFIRST_GOAL tac = gen_every_arg TU.ORELSE no_ztac tac
 fun zFIRST_GOAL tac st = zIFIRST_GOAL tac (1 upto Thm.nprems_of st) st
-fun zFIRST_GOAL_FOCUS x = gen_lift_tac_focus (K no_ztac) zIFIRST_GOAL x
-fun zFIRST_GOAL_FOCUS_NONE_FIRST_GOAL x = gen_lift_tac_focus zFIRST_GOAL zIFIRST_GOAL x
+fun zFIRST_GOAL_FOCUS x = gen_lift_tac_focus zIFIRST_GOAL x
 
 fun zISOME_GOAL tac = gen_every_arg TU.APPEND no_ztac tac
 fun zSOME_GOAL tac st = zISOME_GOAL tac (1 upto Thm.nprems_of st) st
-fun zSOME_GOAL_FOCUS x = gen_lift_tac_focus (K no_ztac) zISOME_GOAL x
-fun zSOME_GOAL_FOCUS_NONE_SOME_GOAL x = gen_lift_tac_focus zSOME_GOAL zISOME_GOAL x
+fun zSOME_GOAL_FOCUS x = gen_lift_tac_focus zISOME_GOAL x
 end
 end
 

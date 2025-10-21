@@ -59,21 +59,21 @@ fun gen_data tac_name safe_tac tac exn id update_result mk_cud prio_sq_co_safe p
     val result_action = Result_Action.changed_goals_action update_result mk_cud
     fun unsafe_ztac ctxt = tac ctxt #> CHANGED
       |> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
+      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS
     val {meta = unsafe_meta, paction = unsafe_paction} = {
       empty_action = Library.K empty_action,
-      meta = Mixin4.Meta.Meta.metadata (id, descr tac_name),
+      meta = Mixin_Base4.Meta.Meta.metadata (id, descr tac_name),
       result_action = result_action,
       prio_sq_co = prio_sq_co_unsafe,
       tac = Ctxt.with_ctxt (unsafe_ztac #> arr)}
       |> Tac.paction_data_from_data exn
     fun safe_ztac ctxt = safe_tac ctxt #> CHANGED
       |> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
-      |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 Tac_AAM.madd
+      |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1 Tac_AAM.madd
     val safe_empty_action = PResults.orelse_empty_action_focus empty_action unsafe_meta unsafe_paction
     val data = {
       empty_action = safe_empty_action,
-      meta = Mixin4.Meta.Meta.metadata (id, descr safe_tac_name),
+      meta = Mixin_Base4.Meta.Meta.metadata (id, descr safe_tac_name),
       result_action = result_action,
       prio_sq_co = prio_sq_co_safe,
       tac = Ctxt.with_ctxt (safe_ztac #> arr)}

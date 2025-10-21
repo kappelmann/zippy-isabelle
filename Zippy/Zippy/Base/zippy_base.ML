@@ -1,12 +1,10 @@
 (*  Title:      Zippy/zippy_base.ML
     Author:     Kevin Kappelmann
 *)
-infix 3 \>
-infix 3 \\>
-
 signature ZIPPY_BASE =
 sig
-  include \<^eval>\<open>pfx_sfx_nargs "ALTERNATING_ZIPPER_UTIL"\<close>
+  include ZIPPY_LOGGER_MIXIN_BASE
+  include ZIPPY_BASE_BASE
 
   (* misc *)
   structure LT : \<^eval>\<open>sfx_ParaT_nargs "TRAVERSABLE_BASE"\<close>
@@ -16,23 +14,26 @@ sig
   where type (@{ParaT_args} 'a) f = 'a list
   sharing type LF.M.t = M.t
 
-  (* lenses *)
-  val lcomp : (unit -> (@{ParaT_args} 'b, 'c) L.slens) -> (@{ParaT_args} 'a, 'b) L.slens ->
-    (@{ParaT_args} 'a, 'c) L.slens
-  val \> : (@{ParaT_args} 'a, 'b) L.slens * (unit -> (@{ParaT_args} 'b, 'c) L.slens) ->
-    (@{ParaT_args} 'a, 'c) L.slens
-  val \\> : (@{ParaT_args} 'a, 'b) L.smodifier * (@{ParaT_args} 'b, 'c) L.smodifier ->
-    (@{ParaT_args} 'a, 'c) L.smodifier
+  (* updates *)
+  \<^imap>\<open>\<open>{i}\<close> => \<open>
+  val update_zipper{i}: ((@{ParaT_args} @{AllT_args} Z{i}.zipper) emorph) list ->
+    (@{ParaT_args} @{AllT_args} Z{i}.zipper) emorph\<close>\<close>
 end
 
 functor Zippy_Base(
     structure Z : ZIPPY_BASE_BASE
+    structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
+    sharing type Ctxt.M.t = Z.M.t
     structure Exn : ZIPPY_EXCEPTION_MIXIN
     sharing type Exn.M.t = Z.M.t
+    structure Log : ZIPPY_LOGGER_MIXIN_BASE
+    \<^imap>\<open>\<open>{i}\<close> => \<open>
+    structure Show{i} : ZIPPY_SHOW_MIXIN_BASE
+    sharing type Show{i}.t = Z.Z{i}.zipper\<close>\<close>
   ) : ZIPPY_BASE =
 struct
-
-open Z
+open Log Z
+structure MU = Zippy_Monad_Util(M); open MU
 structure AZU = \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Util"\<close>(
   structure Z = Z; structure AE = Exn.AE); open AZU
 
@@ -44,8 +45,21 @@ structure LF = \<^eval>\<open>sfx_ParaT_nargs "Foldable_Monad"\<close>(
     \<^eval>\<open>sfx_ParaT_nargs "Identity_Foldable"\<close>)
   structure M = M)
 
-(* lenses *)
-fun lcomp l1 l2 = L.comp (l1 ()) l2
-fun l1 \> l2 = lcomp l2 l1
-fun l1 \\> l2 = L.comp_modify l2 l1
+(* updates *)
+local open SC Mo A
+in
+\<^imap>\<open>\<open>{i}\<close> => \<open>
+fun update_zipper{i} updates z = Ctxt.get_ctxt () >>= (fn ctxt => if null updates
+  then (@{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
+      Pretty.str "Skipping empty updates for zipper{i}",
+      Show{i}.pretty ctxt z
+    ] |> Pretty.block |> Pretty.string_of);
+    pure z)
+  else (@{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
+      Pretty.str "Updating zipper{i}",
+      Show{i}.pretty ctxt z
+    ] |> Pretty.block |> Pretty.string_of);
+    LF.foldlM I updates z))
+\<close>\<close>
+end
 end

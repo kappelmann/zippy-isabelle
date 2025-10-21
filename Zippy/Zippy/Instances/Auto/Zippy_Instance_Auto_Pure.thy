@@ -31,10 +31,11 @@ ML\<open>
       mk_cud = SOME Result_Action.copy_update_data_empty_changed,
       prio_sq_co = SOME (PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM),
       progress = SOME Base_Data.AAMeta.P.Promising,
-      del_select = SOME (apsnd (snd #> #thm #> the) #> Thm.eq_thm)}\<close>\<close>
+      del_select = SOME (apsnd (snd #> #thm #> the) #> Thm.eq_thm)}
+    structure Log_Base = Z.Logging.Base\<close>\<close>
 \<close>
-local_setup\<open>Zippy_Auto.Init_Goal_Clusters.Data.setup_attribute
-  (Either.Right "goal clusters initialisation")\<close>
+local_setup\<open>Zippy_Auto.Init_Goal_Cluster.Data.setup_attribute
+  (Either.Right "goal cluster initialisation")\<close>
 local_setup\<open>Zippy_Auto.Simp.Extended_Data.setup_attribute (Either.Right "extended simp")\<close>
 
 setup\<open>Context.theory_map ML_Gen.ground_zipper_types\<close>
@@ -55,17 +56,17 @@ struct open Zippy_Auto
 (* add instance specific utilities *)
 structure Run =
 struct
-local open Zippy; open ZLP MU; open Mo SC
-  structure ZB = Zippy_Base(structure Z = ZLP; structure Exn = Exn)
+local open Zippy; open ZLP MU; open Mo SC A
   structure Run = Run_Best_First
   structure MCU = ML_Code_Util
 in
-fun init_gposs sort = (sort ? Library.sort int_ord)
-  #> Base_Data.Tac_Res.GPU.F.goals #> Init_Goal_Clusters.init
-val init_gpos = Base_Data.GFocus.single #> Init_Goal_Clusters.init
+fun init_gposs sort =
+  (if sort then Base_Data.Tac_Res.GPU.F.sort_goals else Base_Data.Tac_Res.GPU.F.goals)
+  #> Init_Goal_Cluster.update
+val init_gpos = Base_Data.GFocus.single #> Init_Goal_Cluster.update
 
 fun init_run init run ctxt st = Seq.make (fn _ => st
-  |> (Util.init_thm_state >>> init >>> ZB.top2 >>> Z1.ZM.Unzip.morph >>> run)
+  |> (Util.init_thm_state >>> init >>> top2 >>> Z1.ZM.Unzip.morph >>> run)
   |> Run.seq_from_monad {ctxt = ctxt}
   |> Seq.pull)
 
@@ -73,10 +74,11 @@ fun mk_thmsq get_result_data = Seq.maps get_result_data
 
 fun run_statesq mk_unfinished_statesq fuel =
   Run.init_repeat_step_queue (Ctxt.with_ctxt mk_unfinished_statesq) fuel
-  >>> A.arr (mk_thmsq (Run.get_result_data #> #thm_states))
+  >>> arr (mk_thmsq (Run.get_result_data #> #thm_states))
 
 val unique_thmsq = Tactic_Util.unique_thmsq (apply2 Thm.prop_of #> Term_Util.are_term_variants)
 
+(*TODO: make it an ML functor*)
 @{parse_entries (struct) PCA PARSE_ZIPPY_AUTO_RUN_ARGS [init, run, post]}
 
 val parsers = {
@@ -89,14 +91,18 @@ type args = (
   int option -> (@{ParaT_args} @{AllT_args} Z1.ZM.container, thm Seq.seq) morph,
   thm Seq.seq -> thm Seq.seq) PCA.entries
 
+local structure GC = Zippy_Goal_Cluster_Mixin(Mixin_Base2.GCluster)
+in
 structure Data = Generic_Data(
   type T = args
   val empty = {
     init = SOME (Down1.morph >>> Z2.ZM.Unzip.morph
-      >>> Init_Goal_Clusters.init_all (Library.K Util.exn) (A.K Base_Data.Tac_Res.GPU.F.none)),
+      >>> Init_Goal_Cluster.update_all (Library.K Util.exn)
+        (arr (GC.get_ngoals #> Base_Data.Tac_Res.GPU.F.all_upto))),
     run = SOME (run_statesq Run.mk_df_post_promising_unreturned_unfinished_statesq),
     post = SOME unique_thmsq}
   val merge = fst)
+end
 
 val get_data = Data.get
 val map_data = Data.map
@@ -118,7 +124,7 @@ val binding = Binding.make (FI.prefix_id "run", FI.pos)
 val parse_arg_entries =
   let
     val parse_value = PCA.parse_entry (PCA.get_init parsers) (PCA.get_run parsers) (PCA.get_post parsers)
-    val parse_entry = Parse_Key_Value.parse_entry PCA.parse_key (K (Parse.$$$ ":")) parse_value
+    val parse_entry = Parse_Key_Value.parse_entry PCA.parse_key (Library.K (Parse.$$$ ":")) parse_value
   in PCA.parse_entries_required Scan.repeat1 true [] parse_entry (PCA.empty_entries ()) end
 
 local fun struct_op operation = FI.struct_op ("Run." ^ operation) |> MCU.read
@@ -182,87 +188,128 @@ and [[zippy_dresolve (match) config default_update: Zippy_Auto.Run.init_gpos]]
 and [[zippy_fresolve config default_update: Zippy_Auto.Run.init_gpos]]
 and [[zippy_fresolve (match) config default_update: Zippy_Auto.Run.init_gpos]]
 
-declare [[zippy_init_gcs \<open>
+ML\<open>
+structure Zippy =
+struct open Zippy
+structure Mixin2 =
+struct
+  structure GCluster = Zippy_Goal_Cluster_Mixin(Zippy.Mixin_Base2.GCluster)
+end
+end
+\<close>
+
+declare [[zippy_init_gc \<open>
   let
-    open Zippy Zippy_Auto.Resolves.Resolve_Unif; open ZLP MU; open SC A
+    open Zippy Zippy_Auto.Resolves.Resolve_Unif; open ZLP MU; open SC A Mo
     val id = @{binding resolve_ho_unif_first}
-    val descr = Lazy.value "resolution with higher-order unification on first possible goal"
+    val meta = Base_Data.ACMeta.metadata (id,
+      Lazy.value "resolution with higher-order unification on first possible goal")
     val tac = resolve_tac
     fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
       |> Tac_AAM.lift_tac_progress progress
-      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS_NONE_FIRST_GOAL
+      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.unifiables
-    fun lookup ctxt = snd #> snd #> Data.TI.norm_term #>
-      retrieval (Data.get_index (Context.Proof ctxt))
+    fun lookup_goal ctxt = snd #> snd #> Data.TI.norm_term
+      #> retrieval (Data.get_index (Context.Proof ctxt))
       #> List.map (apsnd (transfer_data (Proof_Context.theory_of ctxt)))
-    fun init (_, goals) focus = Ctxt.with_ctxt (fn ctxt => cons_action_cluster Util.exn
-        (Base_Data.ACMeta.metadata (id, descr)) ztac ctxt
-        (focused_data_none_each (lookup ctxt) goals focus))
-      >>> Up3.morph
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt => fn z =>
+      let fun lookup_cons_goals goals =
+        lookup_each_focused_data (lookup_goal ctxt) goals focus
+        |> map_index (fn (i, (focus, data)) =>
+          cons_nth_action Util.exn meta ztac ctxt i data focus >>> Up4.morph)
+      in
+        Up3.morph z >>= arr Mixin2.GCluster.get_stripped_goals
+        >>= (fn goals => ZB.update_zipper3 (lookup_cons_goals goals) z)
+      end)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Resolves.Resolve_Match; open ZLP MU; open SC A
+    open Zippy Zippy_Auto.Resolves.Resolve_Match; open ZLP MU; open SC A Mo
     val id = @{binding resolve_ho_match_first}
     val descr = Lazy.value "resolution with higher-order matching on first possible goal"
+    val meta = Base_Data.ACMeta.metadata (id,
+      Lazy.value "resolution with higher-order matching on first possible goal")
     val tac = match_tac
     fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
       |> Tac_AAM.lift_tac_progress progress
-      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS_NONE_FIRST_GOAL
+      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.generalisations
-    fun lookup ctxt = snd #> snd #> Data.TI.norm_term
+    fun lookup_goal ctxt = snd #> snd #> Data.TI.norm_term
       #> retrieval (Data.get_index (Context.Proof ctxt))
       #> List.map (apsnd (transfer_data (Proof_Context.theory_of ctxt)))
-    fun init (_, goals) focus = Ctxt.with_ctxt (fn ctxt => cons_action_cluster Util.exn
-        (Base_Data.ACMeta.metadata (id, descr)) ztac ctxt
-        (focused_data_none_each (lookup ctxt) goals focus))
-      >>> Up3.morph
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt => fn z =>
+      let fun lookup_cons_goals goals = lookup_each_focused_data (lookup_goal ctxt) goals focus
+        |> map_index (fn (i, (focus, data)) =>
+          cons_nth_action Util.exn meta ztac ctxt i data focus >>> Up4.morph)
+      in
+        Up3.morph z >>= arr Mixin2.GCluster.get_stripped_goals
+        >>= (fn goals => ZB.update_zipper3 (lookup_cons_goals goals) z)
+      end)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 (*TODO: could be made more efficient: we already know the indices of possibly matching premises when
 seraching the term index but do not use that information in the subsequent (d/e)resolution*)
-declare [[zippy_init_gcs
+declare [[zippy_init_gc
   \<open>let
-    open Zippy Zippy_Auto.Resolves.EResolve_Unif; open ZLP MU; open SC A
+    open Zippy Zippy_Auto.Resolves.EResolve_Unif; open ZLP MU; open SC A Mo
     val id = @{binding eresolve_ho_unif_first}
-    val descr = Lazy.value "e-resolution with higher-order unification on first possible goal"
+    val meta = Base_Data.ACMeta.metadata (id,
+      Lazy.value "e-resolution with higher-order unification on first possible goal")
     val tac = eresolve_tac
     fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
       |> Tac_AAM.lift_tac_progress progress
-      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS_NONE_FIRST_GOAL
+      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.unifiables
-    fun lookup ctxt = snd #> fst #>
+    fun lookup_goal ctxt = snd #> fst #>
       maps (Data.TI.norm_term #> retrieval (Data.get_index (Context.Proof ctxt)))
       #> List.map (apsnd (transfer_data (Proof_Context.theory_of ctxt)))
-    fun init (_, goals) focus = Ctxt.with_ctxt (fn ctxt => cons_action_cluster Util.exn
-        (Base_Data.ACMeta.metadata (id, descr)) ztac ctxt
-        (focused_data_none_each (lookup ctxt) goals focus))
-      >>> Up3.morph
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt => fn z =>
+      let fun lookup_cons_goals goals = lookup_each_focused_data (lookup_goal ctxt) goals focus
+        |> map_index (fn (i, (focus, data)) =>
+          cons_nth_action Util.exn meta ztac ctxt i data focus >>> Up4.morph)
+      in
+        Up3.morph z >>= arr Mixin2.GCluster.get_stripped_goals
+        >>= (fn goals => ZB.update_zipper3 (lookup_cons_goals goals) z)
+      end)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Resolves.EResolve_Match; open ZLP MU; open SC A
+    open Zippy Zippy_Auto.Resolves.EResolve_Match; open ZLP MU; open SC A Mo
     val id = @{binding eresolve_ho_match_first}
-    val descr = Lazy.value "e-resolution with higher-order matching on first possible goal"
+    val meta = Base_Data.ACMeta.metadata (id,
+      Lazy.value "e-resolution with higher-order matching on first possible goal")
     val tac = ematch_tac
     fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
       |> Tac_AAM.lift_tac_progress progress
-      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS_NONE_FIRST_GOAL
+      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.generalisations
-    fun lookup ctxt = snd #> fst
+    fun lookup_goal ctxt = snd #> fst
       #> maps (Data.TI.norm_term #> retrieval (Data.get_index (Context.Proof ctxt)))
       #> List.map (apsnd (transfer_data (Proof_Context.theory_of ctxt)))
-    fun init (_, goals) focus = Ctxt.with_ctxt (fn ctxt => cons_action_cluster Util.exn
-        (Base_Data.ACMeta.metadata (id, descr)) ztac ctxt
-        (focused_data_none_each (lookup ctxt) goals focus))
-      >>> Up3.morph
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt => fn z =>
+      let fun lookup_cons_goals goals = lookup_each_focused_data (lookup_goal ctxt) goals focus
+        |> map_index (fn (i, (focus, data)) =>
+          cons_nth_action Util.exn meta ztac ctxt i data focus >>> Up4.morph)
+      in
+        Up3.morph z >>= arr Mixin2.GCluster.get_stripped_goals
+        >>= (fn goals => ZB.update_zipper3 (lookup_cons_goals goals) z)
+      end)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
-declare [[zippy_init_gcs
+declare [[zippy_init_gc
   \<open>let
-    open Zippy Zippy_Auto.Resolves.DResolve_Unif; open ZLP MU; open SC A
+    open Zippy Zippy_Auto.Resolves.DResolve_Unif; open ZLP MU; open SC A Mo
     val id = @{binding dresolve_ho_unif_first}
-    val descr = Lazy.value "d-resolution with higher-order unification on first possible goal"
+    val meta = Base_Data.ACMeta.metadata (id,
+      Lazy.value "d-resolution with higher-order unification on first possible goal")
     fun tac ctxt thms =
       let
         (*Tactic.make_elim allows no context passing but Thm.biresolution fails to certificate certain
@@ -273,21 +320,28 @@ declare [[zippy_init_gcs
       in eresolve_tac ctxt (List.map (make_elim ctxt) thms) end
     fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
       |> Tac_AAM.lift_tac_progress progress
-      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS_NONE_FIRST_GOAL
+      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.unifiables
-    fun lookup ctxt = snd #> fst #>
+    fun lookup_goal ctxt = snd #> fst #>
       maps (Data.TI.norm_term #> retrieval (Data.get_index (Context.Proof ctxt)))
       #> List.map (apsnd (transfer_data (Proof_Context.theory_of ctxt)))
-    fun init (_, goals) focus = Ctxt.with_ctxt (fn ctxt => cons_action_cluster Util.exn
-        (Base_Data.ACMeta.metadata (id, descr)) ztac ctxt
-        (focused_data_none_each (lookup ctxt) goals focus))
-      >>> Up3.morph
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt => fn z =>
+      let fun lookup_cons_goals goals = lookup_each_focused_data (lookup_goal ctxt) goals focus
+        |> map_index (fn (i, (focus, data)) =>
+          cons_nth_action Util.exn meta ztac ctxt i data focus >>> Up4.morph)
+      in
+        Up3.morph z >>= arr Mixin2.GCluster.get_stripped_goals
+        >>= (fn goals => ZB.update_zipper3 (lookup_cons_goals goals) z)
+      end)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Resolves.DResolve_Match; open ZLP MU; open SC A
+    open Zippy Zippy_Auto.Resolves.DResolve_Match; open ZLP MU; open SC A Mo
     val id = @{binding dresolve_ho_match_first}
-    val descr = Lazy.value "d-resolution with higher-order matching on first possible goal"
+    val meta = Base_Data.ACMeta.metadata (id,
+      Lazy.value "d-resolution with higher-order matching on first possible goal")
     fun tac ctxt thms =
       let
         fun make_elim ctxt thm =
@@ -296,57 +350,77 @@ declare [[zippy_init_gcs
       in ematch_tac ctxt (List.map (make_elim ctxt) thms) end
     fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
       |> Tac_AAM.lift_tac_progress progress
-      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS_NONE_FIRST_GOAL
+      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.generalisations
-    fun lookup ctxt = snd #> fst #>
+    fun lookup_goal ctxt = snd #> fst #>
       maps (Data.TI.norm_term #> retrieval (Data.get_index (Context.Proof ctxt)))
       #> List.map (apsnd (transfer_data (Proof_Context.theory_of ctxt)))
-    fun init (_, goals) focus = Ctxt.with_ctxt (fn ctxt => cons_action_cluster Util.exn
-        (Base_Data.ACMeta.metadata (id, descr)) ztac ctxt
-        (focused_data_none_each (lookup ctxt) goals focus))
-      >>> Up3.morph
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt => fn z =>
+      let fun lookup_cons_goals goals = lookup_each_focused_data (lookup_goal ctxt) goals focus
+        |> map_index (fn (i, (focus, data)) =>
+          cons_nth_action Util.exn meta ztac ctxt i data focus >>> Up4.morph)
+      in
+        Up3.morph z >>= arr Mixin2.GCluster.get_stripped_goals
+        >>= (fn goals => ZB.update_zipper3 (lookup_cons_goals goals) z)
+      end)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
-declare [[zippy_init_gcs
+declare [[zippy_init_gc
   \<open>let
-    open Zippy Zippy_Auto.Resolves.FResolve_Unif; open ZLP MU; open SC A
+    open Zippy Zippy_Auto.Resolves.FResolve_Unif; open ZLP MU; open SC A Mo
     val id = @{binding fresolve_ho_unif_first}
-    val descr = Lazy.value "f-resolution with higher-order unification on first possible goal"
+    val meta = Base_Data.ACMeta.metadata (id,
+      Lazy.value "f-resolution with higher-order unification on first possible goal")
     val tac = Unify_Resolve_Base.unify_fresolve_tac
       Higher_Order_Unification.norms Higher_Order_Unification.unify
     fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac thm ctxt
       |> Tac_AAM.lift_tac_progress progress
-      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS_NONE_FIRST_GOAL
+      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.unifiables
-    fun lookup ctxt = snd #> fst
+    fun lookup_goal ctxt = snd #> fst
       #> maps (Data.TI.norm_term #> retrieval (Data.get_index (Context.Proof ctxt)))
       #> List.map (apsnd (transfer_data (Proof_Context.theory_of ctxt)))
-    fun init (_, goals) focus = Ctxt.with_ctxt (fn ctxt => cons_action_cluster Util.exn
-        (Base_Data.ACMeta.metadata (id, descr)) ztac ctxt
-        (focused_data_none_each (lookup ctxt) goals focus))
-      >>> Up3.morph
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt => fn z =>
+      let fun lookup_cons_goals goals = lookup_each_focused_data (lookup_goal ctxt) goals focus
+        |> map_index (fn (i, (focus, data)) =>
+          cons_nth_action Util.exn meta ztac ctxt i data focus >>> Up4.morph)
+      in
+        Up3.morph z >>= arr Mixin2.GCluster.get_stripped_goals
+        >>= (fn goals => ZB.update_zipper3 (lookup_cons_goals goals) z)
+      end)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Resolves.FResolve_Match; open ZLP MU; open SC A
+    open Zippy Zippy_Auto.Resolves.FResolve_Match; open ZLP MU; open SC A Mo
     val id = @{binding fresolve_ho_match_first}
-    val descr = Lazy.value "f-resolution with higher-order matching on first possible goal"
+    val meta = Base_Data.ACMeta.metadata (id,
+      Lazy.value "f-resolution with higher-order matching on first possible goal")
     (*FIXME: use same matcher as in other match tactics*)
     val tac = Unify_Resolve_Base.unify_fresolve_tac
       Mixed_Unification.norms_first_higherp_match
       (Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match)
     fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac thm ctxt
       |> Tac_AAM.lift_tac_progress progress
-      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS_NONE_FIRST_GOAL
+      |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.generalisations
-    fun lookup ctxt = snd #> fst
+    fun lookup_goal ctxt = snd #> fst
       #> maps (Data.TI.norm_term #> retrieval (Data.get_index (Context.Proof ctxt)))
       #> List.map (apsnd (transfer_data (Proof_Context.theory_of ctxt)))
-    fun init (_, goals) focus = Ctxt.with_ctxt (fn ctxt => cons_action_cluster Util.exn
-        (Base_Data.ACMeta.metadata (id, descr)) ztac ctxt
-        (focused_data_none_each (lookup ctxt) goals focus))
-      >>> Up3.morph
+     fun cons_actions focus = Ctxt.with_ctxt (fn ctxt => fn z =>
+      let fun lookup_cons_goals goals = lookup_each_focused_data (lookup_goal ctxt) goals focus
+        |> map_index (fn (i, (focus, data)) =>
+          cons_nth_action Util.exn meta ztac ctxt i data focus >>> Up4.morph)
+      in
+        Up3.morph z >>= arr Mixin2.GCluster.get_stripped_goals
+        >>= (fn goals => ZB.update_zipper3 (lookup_cons_goals goals) z)
+      end)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 
 declare [[zippy_parse \<open>(@{binding resolve}, Zippy_Auto.Resolves.parse_resolve_method)\<close>]]
@@ -356,9 +430,9 @@ declare [[zippy_parse \<open>(@{binding fresolve}, Zippy_Auto.Resolves.parse_fre
 
 paragraph \<open>Simplifier\<close>
 
-declare [[zippy_init_gcs \<open>
+declare [[zippy_init_gc \<open>
   let
-    open Zippy; open ZLP MU; open SC
+    open Zippy; open ZLP MU; open SC A Mo
     val name = "asm_full_simp"
     val tacs = (safe_asm_full_simp_tac, asm_full_simp_tac)
     val id = Zippy_Identifier.make (SOME @{here}) name
@@ -382,8 +456,8 @@ declare [[zippy_init_gcs \<open>
     val (safe_tac, tac) = apply2 wrap_tac tacs
     val data = Simp.gen_data name safe_tac tac Util.exn id update mk_cud
       prio_sq_co_safe prio_sq_co_unsafe
-    fun init _ focus = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)]
-      >>> Up3.morph
+    fun init _ focus z = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 
 declare [[zippy_parse add: \<open>(@{binding simp}, Zippy_Auto.Simp.parse_extended [])\<close>

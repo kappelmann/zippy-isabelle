@@ -38,7 +38,6 @@ struct
 open Z Goals_Results
 structure MU = Zippy_Monad_Util(M); open MU
 structure Exn = Zippy_Exception_Mixin(Co)
-structure ZB = Zippy_Base(structure Z = Z; structure Exn = Exn)
 structure GClusters = Zippy_Goal_Clusters_Mixin(GClusters)
 structure GClusters_Results = Zippy_Goal_Results_Mixin(GClusters_Results)
 structure GCluster_Results = Zippy_Goal_Results_Mixin(GCluster_Results)
@@ -70,8 +69,7 @@ fun init_goal_results_down1 ctxt z =
     then pure (mk_nonempty_results (Seq.single (GClusters.get_state z)) z)
     else
       let fun update_zipper (z, results) = if Library.forall Results.has_results results
-        then
-          let val statesqs = List.map Results.get_states results
+        then let val statesqs = List.map Results.get_states results
           in mk_nonempty_results (GClusters.finish_cluster_statesqs ctxt (rev statesqs) z) z end
         else without_results z
       in
@@ -103,7 +101,7 @@ and init_goal_results_down{i} ctxt =
     Up\<^eval>\<open>succ_mod_nzippers {i} ^ "."\<close>morph Results.append (arr without_results)\<close>
 start: 3\<close>
 
-local fun go_top_no_goal_results x = x |> (ZB.top1 >>> arr without_results)
+local fun go_top_no_goal_results x = x |> (top1 >>> arr without_results)
 in
 fun update_goal_results_up1 cpos statesq ctxt z =
   let fun update_results zippers =
@@ -115,13 +113,12 @@ fun update_goal_results_up1 cpos statesq ctxt z =
     in
       GClusters_Results.append_non_empty_states statesq z
       |> AE.catch'
-          (Up1.morph >>> \<^eval>\<open>"update_goal_results_up" ^ pred_mod_nzippers 1\<close> statesq ctxt)
-          (arr (with_results statesq))
+        (Up1.morph >>> \<^eval>\<open>"update_goal_results_up" ^ pred_mod_nzippers 1\<close> statesq ctxt)
+        (arr (with_results statesq))
     end
   in
     Down1.morph z >>= LGoals.gcluster_list
-    >>= (fn zippers =>
-      if Library.forall GCluster_Results.has_results zippers
+    >>= (fn zippers => if Library.forall GCluster_Results.has_results zippers
       then update_results zippers
       else go_top_no_goal_results z)
   end
@@ -137,8 +134,7 @@ and update_goal_results_up{i} statesq ctxt = Up{i}.morph
 start: 3\<close>
 
 fun update_goal_results_up ctxt z = if GClusters_Results.has_results z
-  then
-    let val statesq = GClusters_Results.get_states z
+  then let val statesq = GClusters_Results.get_states z
     in
       AE.catch'
         (Up1.morph >>> \<^eval>\<open>"update_goal_results_up" ^ pred_mod_nzippers 1\<close> statesq ctxt)

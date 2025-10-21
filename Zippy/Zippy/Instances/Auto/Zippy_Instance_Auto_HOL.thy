@@ -37,9 +37,9 @@ end
 end
 \<close>
 
-declare [[zippy_init_gcs \<open>
+declare [[zippy_init_gc \<open>
   let
-    open Zippy; open ZLP MU; open SC
+    open Zippy; open ZLP MU; open A Mo
     val id = @{binding classical_slow_step}
     val update = Library.maps snd
       #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
@@ -49,30 +49,30 @@ declare [[zippy_init_gcs \<open>
     val prio_sq_co_atomize_prems = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH
     val data = Classical.slow_step_atomize_prems_data Util.exn id update mk_cud
       prio_sq_co_safe prio_sq_co_unsafe prio_sq_co_atomize_prems
-    fun init _ focus = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)]
-      >>> Up3.morph
+    fun init _ focus z = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 declare [[zippy_parse add: \<open>(@{binding clasimp}, Clasimp.clasimp_modifiers |> Method.sections)\<close>
   and default: \<open>@{binding clasimp}\<close>]]
 
 local_setup\<open>Zippy_Auto.Extended_Blast_Data.setup_attribute NONE\<close>
-declare [[zippy_init_gcs \<open>
+declare [[zippy_init_gc \<open>
   let
-    open Zippy Zippy_Auto; open ZLP MU; open SC A
+    open Zippy Zippy_Auto; open ZLP MU; open A Mo
     val id = @{binding blast}
     val prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.LOW
     val tac = Extended_Blast_Data.blast_tac
     val ztac = tac
       #> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
-      #> Tac_AAM.Tac.zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 Tac_AAM.madd
+      #> Tac_AAM.Tac.zTRY_EVERY_FOCUS1 Tac_AAM.madd
     val data = {
       empty_action = Library.K (PResults.empty_action Util.exn),
-      meta = Mixin4.Meta.Meta.metadata (id, Lazy.value "blast with depth and timeout limit"),
+      meta = Mixin_Base4.Meta.Meta.metadata (id, Lazy.value "blast with depth and timeout limit"),
       result_action = Result_Action.action (Library.K (C.id ())) Result_Action.copy_update_data,
       prio_sq_co = prio_sq_co,
       tac = Ctxt.with_ctxt (ztac #> arr)}
-    fun init _ focus = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)]
-      >>> Up3.morph
+    fun init _ focus z = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 declare [[zippy_parse \<open>(@{binding blast}, Scan.depend (fn context =>
   Zippy_Auto.Extended_Blast_Data.parse_attribute
@@ -119,17 +119,17 @@ declare [[zippy_parse \<open>(@{binding blast}, Scan.depend (fn context =>
   in Context.theory_of context end
 \<close> *)
 
-(* declare [[zippy_init_gcs \<open>
+(* declare [[zippy_init_gc \<open>
   let
     open Zippy; open ZLP MU; open SC A
     val id = @{binding auto_tac}
     fun tac ctxt = auto_tac ctxt |> CHANGED |> SELECT_GOAL
     fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising (tac ctxt)
-      |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 Tac_AAM.madd
+      |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1 Tac_AAM.madd
     val mk_cud = Result_Action.copy_update_data
     val action_data = {
       empty_action = PResults.empty_action Util.exn,
-      meta = Mixin4.Meta.Meta.empty id,
+      meta = Mixin_Base4.Meta.Meta.empty id,
       result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
       prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH,
       tac = Ctxt.with_ctxt (ztac #> arr)
@@ -166,11 +166,12 @@ end
 \<close>
 local_setup\<open>Zippy_Auto.Subst.setup_attribute NONE\<close>
 
-declare [[zippy_init_gcs \<open>
+declare [[zippy_init_gc \<open>
   let
-    open Zippy Zippy_Auto.Subst.Concl; open ZLP MU; open SC A
+    open Zippy Zippy_Auto.Subst.Concl; open ZLP MU; open SC A Mo
     val id = @{binding subst_concl_some}
-    val descr = Lazy.value "substitution in conclusion on some goal"
+    val meta = Base_Data.ACMeta.metadata (id,
+      Lazy.value "substitution in conclusion on some goal")
     fun tac ctxt thms = SELECT_GOAL
       (let fun apply_occ_tac occ st = Seq.of_list thms |> Seq.maps (fn r =>
         EqSubst.eqsubst_tac' ctxt
@@ -179,20 +180,25 @@ declare [[zippy_init_gcs \<open>
       in Seq.EVERY (List.map apply_occ_tac [0]) end)
     fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
       |> Tac_AAM.lift_tac_progress progress
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
+      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.content #> Library.K
-    fun lookup ctxt = retrieval (Data.get_index (Context.Proof ctxt))
+    fun lookup_goal ctxt = retrieval (Data.get_index (Context.Proof ctxt))
       #> List.map (apsnd (transfer_data (Proof_Context.theory_of ctxt)))
-    fun init (_, goals) focus = Ctxt.with_ctxt (fn ctxt => cons_action_cluster Util.exn
-        (Base_Data.ACMeta.metadata (id, descr)) ztac ctxt
-        (focused_data_none_each (lookup ctxt) goals focus))
-      >>> Up3.morph
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt =>
+      Data.TI.content (Data.get_index (Context.Proof ctxt))
+      |> List.map (snd #> transfer_data (Proof_Context.theory_of ctxt))
+      |> map_index (fn (i, data) =>
+        cons_nth_action Util.exn meta ztac ctxt i data focus >>> Up4.morph)
+      |> ZB.update_zipper3)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Subst.Asm; open ZLP MU; open SC A
+    open Zippy Zippy_Auto.Subst.Asm; open ZLP MU; open SC A Mo
     val id = @{binding subst_asm_some}
-    val descr = Lazy.value "substitution in assumptions on some goal"
+    val meta = Base_Data.ACMeta.metadata (id,
+      Lazy.value "substitution in assumptions on some goal")
     fun tac ctxt thms = SELECT_GOAL
       (let fun apply_occ_tac occ st = Seq.of_list thms |> Seq.maps (fn r =>
         EqSubst.eqsubst_asm_tac' ctxt
@@ -201,15 +207,16 @@ declare [[zippy_init_gcs \<open>
       in Seq.EVERY (List.map apply_occ_tac [0]) end)
     fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
       |> Tac_AAM.lift_tac_progress progress
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
+      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS
       |> arr)
-    val retrieval = Data.TI.content #> Library.K
-    fun lookup ctxt = retrieval (Data.get_index (Context.Proof ctxt))
-      #> List.map (apsnd (transfer_data (Proof_Context.theory_of ctxt)))
-    fun init (_, goals) focus = Ctxt.with_ctxt (fn ctxt => cons_action_cluster Util.exn
-        (Base_Data.ACMeta.metadata (id, descr)) ztac ctxt
-        (focused_data_none_each (lookup ctxt) goals focus))
-      >>> Up3.morph
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt =>
+      Data.TI.content (Data.get_index (Context.Proof ctxt))
+      |> List.map (snd #> transfer_data (Proof_Context.theory_of ctxt))
+      |> map_index (fn (i, data) =>
+        cons_nth_action Util.exn meta ztac ctxt i data focus >>> Up4.morph)
+      |> ZB.update_zipper3)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 
 declare [[zippy_parse \<open>(@{binding subst}, Zippy_Auto.Subst.parse_method)\<close>]]
@@ -233,9 +240,10 @@ local open Zippy
       mk_cud = SOME Result_Action.copy_update_data_empty_changed,
       prio_sq_co = SOME (PResults.enum_halve_prio_halve_prio_depth_sq_co prio),
       progress = SOME Base_Data.AAMeta.P.Unclear}
+    structure Log = Logging
+    structure Log_Base = Logging.Base
     structure Log_LGoals_Pos_Copy = Logging.LGoals_Pos_Copy
     structure Log_LGoals = Logging.LGoals
-    structure Log = Logging
   end
 in
 \<^functor_instance>\<open>struct_name: Cases
@@ -262,39 +270,41 @@ end
 local_setup \<open>Zippy_Auto.Cases.setup_attribute NONE\<close>
 local_setup \<open>Zippy_Auto.Induction.setup_attribute NONE\<close>
 
-declare [[zippy_init_gcs \<open>
-  let open Zippy Zippy_Auto.Cases; open ZLP MU; open SC A
+declare [[zippy_init_gc \<open>
+  let open Zippy Zippy_Auto.Cases; open ZLP MU; open SC A Mo
     val id = @{binding cases_some}
-    val descr = Lazy.value "cases on some goal"
+    val meta = Base_Data.ACMeta.metadata (id, Lazy.value "cases on some goal")
     val tac = Cases_Data_Args_Tactic_HOL.cases_tac (fn simp => fn opt_rule => fn insts =>
       fn facts => fn ctxt => Induct.cases_tac ctxt simp [insts] opt_rule facts)
     fun ztac progress data = Ctxt.with_ctxt (fn ctxt => tac data ctxt
       |> Tac_AAM.lift_tac_progress progress
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
+      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS
       |> arr)
     val opt_default_update_action = NONE
-    fun mk_data focus ctxt = Data.get (Context.Proof ctxt)
-      |> List.map (transfer_data (Proof_Context.theory_of ctxt) #> pair focus)
-    fun init _ focus = Ctxt.with_ctxt (fn ctxt => cons_action_cluster Util.exn
-        (Base_Data.ACMeta.metadata (id, descr)) ztac opt_default_update_action ctxt
-        (mk_data focus ctxt))
-      >>> Up3.morph
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt => Data.get (Context.Proof ctxt)
+      |> List.map (transfer_data (Proof_Context.theory_of ctxt))
+      |> map_index (fn (i, data) =>
+        cons_nth_action Util.exn meta ztac opt_default_update_action ctxt i data focus >>> Up4.morph)
+      |> ZB.update_zipper3)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
-declare [[zippy_init_gcs \<open>let open Zippy Zippy_Auto.Induction; open ZLP MU; open SC A
+declare [[zippy_init_gc \<open>let open Zippy Zippy_Auto.Induction; open ZLP MU; open SC A Mo
     val id = @{binding induct_some}
-    val descr = Lazy.value "induction on some goal"
+    val meta = Base_Data.ACMeta.metadata (id, Lazy.value "induction on some goal")
     val tac = Induction_Data_Args_Tactic_HOL.induct_tac false
     fun ztac progress data = Ctxt.with_ctxt (fn ctxt => tac data ctxt
       |> Tac_AAM.lift_tac_progress progress
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
+      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS
       |> arr)
     val opt_default_update_action = NONE
-    fun mk_data focus ctxt = Data.get (Context.Proof ctxt)
-      |> List.map (transfer_data (Proof_Context.theory_of ctxt) #> pair focus)
-    fun init _ focus = Ctxt.with_ctxt (fn ctxt => cons_action_cluster Util.exn
-        (Base_Data.ACMeta.metadata (id, descr)) ztac opt_default_update_action ctxt
-        (mk_data focus ctxt))
-      >>> Up3.morph
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt => Data.get (Context.Proof ctxt)
+      |> List.map (transfer_data (Proof_Context.theory_of ctxt))
+      |> map_index (fn (i, data) =>
+        cons_nth_action Util.exn meta ztac opt_default_update_action ctxt i data focus >>> Up4.morph)
+      |> ZB.update_zipper3)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 declare [[zippy_parse \<open>(@{binding cases}, Zippy_Auto.Cases.parse_context_update)\<close>]]
 declare [[zippy_parse \<open>(@{binding induct}, Zippy_Auto.Induction.parse_context_update)\<close>]]

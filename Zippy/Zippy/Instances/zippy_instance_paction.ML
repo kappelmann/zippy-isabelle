@@ -14,7 +14,7 @@ sig
       (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper, @{AllT_args} ZLP.Z4.zipper) morph
     val cons_action_cluster : Base_Data.ACMeta.metadata ->
       (Base_Data.GFocus.focus * @{AllT_args} data) list ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper) morph
+      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper option) morph
   end
 
   structure Result_Action :
@@ -52,6 +52,7 @@ functor Zippy_Instance_PAction(
     val mk_exn : (unit -> @{ParaT_args encl: "(" ")"} Z.Exn.ME.exn)
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
+    structure Log_Base : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_Result_Action : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals_Pos_Copy : ZIPPY_LOGGER_MIXIN_BASE
@@ -67,23 +68,20 @@ structure ZL = Zippy_Lists(open Base_Mixins; structure Z = ZLP)
 structure ZN = Zippy_Node(open Base_Mixins; structure Z = ZLP)
 structure ZE = Zippy_Enum_Mixin(Zippy_Enum_Mixin_Base(open Base_Mixins; structure Z = ZL))
 
-structure Goals = Zippy_Goals_Mixin_Base(
-  structure GClusters = Mixin1.GClusters; structure GCluster = Mixin2.GCluster)
-structure LGoals = Zippy_Lists_Goals_Mixin(open Base_Mixins; structure Z = ZL;
-  structure Goals = Goals structure Log = Log_LGoals)
+structure Goals = Zippy_Goals_Mixin_Base(open Mixin_Base1 Mixin_Base2)
+structure LGoals = Zippy_Lists_Goals_Mixin(open Base_Mixins; structure Z = ZL
+  structure Goals = Goals; structure Log = Log_LGoals)
 structure Goals_Results = Zippy_Goals_Results_Mixin_Base(open Goals
-  structure GClusters_Results = Mixin1.Results; structure GCluster_Results = Mixin2.Results)
+  structure GClusters_Results = Mixin_Base1.Results; structure GCluster_Results = Mixin_Base2.Results)
 structure LGoals_Results = Zippy_Lists_Goals_Results_Mixin(open Base_Mixins; structure Z = ZL
   structure Goals_Results = Goals_Results; structure Log_LGoals = Log_LGoals)
-structure Goals_Pos = Zippy_Goals_Pos_Mixin(structure Z = ZLP
-  structure Goals_Pos = Zippy_Goals_Pos_Mixin_Base(open Goals; structure GPU = Base_Data.Tac_Res.GPU))
+structure Goals_Pos = Zippy_Goals_Pos_Mixin_Base(open Goals; structure GPU = Base_Data.Tac_Res.GPU)
 structure Goals_Pos_Copy = Zippy_Goals_Pos_Copy_Mixin(Zippy_Goals_Pos_Copy_Mixin_Base(open Goals_Pos
-  structure Copy = Mixin3.Copy))
+  structure Copy = Mixin_Base3.Copy))
 structure LGoals_Pos_Copy = Zippy_Lists_Goals_Pos_Copy_Mixin(open Base_Mixins; structure Z = ZL
-  structure GPC = Goals_Pos_Copy;
-  structure Log = Log_LGoals_Pos_Copy; structure Log_LGoals = Log_LGoals
-  structure Show1 = Show.Zipper1; structure Show2 = Show.Zipper2; structure Show3 = Show.Zipper3)
-structure Copy = Zippy_Copy_Mixin(open Base_Mixins; structure Copy = Mixin3.Copy
+  structure GPC = Goals_Pos_Copy; structure Log = Log_LGoals_Pos_Copy; structure Log_Base = Log_Base
+  structure Log_LGoals = Log_LGoals \<^imap>\<open>\<open>{i}\<close> => \<open>structure Show{i} = Show.Zipper{i}\<close>\<close>)
+structure Copy = Zippy_Copy_Mixin(open Base_Mixins Mixin_Base3
   structure Log = Log_Copy; structure Show_From = Show.Zipper3; structure Show_To = Show.Zipper1)
 structure ECopy = Zippy_Enum_Copy_Mixin(open Base_Mixins; structure Z = ZE
   structure Copy = Copy; structure Log = Log_Enum_Copy; structure Show_To = Show.Zipper1)
@@ -119,16 +117,16 @@ fun init prio {more, gpos_update, state} z =
     fun node_no_next2 parent_top_meta_vars gcluster = ZN.node_no_next2 (mk_exn ())
       (Node.co2 parent_top_meta_vars gcluster)
   in
-    Up4.morph z >>= Up3.morph >>= arr Mixin2.Top_Meta_Vars.L.getter
+    Up4.morph z >>= Up3.morph >>= arr Mixin_Base2.Top_Meta_Vars.L.getter
     >>= (fn parent_top_meta_vars => Node.snoc5 (mk_exn ()) more gpos_update prio z
     >>= (fn z => LGoals.init_state (fn gcs => arr (set_next5 (node_no_next1 gcs)) z >>= Down5.morph)
       (node_no_next2 parent_top_meta_vars) state))
   end
 
 type @{AllT_args} mk_copy_update_data = result ->
-  (@{ParaT_args} @{AllT_args} Z1.zipper, Mixin3.Copy.copy_update_data) morph
+  (@{ParaT_args} @{AllT_args} Z1.zipper, Mixin_Base3.Copy.copy_update_data) morph
 
-local fun wrap f x z = pure (f (#gpos_update x) (Mixin1.GClusters.L.getter z))
+local fun wrap f x z = pure (f (#gpos_update x) (Mixin_Base1.GClusters.L.getter z))
 in
 fun copy_update_data x = wrap Goals_Pos_Copy.copy_update_data x
 fun copy_update_data_changed update = wrap (Goals_Pos_Copy.copy_update_data_changed update)
@@ -147,7 +145,7 @@ fun action update mk_cud result prio = init_copy_parents mk_cud prio result
         Show.Zipper1.pretty ctxt z
       ] |> Pretty.block |> Pretty.string_of);
     LGoals_Results.init_goal_results_down1 ctxt z))
-  >>> arr fst >>> Up1.morph >>> arr Mixin4.PAction.AResult.Expanded
+  >>> arr fst >>> Up1.morph >>> arr Mixin_Base4.PAction.AResult.Expanded
 fun changed_goals_action update = action
   (#gpos_update #> LGoals_Pos_Copy.update_changed_goals_gclusters_gclusters update)
 fun hom_changed_goals_action updates = action

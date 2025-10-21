@@ -40,10 +40,10 @@ fun slow_step_atomize_prems_data exn id update_result mk_cud prio_sq_co_safe pri
 
     fun atomize_prems_ztac ctxt = Object_Logic.atomize_prems_tac ctxt #> CHANGED
       |> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
-      |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 Tac_AAM.madd
+      |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1 Tac_AAM.madd
     val {meta = atomize_meta, paction = atomize_paction} = {
       empty_action = Library.K empty_action,
-      meta = Mixin4.Meta.Meta.metadata (id, descr "atomize_prems"),
+      meta = Mixin_Base4.Meta.Meta.metadata (id, descr "atomize_prems"),
       result_action = result_action,
       prio_sq_co = prio_sq_co_atomize_prems,
       tac = Ctxt.with_ctxt (atomize_prems_ztac #> arr)}
@@ -52,10 +52,10 @@ fun slow_step_atomize_prems_data exn id update_result mk_cud prio_sq_co_safe pri
     fun unsafe_ztac ctxt = Classical.appWrappers ctxt
         (Classical.inst_step_tac ctxt APPEND' Classical.unsafe_step_tac ctxt)
       |> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.unclear
-      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS_NONE_SOME_GOAL
+      |> Tac_AAM.Tac.zSOME_GOAL_FOCUS
     val {meta = unsafe_meta, paction = unsafe_paction} = {
       empty_action = PResults.orelse_empty_action_focus empty_action atomize_meta atomize_paction,
-      meta = Mixin4.Meta.Meta.metadata (id, descr "inst_step APPEND unsafe_step"),
+      meta = Mixin_Base4.Meta.Meta.metadata (id, descr "inst_step APPEND unsafe_step"),
       result_action = result_action,
       prio_sq_co = prio_sq_co_unsafe,
       tac = Ctxt.with_ctxt (unsafe_ztac #> arr)}
@@ -63,10 +63,10 @@ fun slow_step_atomize_prems_data exn id update_result mk_cud prio_sq_co_safe pri
 
     fun safe_ztac ctxt = Classical.safe_tac ctxt |> SELECT_GOAL
       |> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
-      |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1_NONE_ALL_GOALS1 Tac_AAM.madd
+      |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1 Tac_AAM.madd
     val data = {
       empty_action = PResults.orelse_empty_action_focus empty_action unsafe_meta unsafe_paction,
-      meta = Mixin4.Meta.Meta.metadata (id, descr "safe_tac"),
+      meta = Mixin_Base4.Meta.Meta.metadata (id, descr "safe_tac"),
       result_action = result_action,
       prio_sq_co = prio_sq_co_safe,
       tac = Ctxt.with_ctxt (safe_ztac #> arr)}

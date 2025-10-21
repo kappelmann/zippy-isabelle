@@ -64,7 +64,11 @@ structure ZN_AZ5 = LZ
 structure ZN = \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Nodes"\<close>(
   \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Nodes_Base_Args_Simple_Zippers"\<close>(
     \<^imap>\<open>\<open>{i}\<close> => \<open>structure Z{i} = ZN_AZ{i}\<close>\<close>))
-open ZN
+structure ZB = Zippy_Base_Base(\<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Util"\<close>(
+  structure Z = ZN
+  structure AE = \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Exception_Repeat"\<close>(
+    \<^eval>\<open>sfx_ParaT_nargs "Kleisli_Arrow_Exception"\<close>(M))))
+open ZB
 
 structure SZN =
 struct

@@ -8,6 +8,8 @@ sig
   val get_pos : gcluster -> GCS.cluster_pos
   val get_state : gcluster -> GCS.state
   val get_thm : gcluster -> thm
+  val get_goals : gcluster -> term list
+  val get_stripped_goals : gcluster -> ((string * typ) list * (term list * term)) list
   val get_ngoals : gcluster -> int
   val has_meta_vars : gcluster -> bool
   val meta_vars : gcluster -> Vars.set
@@ -28,11 +30,14 @@ structure GU = General_Util
 datatype gcluster = GCluster of {
     pos : GCS.cluster_pos,
     state : TS.state,
+    goals : term list,
+    stripped_goals : ((string * typ) list * (term list * term)) list,
     ngoals : int
   }
-fun mk_gcluster pos state ngoals = GCluster {state = state, pos = pos, ngoals = ngoals}
 fun get_pos (GCluster {pos,...}) = pos
 fun get_state (GCluster {state,...}) = state
+fun get_goals (GCluster {goals,...}) = goals
+fun get_stripped_goals (GCluster {stripped_goals,...}) = stripped_goals
 fun get_ngoals (GCluster {ngoals,...}) = ngoals
 val get_thm = get_state #> TS.get_thm
 val has_meta_vars = get_state #> TS.has_meta_vars
@@ -44,7 +49,10 @@ fun init x = x
   |>> GCS.get_cclusters
   |> (op ~~)
   |> map_index (fn (pos, (ccluster, n)) => TS.init ccluster |> TS.unmk_conj n
-      |> (fn state => mk_gcluster pos state n))
+    |> (fn state => let val goals = TS.prems_of state
+      in GCluster {state = state, pos = pos, ngoals = n, goals = goals,
+        stripped_goals = List.map Term_Util.strip_subgoal goals}
+      end))
 
 fun init' gcluster = gcluster
   |> `(GCS.get_clusters_goals #> map length)

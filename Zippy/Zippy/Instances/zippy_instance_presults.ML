@@ -45,7 +45,7 @@ sig
       (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper, @{AllT_args} ZLP.Z4.zipper) morph
     val cons_action_cluster : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
       (Base_Data.GFocus.focus * @{AllT_args} data) list ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper) morph
+      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper option) morph
 
     (* priorities *)
     val enum_halve_prio_sq_co : prio -> @{AllT_args} prio_sq_co
@@ -79,7 +79,7 @@ structure PResults = Zippy_PResults_Mixin(Zippy_PResults_Mixin_Base(
   val presults = I; val dest_presults = I))
 
 structure PAction_More = Zippy_PAction_Mixin(
-  structure PAction = Mixin4.PAction
+  structure PAction = Mixin_Base4.PAction
   structure Exn = Exn; structure Ctxt = Ctxt; structure Log = Log_PAction
   structure Show = Show.Zipper4)
 structure PAction_PResults = Zippy_PAction_PResults_Mixin(
@@ -90,7 +90,7 @@ structure PAction_PResults = Zippy_PAction_PResults_Mixin(
   structure Log_PAction = Log_PAction; structure Log = Log_PAction_PResults)
 structure PResults_Pos = Zippy_PResults_Positions_Mixin(
   structure Z = ZP; structure PResults = PResults)
-structure Action_App_Num = Zippy_Action_App_Num_Mixin(Mixin4.Action_App_Num)
+structure Action_App_Num = Zippy_Action_App_Num_Mixin(Mixin_Base4.Action_App_Num)
 
 structure PResults =
 struct open PResults
@@ -106,7 +106,7 @@ fun orelse_empty_action empty_action meta_else paction_else counter = if counter
   then (fn p => fn z => paction_else p z
     >>= arr (fn paction_else => Lens4.PAction.modifier (Library.K paction_else, z)
     |> (fn z => Lens4.Meta.modifier (Library.K meta_else, z))
-    |> Mixin4.PAction.AResult.Unchanged))
+    |> Mixin_Base4.PAction.AResult.Unchanged))
   else empty_action
 
 fun orelse_empty_action_focus empty_action meta_else paction_else =

@@ -247,13 +247,21 @@ sig
       data -> Base_Data.GFocus.focus -> (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper,
         @{AllT_args} ZLP.Z4.zipper) morph
 
+    val cons_nth_action : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
+      (Base_Data.AAMeta.P.progress -> Cases_Data_Args.data -> (@{ParaT_args} Base_Data.GFocus.focus,
+        Tac_AAM.ztactic) morph) ->
+      (@{AllT_args} Result_Action.mk_copy_update_data -> Result_Action.result ->
+        @{AllT_args} Base_Data.PAction.action) option ->
+      Proof.context -> int -> data -> Base_Data.GFocus.focus ->
+      (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper, @{AllT_args} ZLP.Z4.zipper) morph
+
     val cons_action_cluster : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
       (Base_Data.AAMeta.P.progress -> Cases_Data_Args.data -> (@{ParaT_args} Base_Data.GFocus.focus,
         Tac_AAM.ztactic) morph) ->
       (@{AllT_args} Result_Action.mk_copy_update_data -> Result_Action.result ->
         @{AllT_args} Base_Data.PAction.action) option ->
       Proof.context -> (Base_Data.GFocus.focus * data) list ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper) morph
+      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper option) morph
   end
 end
 
@@ -268,9 +276,10 @@ functor Zippy_Instance_Cases_Data(
       Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLP.Z2.zipper) Z.emorph,
       @{AllT_args} Z.Result_Action.mk_copy_update_data,
       @{AllT_args} Z.PResults.prio_sq_co) Zippy_Instance_Cases_Data_Args.PDC.entries
+    structure Log : ZIPPY_LOGGER_MIXIN_BASE
+    structure Log_Base : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals_Pos_Copy : ZIPPY_LOGGER_MIXIN_BASE
-    structure Log : ZIPPY_LOGGER_MIXIN_BASE
   ) : ZIPPY_INSTANCE_CASES_DATA =
 struct
 open Z
@@ -665,18 +674,18 @@ val parse_context_update = Parse.and_list1' parse_entry_context_update >> K ()
 
 (* action data *)
 
-local open MU; open SC A
+local open MU; open SC
   structure Base_Mixins = struct structure Exn = Exn; structure Co = Co; structure Ctxt = Ctxt end
+  structure ZB = Zippy_Base(open Base_Mixins; structure Z = ZLP; structure Log = Log_Base
+    \<^imap>\<open>\<open>{i}\<close> => \<open>structure Show{i} = Show.Zipper{i}\<close>\<close>)
   structure ZL = Zippy_Lists(open Base_Mixins; structure Z = ZLP)
-  structure Goals = Zippy_Goals_Mixin_Base(
-    structure GClusters = Mixin1.GClusters; structure GCluster = Mixin2.GCluster)
+  structure Goals = Zippy_Goals_Mixin_Base(open Mixin_Base1 Mixin_Base2)
   structure Goals_Pos = Zippy_Goals_Pos_Mixin_Base(open Goals; structure GPU = Base_Data.Tac_Res.GPU)
   structure Goals_Pos_Copy = Zippy_Goals_Pos_Copy_Mixin(Zippy_Goals_Pos_Copy_Mixin_Base(open Goals_Pos
-    structure Copy = Mixin3.Copy))
+    structure Copy = Mixin_Base3.Copy))
   structure LGoals_Pos_Copy = Zippy_Lists_Goals_Pos_Copy_Mixin(open Base_Mixins; structure Z = ZL
-    structure GPC = Goals_Pos_Copy;
-    structure Log = Log_LGoals_Pos_Copy; structure Log_LGoals = Log_LGoals
-    structure Show1 = Show.Zipper1; structure Show2 = Show.Zipper2; structure Show3 = Show.Zipper3)
+    structure GPC = Goals_Pos_Copy; structure Log = Log_LGoals_Pos_Copy; structure Log_Base = Log_Base
+    structure Log_LGoals = Log_LGoals; \<^imap>\<open>\<open>{i}\<close> => \<open>structure Show{i} = Show.Zipper{i}\<close>\<close>)
 in
 fun tac_data_from_data meta tac opt_default_update_action data =
   let val result_action = case PD.get_updates data of
@@ -684,9 +693,10 @@ fun tac_data_from_data meta tac opt_default_update_action data =
         NONE => (fn x => fn y => fn z => Ctxt.with_ctxt (fn ctxt =>
           let
             val default_update = get_default_update (Context.Proof ctxt)
-            val partition_update = LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters
-              (List.map default_update #> LGoals_Pos_Copy.update_gcluster)
-          in Result_Action.changed_goals_action (Library.maps snd #> partition_update) x y z end))
+            val partition_update = Library.maps snd
+              #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters
+                (List.map default_update #> ZB.update_zipper2)
+          in Result_Action.changed_goals_action partition_update x y z end))
       | SOME default_update => default_update)
     | SOME updates => Result_Action.hom_changed_goals_action updates
   in
@@ -702,19 +712,21 @@ fun paction_data_from_data exn meta tac opt_default_update_action =
   #> Tac.paction_data_from_data exn
 
 fun cons_action exn meta tac opt_default_update_action =
-  paction_data_from_data exn meta tac opt_default_update_action
-  #> Z.PAction.cons_action
+  paction_data_from_data exn meta tac opt_default_update_action #> Z.PAction.cons_action
+
+fun cons_nth_action exn meta tac opt_default_update_action ctxt i data =
+  let val meta = AMeta.metadata (
+    Zippy_Identifier.suffix_name NONE (string_of_int i) (ACMeta.Id.getter meta),
+    Lazy.lazy (fn _ => Pretty.breaks [
+        Pretty.str (ACMeta.Descr.getter meta |> Lazy.force),
+        Pretty.block [Pretty.str "Cases data: ",
+          CDA.pretty_data ctxt (cases_PD_entries_from_PD_entries data)]
+      ] |> Pretty.block |> Pretty.string_of))
+  in cons_action exn meta tac opt_default_update_action data end
 
 fun cons_action_cluster exn meta tac opt_default_update_action ctxt =
   map_index (Library.uncurry (fn i => apsnd (fn data => fn focus =>
-    let val meta = AMeta.metadata (
-      Zippy_Identifier.suffix_name NONE (string_of_int i) (ACMeta.Id.getter meta),
-      Lazy.lazy (fn _ => Pretty.breaks [
-          Pretty.str (ACMeta.Descr.getter meta |> Lazy.force),
-          Pretty.block [Pretty.str "Cases data: ",
-            CDA.pretty_data ctxt (cases_PD_entries_from_PD_entries data)]
-        ] |> Pretty.block |> Pretty.string_of))
-    in cons_action exn meta tac opt_default_update_action data focus >>> Up4.morph end)))
+    cons_nth_action exn meta tac opt_default_update_action ctxt i data focus >>> Up4.morph)))
   #> Node.cons3 exn meta
 end
 end

@@ -72,7 +72,6 @@ open Step Z Log
 structure MU = Zippy_Monad_Util(M); open MU
 structure ZL = Zippy_Lists(structure Z = Z; structure Co = Co)
 structure Exn = Zippy_Exception_Mixin(Co)
-structure ZB = Zippy_Base(structure Z = Z; structure Exn = Exn)
 structure ZE = Zippy_Enum_Mixin(open Z; structure Co = Co)
 structure ZP = Zippy_Positions_Mixin(structure Z = ZP; structure Exn = Exn)
 structure LGoals_Results = Zippy_Lists_Goals_Results_Mixin(structure Z = ZL
@@ -91,7 +90,7 @@ in
 fun move_entry_if_may_take_more_results {zipper,...} z = ZP.path_from_zipper4 zipper
   >>= (fn pos => TMV.move_path_if_may_take_more_results4 pos z)
 
-fun update_goal_results_up_unchanged z = z |> (ZB.top4 >>> arr (rpair Results.empty))
+fun update_goal_results_up_unchanged z = z |> (top4 >>> arr (rpair Results.empty))
 fun update_goal_results_up_expanded z = Down5.morph z
   >>= Ctxt.with_ctxt (fn ctxt => fn z => (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
         Pretty.str "Updating goal results upwards from",
@@ -100,7 +99,7 @@ fun update_goal_results_up_expanded z = Down5.morph z
     LGoals_Results.update_goal_results_up ctxt z))
 (*NB. no results are returned here; actions that change structure and create new results
 must be split into actions changing just structure and just expanding nodes*)
-fun update_goal_results_up_changed z = z |> (ZB.top1 >>> arr (rpair Results.empty))
+fun update_goal_results_up_changed z = z |> (top1 >>> arr (rpair Results.empty))
 
 (*FUTURE TODO: allow actions to manipulate queue and results themselves by putting them in a state
 monad; this would allow more expressive actions, e.g. ones that change structure and expand at the

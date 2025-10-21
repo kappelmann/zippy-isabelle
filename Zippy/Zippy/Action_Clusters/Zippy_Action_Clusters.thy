@@ -3,9 +3,6 @@ theory Zippy_Action_Clusters
   imports
     Zippy_Enums
     Zippy_Identifiers
-    Zippy_Loggers
-    Zippy_Shows
-    Zippy_States
 begin
 
 ML_file\<open>zippy_copy_mixin_base.ML\<close>

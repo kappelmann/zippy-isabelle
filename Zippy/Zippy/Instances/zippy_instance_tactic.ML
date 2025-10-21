@@ -32,7 +32,7 @@ sig
         @{AllT_args} ZLP.Z4.zipper) morph
     val cons_action_cluster : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
       (Base_Data.GFocus.focus * @{AllT_args} data) list ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper) morph
+      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper option) morph
   end
 end
 
@@ -44,9 +44,9 @@ functor Zippy_Instance_Tactic(
   ) : ZIPPY_INSTANCE_TACTIC =
 struct
 open Z; open ZLP MU
-structure GCluster = Zippy_Goal_Cluster_Mixin(Mixin2.GCluster)
+structure GCluster = Zippy_Goal_Cluster_Mixin(Mixin_Base2.GCluster)
 structure PAction_More = Zippy_PAction_Mixin(
-  structure PAction = Mixin4.PAction
+  structure PAction = Mixin_Base4.PAction
   structure Exn = Exn; structure Ctxt = Ctxt; structure Log = Log_PAction
   structure Show = Show.Zipper4)
 structure PResults_More = Zippy_PResults_Mixin(PResults)

@@ -10,12 +10,6 @@ sig
   structure Exn : ZIPPY_EXCEPTION_MIXIN_BASE
   sharing type Exn.M.t = M.t
 
-  val update_action_cluster : ((@{ParaT_args} @{AllT_args} Copy.zipper_from) emorph) list ->
-    (@{ParaT_args} @{AllT_args} Copy.zipper_from) emorph
-
-  val update_gcluster : ((@{ParaT_args} @{AllT_args} GCluster.L.container) emorph) list ->
-    (@{ParaT_args} @{AllT_args} GCluster.L.container) emorph
-
   val update_gclusters_gclusters :
     (GPU.GCS.cluster_pos * (@{ParaT_args} @{AllT_args} GCluster.L.container) emorph) list ->
     (@{ParaT_args} @{AllT_args} GClusters.L.container) emorph
@@ -48,7 +42,7 @@ sig
     (@{AllT_args} Copy.copy -> @{AllT_args} node_co) ->
     (*list of pairs of initial focus and updates to perform*)
     (GPU.F.focus * (GPU.F.focus -> (@{ParaT_args} @{AllT_args} Copy.zipper_from) emorph)) list ->
-    (@{ParaT_args} @{AllT_args} GCluster.L.container, @{AllT_args} Copy.zipper_from) morph
+    (@{ParaT_args} @{AllT_args} GCluster.L.container, @{AllT_args} Copy.zipper_from option) morph
 end
 
 functor Zippy_Lists_Goals_Pos_Copy_Mixin(
@@ -62,13 +56,11 @@ functor Zippy_Lists_Goals_Pos_Copy_Mixin(
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
     structure Log : ZIPPY_LOGGER_MIXIN_BASE
+    structure Log_Base : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
-    structure Show1 : ZIPPY_SHOW_MIXIN_BASE
-    sharing type Show1.t = Z.Z1.zipper
-    structure Show2 : ZIPPY_SHOW_MIXIN_BASE
-    sharing type Show2.t = Z.Z2.zipper
-    structure Show3 : ZIPPY_SHOW_MIXIN_BASE
-    sharing type Show3.t = Z.Z3.zipper
+    \<^imap>\<open>\<open>{i}\<close> => \<open>
+    structure Show{i} : ZIPPY_SHOW_MIXIN_BASE
+    sharing type Show{i}.t = Z.Z{i}.zipper\<close>\<close>
   ) : ZIPPY_LISTS_GOALS_POS_COPY_MIXIN =
 struct
 
@@ -80,49 +72,31 @@ structure Goals_Pos = Zippy_Goals_Pos_Mixin(structure Z = Z; structure Goals_Pos
 structure LGoals = Zippy_Lists_Goals_Mixin(structure Z = Z; structure Goals = GPC
   structure Ctxt = Ctxt; structure Log = Log_LGoals)
 structure Exn = Zippy_Exception_Mixin(Z.Co)
-structure ZB = Zippy_Base(structure Z = Z; structure Exn = Exn)
+structure ZB = Zippy_Base(structure Z = Z; structure Exn = Exn; structure Ctxt = Ctxt
+  structure Log = Log_Base; \<^imap>\<open>\<open>{i}\<close> => \<open>structure Show{i} = Show{i}\<close>\<close>)
 
-local open SC Mo
+local open SC Mo A
 in
-(*TODO: move to Zippy_Base*)
-fun update_action_cluster updates z = Ctxt.get_ctxt () >>= (fn ctxt =>
-  (@{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
-      Pretty.str "Updating action cluster",
-      Show3.pretty ctxt z
-    ] |> Pretty.block |> Pretty.string_of);
-  ZB.LF.foldlM I updates z))
-
-fun update_gcluster updates z = Ctxt.get_ctxt () >>= (fn ctxt =>
-  (@{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
-      Pretty.str "Updating goal cluster",
-      Show2.pretty ctxt z
-    ] |> Pretty.block |> Pretty.string_of);
-  ZB.LF.foldlM I updates z))
-
-fun update_gclusters_gclusters updates z = Ctxt.get_ctxt () >>= (fn ctxt =>
-  (@{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
-      Pretty.str "Updating goal clusters of",
-      Show1.pretty ctxt z
-    ] |> Pretty.block |> Pretty.string_of);
-  ZB.LF.foldlM (fn (cpos, update_gcluster) =>
-    LGoals.move_cpos cpos >>> update_gcluster >>> Up2.morph) updates z))
+fun update_gclusters_gclusters updates = updates
+  |> List.map (fn (cpos, update) => LGoals.move_cpos cpos >>> update >>> Up2.morph)
+  |> ZB.update_zipper1
 
 local structure SA = \<^eval>\<open>sfx_ParaT_nargs "SArrow_Arrow_Apply"\<close>
 in
-fun partition_update_gclusters_gclusters f = partition_eq (eq_fst (op =))
-  #> List.map (SA.A.&&& (hd #> fst, List.map snd #> f))
+fun partition_update_gclusters_gclusters update = partition_eq (eq_fst (op =))
+  #> List.map (SA.A.&&& (hd #> fst, List.map snd #> update))
   #> update_gclusters_gclusters
 
-fun partition_update_gcposs_gclusters_gclusters updates =
+fun partition_update_gcposs_gclusters_gclusters update =
   List.map (SA.A.&&& (GClusters.GCS.get_gcpos_cluster, GClusters.GCS.get_gcpos_goal))
-  #> partition_update_gclusters_gclusters updates
+  #> partition_update_gclusters_gclusters update
 
 fun update_hom_gcposs_gclusters_gclusters updates gcposs =
   (let fun zip_with_pos update = SA.A.&&&
     (GClusters.GCS.get_gcpos_cluster, GClusters.GCS.get_gcpos_goal #> update)
   in
     Library.maps (map2 zip_with_pos updates) gcposs
-    |> partition_update_gclusters_gclusters update_gcluster
+    |> partition_update_gclusters_gclusters ZB.update_zipper2
   end)
   handle exn as ListPair.UnequalLengths =>
     (warning (Pretty.breaks [
@@ -140,17 +114,20 @@ fun update_hom_changed_goals_gclusters_gclusters updates = update_changed_goals_
   (List.map snd #> update_hom_gcposs_gclusters_gclusters updates)
 
 type @{AllT_args} node_co = @{AllT_args} ZN.N3.content
-fun cons_action_cluster exn mk_node update_focus_list =
-  let
-    fun init_copy cud _ = GPC.focus_list_apply_copy_update_data cud update_focus_list
-      |> partition_eq (eq_fst (op =))
-      |> List.map (SA.A.&&&
-        (hd #> fst, List.map snd #> cons_action_cluster exn mk_node #> (fn f => f >>> Up3.morph)))
-      |> update_gclusters_gclusters
-    val node = mk_node (Copy.copy init_copy)
-    val update_action_cluster = update_action_cluster (List.map (fn (x, f) => f x) update_focus_list)
-  in cons_content_move_safe2 exn node >>> update_action_cluster end
+fun cons_action_cluster exn mk_node update_focus_list = if null update_focus_list
+  then Ctxt.with_ctxt (fn ctxt => fn z => (@{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
+      Pretty.str "Skipping consing of action cluster with empty updates list",
+      Show2.pretty ctxt z
+    ] |> Pretty.block |> Pretty.string_of);
+    pure NONE))
+  else
+    let
+      fun init_copy cud _ = GPC.focus_list_apply_copy_update_data cud update_focus_list
+        |> partition_update_gclusters_gclusters (cons_action_cluster exn mk_node
+          #> (fn cons_action => fn z => cons_action z >>= AC.opt (K z) Up3.morph))
+      val node = mk_node (Copy.copy init_copy)
+      val update_action_cluster = ZB.update_zipper3 (List.map (fn (x, f) => f x) update_focus_list)
+    in cons_content_move_safe2 exn node >>> update_action_cluster >>> arr SOME end
 end
-
 end
 end
