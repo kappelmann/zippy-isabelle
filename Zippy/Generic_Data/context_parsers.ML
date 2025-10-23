@@ -160,7 +160,7 @@ fun fail_undefined_key key = Scan.fail_with
   (fn _ => fn _ => "no parser registered for " ^ Id.quoted_string key)
 
 fun parse_value table key = Parsers_Data.Table.lookup table key
-  |> the_default (fail_undefined_key key)
+  |> \<^if_none>\<open>fail_undefined_key key\<close>
 
 fun parse_entry keys table = PKV.parse_entry' (Scan.lift (parse_key keys table))
   (K (Scan.succeed "")) (parse_value table)

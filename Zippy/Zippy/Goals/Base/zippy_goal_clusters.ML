@@ -146,13 +146,18 @@ val is_finished = get_state #> TS.is_finished
 val has_meta_vars = get_state #> TS.has_meta_vars
 val meta_vars = get_state #> TS.meta_vars
 
-(*TODO: double-check if first-order matching would be sufficient*)
-val finish_cluster_state_tac =
+fun finish_cluster_state_tac cluster_state ctxt =
   let
     val norms = Mixed_Unification.norms_first_higherp_match
     val match = Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match
       |> Unification_Combinator.flip_match
-  in Unify_Resolve_Base.unify_resolve_tac norms match end
+  in
+    (*Note: above matcher and match_tac are incomplete. As a last resort, we use the unifier,
+    though in principle, one only ought to match the cluster state*)
+    Unify_Resolve_Base.unify_resolve_tac norms match cluster_state ctxt
+    ORELSE' match_tac ctxt [cluster_state]
+    ORELSE' resolve_tac ctxt [cluster_state]
+  end
 
 fun finish_cluster_states ctxt cluster_states = get_clustered_state
   #> HEADGOAL (RANGE (List.map (fn cluster_state => finish_cluster_state_tac cluster_state ctxt)

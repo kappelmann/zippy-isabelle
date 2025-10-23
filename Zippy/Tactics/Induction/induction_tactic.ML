@@ -247,7 +247,7 @@ fun prepare_patterns match inst_patterns arbitrary_pattern ctxt i st =
     val inst_ps = the_default [] inst_patterns
       |> map (Option.map (apfst single #> prepare_entry #> inst_select))
     fun arbitrary_select p t = can dest_Free t andalso matches_pattern p t
-    val arbitrary_p = the_default ([], []) arbitrary_pattern |> prepare_entry |> arbitrary_select
+    val arbitrary_p = \<^if_none>\<open>([], [])\<close> arbitrary_pattern |> prepare_entry |> arbitrary_select
   in (inst_ps, arbitrary_p) end
 
 fun induct_pattern_tac close_trivial simp match opt_rule inst_patterns arbitrary_pattern taking facts ctxt i st =

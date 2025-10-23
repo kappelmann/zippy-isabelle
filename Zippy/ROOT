@@ -14,7 +14,6 @@ session Zippy = "Pure" +
     "Gen_Zippers/Zippers5/Alternating_Zippers/Instances/Nodes"
     "Gen_Zippers/Zippers5/Alternating_Zippers/Paths"
     "Gen_Zippers/Zippers5/Alternating_Zippers/Utils"
-    "Gen_Zippers/Zippers5/Enumerable"
     "Gen_Zippers/Zippers5/Linked_Zippers"
     "Gen_Zippers/Zippers5/Morphs"
     "Gen_Zippers/Zippers5/Structured_Lenses"
@@ -37,7 +36,6 @@ session Zippy = "Pure" +
     "Zippy/Actions/Base"
     "Zippy/Actions/Positions"
     "Zippy/Base"
-    "Zippy/Base/Lists"
     "Zippy/Coroutines"
     "Zippy/Enums"
     "Zippy/Exceptions"
@@ -62,7 +60,6 @@ session Zippy = "Pure" +
     "Zippy/Nodes"
     "Zippy/Positions"
     "Zippy/Positions/Lists"
-    "Zippy/Resolves"
     "Zippy/Runs"
     "Zippy/Shows"
     "Zippy/States"
@@ -74,7 +71,16 @@ session Zippy = "Pure" +
 session Zippy_Examples in Examples = "HOL" +
   options [quick_and_dirty]
   sessions
+    "HOL-Library"
     Zippy
+  (*directories
+    Old*)
   theories
-    Zippy_Examples
+    Binomial
+    Filter
+    Finite_Set
+    GCD
+    List
+    Set
+    Word
 

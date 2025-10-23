@@ -7,9 +7,12 @@ sig
 
   structure PAction :
   sig
+    val disable_action : @{AllT_args} Base_Data.PAction.action
     type @{AllT_args} data = {
       meta : Base_Data.AMeta.metadata,
       paction : Base_Data.GFocus.focus -> @{AllT_args} Base_Data.PAction.paction}
+    val update : @{AllT_args} data -> @{AllT_args} ZLP.Z4.zipper -> @{AllT_args} ZLP.Z4.zipper
+    val update_action : @{AllT_args} data -> @{AllT_args} Base_Data.PAction.action
     val cons_action : @{AllT_args} data -> Base_Data.GFocus.focus ->
       (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper, @{AllT_args} ZLP.Z4.zipper) morph
     val cons_action_cluster : Base_Data.ACMeta.metadata ->
@@ -53,6 +56,7 @@ functor Zippy_Instance_PAction(
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
     structure Log_Base : ZIPPY_LOGGER_MIXIN_BASE
+    structure Log_PAction : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_Result_Action : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals_Pos_Copy : ZIPPY_LOGGER_MIXIN_BASE
@@ -81,6 +85,8 @@ structure Goals_Pos_Copy = Zippy_Goals_Pos_Copy_Mixin(Zippy_Goals_Pos_Copy_Mixin
 structure LGoals_Pos_Copy = Zippy_Lists_Goals_Pos_Copy_Mixin(open Base_Mixins; structure Z = ZL
   structure GPC = Goals_Pos_Copy; structure Log = Log_LGoals_Pos_Copy; structure Log_Base = Log_Base
   structure Log_LGoals = Log_LGoals \<^imap>\<open>\<open>{i}\<close> => \<open>structure Show{i} = Show.Zipper{i}\<close>\<close>)
+structure PAction_More = Zippy_PAction_Mixin(open Base_Mixins;
+  structure PAction = Mixin_Base4.PAction; structure Log = Log_PAction structure Show = Show.Zipper4)
 structure Copy = Zippy_Copy_Mixin(open Base_Mixins Mixin_Base3
   structure Log = Log_Copy; structure Show_From = Show.Zipper3; structure Show_To = Show.Zipper1)
 structure ECopy = Zippy_Enum_Copy_Mixin(open Base_Mixins; structure Z = ZE
@@ -92,10 +98,16 @@ structure PAction =
 struct
 local open Base_Data
 in
+fun disable_action _ = PAction_More.disable_paction (mk_exn ()) >>> arr PAction_More.AResult.Unchanged
+
 type @{AllT_args} data = {
   meta : AMeta.metadata,
   paction : GFocus.focus -> @{AllT_args} PAction.paction}
 end
+fun update {meta, paction} z = PAction_More.set_paction (paction (Lens4.Focus.getter z)) z
+  |> (fn z => Lens4.Meta.modifier (Library.K meta, z))
+
+fun update_action data _ = arr (update data #> Mixin_Base4.PAction.AResult.Unchanged)
 
 fun cons_action {meta, paction} focus = Node.cons4 (mk_exn ()) meta (paction focus) focus
 

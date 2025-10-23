@@ -60,9 +60,9 @@ local
     structure Z = Zippy
     val mk_exn = Library.K exn
     structure Ctxt = Ctxt; structure Log_Base = Logging.Base;
-    structure Log_Result_Action = Logging.Result_Action; structure Log_LGoals = Logging.LGoals
-    structure Log_LGoals_Pos_Copy = Logging.LGoals_Pos_Copy; structure Log_Copy = Logging.Copy
-    structure Log_Enum_Copy = Logging.Enum_Copy)
+    structure Log_PAction = Logging.PAction; structure Log_Result_Action = Logging.Result_Action
+    structure Log_LGoals = Logging.LGoals; structure Log_LGoals_Pos_Copy = Logging.LGoals_Pos_Copy
+    structure Log_Copy = Logging.Copy; structure Log_Enum_Copy = Logging.Enum_Copy)
   structure Zippy_PResults = Zippy_Instance_PResults(
     structure Z = Zippy_PAction
     val halve = Prio.halve

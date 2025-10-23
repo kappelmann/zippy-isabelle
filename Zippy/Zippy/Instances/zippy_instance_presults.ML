@@ -20,16 +20,9 @@ sig
       (result -> @{AllT_args} Base_Data.PAction.action) ->
       @{AllT_args} presults -> @{AllT_args} Base_Data.PAction.paction
 
-    val empty_action : @{ParaT_args encl: "(" ")"} Exn.ME.exn ->
-      @{AllT_args} Base_Data.PAction.action
-
-    (*sets passed paction if no successful action applications have been made;
+    (*updates with passed paction data if no successful action applications have been made;
     otherwise returns passed action*)
-    val orelse_empty_action : @{AllT_args} Base_Data.PAction.action -> Base_Data.AMeta.metadata ->
-      (prio -> (@{ParaT_args} @{AllT_args} zipper, @{AllT_args} Base_Data.PAction.paction) morph) ->
-      int -> @{AllT_args} Base_Data.PAction.action
-    val orelse_empty_action_focus : @{AllT_args} Base_Data.PAction.action -> Base_Data.AMeta.metadata ->
-      (Base_Data.GFocus.focus -> @{AllT_args} Base_Data.PAction.paction) ->
+    val orelse_update_action : @{AllT_args} Base_Data.PAction.action -> @{AllT_args} PAction.data ->
       int -> @{AllT_args} Base_Data.PAction.action
 
     type @{AllT_args} data = {
@@ -78,10 +71,7 @@ structure PResults = Zippy_PResults_Mixin(Zippy_PResults_Mixin_Base(
   type @{AllT_args} presults = (@{ParaT_args} @{AllT_args} zipper, prio, result) Co.Co.acoroutine
   val presults = I; val dest_presults = I))
 
-structure PAction_More = Zippy_PAction_Mixin(
-  structure PAction = Mixin_Base4.PAction
-  structure Exn = Exn; structure Ctxt = Ctxt; structure Log = Log_PAction
-  structure Show = Show.Zipper4)
+structure PAction_More = Mixin_Base4.PAction
 structure PAction_PResults = Zippy_PAction_PResults_Mixin(
   structure PAction_PResults = Zippy_PAction_PResults_Mixin_Base(
     structure PResults = PResults; structure PAction = Base_Data.PAction)
@@ -100,17 +90,8 @@ in
 fun paction empty_action = PAction_PResults.paction_from_presults empty_action
   (fn _ => fn _ => arr Action_App_Num.inc_action_app_num)
 
-fun empty_action exn _ = PAction_More.disable_paction exn >>> arr PAction_More.AResult.Unchanged
-
-fun orelse_empty_action empty_action meta_else paction_else counter = if counter = 0
-  then (fn p => fn z => paction_else p z
-    >>= arr (fn paction_else => Lens4.PAction.modifier (Library.K paction_else, z)
-    |> (fn z => Lens4.Meta.modifier (Library.K meta_else, z))
-    |> Mixin_Base4.PAction.AResult.Unchanged))
-  else empty_action
-
-fun orelse_empty_action_focus empty_action meta_else paction_else =
-  orelse_empty_action empty_action meta_else (Library.K (arr (Lens4.Focus.getter #> paction_else)))
+fun orelse_update_action action update_data counter = if counter = 0
+  then PAction.update_action update_data else action
 
 local open Base_Data
 in
@@ -122,9 +103,9 @@ type @{AllT_args} data = {
 end
 
 fun paction_from_data {empty_action, result_action, presults,...} focus =
-  (fn z4 => presults focus z4
-  >>= (paction empty_action result_action #> PAction_More.run_paction #> (fn paction => paction z4)))
-  |> PAction_More.paction
+  (fn z4 => presults focus z4 >>= (paction empty_action result_action
+    #> Mixin_Base4.PAction.run_paction #> (fn paction => paction z4)))
+  |> Mixin_Base4.PAction.paction
 
 fun paction_data_from_data (data as {meta,...}) = {meta = meta, paction = paction_from_data data}
 

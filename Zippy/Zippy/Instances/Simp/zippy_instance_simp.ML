@@ -55,12 +55,12 @@ fun gen_data tac_name safe_tac tac exn id update_result mk_cud prio_sq_co_safe p
         Pretty.str (implode [safe_tac_name, " ORELSE ", tac_name]),
         Pretty.block [Pretty.str "Current: ", Pretty.str tac]
       ] |> Pretty.block |> Pretty.string_of)
-    val empty_action = PResults.empty_action exn
+    val empty_action = PAction.disable_action
     val result_action = Result_Action.changed_goals_action update_result mk_cud
     fun unsafe_ztac ctxt = tac ctxt #> CHANGED
       |> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
       |> Tac_AAM.Tac.zSOME_GOAL_FOCUS
-    val {meta = unsafe_meta, paction = unsafe_paction} = {
+    val unsafe_data = {
       empty_action = Library.K empty_action,
       meta = Mixin_Base4.Meta.Meta.metadata (id, descr tac_name),
       result_action = result_action,
@@ -70,7 +70,7 @@ fun gen_data tac_name safe_tac tac exn id update_result mk_cud prio_sq_co_safe p
     fun safe_ztac ctxt = safe_tac ctxt #> CHANGED
       |> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
       |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1 Tac_AAM.madd
-    val safe_empty_action = PResults.orelse_empty_action_focus empty_action unsafe_meta unsafe_paction
+    val safe_empty_action = PResults.orelse_update_action empty_action unsafe_data
     val data = {
       empty_action = safe_empty_action,
       meta = Mixin_Base4.Meta.Meta.metadata (id, descr safe_tac_name),

@@ -26,7 +26,7 @@ ML\<open>
     open Z
     structure TI = Discrimination_Tree
     val resolve_init_args = {
-      empty_action = SOME (Library.K (PResults.empty_action Util.exn)),
+      empty_action = SOME (Library.K PAction.disable_action),
       default_update = NONE,
       mk_cud = SOME Result_Action.copy_update_data_empty_changed,
       prio_sq_co = SOME (PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM),
@@ -76,7 +76,7 @@ fun run_statesq mk_unfinished_statesq fuel =
   Run.init_repeat_step_queue (Ctxt.with_ctxt mk_unfinished_statesq) fuel
   >>> arr (mk_thmsq (Run.get_result_data #> #thm_states))
 
-val unique_thmsq = Tactic_Util.unique_thmsq (apply2 Thm.prop_of #> Term_Util.are_term_variants)
+val are_thm_variants = apply2 Thm.prop_of #> Term_Util.are_term_variants
 
 (*TODO: make it an ML functor*)
 @{parse_entries (struct) PCA PARSE_ZIPPY_AUTO_RUN_ARGS [init, run, post]}
@@ -89,7 +89,7 @@ val parsers = {
 type args = (
   (@{ParaT_args} @{AllT_args} Z1.zipper, @{AllT_args} Z2.zipper) morph,
   int option -> (@{ParaT_args} @{AllT_args} Z1.ZM.container, thm Seq.seq) morph,
-  thm Seq.seq -> thm Seq.seq) PCA.entries
+  Proof.context -> thm -> thm Seq.seq -> thm Seq.seq) PCA.entries
 
 local structure GC = Zippy_Goal_Cluster_Mixin(Mixin_Base2.GCluster)
 in
@@ -100,7 +100,9 @@ structure Data = Generic_Data(
       >>> Init_Goal_Cluster.update_all (Library.K Util.exn)
         (arr (GC.get_ngoals #> Base_Data.Tac_Res.GPU.F.all_upto))),
     run = SOME (run_statesq Run.mk_df_post_promising_unreturned_unfinished_statesq),
-    post = SOME unique_thmsq}
+    post = SOME (fn ctxt => fn st => Seq.filter (fn st' => not (are_thm_variants (st, st')))
+      #> Tactic_Util.unique_thmsq are_thm_variants
+      #> Seq.maps (prune_params_tac ctxt))}
   val merge = fst)
 end
 
@@ -116,8 +118,8 @@ val map_run = map_data o PCA.map_run
 val get_post = PCA.get_post o get_data
 val map_post = map_data o PCA.map_post
 
-fun zippy_tac fuel ctxt = let val context = Context.Proof ctxt
-  in init_run (get_init context) (get_run context fuel) ctxt #> get_post context end
+fun zippy_tac fuel ctxt st = let val context = Context.Proof ctxt
+  in init_run (get_init context) (get_run context fuel) ctxt st |> get_post context ctxt st end
 
 val binding = Binding.make (FI.prefix_id "run", FI.pos)
 

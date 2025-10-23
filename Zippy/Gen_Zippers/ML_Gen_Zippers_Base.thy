@@ -68,11 +68,11 @@ struct
     #> Standard_IMap_Antiquotation.map_stop (K (length zipperT_args))
   fun setup_zipper_args' (opt_ParaT_nargs, opt_ParaT_arg) (opt_nzippers, opt_zipperT_arg) context =
     let
-      val ParaT_nargs = the_default (ParaT.nargs context) opt_ParaT_nargs
-      val ParaT_arg = the_default (string_of_int #> prefix "'p") opt_ParaT_arg
+      val ParaT_nargs = \<^if_none>\<open>ParaT.nargs context\<close> opt_ParaT_nargs
+      val ParaT_arg = \<^if_none>\<open>string_of_int #> prefix "'p"\<close> opt_ParaT_arg
       val ParaT_args = map_range ParaT_arg ParaT_nargs
-      val nzippers = the_default (nzippers ()) opt_nzippers
-      val zipperT_arg = the_default (string_of_int #> prefix "'a") opt_zipperT_arg
+      val nzippers = \<^if_none>\<open>nzippers ()\<close> opt_nzippers
+      val zipperT_arg = \<^if_none>\<open>string_of_int #> prefix "'a"\<close> opt_zipperT_arg
       val zipperT_args = map_range zipperT_arg nzippers
     in setup_zipper_args ParaT_args zipperT_args context end
 

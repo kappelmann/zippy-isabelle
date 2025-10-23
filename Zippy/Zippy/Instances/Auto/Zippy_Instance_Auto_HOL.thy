@@ -45,11 +45,27 @@ declare [[zippy_init_gc \<open>
       #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
     val mk_cud = Result_Action.copy_update_data_empty_changed
     val prio_sq_co_safe = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.VERY_HIGH
+    val prio_sq_co_inst0 = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM3
+    val prio_sq_co_instp = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM
     val prio_sq_co_unsafe = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM
-    val prio_sq_co_atomize_prems = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH
-    val data = Classical.slow_step_atomize_prems_data Util.exn id update mk_cud
-      prio_sq_co_safe prio_sq_co_unsafe prio_sq_co_atomize_prems
-    fun init _ focus z = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
+    val data = Classical.slow_step_data Util.exn id update mk_cud
+      prio_sq_co_safe prio_sq_co_inst0 prio_sq_co_instp prio_sq_co_unsafe
+    fun init _ focus z =
+      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
+      >>= AC.opt (K z) Up3.morph
+  in (id, init) end\<close>]]
+declare [[zippy_init_gc \<open>
+  let
+    open Zippy; open ZLP MU; open A Mo
+    val id = @{binding atomize_prems}
+    val update = Library.maps snd
+      #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
+    val mk_cud = Result_Action.copy_update_data_empty_changed
+    val prio_sq_co_atomize_prems = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM5
+    val data = Classical.atomize_prems_data id update mk_cud
+      prio_sq_co_atomize_prems
+    fun init _ focus z =
+      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 declare [[zippy_parse add: \<open>(@{binding clasimp}, Clasimp.clasimp_modifiers |> Method.sections)\<close>
@@ -66,7 +82,7 @@ declare [[zippy_init_gc \<open>
       #> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
       #> Tac_AAM.Tac.zTRY_EVERY_FOCUS1 Tac_AAM.madd
     val data = {
-      empty_action = Library.K (PResults.empty_action Util.exn),
+      empty_action = Library.K PAction.disable_action,
       meta = Mixin_Base4.Meta.Meta.metadata (id, Lazy.value "blast with depth and timeout limit"),
       result_action = Result_Action.action (Library.K (C.id ())) Result_Action.copy_update_data,
       prio_sq_co = prio_sq_co,
@@ -128,7 +144,7 @@ declare [[zippy_parse \<open>(@{binding blast}, Scan.depend (fn context =>
       |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1 Tac_AAM.madd
     val mk_cud = Result_Action.copy_update_data
     val action_data = {
-      empty_action = PResults.empty_action Util.exn,
+      empty_action = PAction.disable_action,
       meta = Mixin_Base4.Meta.Meta.empty id,
       result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
       prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH,
@@ -154,7 +170,7 @@ in
     structure Z = Zippy
     structure TI = Discrimination_Tree
     val init_args = {
-      empty_action = SOME (Library.K (PResults.empty_action Util.exn)),
+      empty_action = SOME (Library.K PAction.disable_action),
       default_update = SOME Run.init_gpos,
       mk_cud = SOME Result_Action.copy_update_data_empty_changed,
       prio_sq_co = SOME (PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM),
@@ -235,7 +251,7 @@ local open Zippy
       simp = SOME true,
       match = SOME (can Seq.hd oooo Type_Unification.e_unify Unification_Util.unify_types
         (Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match)),
-      empty_action = SOME (Library.K (PResults.empty_action Util.exn)),
+      empty_action = SOME (Library.K PAction.disable_action),
       default_update = SOME Zippy_Auto.Run.init_gpos,
       mk_cud = SOME Result_Action.copy_update_data_empty_changed,
       prio_sq_co = SOME (PResults.enum_halve_prio_halve_prio_depth_sq_co prio),

@@ -180,7 +180,7 @@ val parse_antiquotation_args =
   -- (parse_config_args |> Parse.!!!! |> Parse_Util.option')
   >> (fn (f, opt_entries) => fn ctxt =>
     let val entries = get_config_args (Context.Proof ctxt)
-      |> PCA.merge_entries (the_default (PCA.empty_entries ()) opt_entries)
+      |> PCA.merge_entries (\<^if_none>\<open>PCA.empty_entries ()\<close> opt_entries)
     in mk_code_config_args entries f ctxt end)
 
 fun read_antiquotation input ctxt =

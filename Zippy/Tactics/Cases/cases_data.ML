@@ -111,7 +111,7 @@ fun parse_insts unless =
   :|-- (fn opt_key =>
     let fun repeat_unless parse = (if is_none opt_key then Scan.repeat else Scan.repeat1)
       (Scan.unless unless parse)
-    in case the_default (PIM.key PIM.fix) opt_key of
+    in case \<^if_none>\<open>PIM.key PIM.fix\<close> opt_key of
       PIM.fix _ => repeat_unless parse_inst_fix >> PIM.fix
     | PIM.pat _ => repeat_unless parse_inst_pat >> PIM.pat
     | PIM.pred _ => repeat_unless (Scan.lift parse_inst_pred) >> PIM.pred

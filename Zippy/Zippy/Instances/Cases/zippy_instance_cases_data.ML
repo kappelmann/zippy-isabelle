@@ -391,7 +391,7 @@ fun insert args context = context |>
           Pretty.enclose "(" ")" [SShow.option SShow.int nupdates]],
         Pretty.block [Pretty.str "does not match number of new goals ",
           Pretty.enclose "(" ")" [SShow.option SShow.int num_new_goals]],
-        Pretty.block [Pretty.str "for theorem ", Thm.pretty_thm ctxt (the opt_rule)],
+        Pretty.block [Pretty.str "for theorem ", SShow.option (Thm.pretty_thm ctxt) opt_rule],
         Pretty.block [Pretty.str "and facts ", SShow.list (Thm.pretty_thm ctxt) facts]
       ] |> Pretty.block |> Pretty.string_of)
     else let val args = map_data_thms Thm.trim_context args

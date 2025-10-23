@@ -7,9 +7,9 @@ session ML_Typeclasses = "Pure" +
     Gen_Typeclasses
     "Gen_Typeclasses/Typeclasses_1"
     "Gen_Typeclasses/Typeclasses_1/Categories"
-    "Gen_Typeclasses/Typeclasses_1/Coroutines"
     "Gen_Typeclasses/Typeclasses_1/Lenses"
     "Gen_Typeclasses/Typeclasses_1/State"
   theories
+    ML_Coroutines
     ML_Typeclasses
     ML_ITypeclasses
