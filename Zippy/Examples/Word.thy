@@ -4509,7 +4509,7 @@ next
       using inc_le linorder_not_le suc.prems word_le_minus_mono_left
       (*NEW*)
       by - ((zippy 10 where run run:
-        "Zippy_Auto.Run.run_statesq Zippy.Run_Best_First.mk_df_post_unreturned_unfinished_statesq")[1])+
+        "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
       (*ORIG*)
       (* by fastforce *)
     with False "suc.hyps" show ?thesis

@@ -171,7 +171,7 @@ in
     structure TI = Discrimination_Tree
     val init_args = {
       empty_action = SOME (Library.K PAction.disable_action),
-      default_update = SOME Run.init_gpos,
+      default_update = SOME Zippy_Auto.Run.init_gpos,
       mk_cud = SOME Result_Action.copy_update_data_empty_changed,
       prio_sq_co = SOME (PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM),
       progress = SOME Base_Data.AAMeta.P.Promising,

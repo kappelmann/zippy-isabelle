@@ -31,6 +31,7 @@ struct
     val name = "Update_Goal_Cluster")
 end
 
+(* resolution *)
 \<^functor_instance>\<open>struct_name: Resolves
   functor_name: Zippy_Instance_Resolves_Data
   id: \<open>FI.id\<close>
@@ -41,6 +42,7 @@ end
     val init_args = resolve_init_args
     structure Log = Logging\<close>\<close>
 
+(* simplification *)
 structure Simp =
 struct
   val logger = Logger.setup_new_logger Logging.logger "Simp"
@@ -71,8 +73,10 @@ struct
   end
 end
 
-local
-  open Z
+(* initialisation and runs *)
+structure Run =
+struct
+local open Z
   structure Goals = Zippy_Goals_Mixin_Base(
     structure GClusters = Mixin_Base1.GClusters; structure GCluster = Mixin_Base2.GCluster)
   structure Goals_Pos = Zippy_Goals_Pos_Mixin_Base(open Goals; structure GPU = Base_Data.Tac_Res.GPU)
@@ -82,11 +86,16 @@ structure Init_Goal_Cluster = Zippy_Update_Goal_Cluster_Mixin(
   structure UGC = \<^functor_instance>\<open>
     functor_name: Zippy_Update_Goal_Cluster_Mixin_Base
     id: \<open>FI.prefix_id "init_gc"\<close>
-    path: \<open>FI.struct_op "Init_Goal_Cluster"\<close>
+    path: \<open>FI.struct_op "Run.Init_Goal_Cluster"\<close>
     more_args: \<open>open Goals_Pos
       structure M = Z
       structure Log = Logging.Update_Goal_Cluster\<close>\<close>
   structure Ctxt = Ctxt; structure Log = Logging; structure Log_Base = Log_Base
   \<^imap>\<open>\<open>{i}\<close> => \<open>structure Show{i} = Show.Zipper{i}\<close>\<close>)
+
+fun init_gposs sort = (if sort then Goals_Pos.GPU.F.sort_goals else Goals_Pos.GPU.F.goals)
+  #> Init_Goal_Cluster.update
+val init_gpos = Goals_Pos.GPU.F.single #> Init_Goal_Cluster.update
+end
 end
 end

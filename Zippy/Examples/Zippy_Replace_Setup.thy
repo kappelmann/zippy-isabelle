@@ -9,7 +9,7 @@ fun setup_zippy method_binding =
   let open Zippy Zippy_Auto.Run
     val parse_fuel = Parse_Util.option Parse.nat
     val parse = Scan.lift parse_fuel --| Zippy_Auto.Context_Parsers.parse
-      >> (Method.SIMPLE_METHOD oo zippy_tac)
+      >> (Method.SIMPLE_METHOD oo tac)
   in Method.local_setup method_binding parse "Extensible white-box prover based on Zippy" end
 
 fun setup_auto method_binding =

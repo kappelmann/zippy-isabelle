@@ -4,7 +4,7 @@ theory Zippy_Instance
     ML_Unification.ML_Costs_Priorities
     Zippy_Actions_Positions
     Zippy_Lists_Goal_Pos_Updates
-    Zippy_Runs
+    Zippy_Lists_Positions
     Zippy_Tactics
 begin
 

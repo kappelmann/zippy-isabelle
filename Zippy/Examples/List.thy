@@ -4498,7 +4498,7 @@ supply [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Loggin
     apply (auto 800 simp: nth_Cons' split: if_splits where blast depth: 0)[1]
     (*NEW*)
     by (zippy 50 where run run:
-      "Zippy_Auto.Run.run_statesq Zippy.Run_Best_First.mk_df_post_unreturned_unfinished_statesq")+
+      "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
     (*ORIG*)
     (* using diff_Suc_1 less_Suc_eq_0_disj by fastforce *)
 qed

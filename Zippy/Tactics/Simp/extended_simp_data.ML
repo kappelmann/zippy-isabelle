@@ -11,7 +11,7 @@ sig
   val wrap_simp_tac : (int -> Time.time -> (thm * thm Seq.seq) option) ->
     (Proof.context -> int -> tactic) -> args -> Proof.context -> int -> tactic
 
-  val arg_parsers : real parser PA.entries
+  val parsers : real parser PA.entries
 end
 
 structure Extended_Simp_Data_Args : EXTENDED_SIMP_DATA_ARGS =
@@ -28,7 +28,7 @@ fun wrap_simp_tac f_timeout tac args ctxt i state =
     |> General_Util.seq_with_timeout false f_timeout (K (seconds timeout))
   end
 
-val arg_parsers = {
+val parsers = {
   timeout = SOME Parse.real
 }
 end
@@ -86,7 +86,7 @@ val binding = Binding.make (FI.id, FI.pos)
 
 val parse_arg_entries =
   let
-    val parsers = ESDA.arg_parsers
+    val parsers = ESDA.parsers
     val parse_value = PA.parse_entry (PA.get_timeout parsers)
     val parse_entry = Parse_Key_Value.parse_entry PA.parse_key (K (Parse.$$$ ":")) parse_value
   in PA.parse_entries_required Scan.repeat1 true [] parse_entry (PA.empty_entries ()) end

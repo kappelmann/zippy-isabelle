@@ -1384,8 +1384,7 @@ proof -
     using not_less_eq_eq card_mono
     (*NEW*)
     by - ((zippy 10 simp: image_iff
-      where run run:
-        "Zippy_Auto.Run.run_statesq Zippy.Run_Best_First.mk_df_post_unreturned_unfinished_statesq")[1])+
+      where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
     (*ORIG*)
     (* using not_less_eq_eq card_mono by (fastforce simp: image_iff) *)
   have "int(card(\<Union> A))

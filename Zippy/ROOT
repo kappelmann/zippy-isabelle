@@ -61,6 +61,8 @@ session Zippy = "Pure" +
     "Zippy/Positions"
     "Zippy/Positions/Lists"
     "Zippy/Runs"
+    "Zippy/Runs/Base"
+    "Zippy/Seqs"
     "Zippy/Shows"
     "Zippy/States"
     "Zippy/Tactics"

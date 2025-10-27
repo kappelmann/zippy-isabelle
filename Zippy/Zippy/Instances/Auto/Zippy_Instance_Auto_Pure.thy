@@ -34,14 +34,11 @@ ML\<open>
       del_select = SOME (apsnd (snd #> #thm #> the) #> Thm.eq_thm)}
     structure Log_Base = Z.Logging.Base\<close>\<close>
 \<close>
-local_setup\<open>Zippy_Auto.Init_Goal_Cluster.Data.setup_attribute
+local_setup\<open>Zippy_Auto.Run.Init_Goal_Cluster.Data.setup_attribute
   (Either.Right "goal cluster initialisation")\<close>
 local_setup\<open>Zippy_Auto.Simp.Extended_Data.setup_attribute (Either.Right "extended simp")\<close>
 
-setup\<open>Context.theory_map ML_Gen.ground_zipper_types\<close>
 ML\<open>
-@{parse_entries (sig) PARSE_ZIPPY_AUTO_RUN_ARGS [init, run, post]}
-
 structure Zippy_Auto =
 struct open Zippy_Auto
 (* add parsers *)
@@ -55,115 +52,46 @@ struct open Zippy_Auto
 
 (* add instance specific utilities *)
 structure Run =
-struct
-local open Zippy; open ZLP MU; open Mo SC A
-  structure Run = Run_Best_First
-  structure MCU = ML_Code_Util
+struct open Run
+local open Zippy; open ZLP MU; open SC A Mo
+  structure GC = Zippy_Goal_Cluster_Mixin(Mixin_Base2.GCluster)
 in
-fun init_gposs sort =
-  (if sort then Base_Data.Tac_Res.GPU.F.sort_goals else Base_Data.Tac_Res.GPU.F.goals)
-  #> Init_Goal_Cluster.update
-val init_gpos = Base_Data.GFocus.single #> Init_Goal_Cluster.update
+fun init st = st |>
+  (Util.init_thm_state >>> Down1.morph >>> Z2.ZM.Unzip.morph
+  >>> Init_Goal_Cluster.update_all (Library.K Util.exn)
+    (arr (GC.get_ngoals #> Base_Data.Tac_Res.GPU.F.all_upto))
+  >>> top2 >>> Z1.ZM.Unzip.morph)
 
-fun init_run init run ctxt st = Seq.make (fn _ => st
-  |> (Util.init_thm_state >>> init >>> top2 >>> Z1.ZM.Unzip.morph >>> run)
-  |> Run.seq_from_monad {ctxt = ctxt}
-  |> Seq.pull)
-
-fun mk_thmsq get_result_data = Seq.maps get_result_data
-
-fun run_statesq mk_unfinished_statesq fuel =
-  Run.init_repeat_step_queue (Ctxt.with_ctxt mk_unfinished_statesq) fuel
-  >>> arr (mk_thmsq (Run.get_result_data #> #thm_states))
+fun run_best_first x = Zippy.Run.run_statesq' Zippy.Run.Best_First.PAction_Queue.init_pactions_queue
+  Zippy.Run.Best_First.Step.step_queue x
 
 val are_thm_variants = apply2 Thm.prop_of #> Term_Util.are_term_variants
+fun changed_uniquesq st = Seq.filter (fn st' => not (are_thm_variants (st, st')))
+  #> Tactic_Util.unique_thmsq are_thm_variants
 
-(*TODO: make it an ML functor*)
-@{parse_entries (struct) PCA PARSE_ZIPPY_AUTO_RUN_ARGS [init, run, post]}
-
-val parsers = {
-  init = SOME MCU.parse_code,
-  run = SOME MCU.parse_code,
-  post = SOME MCU.parse_code}
-
-type args = (
-  (@{ParaT_args} @{AllT_args} Z1.zipper, @{AllT_args} Z2.zipper) morph,
-  int option -> (@{ParaT_args} @{AllT_args} Z1.ZM.container, thm Seq.seq) morph,
-  Proof.context -> thm -> thm Seq.seq -> thm Seq.seq) PCA.entries
-
-local structure GC = Zippy_Goal_Cluster_Mixin(Mixin_Base2.GCluster)
-in
-structure Data = Generic_Data(
-  type T = args
-  val empty = {
-    init = SOME (Down1.morph >>> Z2.ZM.Unzip.morph
-      >>> Init_Goal_Cluster.update_all (Library.K Util.exn)
-        (arr (GC.get_ngoals #> Base_Data.Tac_Res.GPU.F.all_upto))),
-    run = SOME (run_statesq Run.mk_df_post_promising_unreturned_unfinished_statesq),
-    post = SOME (fn ctxt => fn st => Seq.filter (fn st' => not (are_thm_variants (st, st')))
-      #> Tactic_Util.unique_thmsq are_thm_variants
-      #> Seq.maps (prune_params_tac ctxt))}
-  val merge = fst)
-end
-
-val get_data = Data.get
-val map_data = Data.map
-
-val get_init = PCA.get_init o get_data
-val map_init = map_data o PCA.map_init
-
-val get_run = PCA.get_run o get_data
-val map_run = map_data o PCA.map_run
-
-val get_post = PCA.get_post o get_data
-val map_post = map_data o PCA.map_post
-
-fun zippy_tac fuel ctxt st = let val context = Context.Proof ctxt
-  in init_run (get_init context) (get_run context fuel) ctxt st |> get_post context ctxt st end
-
-val binding = Binding.make (FI.prefix_id "run", FI.pos)
-
-val parse_arg_entries =
-  let
-    val parse_value = PCA.parse_entry (PCA.get_init parsers) (PCA.get_run parsers) (PCA.get_post parsers)
-    val parse_entry = Parse_Key_Value.parse_entry PCA.parse_key (Library.K (Parse.$$$ ":")) parse_value
-  in PCA.parse_entries_required Scan.repeat1 true [] parse_entry (PCA.empty_entries ()) end
-
-local fun struct_op operation = FI.struct_op ("Run." ^ operation) |> MCU.read
-in
-fun attribute (entries, pos) =
-  let
-    fun code_PCA_op operation = struct_op ("PCA." ^ operation)
-    val code_from_key = code_PCA_op o PCA.key_to_string
-    fun code_from_entry (PCA.init c) = c
-      | code_from_entry (PCA.run c) = c
-      | code_from_entry (PCA.post c) = c
-    val code_entries = PCA.key_entry_entries_from_entries entries
-      |> List.map (fn (k, v) => code_from_key k @ MCU.atomic (code_from_entry v))
-      |> MCU.list
-    val code =
-      struct_op "map_data" @ MCU.atomic (code_PCA_op "merge_entries" @
-      MCU.atomic (code_PCA_op "entries_from_entry_list" @ code_entries))
-  in ML_Attribute.run_map_context (code, pos) end
-
-val parse_attribute = Parse_Util.position parse_arg_entries >> attribute
-end
-
-val setup_attribute = Attrib.local_setup binding
-  (Parse.!!! parse_attribute |> Scan.lift) o
-  the_default ("configure Run data " ^ enclose "(" ")" FI.long_name)
-
-val parse_context_update = Scan.lift parse_attribute
-  :|-- (fn attr => Scan.depend (fn context =>
-    Scan.succeed (ML_Attribute_Util.attribute_map_context attr context, ())))
+\<^functor_instance>\<open>struct_name: Tac
+  functor_name: Zippy_Run_Data
+  id: \<open>FI.prefix_id "run"\<close>
+  path: \<open>FI.struct_op "Run"\<close>
+  more_args: \<open>
+    structure Z = ZLP
+    structure Ctxt = Ctxt
+    structure Seq_From_Monad = Seq_From_Monad
+    type run_config = int option
+    val init_args = {
+      init = SOME init,
+      run = SOME (run_best_first Zippy.Run.mk_df_post_unreturned_promising_statesq),
+      post = SOME (fn st => Ctxt.with_ctxt (fn ctxt =>
+        arr (changed_uniquesq st #> Seq.maps (prune_params_tac ctxt))))}
+    \<close>\<close>
+fun tac fuel ctxt = Tac.tac fuel {ctxt = ctxt}
 end
 end
 end
 \<close>
-setup\<open>Context.theory_map ML_Gen.reset_zipper_types\<close>
 local_setup\<open>Zippy_Auto.Context_Parsers.setup_attribute NONE\<close>
-local_setup\<open>Zippy_Auto.Run.setup_attribute NONE\<close>
-declare [[zippy_parse add: \<open>(@{binding run}, Zippy_Auto.Run.parse_context_update)\<close>]]
+local_setup\<open>Zippy_Auto.Run.Tac.setup_attribute NONE\<close>
+declare [[zippy_parse add: \<open>(@{binding run}, Zippy_Auto.Run.Tac.parse_context_update)\<close>]]
 
 paragraph \<open>Method\<close>
 
@@ -171,7 +99,7 @@ local_setup \<open>
   let open Zippy Zippy_Auto.Run
     val parse_fuel = Parse_Util.option Parse.nat
     val parse = Scan.lift parse_fuel --| Zippy_Auto.Context_Parsers.parse
-      >> (Method.SIMPLE_METHOD oo zippy_tac)
+      >> (Method.SIMPLE_METHOD oo tac)
   in Method.local_setup @{binding zippy} parse "Extensible white-box prover based on Zippy" end\<close>
 
 paragraph \<open>Resolution\<close>

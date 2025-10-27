@@ -3,13 +3,13 @@
 *)
 signature ZIPPY_RUN_MIXIN_BASE =
 sig
-  structure Step : ZIPPY_STEP_MIXIN_BASE
-  structure Action_App_Meta : ZIPPY_ACTION_APP_METADATA_MIXIN_BASE
+  include ZIPPY_GOALS_RESULTS_MIXIN_BASE
+  structure Seq_From_Monad : ZIPPY_SEQ_FROM_MONAD_MIXIN_BASE
 end
 
 functor Zippy_Run_Mixin_Base(A :
   sig
-    structure Step : ZIPPY_STEP_MIXIN_BASE
-    structure Action_App_Meta : ZIPPY_ACTION_APP_METADATA_MIXIN_BASE
+    include ZIPPY_GOALS_RESULTS_MIXIN_BASE
+    structure Seq_From_Monad : ZIPPY_SEQ_FROM_MONAD_MIXIN_BASE
   end) : ZIPPY_RUN_MIXIN_BASE
   = A

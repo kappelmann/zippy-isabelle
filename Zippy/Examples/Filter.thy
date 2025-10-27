@@ -1212,7 +1212,7 @@ next
         with insert *[of i k] show ?case
           (*NEW*)
           by - (zippy 20 where run run:
-            "Zippy_Auto.Run.run_statesq Zippy.Run_Best_First.mk_df_post_unreturned_unfinished_statesq")+
+            "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
           (*ORIG*)
           (* by auto_orig *)
       qed
@@ -1289,7 +1289,7 @@ lemma le_prod_filterI:
   (*NEW*)
   supply [[zippy_init_gc del: \<open>@{binding atomize_prems}\<close>]]
   by (zippy 30 elim: eventually_elim2 where run run:
-    "Zippy_Auto.Run.run_statesq Zippy.Run_Best_First.mk_df_post_unreturned_unfinished_statesq")+
+    "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
   (*ORIG*)
   (* by (force elim: eventually_elim2) *)
 

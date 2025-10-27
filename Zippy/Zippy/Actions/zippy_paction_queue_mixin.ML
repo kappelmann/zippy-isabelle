@@ -24,7 +24,7 @@ sig
     (*zipper to start the enumeration*)
     (@{ParaT_args} @{AllT_args} PAction.zipper, (@{AllT_args} PAction.zipper * 'r) Co.Co.res) morph
 
-  val insert : @{AllT_args} entry -> @{AllT_args} queue -> @{AllT_args}queue
+  val insert : @{AllT_args} entry -> @{AllT_args} queue -> @{AllT_args} queue
   val mk_entry_insert : @{AllT_args} PAction.zipper -> (@{ParaT_args} @{AllT_args} queue) emorph
 
   val insert_pactions_queue :

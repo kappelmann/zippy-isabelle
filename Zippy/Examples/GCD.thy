@@ -1964,7 +1964,7 @@ lemma gcd_unique_nat: "d dvd a \<and> d dvd b \<and> (\<forall>e. e dvd a \<and>
   using gcd_unique
   (*NEW*)
   by - (zippy 1000 blast depth: 0 where run run:
-    "Zippy_Auto.Run.run_statesq Zippy.Run_Best_First.mk_df_post_unreturned_unfinished_statesq")+
+    "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
   (*ORIG*)
   (* by fastforce+ *)
 

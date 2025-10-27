@@ -2,6 +2,7 @@
 theory Zippy_Instance_Pure
   imports
     Zippy_Instance
+    Zippy_Runs
 begin
 
 text \<open>Setup the standard Zippy instance.\<close>
@@ -31,6 +32,13 @@ local
     type ParaT = unit; structure M = Ctxt_MSTrans; structure S = ME) *)
 
   structure Ctxt = Zippy_Ctxt_State_Mixin(Zippy_Ctxt_State_Mixin_Base(Ctxt_MSTrans))
+
+  (** compatibility to extract sequences from monad **)
+  structure Seq_From_Monad = Zippy_Seq_From_Monad_Mixin_Base(structure M = ME
+    type @{AllT_args} state = {ctxt : Proof.context(*, state : @{ParaT_arg 0}*)}
+    fun seq_from_monad {ctxt(*, state*)} m = Seq.make (fn _ =>
+      (*State_MSTrans.eval state m |>*) Ctxt_MSTrans.eval ctxt m |> the_default Seq.empty
+      |> Seq.pull))
 
 (* instance and utilities *)
   val exn : @{ParaT_args encl: "(" ")"} ME.exn = ()
@@ -82,6 +90,7 @@ structure Logging = Logging
 structure State = Zippy_State_Mixin(Zippy_State_Mixin_Base(MS)) *)
 structure Ctxt_MSTrans = Ctxt_MSTrans
 structure Ctxt = Ctxt
+structure Seq_From_Monad = Seq_From_Monad
 structure Prio = Prio
 (** add compound mixins **)
 local
@@ -127,10 +136,10 @@ struct
         val result = State_MSTrans.SR.value x *)
         val result = Ctxt_MSTrans.SR.value x
       in {ctxt = ctxt(*, state = state*), result = result} end)
-  fun init_thm_state (state : Zippy_Thm_State.state) : (@{ParaT_args} @{AllT_args} Z1.zipper) M.t =
+  fun init_thm_state (st : Zippy_Thm_State.state) : (@{ParaT_args} @{AllT_args} Z1.zipper) M.t =
     LGoals.init_state
       (node_no_next1 #> ZN.container_no_parent exn #> Container.init_container1 #> Z1.ZM.Zip.morph)
-      (node_no_next2 (Zippy_Thm_State.meta_vars state)) state
+      (node_no_next2 (Zippy_Thm_State.meta_vars st)) st
   end
 end
 end
@@ -138,62 +147,90 @@ end
 \<close>
 
 ML\<open>
-(*add best-first-search*)
+(*add runs*)
 structure Zippy =
 struct open Zippy
+structure Run =
+struct
+fun with_state f = Ctxt.with_ctxt (fn ctxt => (*State.with_state (fn state =>*)
+  f {ctxt = ctxt(*, state = state*)})
 local
   structure Base_Mixins =
   struct
+    structure Z = ZLP
     structure Exn = Exn; structure Co = Co; structure Ctxt = Ctxt
     \<^imap>\<open>\<open>{i}\<close> => \<open>
     structure Show{i} = Show.Zipper{i}
     structure Show_Container{i} = Show.Container{i}\<close>\<close>
   end
+  structure ZE = Zippy_Enum_Mixin(open Base_Mixins; open Z)
   structure Goals_Results = Zippy_Goals_Results_Mixin_Base(open LGoals_Pos_Copy
     structure GClusters_Results = Mixin_Base1.Results; structure GCluster_Results = Mixin_Base2.Results)
   structure Goals_Results_TMV = Zippy_Goals_Results_Top_Meta_Vars_Mixin_Base(open Goals_Results
     structure Top_Meta_Vars = Mixin_Base2.Top_Meta_Vars)
   structure PAction = Zippy_PAction_Mixin(open Base_Mixins
     structure PAction = Mixin_Base4.PAction; structure Log = Logging.PAction; structure Show = Show4)
+  structure Run = Zippy_Run_Mixin(open Base_Mixins
+    structure Run = Zippy_Run_Mixin_Base(open Goals_Results
+      structure Seq_From_Monad = Seq_From_Monad)
+    val with_state = with_state
+    structure Log = Zippy_Logger_Mixin_Base(val parent_logger = Logging.logger; val name =  "Run"))
+  val mk_exn = Library.K Util.exn
+in
+open Run
+val with_state = with_state
+local open MU; open SC A Mo
+  structure GClusters = Zippy_Goal_Clusters_Mixin(GClusters)
+  structure GClusters_Results = Zippy_Goal_Results_Mixin(GClusters_Results)
+  structure LGoals_Results_TMV = Zippy_Lists_Goals_Results_Top_Meta_Vars_Mixin(open Base_Mixins
+    structure Z = Zippy_Lists(open Base_Mixins)
+    structure Goals_Results_Top_Meta_Vars = Goals_Results_TMV; structure Log_LGoals = Logging.LGoals)
+  structure EAction_App_Meta = Zippy_Enum_Action_App_Metadata_Mixin(
+    structure Z = ZE
+    structure Meta = Zippy_Action_App_Metadata_Mixin(Zippy.Mixin_Base5.Meta))
+in
+fun run_statesq init_sstate step finish fuel c = init_sstate c
+  >>= with_state (fn ms => arr (fn ss =>
+    repeat_step step finish finish fuel ss ms c))
+  >>= arr (Seq.maps (Zippy_Run_Result.cases #thm_states I))
+fun run_statesq' init_sstate step mk_unreturned_statesq = run_statesq init_sstate step (fn _ => fn _ =>
+  ZLP.Z1.ZM.Zip.morph >>> mk_unreturned_statesq >>> arr (Zippy_Run_Result.Unfinished #> Seq.single))
+fun mk_df_post_unreturned_statesq x = mk_unreturned_statesq (Ctxt.with_ctxt
+  (LGoals_Results_TMV.mk_statesq (LGoals_Results_TMV.enum_df_post_children2 mk_exn))) x
+fun mk_df_post_unreturned_promising_statesq x = mk_unreturned_statesq (Ctxt.with_ctxt
+  (LGoals_Results_TMV.mk_statesq (EAction_App_Meta.enum_df_post_promising_children2 mk_exn))) x
+end
+structure Best_First =
+struct
   structure Logging =
   struct
-    local structure Base = struct val parent_logger = Logging.logger end
+    val logger = Logger.setup_new_logger logger "Best_First"
+    local structure Base = struct val parent_logger = logger end
     in
     structure PAction_Queue = Zippy_Logger_Mixin_Base(open Base; val name = "PAction_Queue")
     structure Step = Zippy_Logger_Mixin_Base(open Base; val name = "Step")
-    structure Run = Zippy_Logger_Mixin_Base(open Base; val name = "Run")
     end
   end
-  structure PAction_Queue = Zippy_PAction_Queue_Mixin_Base(
-    structure PAction = PAction
-    structure Queue = Leftist_Heap(type prio = Prio.prio; val ord = Prio.ord #> rev_order))
+  structure PAction_Queue = Zippy_PAction_Queue_Mixin(open Base_Mixins
+    structure Z = ZE
+    structure PAction_Queue = Zippy_PAction_Queue_Mixin_Base(structure PAction = PAction
+      structure Queue = Leftist_Heap(type prio = Prio.prio; val ord = Prio.ord #> rev_order))
+    val mk_exn = mk_exn
+    structure Log = Logging.PAction_Queue)
   structure Show_Queue_Entry = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} PAction_Queue.entry
     fun pretty ctxt {prio, zipper,...} = SpecCheck_Show.record [
       ("Priority", Show.Prio.pretty ctxt prio),
-      ("Zipper", Show.Zipper4.pretty ctxt zipper)
-    ])
-  structure Step = Zippy_Step_Mixin_Base(open Goals_Results_TMV
-    structure PAction_Queue = PAction_Queue)
-  structure Run = Zippy_Run_Mixin(open Base_Mixins
-    structure Z = ZLP
-    structure Run = Zippy_Run_Mixin_Base(
-      structure Step = Step; structure Action_App_Meta = Mixin_Base5.Meta)
-    type @{AllT_args} state = {ctxt : Proof.context(*, state : @{ParaT_arg 0}*)}
-    fun seq_from_monad {ctxt(*, state*)} =
-      (*State_MSTrans.eval state #>*) Ctxt_MSTrans.eval ctxt #> the_default Seq.empty
-    fun with_state f = Ctxt.with_ctxt (fn ctxt => (*State.with_state (fn state =>*)
-      f {ctxt = ctxt(*, state = state*)})
-    val mk_exn = Library.K Util.exn
-    structure Log = Logging.Run; structure Log_LGoals = Zippy.Logging.LGoals
-    structure Log_PAction_Queue = Logging.PAction_Queue; structure Log_Step = Logging.Step
+      ("Zipper", Show.Zipper4.pretty ctxt zipper)])
+  structure Step = Zippy_Step_Mixin(open Base_Mixins
+    structure Step = Zippy_Step_Mixin_Base(open Goals_Results_TMV
+      structure PAction_Queue = PAction_Queue)
+    val mk_exn = mk_exn
+    structure Log = Logging
+    structure Log_LGoals = Zippy.Logging.LGoals
+    structure Log_PAction_Queue = Logging.PAction_Queue
     structure Show_Queue_Entry = Show_Queue_Entry)
-in
-structure Run_Best_First =
-struct
-  structure Logging = Logging
-  structure Show_Queue_Entry = Show_Queue_Entry
-  open Run
+  end
 end
 end
 end
