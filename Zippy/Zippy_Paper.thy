@@ -83,9 +83,9 @@ text \<open>
 
   \<^item> Example usages can be found here @{file "Examples/Zippy_Examples.thy"}.
 
-  \<^item> Adding Actions @{file "Zippy/Actions/zippy_paction_mixin_base.ML"}
-    \<^item> Action nodes do not store a static priority and action but, more generally,
-      a "priority action" (paction) that dynamically computes a priority and action pair.
+  \<^item> Adding Actions @{file "Zippy/Actions/zippy_caction_mixin_base.ML"}
+    \<^item> Action nodes do not store a static cost and action but, more generally,
+      an "action with cost" (caction) that dynamically computes a cost and action pair.
     \<^item> Action clusters store a "copy" morphism such that actions generating new children can move
       their action siblings to the newly created child while updating their siblings' goal focuses
       (since the number and order of goals may have changed in the new child).

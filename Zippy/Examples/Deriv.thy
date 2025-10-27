@@ -264,7 +264,7 @@ lemma has_derivative_transform_within_open:
     and "\<And>x. x\<in>s \<Longrightarrow> f x = g x"
   shows "(g has_derivative f') (at x within t)"
   using assms unfolding has_derivative_within
-  by (force simp add: intro: Lim_transform_within_open)
+  by (force simp add: intro: Lim_transform_within_open where blast depth: 0)
 
 lemma has_derivative_transform:
   assumes "x \<in> s" "\<And>x. x \<in> s \<Longrightarrow> g x = f x"
@@ -1517,7 +1517,7 @@ qed
 lemma lemma_interval: "a < x \<Longrightarrow> x < b \<Longrightarrow> \<exists>d. 0 < d \<and> (\<forall>y. \<bar>x - y\<bar> < d \<longrightarrow> a \<le> y \<and> y \<le> b)"
   for a b x :: real
   (*NEW*)
-  by (zippy 20 dest: lemma_interval_lt
+  by (zippy 25 dest: lemma_interval_lt
     where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
   (*ORIG*)
   (* by (force dest: lemma_interval_lt) *)
@@ -1625,7 +1625,7 @@ proof -
     by (metis Rolle_deriv [OF ab])
   then show ?thesis
     using f' has_derivative_imp_has_field_derivative
-    by - (zippy 40 run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
+    by - (zippy 50 run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
     (*ORIG*)
     (* by fastforce *)
 qed

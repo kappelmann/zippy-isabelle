@@ -1628,7 +1628,7 @@ proof (rule filtermap_fun_inverse[symmetric])
   show "filterlim uminus at_top (at_bot::'a filter)"
     using eventually_at_bot_linorder filterlim_at_top le_minus_iff
     (*NEW*)
-    by (zippy 30 where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")
+    by (zippy 25 where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")
     zippy
     (*ORIG*)
     (* by force+ *)

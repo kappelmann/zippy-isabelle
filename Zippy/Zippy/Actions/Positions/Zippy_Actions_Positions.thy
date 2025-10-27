@@ -5,6 +5,6 @@ theory Zippy_Actions_Positions
     Zippy_Positions
 begin
 
-ML_file\<open>zippy_presults_positions_mixin.ML\<close>
+ML_file\<open>zippy_cresults_positions_mixin.ML\<close>
 
 end

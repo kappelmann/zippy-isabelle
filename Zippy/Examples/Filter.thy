@@ -1288,7 +1288,7 @@ lemma le_prod_filterI:
   unfolding le_filter_def eventually_filtermap eventually_prod_filter
   (*NEW*)
   supply [[zippy_init_gc del: \<open>@{binding atomize_prems}\<close>]]
-  by (zippy 30 elim: eventually_elim2 where run run:
+  by - (zippy 40 elim: eventually_elim2 where run run:
     "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
   (*ORIG*)
   (* by (force elim: eventually_elim2) *)

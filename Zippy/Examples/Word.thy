@@ -1588,7 +1588,11 @@ lemma div_word_by_minus_1_eq [simp]:
 
 lemma mod_word_by_minus_1_eq [simp]:
   \<open>w mod - 1 = w * of_bool (w < - 1)\<close> for w :: \<open>'a::len word\<close>
-  using mod_word_less word_order.not_eq_extremum by fastforce
+  using mod_word_less word_order.not_eq_extremum
+  (*NEW*)
+  by (zippy blast depth: 2)
+  (*ORIG*)
+  (* by (fastforce) *)
 
 text \<open>Legacy theorems:\<close>
 
@@ -1982,13 +1986,21 @@ lift_definition word_rotr :: \<open>nat \<Rightarrow> 'a::len word \<Rightarrow>
   is \<open>\<lambda>n k. concat_bit (LENGTH('a) - n mod LENGTH('a))
     (drop_bit (n mod LENGTH('a)) (take_bit LENGTH('a) k))
     (take_bit (n mod LENGTH('a)) k)\<close>
-  using take_bit_tightened by fastforce
+  using take_bit_tightened
+  (*NEW*)
+  by (fastforce blast depth: 0)
+  (*ORIG*)
+  (* by fastforce *)
 
 lift_definition word_rotl :: \<open>nat \<Rightarrow> 'a::len word \<Rightarrow> 'a::len word\<close>
   is \<open>\<lambda>n k. concat_bit (n mod LENGTH('a))
     (drop_bit (LENGTH('a) - n mod LENGTH('a)) (take_bit LENGTH('a) k))
     (take_bit (LENGTH('a) - n mod LENGTH('a)) k)\<close>
-  using take_bit_tightened by fastforce
+  using take_bit_tightened
+  (*NEW*)
+  by (fastforce blast depth: 0)
+  (*ORIG*)
+  (* by fastforce *)
 
 lift_definition word_roti :: \<open>int \<Rightarrow> 'a::len word \<Rightarrow> 'a::len word\<close>
   is \<open>\<lambda>r k. concat_bit (LENGTH('a) - nat (r mod int LENGTH('a)))

@@ -44,12 +44,12 @@ declare [[zippy_init_gc \<open>
     val update = Library.maps snd
       #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
     val mk_cud = Result_Action.copy_update_data_empty_changed
-    val prio_sq_co_safe = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.VERY_HIGH
-    val prio_sq_co_inst0 = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM3
-    val prio_sq_co_instp = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM
-    val prio_sq_co_unsafe = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM
+    val cresultsq_safe = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.VERY_LOW
+    val cresultsq_inst0 = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.LOW3
+    val cresultsq_instp = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.MEDIUM
+    val cresultsq_unsafe = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.MEDIUM
     val data = Classical.slow_step_data Util.exn id update mk_cud
-      prio_sq_co_safe prio_sq_co_inst0 prio_sq_co_instp prio_sq_co_unsafe
+      cresultsq_safe cresultsq_inst0 cresultsq_instp cresultsq_unsafe
     fun init _ focus z =
       Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
       >>= AC.opt (K z) Up3.morph
@@ -61,9 +61,9 @@ declare [[zippy_init_gc \<open>
     val update = Library.maps snd
       #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
     val mk_cud = Result_Action.copy_update_data_empty_changed
-    val prio_sq_co_atomize_prems = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM5
+    val cresultsq_atomize_prems = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.LOW1
     val data = Classical.atomize_prems_data id update mk_cud
-      prio_sq_co_atomize_prems
+      cresultsq_atomize_prems
     fun init _ focus z =
       Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
       >>= AC.opt (K z) Up3.morph
@@ -76,16 +76,16 @@ declare [[zippy_init_gc \<open>
   let
     open Zippy Zippy_Auto; open ZLP MU; open A Mo
     val id = @{binding blast}
-    val prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.LOW
+    val cresultsq = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.HIGH
     val tac = Extended_Blast_Data.blast_tac
     val ztac = tac
       #> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
       #> Tac_AAM.Tac.zTRY_EVERY_FOCUS1 Tac_AAM.madd
     val data = {
-      empty_action = Library.K PAction.disable_action,
+      empty_action = Library.K CAction.disable_action,
       meta = Mixin_Base4.Meta.Meta.metadata (id, Lazy.value "blast with depth and timeout limit"),
       result_action = Result_Action.action (Library.K (C.id ())) Result_Action.copy_update_data,
-      prio_sq_co = prio_sq_co,
+      cresultsq = cresultsq,
       tac = Ctxt.with_ctxt (ztac #> arr)}
     fun init _ focus z = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
       >>= AC.opt (K z) Up3.morph
@@ -113,7 +113,7 @@ declare [[zippy_parse \<open>(@{binding blast}, Scan.depend (fn context =>
 
     val args = PAA.empty_entries () |> fold PAA.set_entry [PAA.updates [],
       PAA.progress Base_Data.AAMeta.P.Promising,
-      PAA.prio_sq_co (Tac_Util.enum_halve_prio_sq_co Prio.VERY_HIGH)]
+      PAA.cresultsq (Tac_Util.enum_double_cresultsq cost.VERY_HIGH)]
     val context = context
       |> fold (Zippy_Auto.Resolve_Match.insert_args_context_defaults args) sintro
       |> fold (Zippy_Auto.EResolve_Match.insert_args_context_defaults args) selim
@@ -121,7 +121,7 @@ declare [[zippy_parse \<open>(@{binding blast}, Scan.depend (fn context =>
 
     val args = PAA.empty_entries () |> fold PAA.set_entry [PAA.updates [],
       PAA.progress Base_Data.AAMeta.P.Promising,
-      PAA.prio_sq_co (Tac_Util.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH)]
+      PAA.cresultsq (Tac_Util.enum_double_cost_double_cost_depth_cresultsq cost.HIGH)]
     val context = context
       |> fold (Zippy_Auto.Resolve_Unif.insert_args_context_defaults args) sintro
       |> fold (Zippy_Auto.EResolve_Unif.insert_args_context_defaults args) selim
@@ -144,10 +144,10 @@ declare [[zippy_parse \<open>(@{binding blast}, Scan.depend (fn context =>
       |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1 Tac_AAM.madd
     val mk_cud = Result_Action.copy_update_data
     val action_data = {
-      empty_action = PAction.disable_action,
+      empty_action = CAction.disable_action,
       meta = Mixin_Base4.Meta.Meta.empty id,
       result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      prio_sq_co = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH,
+      cresultsq = CResults.enum_double_cost_double_cost_depth_cresultsq cost.HIGH,
       tac = Ctxt.with_ctxt (ztac #> arr)
     }
     fun init_ac _ focus =
@@ -170,10 +170,10 @@ in
     structure Z = Zippy
     structure TI = Discrimination_Tree
     val init_args = {
-      empty_action = SOME (Library.K PAction.disable_action),
+      empty_action = SOME (Library.K CAction.disable_action),
       default_update = SOME Zippy_Auto.Run.init_gpos,
       mk_cud = SOME Result_Action.copy_update_data_empty_changed,
-      prio_sq_co = SOME (PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM),
+      cresultsq = SOME (CResults.enum_double_cost_double_cost_depth_cresultsq Cost.MEDIUM),
       progress = SOME Base_Data.AAMeta.P.Promising,
       del_select = SOME (apsnd (snd #> #thm #> the) #> Thm.eq_thm)}
     structure Log = Logging\<close>\<close>
@@ -247,14 +247,14 @@ local open Zippy
   struct
     structure Z = Zippy
     structure Ctxt = Ctxt
-    fun mk_init_args prio = {
+    fun mk_init_args cost = {
       simp = SOME true,
       match = SOME (can Seq.hd oooo Type_Unification.e_unify Unification_Util.unify_types
         (Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match)),
-      empty_action = SOME (Library.K PAction.disable_action),
+      empty_action = SOME (Library.K CAction.disable_action),
       default_update = SOME Zippy_Auto.Run.init_gpos,
       mk_cud = SOME Result_Action.copy_update_data_empty_changed,
-      prio_sq_co = SOME (PResults.enum_halve_prio_halve_prio_depth_sq_co prio),
+      cresultsq = SOME (CResults.enum_double_cost_double_cost_depth_cresultsq cost),
       progress = SOME Base_Data.AAMeta.P.Unclear}
     structure Log = Logging
     structure Log_Base = Logging.Base
@@ -268,7 +268,7 @@ in
   id: \<open>FI.id\<close>
   path: \<open>FI.long_name\<close>
   more_args: \<open>open Base_Args
-    val init_args = mk_init_args Prio.LOW
+    val init_args = mk_init_args Cost.HIGH
   \<close>\<close>
 structure Cases = Cases.Cases_Data
 \<^functor_instance>\<open>struct_name: Induction
@@ -277,7 +277,7 @@ structure Cases = Cases.Cases_Data
   id: \<open>FI.id\<close>
   path: \<open>FI.long_name\<close>
   more_args: \<open>open Base_Args
-    val init_args = mk_init_args Prio.VERY_LOW
+    val init_args = mk_init_args Cost.VERY_HIGH
   \<close>\<close>
 structure Induction = Induction.Induction_Data
 end

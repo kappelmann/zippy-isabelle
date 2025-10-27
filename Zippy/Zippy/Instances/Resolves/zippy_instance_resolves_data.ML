@@ -23,16 +23,16 @@ functor Zippy_Instance_Resolves_Data(
     structure Z : ZIPPY_INSTANCE_TACTIC
     structure TI : TERM_INDEX
     val init_args : (Z.Base_Data.AAMeta.P.progress,
-      int -> @{AllT_args} Z.Base_Data.PAction.action,
+      int -> @{AllT_args} Z.Base_Data.CAction.action,
       Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLP.Z2.zipper) Z.emorph,
       @{AllT_args} Z.Result_Action.mk_copy_update_data,
-      @{AllT_args} Z.PResults.prio_sq_co,
+      @{AllT_args} Z.CResults.cresultsq,
       thm * (term * (thm,
         Z.Base_Data.AAMeta.P.progress,
-        int -> @{AllT_args} Z.Base_Data.PAction.action,
+        int -> @{AllT_args} Z.Base_Data.CAction.action,
         (Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLP.Z2.zipper) Z.emorph) list,
         @{AllT_args} Z.Result_Action.mk_copy_update_data,
-        @{AllT_args} Z.PResults.prio_sq_co)
+        @{AllT_args} Z.CResults.cresultsq)
         Zippy_Instance_Hom_Changed_Goals_Data_Args.PD.entries) -> bool)
         Zippy_Instance_Hom_Changed_Goals_Data_Args.PDC.entries
     structure Log : ZIPPY_LOGGER_MIXIN_BASE

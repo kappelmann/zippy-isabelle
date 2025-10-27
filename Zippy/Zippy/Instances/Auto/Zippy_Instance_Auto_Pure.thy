@@ -26,10 +26,10 @@ ML\<open>
     open Z
     structure TI = Discrimination_Tree
     val resolve_init_args = {
-      empty_action = SOME (Library.K PAction.disable_action),
+      empty_action = SOME (Library.K CAction.disable_action),
       default_update = NONE,
       mk_cud = SOME Result_Action.copy_update_data_empty_changed,
-      prio_sq_co = SOME (PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.MEDIUM),
+      cresultsq = SOME (CResults.enum_double_cost_double_cost_depth_cresultsq Cost.MEDIUM),
       progress = SOME Base_Data.AAMeta.P.Promising,
       del_select = SOME (apsnd (snd #> #thm #> the) #> Thm.eq_thm)}
     structure Log_Base = Z.Logging.Base\<close>\<close>
@@ -62,7 +62,7 @@ fun init st = st |>
     (arr (GC.get_ngoals #> Base_Data.Tac_Res.GPU.F.all_upto))
   >>> top2 >>> Z1.ZM.Unzip.morph)
 
-fun run_best_first x = Zippy.Run.run_statesq' Zippy.Run.Best_First.PAction_Queue.init_pactions_queue
+fun run_best_first x = Zippy.Run.run_statesq' Zippy.Run.Best_First.CAction_Queue.init_cactions_queue
   Zippy.Run.Best_First.Step.step_queue x
 
 val are_thm_variants = apply2 Thm.prop_of #> Term_Util.are_term_variants
@@ -369,8 +369,8 @@ declare [[zippy_init_gc \<open>
     val update = Library.maps snd
       #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
     val mk_cud = Result_Action.copy_update_data_empty_changed
-    val prio_sq_co_safe = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH1
-    val prio_sq_co_unsafe = PResults.enum_halve_prio_halve_prio_depth_sq_co Prio.HIGH
+    val cresultsq_safe = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.LOW
+    val cresultsq_unsafe = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.LOW1
     fun f_timeout ctxt i state n time = (@{log Logger.WARN Zippy_Auto.Simp.logger} ctxt
       (fn _ => Pretty.breaks [
           Pretty.block [Pretty.str (name ^ " timeout at pull number "), SpecCheck_Show.int n,
@@ -385,7 +385,7 @@ declare [[zippy_init_gc \<open>
       (f_timeout ctxt i state) tac ctxt i state
     val (safe_tac, tac) = apply2 wrap_tac tacs
     val data = Simp.gen_data name safe_tac tac Util.exn id update mk_cud
-      prio_sq_co_safe prio_sq_co_unsafe
+      cresultsq_safe cresultsq_unsafe
     fun init _ focus z = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
@@ -398,7 +398,7 @@ declare [[zippy_parse add: \<open>(@{binding simp}, Zippy_Auto.Simp.parse_extend
 (* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.logger Logger.ALL\<close>]] *)
 
 (*TODO:
-- A^* (1/prio = cost VS (0, 1))
+- A^* (1/cost = cost VS (0, 1))
 *)
 
 end

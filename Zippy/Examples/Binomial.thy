@@ -1229,7 +1229,10 @@ proof -
   have "\<And>x. \<forall>s\<in>S. \<exists>X \<in> \<F> s. x \<in> X \<Longrightarrow> \<exists>G. (\<forall>x\<in>S. G x \<in> \<F> x) \<and> (\<forall>s\<in>S. x \<in> G s)"
     by metis
   then show ?thesis
-    by (auto simp flip: all_simps ex_simps)
+    (*NEW*)
+    by (zippy simp flip: all_simps ex_simps where simp timeout: 0.1)
+    (*ORIG*)
+    (* by (auto simp flip: all_simps ex_simps) *)
 qed
 
 lemma subset_insert_lemma:
