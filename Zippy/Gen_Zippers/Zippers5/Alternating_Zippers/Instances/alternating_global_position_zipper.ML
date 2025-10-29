@@ -38,20 +38,18 @@ structure Z{i} = \<^eval>\<open>sfx_T_nargs "Content_Zipper"\<close>(
   fun unzip (_ :: pss) = pure pss
   fun down (ps :: pss) = pure ((Pos.init_x :: ps) :: pss)
   (*FIXME: use monad with exception instead of throwing option exception?*)
-  fun up (ps :: pss) = pure (the (Pos.up ps) :: pss)
+  fun up (ps :: pss) = pure (the (Pos.up ps) :: pss
+    handle Option.Option => error "Cannot go further up in alternating global position zipper.")
   fun left (ps :: pss) = pure (Pos.left ps :: pss)
   fun right (ps :: pss) = pure (Pos.right ps :: pss))\<close>\<close>
 
 structure Base =
-struct
-  open MB
+struct open MB
   type @{AllT_args} from = path
   type @{AllT_args} to = path
 end
-
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 structure Down{i} = struct open Base; fun morph pss = M.pure (Pos.init :: pss) end\<close>\<close>
-
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 structure Up{i} = struct open Base; fun morph (_ :: pss) = M.pure pss end\<close>\<close>
 

@@ -20,22 +20,22 @@ open \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Path"\<close>
 structure AE = AE
 structure Z = Z
 
-local structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(AE); open SC Z
+local structure SC = \<^eval>\<open>sfx_ParaT_nargs "Semi_Category"\<close>(AE); open SC AE Z
 in
 fun path_from_zipper1 z =
   let val get_pos = Z1.ZD.Co.getter #> N1.Co.getter
   in
-    AE.catch'
+    catch'
       (Up1.morph >>> \<^eval>\<open>"path_from_zipper" ^ pred_mod_nzippers 1\<close>
-        >>> K.arr (fn p => Path1 (get_pos z, p)))
-      (K.arr (fn _ => Pos (get_pos z))) z
+        >>> arr (fn p => Path1 (get_pos z, p)))
+      (arr (fn _ => Pos (get_pos z))) z
   end
 \<^imap>\<open>\<open>{i}\<close> => \<open>
 and path_from_zipper{i} z = z |>
   let val get_pos = Z{i}.ZD.Co.getter #> N{i}.Co.getter
   in
     Up{i}.morph >>> path_from_zipper\<^eval>\<open>pred_mod_nzippers {i}\<close>
-    >>> K.arr (fn p => Path{i} (get_pos z, p))
+    >>> arr (fn p => Path{i} (get_pos z, p))
   end
 \<close> start: 2\<close>
 end

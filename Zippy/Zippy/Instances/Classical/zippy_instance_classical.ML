@@ -9,13 +9,13 @@ sig
   sig
     val slow_step_data : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Zippy_Identifier.id ->
       ((Base_Data.GCS.goal_pos * Base_Data.GCS.gcpos list) list ->
-        (@{ParaT_args} @{AllT_args} ZLP.Z1.zipper) emorph) ->
+        (@{ParaT_args} @{AllT_args} ZLPC.Z1.zipper) emorph) ->
       @{AllT_args} Result_Action.mk_copy_update_data -> @{AllT_args} CResults.cresultsq ->
       @{AllT_args} CResults.cresultsq -> @{AllT_args} CResults.cresultsq ->
       @{AllT_args} CResults.cresultsq -> @{AllT_args} Tac.data
     val atomize_prems_data :
       Zippy_Identifier.id -> ((Base_Data.GCS.goal_pos * Base_Data.GCS.gcpos list) list ->
-        (@{ParaT_args} @{AllT_args} ZLP.Z1.zipper) emorph) ->
+        (@{ParaT_args} @{AllT_args} ZLPC.Z1.zipper) emorph) ->
       @{AllT_args} Result_Action.mk_copy_update_data -> @{AllT_args} CResults.cresultsq ->
       @{AllT_args} Tac.data
   end

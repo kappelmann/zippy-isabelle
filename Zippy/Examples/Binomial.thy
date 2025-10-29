@@ -1386,8 +1386,9 @@ proof -
   have card_eq: "card ` {I. I \<subseteq> A \<and> I \<noteq> {}} = {1..card A}"
     using not_less_eq_eq card_mono
     (*NEW*)
-    by - ((zippy 10 simp: image_iff
-      where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+    by - ((zippy 9 simp: image_iff
+      where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq"
+      where blast depth: 2)[1])+
     (*ORIG*)
     (* using not_less_eq_eq card_mono by (fastforce simp: image_iff) *)
   have "int(card(\<Union> A))

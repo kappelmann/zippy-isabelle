@@ -103,7 +103,7 @@ sig
     type config = (bool, Cases_Data_Args.match,
       Base_Data.AAMeta.P.progress,
       int -> @{AllT_args} Base_Data.CAction.action,
-      Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph,
+      Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph,
       @{AllT_args} Result_Action.mk_copy_update_data,
       @{AllT_args} CResults.cresultsq) Zippy_Instance_Induction_Data_Args.PDC.entries
 
@@ -130,10 +130,10 @@ sig
       Context.generic -> Context.generic
 
     val get_default_update : Context.generic -> Base_Data.GCS.goal_pos ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph
+      (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph
     val map_default_update :
-      ((Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph) ->
-        Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph) ->
+      ((Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph) ->
+        Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph) ->
       Context.generic -> Context.generic
 
     val get_mk_cud : Context.generic -> @{AllT_args} Result_Action.mk_copy_update_data
@@ -148,7 +148,7 @@ sig
       Induction_Data_Args.taking, bool, thm list, Cases_Data_Args.match,
       Base_Data.AAMeta.P.progress,
       int -> @{AllT_args} Base_Data.CAction.action,
-      (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph) list option,
+      (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph) list option,
       @{AllT_args} Result_Action.mk_copy_update_data,
       @{AllT_args} CResults.cresultsq) Zippy_Instance_Induction_Data_Args.PD.entries
 
@@ -165,8 +165,8 @@ sig
       Induction_Data_Args.taking, bool, thm list, Cases_Data_Args.match,
       Base_Data.AAMeta.P.progress,
       int -> @{AllT_args} Base_Data.CAction.action,
-      Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph,
-      (int * (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph)) list option,
+      Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph,
+      (int * (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph)) list option,
       @{AllT_args} Result_Action.mk_copy_update_data,
       @{AllT_args} CResults.cresultsq) Zippy_Instance_Induction_Data_Args.PAA.entries
 
@@ -262,15 +262,15 @@ sig
         Tac_AAM.ztactic) morph) ->
       (@{AllT_args} Result_Action.mk_copy_update_data -> Result_Action.result ->
         @{AllT_args} Base_Data.CAction.action) option ->
-      data -> Base_Data.GFocus.focus -> (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper,
-        @{AllT_args} ZLP.Z4.zipper) morph
+      data -> Base_Data.GFocus.focus -> (@{ParaT_args} @{AllT_args} ZLPC.Z3.zipper,
+        @{AllT_args} ZLPC.Z4.zipper) morph
     val cons_nth_action : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
       (Base_Data.AAMeta.P.progress -> Induction_Data_Args.data -> (@{ParaT_args} Base_Data.GFocus.focus,
         Tac_AAM.ztactic) morph) ->
       (@{AllT_args} Result_Action.mk_copy_update_data -> Result_Action.result ->
         @{AllT_args} Base_Data.CAction.action) option ->
       Proof.context -> int -> data -> Base_Data.GFocus.focus ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper, @{AllT_args} ZLP.Z4.zipper) morph
+      (@{ParaT_args} @{AllT_args} ZLPC.Z3.zipper, @{AllT_args} ZLPC.Z4.zipper) morph
 
     val cons_action_cluster : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
       (Base_Data.AAMeta.P.progress -> Induction_Data_Args.data -> (@{ParaT_args} Base_Data.GFocus.focus,
@@ -278,7 +278,7 @@ sig
       (@{AllT_args} Result_Action.mk_copy_update_data -> Result_Action.result ->
         @{AllT_args} Base_Data.CAction.action) option ->
       Proof.context -> (Base_Data.GFocus.focus * data) list ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper option) morph
+      (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper, @{AllT_args} ZLPC.Z3.zipper option) morph
   end
 end
 
@@ -290,7 +290,7 @@ functor Zippy_Instance_Induction_Data(
     val init_args : (bool, Cases_Data_Args.match,
       Z.Base_Data.AAMeta.P.progress,
       int -> @{AllT_args} Z.Base_Data.CAction.action,
-      Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLP.Z2.zipper) Z.emorph,
+      Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLPC.Z2.zipper) Z.emorph,
       @{AllT_args} Z.Result_Action.mk_copy_update_data,
       @{AllT_args} Z.CResults.cresultsq) Zippy_Instance_Induction_Data_Args.PDC.entries
     structure Log : ZIPPY_LOGGER_MIXIN_BASE
@@ -314,7 +314,7 @@ structure Induction_Data =
 struct
 structure FI = Functor_Instance(FI_Induction_Data)
 
-local open Zippy_Instance_Induction_Data_Args ZLP Base_Data
+local open Zippy_Instance_Induction_Data_Args ZLPC Base_Data
 in
 
 structure Log = Zippy_Logger_Mixin_Base(val parent_logger = Log.logger; val name = "Induction_Data")
@@ -323,7 +323,7 @@ open Log
 type config = (bool, CDA.match,
   Base_Data.AAMeta.P.progress,
   int -> @{AllT_args} Base_Data.CAction.action,
-  Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph,
+  Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph,
   @{AllT_args} Result_Action.mk_copy_update_data,
   @{AllT_args} CResults.cresultsq) PDC.entries
 
@@ -359,7 +359,7 @@ val map_cresultsq = map_config o PDC.map_cresultsq
 type data = (IDA.insts, thm option, IDA.arbitrary, IDA.taking, bool, thm list, CDA.match,
   Base_Data.AAMeta.P.progress,
   int -> @{AllT_args} Base_Data.CAction.action,
-  (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph) list option,
+  (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph) list option,
   @{AllT_args} Result_Action.mk_copy_update_data,
   @{AllT_args} CResults.cresultsq) PD.entries
 
@@ -392,8 +392,8 @@ structure Data = Generic_Data(
 type add_args = (IDA.insts, thm option, IDA.arbitrary, IDA.taking, bool, thm list, CDA.match,
   Base_Data.AAMeta.P.progress,
   int -> @{AllT_args} Base_Data.CAction.action,
-  Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph,
-  (int * (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph)) list option,
+  Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph,
+  (int * (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph)) list option,
   @{AllT_args} Result_Action.mk_copy_update_data,
   @{AllT_args} CResults.cresultsq) PAA.entries
 
@@ -712,9 +712,9 @@ val parse_context_update = Parse.and_list1' parse_entry_context_update >> K ()
 
 local open MU; open SC
   structure Base_Mixins = struct structure Exn = Exn; structure Co = Co; structure Ctxt = Ctxt end
-  structure ZB = Zippy_Base(open Base_Mixins; structure Z = ZLP; structure Log = Log_Base
+  structure ZB = Zippy_Base(open Base_Mixins; structure Z = ZLPC; structure Log = Log_Base
     \<^imap>\<open>\<open>{i}\<close> => \<open>structure Show{i} = Show.Zipper{i}\<close>\<close>)
-  structure ZL = Zippy_Lists(open Base_Mixins; structure Z = ZLP)
+  structure ZL = Zippy_Lists(open Base_Mixins; structure Z = ZLPC)
   structure Goals = Zippy_Goals_Mixin_Base(open Mixin_Base1 Mixin_Base2)
   structure Goals_Pos = Zippy_Goals_Pos_Mixin_Base(open Goals; structure GPU = Base_Data.Tac_Res.GPU)
   structure Goals_Pos_Copy = Zippy_Goals_Pos_Copy_Mixin(Zippy_Goals_Pos_Copy_Mixin_Base(open Goals_Pos

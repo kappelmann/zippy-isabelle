@@ -8,8 +8,9 @@ sig
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   val move_path{i} : path{i} ->
     (@{ParaT_args} @{AllT_args} Z.Z1.zipper, @{AllT_args} Z.Z{i}.zipper) Z.morph
-
-  val move_path_from_root{i} : int list list ->
+  val move_path_from_root_rev{i} : Zipper_Position.pos list ->
+    (@{ParaT_args} @{AllT_args} Z.Z1.zipper, @{AllT_args} Z.Z{i}.zipper) Z.morph
+  val move_path_from_root{i} : Zipper_Position.pos list ->
     (@{ParaT_args} @{AllT_args} Z.Z1.zipper, @{AllT_args} Z.Z{i}.zipper) Z.morph\<close>\<close>
 end
 
@@ -39,6 +40,7 @@ and move_path{i} (Path{i} (pos, p)) = move_path\<^eval>\<open>pred_mod_nzippers 
 end
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>
+fun move_path_from_root_rev{i} x = path_from_root_rev{i} x |> move_path{i}
 fun move_path_from_root{i} x = path_from_root{i} x |> move_path{i}\<close>\<close>
 
 end

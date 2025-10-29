@@ -9,7 +9,7 @@ sig
   sig
     include ZIPPY_CRESULTS_MIXIN_BASE
     where type result = Result_Action.result
-    where type @{AllT_args} zipper = @{AllT_args} ZLP.Z4.zipper
+    where type @{AllT_args} zipper = @{AllT_args} ZLPC.Z4.zipper
     where type cost = Base_Data.CAction.cost
     where type (@{ParaT_args} 'a, 'b, 'c) Co.Co.acoroutine =
       (@{ParaT_args} 'a, 'b, 'c) Co.Co.acoroutine
@@ -30,15 +30,15 @@ sig
       (*first argument is the number of successful action applications before the empty action*)
       empty_action : int -> @{AllT_args} Base_Data.CAction.action,
       result_action : result -> @{AllT_args} Base_Data.CAction.action,
-      cresults : Base_Data.GFocus.focus -> (@{ParaT_args} @{AllT_args} ZLP.Z4.zipper,
+      cresults : Base_Data.GFocus.focus -> (@{ParaT_args} @{AllT_args} ZLPC.Z4.zipper,
         @{AllT_args} cresults) morph}
 
     val caction_data_from_data : @{AllT_args} data -> @{AllT_args} CAction.data
     val cons_action : @{AllT_args} data -> Base_Data.GFocus.focus ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper, @{AllT_args} ZLP.Z4.zipper) morph
+      (@{ParaT_args} @{AllT_args} ZLPC.Z3.zipper, @{AllT_args} ZLPC.Z4.zipper) morph
     val cons_action_cluster : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
       (Base_Data.GFocus.focus * @{AllT_args} data) list ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper option) morph
+      (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper, @{AllT_args} ZLPC.Z3.zipper option) morph
 
     (* cost *)
     val enum_double_cresultsq : cost -> @{AllT_args} cresultsq
@@ -59,11 +59,11 @@ functor Zippy_Instance_CResults(
   ) : ZIPPY_INSTANCE_CRESULTS =
 struct
 
-open Z; open ZLP MU
+open Z; open ZLPC MU
 structure ZP = Zippy_Positions_Mixin(structure Z = ZP; structure Exn = Exn)
 
 structure CResults = Zippy_CResults_Mixin(Zippy_CResults_Mixin_Base(
-  structure M = ZLP
+  structure M = ZLPC
   structure Co = Co
   type @{AllT_args} zipper = @{AllT_args} Z4.zipper
   type cost = Base_Data.CAction.cost

@@ -11,64 +11,64 @@ sig
   structure Lens1 :
   sig
     structure GClusters : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z1.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z1.zipper
     where type @{AllT_args} data = Base_Data.GCS.gclusters
     structure Results : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z1.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z1.zipper
     where type @{AllT_args} data = Base_Data.GResults.results
   end
   structure Lens2 :
   sig
     structure GCluster : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z2.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z2.zipper
     where type @{AllT_args} data = Base_Data.GC.gcluster
     structure Results : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z2.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z2.zipper
     where type @{AllT_args} data = Base_Data.GResults.results
     structure Top_Meta_Vars : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z2.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z2.zipper
     where type @{AllT_args} data = Base_Data.TMV.top_meta_vars
   end
   structure Lens3 :
   sig
     structure Copy : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z3.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z3.zipper
     where type @{AllT_args} data = @{AllT_args} Base_Data.Copy.copy
     structure Meta : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z3.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z3.zipper
     where type @{AllT_args} data = Base_Data.ACMeta.metadata
   end
   structure Lens4 :
   sig
     structure CAction : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z4.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z4.zipper
     where type @{AllT_args} data = @{AllT_args} Base_Data.CAction.caction
     structure Action_App_Num : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z4.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z4.zipper
     where type @{AllT_args} data = Base_Data.AANum.action_app_num
     structure Focus : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z4.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z4.zipper
     where type @{AllT_args} data = Base_Data.GFocus.focus
     structure Meta : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z4.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z4.zipper
     where type @{AllT_args} data = Base_Data.AMeta.metadata
   end
   structure Lens5 :
   sig
     structure Action_App_Num : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z5.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z5.zipper
     where type @{AllT_args} data = Base_Data.AANum.action_app_num
     structure Focus : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z5.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z5.zipper
     where type @{AllT_args} data = Base_Data.GFocus.focus
     structure Cost : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z5.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z5.zipper
     where type @{AllT_args} data = Base_Data.CAction.cost
     structure GPos_Update : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z5.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z5.zipper
     where type @{AllT_args} data = Base_Data.Tac_Res.gpos_update
     structure Meta : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
-    where type @{AllT_args} container = @{AllT_args} ZLP.Z5.zipper
+    where type @{AllT_args} container = @{AllT_args} ZLPC.Z5.zipper
     where type @{AllT_args} data = Base_Data.AAMeta.metadata
   end
 
@@ -77,9 +77,9 @@ sig
   sig
     \<^imap>\<open>\<open>{i}\<close> => \<open>
     structure Zipper{i} : ZIPPY_SHOW_MIXIN_BASE
-    where type @{AllT_args} t = @{AllT_args} ZLP.Z{i}.zipper
+    where type @{AllT_args} t = @{AllT_args} ZLPC.Z{i}.zipper
     structure Container{i} : ZIPPY_SHOW_MIXIN_BASE
-    where type @{AllT_args} t = @{AllT_args} ZLP.Z{i}.ZM.container\<close>\<close>
+    where type @{AllT_args} t = @{AllT_args} ZLPC.Z{i}.ZM.container\<close>\<close>
     structure Cost : ZIPPY_SHOW_MIXIN_BASE
     where type @{AllT_args} t = Base_Data.CAction.cost
   end
@@ -170,27 +170,27 @@ sig
   (* nodes *)
   structure Node :
   sig
-    val co1 : Base_Data.GCS.gclusters -> @{AllT_args} ZLP.ZN.N1.content
-    val co2 : Base_Data.TMV.top_meta_vars -> Base_Data.GC.gcluster -> @{AllT_args} ZLP.ZN.N2.content
+    val co1 : Base_Data.GCS.gclusters -> @{AllT_args} ZLPC.ZN.N1.content
+    val co2 : Base_Data.TMV.top_meta_vars -> Base_Data.GC.gcluster -> @{AllT_args} ZLPC.ZN.N2.content
     val co3 : Base_Data.ACMeta.metadata -> @{AllT_args} Base_Data.Copy.copy ->
-      @{AllT_args} ZLP.ZN.N3.content
+      @{AllT_args} ZLPC.ZN.N3.content
     val co4 : Base_Data.AMeta.metadata -> @{AllT_args} Base_Data.CAction.caction ->
-      Base_Data.GFocus.focus -> @{AllT_args} ZLP.ZN.N4.content
+      Base_Data.GFocus.focus -> @{AllT_args} ZLPC.ZN.N4.content
     val co5 : Base_Data.AAMeta.metadata -> Base_Data.Tac_Res.gpos_update ->
-      Base_Data.CAction.cost -> @{AllT_args} ZLP.Z4.zipper -> @{AllT_args} ZLP.ZN.N5.content
+      Base_Data.CAction.cost -> @{AllT_args} ZLPC.Z4.zipper -> @{AllT_args} ZLPC.ZN.N5.content
 
     val cons3 : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
       (Base_Data.GFocus.focus * (Base_Data.GFocus.focus ->
-        (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper) emorph)) list ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper option) morph
+        (@{ParaT_args} @{AllT_args} ZLPC.Z3.zipper) emorph)) list ->
+      (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper, @{AllT_args} ZLPC.Z3.zipper option) morph
     val cons4 : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.AMeta.metadata ->
       @{AllT_args} Base_Data.CAction.caction -> Base_Data.GFocus.focus ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper, @{AllT_args} ZLP.Z4.zipper) morph
+      (@{ParaT_args} @{AllT_args} ZLPC.Z3.zipper, @{AllT_args} ZLPC.Z4.zipper) morph
     (*Note: results are added to the back since this keeps the paths of existing nodes (e.g. those
     stored in a queue during search) unchanged.*)
     val snoc5 : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.AAMeta.metadata ->
       Base_Data.Tac_Res.gpos_update -> Base_Data.CAction.cost ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z4.zipper, @{AllT_args} ZLP.Z5.zipper) morph
+      (@{ParaT_args} @{AllT_args} ZLPC.Z4.zipper, @{AllT_args} ZLPC.Z5.zipper) morph
   end
 end
 
@@ -208,7 +208,7 @@ functor Zippy_Instance(
 struct
 
 open Z
-structure ZLP = Zippy_Lists_Positions_Mixin(structure Z = ZLP; structure Exn = Exn); open ZLP
+structure ZLP = Zippy_Lists_Positions_Mixin(structure Z = ZLPC; structure Exn = Exn); open ZLP
 structure ZN = Zippy_Node(structure Z = ZLP; structure Exn = Exn)
 
 (* lenses *)
@@ -335,12 +335,20 @@ end
 
 (* pretty printing/shows *)
 local
-  fun with_position pretty_position x p = Pretty.breaks [
+  fun with_position pretty_position z p = Pretty.breaks [
       p,
-      Pretty.block [Pretty.str "at position ", pretty_position x]
-    ] |> Pretty.block
-  fun pretty_zipper pretty_position z = SpecCheck_Show.record #> with_position pretty_position z
-  fun pretty_container pretty_position c = with_position pretty_position c (Pretty.str "container")
+      Pretty.block [Pretty.str "at position ", pretty_position z]
+    ] |> Pretty.block0
+  structure ZCost = Zippy_Collect_Trace_Mixin(ZLPC.ZCollect)
+  fun with_cost_trace get_trace ctxt z p = Pretty.breaks [
+      p,
+      Pretty.block [Pretty.str "with cost trace ",
+        ZCost.pretty_trace (Show_Cost.pretty ctxt) (get_trace z)]
+    ] |> Pretty.block0
+  \<^imap>\<open>\<open>{i}\<close> => \<open>
+  fun pretty_zipper{i} ctxt z = SpecCheck_Show.record
+    #> with_position ZLP.pretty_position_zipper{i} z
+    #> with_cost_trace ZCost.ZZCollect_Co{i}.getter ctxt z\<close>\<close>
 in
 structure Show =
 struct
@@ -349,7 +357,7 @@ struct
   in
   structure Zipper1 = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} Z1.zipper
-    fun pretty ctxt z = pretty_zipper ZLP.pretty_position_zipper1 z [
+    fun pretty ctxt z = pretty_zipper1 ctxt z [
       ("Goal clusters", GCS.pretty_gclusters ctxt (L.GClusters.getter z)),
       ("Results", GResults.pretty_results (L.Results.getter z))
     ])
@@ -358,7 +366,7 @@ struct
   in
   structure Zipper2 = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} Z2.zipper
-    fun pretty ctxt z = pretty_zipper ZLP.pretty_position_zipper2 z [
+    fun pretty ctxt z = pretty_zipper2 ctxt z [
       ("Goal cluster", GC.pretty_gcluster ctxt (L.GCluster.getter z)),
       ("Results", GResults.pretty_results (L.Results.getter z)),
       ("Top Meta Variables", TMV.pretty ctxt (L.Top_Meta_Vars.getter z))
@@ -368,7 +376,7 @@ struct
   in
   structure Zipper3 = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} Z3.zipper
-    fun pretty _ z = pretty_zipper ZLP.pretty_position_zipper3 z [
+    fun pretty ctxt z = pretty_zipper3 ctxt z [
       ("Metadata", ACMeta.pretty_metadata (L.Meta.getter z))
     ])
   end
@@ -376,7 +384,7 @@ struct
   in
   structure Zipper4 = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} Z4.zipper
-    fun pretty _ z = pretty_zipper ZLP.pretty_position_zipper4 z [
+    fun pretty ctxt z = pretty_zipper4 ctxt z [
       ("Action application number", AANum.pretty (L.Action_App_Num.getter z)),
       ("Focus", GFocus.pretty (L.Focus.getter z)),
       ("Metadata", AMeta.pretty_metadata (L.Meta.getter z))
@@ -386,7 +394,7 @@ struct
   in
   structure Zipper5 = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} Z5.zipper
-    fun pretty ctxt z = pretty_zipper ZLP.pretty_position_zipper5 z [
+    fun pretty ctxt z = pretty_zipper5 ctxt z [
       ("Action application number", AANum.pretty (L.Action_App_Num.getter z)),
       ("Focus", GFocus.pretty (L.Focus.getter z)),
       ("cost", Cost.pretty ctxt (L.Cost.getter z)),
@@ -396,7 +404,7 @@ struct
   \<^imap>\<open>\<open>{i}\<close> => \<open>
   structure Container{i} = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} Z{i}.ZM.container
-    fun pretty _ = pretty_container ZLP.pretty_position_container{i})\<close>\<close>
+    fun pretty _ c = Pretty.str "container{i}" |> with_position ZLP.pretty_position_container{i} c)\<close>\<close>
   end
 end
 end

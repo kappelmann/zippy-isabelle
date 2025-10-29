@@ -4,7 +4,6 @@
 signature ZIPPY_COST_MIXIN_BASE =
 sig
   type cost
-
   structure L : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
   where type @{AllT_args} data = cost
 end

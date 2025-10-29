@@ -12,7 +12,7 @@ sig
   sharing type Z.Z{i}.ZD.content = Z{i}.ZD.content\<close>\<close>
 
   \<^imap>\<open>\<open>{i}\<close> => \<open>
-  val path_from_zipper{i} : (@{ParaT_args} @{AllT_args} Z{i}.zipper, path{i}) morph
+  val path_from_zipper{i} : @{AllT_args} Z{i}.zipper -> path{i}
   val move_zipper{i} : @{AllT_args} Z{i}.zipper ->
     (@{ParaT_args} @{AllT_args} Z1.zipper, @{AllT_args} Z{i}.zipper) morph\<close>\<close>
 
@@ -39,15 +39,13 @@ struct
 
 open Z
 structure MU = Zippy_Monad_Util(Z.M); open MU
-structure Path_ZLPos = \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Path_Local_Position_Zipper"\<close>(
-  structure Z = Z.ZLPos; structure AE = Exn.AE)
 structure Path_Util = \<^eval>\<open>pfx_sfx_nargs "Alternating_Zipper_Path_Util"\<close>(Z); open Path_Util
 
 local open Mo
 in
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-fun path_from_zipper{i} z = SZLPos.SZ{i}.Zipper.getter z |> Path_ZLPos.path_from_zipper{i}
-fun move_zipper{i} z_to z_from = path_from_zipper{i} z_to >>= (fn pos => move_path{i} pos z_from)\<close>\<close>
+fun path_from_zipper{i} z = SZGPos.SZ{i}.Zipper.getter z |> path_from_root_rev{i}
+fun move_zipper{i} z_to = path_from_zipper{i} z_to |> move_path{i}\<close>\<close>
 end
 
 \<^imap>\<open>\<open>{i}\<close> => \<open>

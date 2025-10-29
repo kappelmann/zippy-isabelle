@@ -43,7 +43,7 @@ sig
   structure Exn : ZIPPY_EXCEPTION_MIXIN
   sharing type Exn.M.t = M.t
 
-  structure ZLP : ZIPPY_LISTS_POSITIONS_MIXIN
+  structure ZLPC : ZIPPY_LISTS_POSITIONS_COLLECT_TRACE_MIXIN_BASE
   where type @{AllT_args} ZN.N1.content =
     (Base_Data.GCS.gclusters, Base_Data.GResults.results) Base_Data.NCB1.data
   where type @{AllT_args} ZN.N2.content =
@@ -57,30 +57,33 @@ sig
   where type @{AllT_args} ZN.N5.content =
     (Base_Data.AANum.action_app_num, Base_Data.GFocus.focus, Base_Data.CAction.cost,
       Base_Data.Tac_Res.gpos_update, Base_Data.AAMeta.metadata) Base_Data.NCB5.data
-  sharing type ZLP.Z3.zipper = Base_Data.Copy.zipper_from
-  sharing type ZLP.Z1.zipper = Base_Data.Copy.zipper_to
-  sharing type ZLP.Z4.zipper = Base_Data.CAction.zipper
-  sharing type ZLP.Z5.zipper = Base_Data.CAction.zipper_expanded
-  sharing type ZLP.Z1.zipper = Base_Data.CAction.zipper_changed
-  sharing type ZLP.ZN_AZ2.L.M.exn = Exn.ME.exn
-  sharing type ZLP.M.t = M.t
+  where type @{AllT_args} ZCollect.data = Base_Data.CAction.cost
+  sharing type ZLPC.Z3.zipper = Base_Data.Copy.zipper_from
+  sharing type ZLPC.Z1.zipper = Base_Data.Copy.zipper_to
+  sharing type ZLPC.Z4.zipper = Base_Data.CAction.zipper
+  sharing type ZLPC.Z5.zipper = Base_Data.CAction.zipper_expanded
+  sharing type ZLPC.Z1.zipper = Base_Data.CAction.zipper_changed
+  sharing type ZLPC.ZN_AZ2.L.M.exn = Exn.ME.exn
+  sharing type ZLPC.M.t = M.t
 end
 
 functor Zippy_Instance_Base(
     structure ME : \<^eval>\<open>sfx_ParaT_nargs "MONAD_EXCEPTION_BASE"\<close>
     where type @{ParaT_args encl: "(" ")"} exn = unit
     type cost
+    val update_cost : cost -> (cost * cost list) option -> cost
   ) :
   sig
     include ZIPPY_INSTANCE_BASE
     structure Container :
     sig
       \<^imap>\<open>\<open>{i}\<close> => \<open>
-      val container{i} : @{AllT_args} ZLP.ZP.ZGPos.Z{i}.ZM.container ->
-        @{AllT_args} ZLP.ZP.ZLPos.Z{i}.ZM.container -> @{AllT_args} ZLP.ZP.ZDepth.Z{i}.ZM.container ->
-        @{AllT_args} ZLP.ZN.Z{i}.ZM.container -> @{AllT_args} ZLP.Z{i}.ZM.container
-      val init_container{i} : @{AllT_args} ZLP.ZN.Z{i}.ZM.container ->
-        @{AllT_args} ZLP.Z{i}.ZM.container\<close>\<close>
+      val container{i} : (cost * cost list) option -> @{AllT_args} ZLPC.ZP.ZGPos.Z{i}.ZM.container ->
+        @{AllT_args} ZLPC.ZP.ZLPos.Z{i}.ZM.container ->
+        @{AllT_args} ZLPC.ZP.ZDepth.Z{i}.ZM.container -> @{AllT_args} ZLPC.ZN.Z{i}.ZM.container ->
+        @{AllT_args} ZLPC.Z{i}.ZM.container
+      val init_container{i} : @{AllT_args} ZLPC.ZN.Z{i}.ZM.container ->
+        @{AllT_args} ZLPC.Z{i}.ZM.container\<close>\<close>
     end
   end =
 struct
@@ -110,7 +113,7 @@ structure Exn = Zippy_Exception_Mixin(Zippy_Exception_Mixin_Base(ME))
 (* construction of alternating zipper *)
 local
   open Base_Data
-  (** alternating zipper skeleton **)
+  (** base skeleton **)
   structure ZLP = Zippy_Lists_Positions_Mixin_Base(
     structure Exn = Exn; structure Z = Zippy_Lists_Base(Exn))
 
@@ -118,7 +121,7 @@ local
   type copy_update_data = Base_Data.Tac_Res.GPU.focus_update
   structure AResult = Zippy_Action_Result
 
-  (*** create recursive datatypes ***)
+  (*** create recursive datatypes and adjoin dependent zipper types ***)
   local structure Z : ZIPPY_BASE_BASE = ZLP; open Z
   in
   datatype @{AllT_args} copy = Copy of copy_update_data -> @{AllT_args} zipper3 ->
@@ -136,7 +139,8 @@ local
       (@{AllT_args} caction, AANum.action_app_num, GFocus.focus, AMeta.metadata)
         NCB4.data,
       (AANum.action_app_num, GFocus.focus, cost, Tac_Res.gpos_update, AAMeta.metadata) NCB5.data
-    ) Z{i}.zipper
+    ) Z{i}.zipper (*instantiated base skeleton*)
+    * (cost * cost list) option (*dependent cost collection*)
   \<close> sep: "and"\<close>
   end
   type @{AllT_args} inst1 = (GCS.gclusters, GResults.results) NCB1.data
@@ -146,84 +150,93 @@ local
     AMeta.metadata) NCB4.data
   type @{AllT_args} inst5 = (AANum.action_app_num, GFocus.focus, cost, Tac_Res.gpos_update,
     AAMeta.metadata) NCB5.data
-in
 
-(*** instantiate data in alternating zipper skeleton ***)
-local open ZLP.ZP
+  (*** instantiate data in base skeleton ***)
+  local open ZLP.ZP
+  in
+  structure ZP :
+    ZIPPY_POSITIONS_MIXIN_BASE
+    where type @{AllT_args} ZLPos.Z.ZM.zipper = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZLPos.Z.ZM.zipper
+    where type @{AllT_args} ZLPos.Z.ZD.zcontext = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZLPos.Z.ZD.zcontext
+    \<^imap>\<open>\<open>{i}\<close> => \<open>
+    where type @{AllT_args} ZLPos.Z{i}.ZM.zipper = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZLPos.Z{i}.ZM.zipper
+    where type @{AllT_args} ZLPos.Z{i}.ZD.content = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZLPos.Z{i}.ZD.content
+    where type @{AllT_args} ZLPos.Z{i}.ZD.zcontext = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZLPos.Z{i}.ZD.zcontext
+    where type @{AllT_args} ZLPos.pzipper{i} = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZLPos.pzipper{i}
+    where type @{AllT_args} Z{i}.ZM.container = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.ZM.container
+    where type @{AllT_args} Z{i}.ZD.content = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.ZD.content
+    where type @{AllT_args} Z{i}.ZD.zcontext = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.ZD.zcontext
+    where type @{AllT_args} Z{i}.zipper = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.zipper\<close>\<close>
+    = ZLP.ZP
+  end
+  local open ZLP
+  in
+  structure ZL :
+    ZIPPY_LISTS_BASE
+    \<^imap>\<open>\<open>{i}\<close> => \<open>
+    where type @{AllT_args} ZN_AZ{i}.ZM.container = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN_AZ{i}.ZM.container\<close>
+    stop: 1\<close>
+    \<^imap>\<open>\<open>{i}\<close> => \<open>
+    where type @{AllT_args} ZN_AZ{i}.ZD.content = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN_AZ{i}.ZD.content
+    where type @{AllT_args} ZN_AZ{i}.zipper = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN_AZ{i}.zipper\<close>
+    start: 2\<close>
+    \<^imap>\<open>\<open>{i}\<close> => \<open>
+    where type @{AllT_args} ZN.A.Z{i}.zipper = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN.A.Z{i}.zipper
+    where type @{AllT_args} ZN.A.N{i}.content = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN.A.N{i}.content
+    where type @{AllT_args} ZN.Z{i}.zipper = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN.Z{i}.zipper
+    where type @{AllT_args} ZN.zcontext{i} = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN.zcontext{i}
+    where type @{AllT_args} ZN.pzipper{i} = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN.pzipper{i}
+    where type @{AllT_args} Z{i}.ZM.container = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.ZM.container
+    where type @{AllT_args} Z{i}.ZD.content = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.ZD.content
+    where type @{AllT_args} Z{i}.ZD.zcontext = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.ZD.zcontext
+    where type @{AllT_args} Z{i}.zipper = (@{ParaT_args}
+      \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.zipper\<close>\<close>
+    = ZLP
+  end
 in
-structure ZP :
-  ZIPPY_POSITIONS_MIXIN_BASE
-  where type @{AllT_args} ZLPos.Z.ZM.zipper = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZLPos.Z.ZM.zipper
-  where type @{AllT_args} ZLPos.Z.ZD.zcontext = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZLPos.Z.ZD.zcontext
-  \<^imap>\<open>\<open>{i}\<close> => \<open>
-  where type @{AllT_args} ZLPos.Z{i}.ZM.zipper = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZLPos.Z{i}.ZM.zipper
-  where type @{AllT_args} ZLPos.Z{i}.ZD.content = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZLPos.Z{i}.ZD.content
-  where type @{AllT_args} ZLPos.Z{i}.ZD.zcontext = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZLPos.Z{i}.ZD.zcontext
-  where type @{AllT_args} ZLPos.pzipper{i} = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZLPos.pzipper{i}
-  where type @{AllT_args} Z{i}.ZM.container = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.ZM.container
-  where type @{AllT_args} Z{i}.ZD.content = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.ZD.content
-  where type @{AllT_args} Z{i}.ZD.zcontext = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.ZD.zcontext
-  where type @{AllT_args} Z{i}.zipper = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.zipper\<close>\<close>
-  = ZLP.ZP
-end
-local open ZLP
+(** adjoin dependent zippers **)
+local structure ZN = Zippy_Node(structure Z = ZL; structure Exn = Exn)
 in
-structure ZL :
-  ZIPPY_LISTS_BASE
-  \<^imap>\<open>\<open>{i}\<close> => \<open>
-  where type @{AllT_args} ZN_AZ{i}.ZM.container = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN_AZ{i}.ZM.container\<close>
-  stop: 1\<close>
-  \<^imap>\<open>\<open>{i}\<close> => \<open>
-  where type @{AllT_args} ZN_AZ{i}.ZD.content = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN_AZ{i}.ZD.content
-  where type @{AllT_args} ZN_AZ{i}.zipper = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN_AZ{i}.zipper\<close>
-  start: 2\<close>
-  \<^imap>\<open>\<open>{i}\<close> => \<open>
-  where type @{AllT_args} ZN.A.Z{i}.zipper = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN.A.Z{i}.zipper
-  where type @{AllT_args} ZN.A.N{i}.content = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN.A.N{i}.content
-  where type @{AllT_args} ZN.Z{i}.zipper = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN.Z{i}.zipper
-  where type @{AllT_args} ZN.zcontext{i} = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN.zcontext{i}
-  where type @{AllT_args} ZN.pzipper{i} = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) ZN.pzipper{i}
-  where type @{AllT_args} Z{i}.ZM.container = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.ZM.container
-  where type @{AllT_args} Z{i}.ZD.content = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.ZD.content
-  where type @{AllT_args} Z{i}.ZD.zcontext = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.ZD.zcontext
-  where type @{AllT_args} Z{i}.zipper = (@{ParaT_args}
-    \<^imap>\<open>\<open>{j}\<close> => \<open>@{AllT_args} inst{j}\<close> sep: ","\<close>) Z{i}.zipper\<close>\<close>
-  = ZLP
+(*the final zipper*)
+structure ZLPC = Zippy_Lists_Positions_Collect_Trace_Mixin_Base5(
+  structure Z = Zippy_Lists_Positions_Mixin(
+    structure Z = struct open ZL; structure ZP = ZP end; structure Exn = Exn)
+  type @{AllT_args} data = cost
+  fun update z = ZN.Node_Co5.getter z |> NCB5.get_cost |> update_cost
+  structure Exn = Exn)
 end
+local structure Z : ZIPPY_BASE_BASE = ZLPC in open Z end
 
-structure ZN = Zippy_Node(structure Z = ZL; structure Exn = Exn)
-local structure Z : ZIPPY_BASE_BASE = ZN in open Z end
+(* zipper mixins *)
+structure ZN = Zippy_Node(structure Z = ZLPC; structure Exn = Exn)
 
 structure Container =
 struct
 \<^imap>\<open>\<open>{i}\<close> => \<open>
-val container{i} = ZLP.container{i}
-val init_container{i} = ZLP.init_container{i}\<close>\<close>
+fun container{i} a b c d e = ZLPC.container{i} a (ZLP.container{i} b c d e)
+fun init_container{i} x = ZLPC.init_container{i} (ZLP.init_container{i} x)\<close>\<close>
 end
-
-structure ZLP = Zippy_Lists_Positions_Mixin(
-  structure Z = struct open ZL; structure ZP = ZP end; structure Exn = Exn)
 
 (* add missing base data structures *)
 structure Base_Data =

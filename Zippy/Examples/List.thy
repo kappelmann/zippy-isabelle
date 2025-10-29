@@ -1672,7 +1672,7 @@ proof (induct xs)
   case Nil thus ?case by simp
 next
   case (Cons x xs) thus ?case
-    using Suc_le_eq by fastforce
+    using Suc_le_eq by (fastforce where blast depth: 0)
 qed
 
 lemma length_filter_conv_card:
@@ -3143,7 +3143,7 @@ lemma list_all2_eq:
 lemma list_eq_iff_zip_eq:
   "xs = ys \<longleftrightarrow> length xs = length ys \<and> (\<forall>(x,y) \<in> set (zip xs ys). x = y)"
   (*NEW*)
-  by (zippy simp add: set_zip list_all2_eq list_all2_conv_all_nth cong: conj_cong where simp timeout: 0.1)
+  by (zippy simp add: set_zip list_all2_eq list_all2_conv_all_nth cong: conj_cong where simp timeout: 0.01)
   (*ORIG*)
   (* by (auto simp add: set_zip list_all2_eq list_all2_conv_all_nth cong: conj_cong) *)
 
@@ -4763,7 +4763,7 @@ next
     by (metis Int_iff UN_I empty_iff equals0I set_empty)
   then show ?case
     (*NEW*)
-    by ((zippy 200 simp: Cons)[1])+
+    by - ((zippy 80 simp: Cons)[1])+
     (*ORIG*)
     (* by (auto_orig simp: Cons) *)
 qed

@@ -53,7 +53,7 @@ struct open Zippy_Auto
 (* add instance specific utilities *)
 structure Run =
 struct open Run
-local open Zippy; open ZLP MU; open SC A Mo
+local open Zippy; open ZLPC MU; open SC A Mo
   structure GC = Zippy_Goal_Cluster_Mixin(Mixin_Base2.GCluster)
 in
 fun init st = st |>
@@ -74,7 +74,7 @@ fun changed_uniquesq st = Seq.filter (fn st' => not (are_thm_variants (st, st'))
   id: \<open>FI.prefix_id "run"\<close>
   path: \<open>FI.struct_op "Run"\<close>
   more_args: \<open>
-    structure Z = ZLP
+    structure Z = ZLPC
     structure Ctxt = Ctxt
     structure Seq_From_Monad = Seq_From_Monad
     type run_config = int option
@@ -130,7 +130,7 @@ end
 
 declare [[zippy_init_gc \<open>
   let
-    open Zippy Zippy_Auto.Resolves.Resolve_Unif; open ZLP MU; open SC A Mo
+    open Zippy Zippy_Auto.Resolves.Resolve_Unif; open ZLPC MU; open SC A Mo
     val id = @{binding resolve_ho_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "resolution with higher-order unification on first possible goal")
@@ -156,7 +156,7 @@ declare [[zippy_init_gc \<open>
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Resolves.Resolve_Match; open ZLP MU; open SC A Mo
+    open Zippy Zippy_Auto.Resolves.Resolve_Match; open ZLPC MU; open SC A Mo
     val id = @{binding resolve_ho_match_first}
     val descr = Lazy.value "resolution with higher-order matching on first possible goal"
     val meta = Base_Data.ACMeta.metadata (id,
@@ -185,7 +185,7 @@ declare [[zippy_init_gc \<open>
 seraching the term index but do not use that information in the subsequent (d/e)resolution*)
 declare [[zippy_init_gc
   \<open>let
-    open Zippy Zippy_Auto.Resolves.EResolve_Unif; open ZLP MU; open SC A Mo
+    open Zippy Zippy_Auto.Resolves.EResolve_Unif; open ZLPC MU; open SC A Mo
     val id = @{binding eresolve_ho_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "e-resolution with higher-order unification on first possible goal")
@@ -210,7 +210,7 @@ declare [[zippy_init_gc
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Resolves.EResolve_Match; open ZLP MU; open SC A Mo
+    open Zippy Zippy_Auto.Resolves.EResolve_Match; open ZLPC MU; open SC A Mo
     val id = @{binding eresolve_ho_match_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "e-resolution with higher-order matching on first possible goal")
@@ -236,7 +236,7 @@ declare [[zippy_init_gc
   in (id, init) end\<close>]]
 declare [[zippy_init_gc
   \<open>let
-    open Zippy Zippy_Auto.Resolves.DResolve_Unif; open ZLP MU; open SC A Mo
+    open Zippy Zippy_Auto.Resolves.DResolve_Unif; open ZLPC MU; open SC A Mo
     val id = @{binding dresolve_ho_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "d-resolution with higher-order unification on first possible goal")
@@ -268,7 +268,7 @@ declare [[zippy_init_gc
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Resolves.DResolve_Match; open ZLP MU; open SC A Mo
+    open Zippy Zippy_Auto.Resolves.DResolve_Match; open ZLPC MU; open SC A Mo
     val id = @{binding dresolve_ho_match_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "d-resolution with higher-order matching on first possible goal")
@@ -299,7 +299,7 @@ declare [[zippy_init_gc
   in (id, init) end\<close>]]
 declare [[zippy_init_gc
   \<open>let
-    open Zippy Zippy_Auto.Resolves.FResolve_Unif; open ZLP MU; open SC A Mo
+    open Zippy Zippy_Auto.Resolves.FResolve_Unif; open ZLPC MU; open SC A Mo
     val id = @{binding fresolve_ho_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "f-resolution with higher-order unification on first possible goal")
@@ -325,7 +325,7 @@ declare [[zippy_init_gc
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Resolves.FResolve_Match; open ZLP MU; open SC A Mo
+    open Zippy Zippy_Auto.Resolves.FResolve_Match; open ZLPC MU; open SC A Mo
     val id = @{binding fresolve_ho_match_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "f-resolution with higher-order matching on first possible goal")
@@ -362,7 +362,7 @@ paragraph \<open>Simplifier\<close>
 
 declare [[zippy_init_gc \<open>
   let
-    open Zippy; open ZLP MU; open SC A Mo
+    open Zippy; open ZLPC MU; open SC A Mo
     val name = "asm_full_simp"
     val tacs = (safe_asm_full_simp_tac, asm_full_simp_tac)
     val id = Zippy_Identifier.make (SOME @{here}) name
@@ -397,8 +397,8 @@ declare [[zippy_parse add: \<open>(@{binding simp}, Zippy_Auto.Simp.parse_extend
 (* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Run.logger Logger.ALL\<close>]] *)
 (* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.logger Logger.ALL\<close>]] *)
 
-(*TODO:
-- A^* (1/cost = cost VS (0, 1))
+(*
+TODO: DFS and BFS
 *)
 
 end

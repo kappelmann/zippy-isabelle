@@ -1039,7 +1039,11 @@ qed
 lemma eventually_finite_subsets_at_top_finite:
   assumes "finite A"
   shows   "eventually P (finite_subsets_at_top A) \<longleftrightarrow> P A"
-  unfolding eventually_finite_subsets_at_top using assms by force
+  unfolding eventually_finite_subsets_at_top using assms
+  (*NEW*)
+  by (force where blast depth: 0)
+  (*ORIG*)
+  (* by (force) *)
 
 lemma finite_subsets_at_top_finite: "finite A \<Longrightarrow> finite_subsets_at_top A = principal {A}"
   by (auto simp: filter_eq_iff eventually_finite_subsets_at_top_finite eventually_principal)
@@ -1288,10 +1292,11 @@ lemma le_prod_filterI:
   unfolding le_filter_def eventually_filtermap eventually_prod_filter
   (*NEW*)
   supply [[zippy_init_gc del: \<open>@{binding atomize_prems}\<close>]]
-  by - (zippy 40 elim: eventually_elim2 where run run:
-    "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
+  (*TODO NEW: not working now*)
+  (* by - (zippy 40 elim: eventually_elim2 where run run: *)
+    (* "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+ *)
   (*ORIG*)
-  (* by (force elim: eventually_elim2) *)
+  by (force_orig elim: eventually_elim2)
 
 lemma filtermap_fst_prod_filter: "filtermap fst (A \<times>\<^sub>F B) \<le> A"
   unfolding le_filter_def eventually_filtermap eventually_prod_filter

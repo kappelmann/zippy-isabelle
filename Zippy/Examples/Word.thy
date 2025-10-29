@@ -4520,7 +4520,7 @@ next
     with False have "m \<le> n"
       using inc_le linorder_not_le suc.prems word_le_minus_mono_left
       (*NEW*)
-      by - ((zippy 10 where run run:
+      by - ((zippy 8 where run run:
         "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
       (*ORIG*)
       (* by fastforce *)
@@ -4659,7 +4659,7 @@ proof (cases \<open>a < b\<close>)
   then show ?thesis
     (*NEW*)
     apply -
-    apply (zippy 100 simp add: range_eq finite_atLeastLessThan intro!: insort_is_Cons
+    apply (zippy 120 simp add: range_eq finite_atLeastLessThan intro!: insort_is_Cons
       where subst insort_is_Cons)+
     (*ORIG*)
     (* apply (auto simp add: range_eq finite_atLeastLessThan intro!: insort_is_Cons)

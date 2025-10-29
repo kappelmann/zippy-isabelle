@@ -7,13 +7,13 @@ functor Zippy_Instance_Auto(
     structure TI : TERM_INDEX
     val resolve_init_args : (Z.Base_Data.AAMeta.P.progress,
       int -> @{AllT_args} Z.Base_Data.CAction.action,
-      Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLP.Z2.zipper) Z.emorph,
+      Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLPC.Z2.zipper) Z.emorph,
       @{AllT_args} Z.Result_Action.mk_copy_update_data,
       @{AllT_args} Z.CResults.cresultsq,
       thm * (term * (thm,
         Z.Base_Data.AAMeta.P.progress,
         int -> @{AllT_args} Z.Base_Data.CAction.action,
-        (Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLP.Z2.zipper) Z.emorph) list,
+        (Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLPC.Z2.zipper) Z.emorph) list,
         @{AllT_args} Z.Result_Action.mk_copy_update_data,
         @{AllT_args} Z.CResults.cresultsq)
         Zippy_Instance_Hom_Changed_Goals_Data_Args.PD.entries) -> bool)
@@ -82,7 +82,7 @@ local open Z
   structure Goals_Pos = Zippy_Goals_Pos_Mixin_Base(open Goals; structure GPU = Base_Data.Tac_Res.GPU)
 in
 structure Init_Goal_Cluster = Zippy_Update_Goal_Cluster_Mixin(
-  structure Z = Zippy_Enum_Mixin(Zippy_Enum_Mixin_Base(structure Z = ZLP; structure Co = Co))
+  structure Z = Zippy_Enum_Mixin(Zippy_Enum_Mixin_Base(structure Z = ZLPC; structure Co = Co))
   structure UGC = \<^functor_instance>\<open>
     functor_name: Zippy_Update_Goal_Cluster_Mixin_Base
     id: \<open>FI.prefix_id "init_gc"\<close>

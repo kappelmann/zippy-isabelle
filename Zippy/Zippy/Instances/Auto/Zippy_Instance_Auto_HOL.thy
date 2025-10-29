@@ -39,7 +39,7 @@ end
 
 declare [[zippy_init_gc \<open>
   let
-    open Zippy; open ZLP MU; open A Mo
+    open Zippy; open ZLPC MU; open A Mo
     val id = @{binding classical_slow_step}
     val update = Library.maps snd
       #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
@@ -56,7 +56,7 @@ declare [[zippy_init_gc \<open>
   in (id, init) end\<close>]]
 declare [[zippy_init_gc \<open>
   let
-    open Zippy; open ZLP MU; open A Mo
+    open Zippy; open ZLPC MU; open A Mo
     val id = @{binding atomize_prems}
     val update = Library.maps snd
       #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
@@ -74,7 +74,7 @@ declare [[zippy_parse add: \<open>(@{binding clasimp}, Clasimp.clasimp_modifiers
 local_setup\<open>Zippy_Auto.Extended_Blast_Data.setup_attribute NONE\<close>
 declare [[zippy_init_gc \<open>
   let
-    open Zippy Zippy_Auto; open ZLP MU; open A Mo
+    open Zippy Zippy_Auto; open ZLPC MU; open A Mo
     val id = @{binding blast}
     val cresultsq = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.HIGH
     val tac = Extended_Blast_Data.blast_tac
@@ -137,7 +137,7 @@ declare [[zippy_parse \<open>(@{binding blast}, Scan.depend (fn context =>
 
 (* declare [[zippy_init_gc \<open>
   let
-    open Zippy; open ZLP MU; open SC A
+    open Zippy; open ZLPC MU; open SC A
     val id = @{binding auto_tac}
     fun tac ctxt = auto_tac ctxt |> CHANGED |> SELECT_GOAL
     fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising (tac ctxt)
@@ -184,7 +184,7 @@ local_setup\<open>Zippy_Auto.Subst.setup_attribute NONE\<close>
 
 declare [[zippy_init_gc \<open>
   let
-    open Zippy Zippy_Auto.Subst.Concl; open ZLP MU; open SC A Mo
+    open Zippy Zippy_Auto.Subst.Concl; open ZLPC MU; open SC A Mo
     val id = @{binding subst_concl_some}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "substitution in conclusion on some goal")
@@ -211,7 +211,7 @@ declare [[zippy_init_gc \<open>
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Subst.Asm; open ZLP MU; open SC A Mo
+    open Zippy Zippy_Auto.Subst.Asm; open ZLPC MU; open SC A Mo
     val id = @{binding subst_asm_some}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "substitution in assumptions on some goal")
@@ -287,7 +287,7 @@ local_setup \<open>Zippy_Auto.Cases.setup_attribute NONE\<close>
 local_setup \<open>Zippy_Auto.Induction.setup_attribute NONE\<close>
 
 declare [[zippy_init_gc \<open>
-  let open Zippy Zippy_Auto.Cases; open ZLP MU; open SC A Mo
+  let open Zippy Zippy_Auto.Cases; open ZLPC MU; open SC A Mo
     val id = @{binding cases_some}
     val meta = Base_Data.ACMeta.metadata (id, Lazy.value "cases on some goal")
     val tac = Cases_Data_Args_Tactic_HOL.cases_tac (fn simp => fn opt_rule => fn insts =>
@@ -305,7 +305,7 @@ declare [[zippy_init_gc \<open>
     fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
-declare [[zippy_init_gc \<open>let open Zippy Zippy_Auto.Induction; open ZLP MU; open SC A Mo
+declare [[zippy_init_gc \<open>let open Zippy Zippy_Auto.Induction; open ZLPC MU; open SC A Mo
     val id = @{binding induct_some}
     val meta = Base_Data.ACMeta.metadata (id, Lazy.value "induction on some goal")
     val tac = Induction_Data_Args_Tactic_HOL.induct_tac false

@@ -10,11 +10,11 @@ sig
   sharing type Tac_AAM.Tac.GPU.GCS.gclusters = Base_Data.GCS.gclusters
   sharing type Tac_AAM.Tac.GPU.F.focus = Base_Data.GFocus.focus
   sharing type Tac_AAM.Meta.Meta.metadata = Base_Data.AAMeta.metadata
-  sharing type Tac_AAM.Meta.L.container = ZLP.Z5.zipper
+  sharing type Tac_AAM.Meta.L.container = ZLPC.Z5.zipper
 
   structure Tac :
   sig
-    val ztactic_resultsq : Tac_AAM.ztactic -> @{AllT_args} ZLP.Z2.zipper -> Tac_AAM.result Seq.seq
+    val ztactic_resultsq : Tac_AAM.ztactic -> @{AllT_args} ZLPC.Z2.zipper -> Tac_AAM.result Seq.seq
 
     type @{AllT_args} data = {
       meta : Base_Data.AMeta.metadata,
@@ -28,11 +28,11 @@ sig
     val caction_data_from_data : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> @{AllT_args} data ->
       @{AllT_args} CAction.data
     val cons_action : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> @{AllT_args} data ->
-      Base_Data.GFocus.focus -> (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper,
-        @{AllT_args} ZLP.Z4.zipper) morph
+      Base_Data.GFocus.focus -> (@{ParaT_args} @{AllT_args} ZLPC.Z3.zipper,
+        @{AllT_args} ZLPC.Z4.zipper) morph
     val cons_action_cluster : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
       (Base_Data.GFocus.focus * @{AllT_args} data) list ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper option) morph
+      (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper, @{AllT_args} ZLPC.Z3.zipper option) morph
   end
 end
 
@@ -43,7 +43,7 @@ functor Zippy_Instance_Tactic(
     structure Log_CAction : ZIPPY_LOGGER_MIXIN_BASE
   ) : ZIPPY_INSTANCE_TACTIC =
 struct
-open Z; open ZLP MU
+open Z; open ZLPC MU
 structure GCluster = Zippy_Goal_Cluster_Mixin(Mixin_Base2.GCluster)
 structure CAction_More = Zippy_CAction_Mixin(
   structure CAction = Mixin_Base4.CAction

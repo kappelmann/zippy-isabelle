@@ -15,9 +15,9 @@ sig
   where type @{AllT_args} ZSub.Z{i}.ZD.content = @{AllT_args} ZN.Z{i}.ZD.content
   where type @{AllT_args} ZSub.Z{i}.ZD.zcontext = @{AllT_args} ZN.Z{i}.ZD.zcontext\<close>\<close>
   \<^imap>\<open>\<open>{i}\<close> => \<open>
-  sharing type SZN.Z.Z{i}.ZM.container = Z{i}.ZM.container
-  sharing type SZN.Z.Z{i}.zipper = Z{i}.zipper
-  sharing type SZN.Z.Z{i}.ZD.content = Z{i}.ZD.content
-  sharing type SZN.Z.Z{i}.ZD.zcontext = Z{i}.ZD.zcontext\<close>\<close>
-  sharing type SZN.Z.M.t = M.t
+  sharing type SZN.SZ{i}.Container.container = Z{i}.ZM.container
+  sharing type SZN.SZ{i}.Zipper.container = Z{i}.zipper
+  sharing type SZN.SZ{i}.Content.container = Z{i}.ZD.content
+  sharing type SZN.SZ{i}.ZCtxt.container = Z{i}.ZD.zcontext\<close>\<close>
+  sharing type SZN.ZSub.M.t = M.t
 end

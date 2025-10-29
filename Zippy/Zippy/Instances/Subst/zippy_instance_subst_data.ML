@@ -23,13 +23,13 @@ functor Zippy_Instance_Subst_Data(
     structure TI : TERM_INDEX
     val init_args : (Z.Base_Data.AAMeta.P.progress,
       int -> @{AllT_args} Z.Base_Data.CAction.action,
-      Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLP.Z2.zipper) Z.emorph,
+      Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLPC.Z2.zipper) Z.emorph,
       @{AllT_args} Z.Result_Action.mk_copy_update_data,
       @{AllT_args} Z.CResults.cresultsq,
       thm * (term * (thm,
         Z.Base_Data.AAMeta.P.progress,
         int -> @{AllT_args} Z.Base_Data.CAction.action,
-        (Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLP.Z2.zipper) Z.emorph) list,
+        (Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLPC.Z2.zipper) Z.emorph) list,
         @{AllT_args} Z.Result_Action.mk_copy_update_data,
         @{AllT_args} Z.CResults.cresultsq)
         Zippy_Instance_Hom_Changed_Goals_Data_Args.PD.entries) -> bool)
@@ -48,7 +48,7 @@ struct
   end
 end
 
-local open Z; open ZLP
+local open Z; open ZLPC
   structure Base = struct structure Z = Z; structure TI = TI; val init_args = init_args end
 in
 \<^functor_instance>\<open>struct_name: Asm

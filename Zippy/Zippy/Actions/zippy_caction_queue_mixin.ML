@@ -14,6 +14,8 @@ sig
   val run_entry : @{AllT_args} entry -> (@{ParaT_args} @{AllT_args} CAction.zipper,
     @{AllT_args} CAction.action_result) morph
 
+  val mk_prio : (@{ParaT_args} @{AllT_args} entry, Queue.prio) morph
+
   val fold_cactions :
     (*update result*)
     (@{ParaT_args} @{AllT_args} entry * 'r, 'r Co.Co.res) morph ->
@@ -24,7 +26,6 @@ sig
     (*zipper to start the enumeration*)
     (@{ParaT_args} @{AllT_args} CAction.zipper, (@{AllT_args} CAction.zipper * 'r) Co.Co.res) morph
 
-  val insert : @{AllT_args} entry -> @{AllT_args} queue -> @{AllT_args} queue
   val mk_entry_insert : @{AllT_args} CAction.zipper -> (@{ParaT_args} @{AllT_args} queue) emorph
 
   val insert_cactions_queue :
@@ -51,6 +52,7 @@ functor Zippy_CAction_Queue_Mixin(
     sharing type CAction_Queue.CAction.zipper = Z.Z4.zipper
     sharing type CAction_Queue.CAction.zipper_expanded = Z.Z5.zipper
     sharing type CAction_Queue.CAction.M.t = Z.M.t
+    val mk_prio : (@{ParaT_args} @{AllT_args} CAction_Queue.entry, CAction_Queue.Queue.prio) Z.morph
     val mk_exn : (unit -> @{ParaT_args encl: "(" ")"} Z.Co.ME.exn)
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t =Z.M.t
@@ -71,20 +73,25 @@ fun mk_entry zipper = CAction.get_run_caction zipper
   >>= arr (fn (cost, action) => {cost = cost, action = action, zipper = zipper})
 fun run_entry entry = CAction.run_action (#cost entry, #action entry)
 
+val mk_prio = mk_prio
+
 fun fold_cactions update = Co.repeat_step_res_init (arr fst)
   (AE.catch' (first mk_entry >>> update) (arr (snd #> Co.continue))) (AE.id ())
 
-fun insert entry = Queue.insert (#cost entry, entry)
 fun mk_entry_insert z queue = Ctxt.get_ctxt () >>= (fn ctxt =>
     (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
         Pretty.str "Inserting caction of",
         Show4.pretty ctxt z,
         Pretty.str "to queue."
       ] |> Pretty.block |> Pretty.string_of);
-    mk_entry z >>= arr (fn entry => insert entry queue)))
+    mk_entry z
+    >>= (fn entry => mk_prio entry
+    >>= arr (fn prio => Queue.insert (prio, entry) queue))))
 
 fun insert_cactions_queue co z = AE.try (fn queue =>
-  fold_cactions (arr (Library.uncurry insert #> Co.continue))
+  fold_cactions
+    (fn (entry, queue) => mk_prio entry
+      >>= arr (fn prio => Queue.insert (prio, entry) queue |> Co.continue))
     (fn z => mk_entry_insert z queue >>= arr Co.continue) co z
   >>= arr (Co.dest_res #> snd))
 

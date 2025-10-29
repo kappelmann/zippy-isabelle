@@ -1517,7 +1517,7 @@ qed
 lemma lemma_interval: "a < x \<Longrightarrow> x < b \<Longrightarrow> \<exists>d. 0 < d \<and> (\<forall>y. \<bar>x - y\<bar> < d \<longrightarrow> a \<le> y \<and> y \<le> b)"
   for a b x :: real
   (*NEW*)
-  by (zippy 25 dest: lemma_interval_lt
+  by (zippy 20 dest: lemma_interval_lt
     where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
   (*ORIG*)
   (* by (force dest: lemma_interval_lt) *)
@@ -1696,7 +1696,7 @@ lemma DERIV_isconst_end:
   shows "f b = f a"
   using MVT [OF \<open>a < b\<close>] "0" DERIV_unique contf real_differentiable_def
   (*NEW*)
-  by - (zippy 20 simp: algebra_simps
+  by - (zippy 15 simp: algebra_simps
     where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
   (*ORIG*)
   (* by (fastforce simp: algebra_simps) *)
@@ -1709,7 +1709,7 @@ shows "f x = f a"
 proof (cases "a < x")
   case True
   have *: "continuous_on {a..x} f"
-    using \<open>x \<le> b\<close> contf continuous_on_subset by fastforce
+    using \<open>x \<le> b\<close> contf continuous_on_subset by (fastforce where blast depth: 0)
   show ?thesis
     by (rule DERIV_isconst_end [OF True *]) (use \<open>x \<le> b\<close> derf in auto)
 qed (use \<open>a \<le> x\<close> in auto)

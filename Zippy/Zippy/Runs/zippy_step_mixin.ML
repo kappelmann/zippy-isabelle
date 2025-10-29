@@ -49,6 +49,8 @@ functor Zippy_Step_Mixin(
     sharing type Step.CAction_Queue.CAction.zipper = Z.Z4.zipper
     sharing type Step.CAction_Queue.CAction.zipper_expanded = Z.Z5.zipper
     sharing type Step.CAction_Queue.CAction.M.t = Z.M.t
+    val mk_prio : (@{ParaT_args} @{AllT_args} Step.CAction_Queue.entry,
+      Step.CAction_Queue.Queue.prio) Z.morph
     structure Co : ZIPPY_COROUTINE_MIXIN_BASE
     sharing type Co.M.t = Z.M.t
     val mk_exn : (unit -> @{ParaT_args encl: "(" ")"} Co.ME.exn)
@@ -65,6 +67,8 @@ functor Zippy_Step_Mixin(
     sharing type Show4.t = Z.Z4.zipper
     structure Show_Queue_Entry : ZIPPY_SHOW_MIXIN_BASE
     where type @{AllT_args} t = @{AllT_args} Step.CAction_Queue.entry
+    structure Show_Prio : ZIPPY_SHOW_MIXIN_BASE
+    where type @{AllT_args} t = Step.CAction_Queue.Queue.prio
   ) : ZIPPY_STEP_MIXIN =
 struct
 
@@ -81,14 +85,14 @@ structure TMV = Zippy_Goal_Results_Top_Meta_Vars_Mixin(
   structure Goal_Results_Top_Meta_Vars = Zippy_Goal_Results_Top_Meta_Vars_Mixin_Base(
     structure Results = GCluster_Results; structure Top_Meta_Vars = Top_Meta_Vars))
 structure CAction_Queue = Zippy_CAction_Queue_Mixin(structure Z = ZE
-  structure CAction_Queue = CAction_Queue; val mk_exn = mk_exn structure Ctxt = Ctxt
-  structure Log = Log_CAction_Queue; structure Show_Container1 = Show_Container1
-  structure Show1 = Show1; structure Show4 = Show4)
+  structure CAction_Queue = CAction_Queue; val mk_prio = mk_prio; val mk_exn = mk_exn
+  structure Ctxt = Ctxt; structure Log = Log_CAction_Queue
+  structure Show_Container1 = Show_Container1 structure Show1 = Show1; structure Show4 = Show4)
 
 local open SC Mo A
 in
-fun move_entry_if_may_take_more_results {zipper,...} z = ZP.path_from_zipper4 zipper
-  >>= (fn pos => TMV.move_path_if_may_take_more_results4 pos z)
+fun move_entry_if_may_take_more_results {zipper,...} = ZP.path_from_zipper4 zipper
+  |> TMV.move_path_if_may_take_more_results4
 
 fun update_goal_results_up_unchanged z = z |> (top4 >>> arr (rpair Results.empty))
 fun update_goal_results_up_expanded z = Down5.morph z
@@ -123,9 +127,10 @@ fun step_queue queue z = Ctxt.get_ctxt () >>= (fn ctxt => z |>
   let val _ = @{log Logger.TRACE} ctxt (fn _ => "Pulling minimal entry from queue.")
   in case CAction_Queue.Queue.min_elem queue of
     NONE => (@{log Logger.DEBUG} ctxt (fn _ => "No more entries in queue."); K NONE)
-  | SOME ((_, e), queue) => (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
+  | SOME ((prio, e), queue) => (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
           Pretty.str "Pulled and moving to entry",
-          Show_Queue_Entry.pretty ctxt e
+          Show_Queue_Entry.pretty ctxt e,
+          Pretty.block [Pretty.str "with priority ", Show_Prio.pretty ctxt prio]
         ] |> Pretty.block |> Pretty.string_of);
       Z1.ZM.Zip.morph
       >>> move_entry_if_may_take_more_results e

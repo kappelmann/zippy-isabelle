@@ -42,7 +42,10 @@ local
 
 (* instance and utilities *)
   val exn : @{ParaT_args encl: "(" ")"} ME.exn = ()
-  structure Zippy_Base = Zippy_Instance_Base(structure ME = ME; type cost = Cost.cost)
+  structure Zippy_Base = Zippy_Instance_Base(structure ME = ME
+    type cost = Cost.cost
+    fun update_cost c NONE = c
+      | update_cost c (SOME (c', _)) = Cost.add (c, c'))
   structure Logging =
   struct
     val logger = Logger.setup_new_logger zippy_base_logger "Zippy"
@@ -97,14 +100,14 @@ local
   structure Base_Mixins = struct structure Exn = Exn; structure Co = Co; structure Ctxt = Ctxt end
   structure Goals = Zippy_Goals_Mixin_Base(
     structure GClusters = Mixin_Base1.GClusters; structure GCluster = Mixin_Base2.GCluster)
-  structure Goals_Pos = Zippy_Goals_Pos_Mixin(structure Z = ZLP
+  structure Goals_Pos = Zippy_Goals_Pos_Mixin(structure Z = ZLPC
     structure Goals_Pos = Zippy_Goals_Pos_Mixin_Base(open Goals; structure GPU = Base_Data.Tac_Res.GPU))
   structure Goals_Pos_Copy = Zippy_Goals_Pos_Copy_Mixin(Zippy_Goals_Pos_Copy_Mixin_Base(open Goals_Pos
     structure Copy = Mixin_Base3.Copy))
 in
-structure ZB = Zippy_Base(open Base_Mixins; structure Z = ZLP; structure Log = Logging.Base
+structure ZB = Zippy_Base(open Base_Mixins; structure Z = ZLPC; structure Log = Logging.Base
   \<^imap>\<open>\<open>{i}\<close> => \<open>structure Show{i} = Show.Zipper{i}\<close>\<close>)
-structure ZL = Zippy_Lists(open Base_Mixins; structure Z = ZLP)
+structure ZL = Zippy_Lists(open Base_Mixins; structure Z = ZLPC)
 structure LGoals_Pos_Copy = Zippy_Lists_Goals_Pos_Copy_Mixin(open Base_Mixins; structure Z = ZL
   structure GPC = Goals_Pos_Copy;
   structure Log = Logging.LGoals_Pos_Copy; structure Log_Base = Logging.Base;
@@ -115,9 +118,9 @@ structure Util =
 struct
   val exn = exn
   local
-    open ZLP
-    structure ZN = Zippy_Node(structure Z = ZLP; structure Exn = Exn)
-    structure ZL = Zippy_Lists(structure Z = ZLP; structure Co = Co)
+    open ZLPC
+    structure ZN = Zippy_Node(structure Z = ZLPC; structure Exn = Exn)
+    structure ZL = Zippy_Lists(structure Z = ZLPC; structure Co = Co)
     structure Goals = Zippy_Goals_Mixin_Base(
       structure GClusters = Mixin_Base1.GClusters; structure GCluster = Mixin_Base2.GCluster)
     structure LGoals = Zippy_Lists_Goals_Mixin(structure Z = ZL; structure Goals = Goals
@@ -157,7 +160,7 @@ fun with_state f = Ctxt.with_ctxt (fn ctxt => (*State.with_state (fn state =>*)
 local
   structure Base_Mixins =
   struct
-    structure Z = ZLP
+    structure Z = ZLPC
     structure Exn = Exn; structure Co = Co; structure Ctxt = Ctxt
     \<^imap>\<open>\<open>{i}\<close> => \<open>
     structure Show{i} = Show.Zipper{i}
@@ -194,7 +197,7 @@ fun run_statesq init_sstate step finish fuel c = init_sstate c
     repeat_step step finish finish fuel ss ms c))
   >>= arr (Seq.maps (Zippy_Run_Result.cases #thm_states I))
 fun run_statesq' init_sstate step mk_unreturned_statesq = run_statesq init_sstate step (fn _ => fn _ =>
-  ZLP.Z1.ZM.Zip.morph >>> mk_unreturned_statesq >>> arr (Zippy_Run_Result.Unfinished #> Seq.single))
+  ZLPC.Z1.ZM.Zip.morph >>> mk_unreturned_statesq >>> arr (Zippy_Run_Result.Unfinished #> Seq.single))
 fun mk_df_post_unreturned_statesq x = mk_unreturned_statesq (Ctxt.with_ctxt
   (LGoals_Results_TMV.mk_statesq (LGoals_Results_TMV.enum_df_post_children2 mk_exn))) x
 fun mk_df_post_unreturned_promising_statesq x = mk_unreturned_statesq (Ctxt.with_ctxt
@@ -211,12 +214,19 @@ struct
     structure Step = Zippy_Logger_Mixin_Base(open Base; val name = "Step")
     end
   end
+  local open MU.Mo
+    structure ZCost = Zippy_Collect_Trace_Mixin(ZLPC.ZCollect)
+  in
+  fun mk_prio {cost, zipper,...} = ZCost.ZZCollect_Co4.getter zipper |> ZCost.get_current
+    |> Option.map (Library.curry Cost.add cost) |> the_default cost |> pure
   structure CAction_Queue = Zippy_CAction_Queue_Mixin(open Base_Mixins
     structure Z = ZE
     structure CAction_Queue = Zippy_CAction_Queue_Mixin_Base(structure CAction = CAction
       structure Queue = Leftist_Heap(type prio = Cost.cost; val ord = Cost.ord))
+    val mk_prio = mk_prio
     val mk_exn = mk_exn
     structure Log = Logging.CAction_Queue)
+  end
   structure Show_Queue_Entry = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} CAction_Queue.entry
     fun pretty ctxt {cost, zipper,...} = SpecCheck_Show.record [
@@ -225,11 +235,13 @@ struct
   structure Step = Zippy_Step_Mixin(open Base_Mixins
     structure Step = Zippy_Step_Mixin_Base(open Goals_Results_TMV
       structure CAction_Queue = CAction_Queue)
+    val mk_prio = mk_prio
     val mk_exn = mk_exn
     structure Log = Logging
     structure Log_LGoals = Zippy.Logging.LGoals
     structure Log_CAction_Queue = Logging.CAction_Queue
-    structure Show_Queue_Entry = Show_Queue_Entry)
+    structure Show_Queue_Entry = Show_Queue_Entry
+    structure Show_Prio = Show.Cost)
   end
 end
 end

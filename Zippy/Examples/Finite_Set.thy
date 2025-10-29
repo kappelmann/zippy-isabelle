@@ -2015,7 +2015,10 @@ qed
 
 lemma insert_partition:
   "x \<notin> F \<Longrightarrow> \<forall>c1 \<in> insert x F. \<forall>c2 \<in> insert x F. c1 \<noteq> c2 \<longrightarrow> c1 \<inter> c2 = {} \<Longrightarrow> x \<inter> \<Union>F = {}"
-  by auto
+  (*NEW*)
+  by (auto where blast depth: 0)
+  (*ORIG*)
+  (* by auto *)
 
 lemma finite_psubset_induct [consumes 1, case_names psubset]:
   assumes finite: "finite A"

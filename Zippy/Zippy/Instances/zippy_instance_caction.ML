@@ -11,13 +11,13 @@ sig
     type @{AllT_args} data = {
       meta : Base_Data.AMeta.metadata,
       caction : Base_Data.GFocus.focus -> @{AllT_args} Base_Data.CAction.caction}
-    val update : @{AllT_args} data -> @{AllT_args} ZLP.Z4.zipper -> @{AllT_args} ZLP.Z4.zipper
+    val update : @{AllT_args} data -> @{AllT_args} ZLPC.Z4.zipper -> @{AllT_args} ZLPC.Z4.zipper
     val update_action : @{AllT_args} data -> @{AllT_args} Base_Data.CAction.action
     val cons_action : @{AllT_args} data -> Base_Data.GFocus.focus ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z3.zipper, @{AllT_args} ZLP.Z4.zipper) morph
+      (@{ParaT_args} @{AllT_args} ZLPC.Z3.zipper, @{AllT_args} ZLPC.Z4.zipper) morph
     val cons_action_cluster : Base_Data.ACMeta.metadata ->
       (Base_Data.GFocus.focus * @{AllT_args} data) list ->
-      (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper, @{AllT_args} ZLP.Z3.zipper option) morph
+      (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper, @{AllT_args} ZLPC.Z3.zipper option) morph
   end
 
   structure Result_Action :
@@ -25,10 +25,10 @@ sig
     include ZIPPY_LOGGER_MIXIN_BASE
     (* result actions *)
     type result = Base_Data.AAMeta.metadata Base_Data.Tac_Res.result
-    val init : Base_Data.CAction.cost -> result -> (@{ParaT_args} @{AllT_args} ZLP.Z4.zipper,
-      @{AllT_args} ZLP.Z1.zipper) morph
+    val init : Base_Data.CAction.cost -> result -> (@{ParaT_args} @{AllT_args} ZLPC.Z4.zipper,
+      @{AllT_args} ZLPC.Z1.zipper) morph
 
-    type @{AllT_args} mk_copy_update_data = result -> (@{ParaT_args} @{AllT_args} ZLP.Z1.zipper,
+    type @{AllT_args} mk_copy_update_data = result -> (@{ParaT_args} @{AllT_args} ZLPC.Z1.zipper,
       Base_Data.Copy.copy_update_data) morph
     val copy_update_data : @{AllT_args} mk_copy_update_data
     val copy_update_data_changed :
@@ -37,15 +37,15 @@ sig
     val copy_update_data_empty_changed : @{AllT_args} mk_copy_update_data
 
     val init_copy_parents : @{AllT_args} mk_copy_update_data -> Base_Data.CAction.cost ->
-      result -> (@{ParaT_args} @{AllT_args} ZLP.Z4.zipper, @{AllT_args} ZLP.Z1.zipper) morph
+      result -> (@{ParaT_args} @{AllT_args} ZLPC.Z4.zipper, @{AllT_args} ZLPC.Z1.zipper) morph
 
-    val action : (result -> (@{ParaT_args} @{AllT_args} ZLP.Z1.zipper) emorph) ->
+    val action : (result -> (@{ParaT_args} @{AllT_args} ZLPC.Z1.zipper) emorph) ->
       @{AllT_args} mk_copy_update_data -> result -> @{AllT_args} Base_Data.CAction.action
     val changed_goals_action : ((Base_Data.GCS.goal_pos * Base_Data.GCS.gcpos list) list ->
-        (@{ParaT_args} @{AllT_args} ZLP.Z1.zipper) emorph) ->
+        (@{ParaT_args} @{AllT_args} ZLPC.Z1.zipper) emorph) ->
       @{AllT_args} mk_copy_update_data -> result -> @{AllT_args} Base_Data.CAction.action
     val hom_changed_goals_action :
-      (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLP.Z2.zipper) emorph) list ->
+      (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph) list ->
       @{AllT_args} mk_copy_update_data -> result -> @{AllT_args} Base_Data.CAction.action
   end
 end
@@ -66,7 +66,7 @@ functor Zippy_Instance_CAction(
 struct
 
 open Z; open MU
-structure ZLP = Zippy_Lists_Positions_Mixin(structure Z = ZLP; structure Exn = Exn); open ZLP
+structure ZLP = Zippy_Lists_Positions_Mixin(structure Z = ZLPC; structure Exn = Exn); open ZLP
 structure Base_Mixins = struct structure Exn = Exn; structure Co = Co; structure Ctxt = Ctxt end
 structure ZL = Zippy_Lists(open Base_Mixins; structure Z = ZLP)
 structure ZN = Zippy_Node(open Base_Mixins; structure Z = ZLP)

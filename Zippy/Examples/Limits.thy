@@ -2717,7 +2717,8 @@ proof
   then have "LIM x F. inverse (f x) * (f x / g x) :> at_infinity"
     using assms tendsto_inverse tendsto_mult_filterlim_at_infinity
       (*NEW*)
-      by - (zippy 80 where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
+      by - ((zippy 60
+        where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
       (*ORIG*)
       (* by fastforce+ *)
   then have "LIM x F. inverse (g x) :> at_infinity"
@@ -3184,7 +3185,11 @@ proof (cases "a \<le> b", rule compactI)
     then obtain e where "0 < e" "{x - e <..< x + e} \<subseteq> c"
       by (auto simp: open_dist dist_real_def subset_eq Ball_def abs_less_iff)
     with \<open>c \<in> C\<close> show ?case
-      by (safe intro!: exI[of _ "e/2"] exI[of _ "{c}"]) auto
+      by (safe intro!: exI[of _ "e/2"] exI[of _ "{c}"])
+      (*NEW*)
+      (auto blast depth: 0)
+      (*ORIG*)
+      (* auto *)
   qed
 qed simp
 
