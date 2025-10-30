@@ -87,7 +87,8 @@ structure TMV = Zippy_Goal_Results_Top_Meta_Vars_Mixin(
 structure CAction_Queue = Zippy_CAction_Queue_Mixin(structure Z = ZE
   structure CAction_Queue = CAction_Queue; val mk_prio = mk_prio; val mk_exn = mk_exn
   structure Ctxt = Ctxt; structure Log = Log_CAction_Queue
-  structure Show_Container1 = Show_Container1 structure Show1 = Show1; structure Show4 = Show4)
+  structure Show_Container1 = Show_Container1; structure Show1 = Show1; structure Show4 = Show4
+  structure Show_Queue_Entry = Show_Queue_Entry; structure Show_Prio = Show_Prio)
 
 local open SC Mo A
 in
@@ -127,18 +128,18 @@ fun step_queue queue z = Ctxt.get_ctxt () >>= (fn ctxt => z |>
   let val _ = @{log Logger.TRACE} ctxt (fn _ => "Pulling minimal entry from queue.")
   in case CAction_Queue.Queue.min_elem queue of
     NONE => (@{log Logger.DEBUG} ctxt (fn _ => "No more entries in queue."); K NONE)
-  | SOME ((prio, e), queue) => (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
+  | SOME ((prio, entry), queue) => (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
           Pretty.str "Pulled and moving to entry",
-          Show_Queue_Entry.pretty ctxt e,
+          Show_Queue_Entry.pretty ctxt entry,
           Pretty.block [Pretty.str "with priority ", Show_Prio.pretty ctxt prio]
         ] |> Pretty.block |> Pretty.string_of);
       Z1.ZM.Zip.morph
-      >>> move_entry_if_may_take_more_results e
+      >>> move_entry_if_may_take_more_results entry
       >>> Ctxt.with_ctxt (fn ctxt => AC.opt
         (fn _ => (@{log Logger.DEBUG} ctxt (fn _ => "Entry takes no further results.");
           pure (SOME (NONE, queue))))
         (@{log Logger.TRACE} ctxt (fn _ => "Running entry.");
-          CAction_Queue.run_entry e >>> update_action_result queue >>> arr (apfst SOME #> SOME))))
+          CAction_Queue.run_entry entry >>> update_action_result queue >>> arr (apfst SOME #> SOME))))
   end)
 end
 

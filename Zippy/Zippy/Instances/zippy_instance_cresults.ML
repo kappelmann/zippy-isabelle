@@ -39,13 +39,6 @@ sig
     val cons_action_cluster : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
       (Base_Data.GFocus.focus * @{AllT_args} data) list ->
       (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper, @{AllT_args} ZLPC.Z3.zipper option) morph
-
-    (* cost *)
-    val enum_double_cresultsq : cost -> @{AllT_args} cresultsq
-    val with_double_cost_depth_cresultsq : @{AllT_args} cresultsq -> @{AllT_args} cresultsq
-    (*doubles the cost with each pull of a result*)
-    val enum_double_cost_depth_cresultsq : (@{ParaT_args} cost) emorph -> cost -> @{AllT_args} cresultsq
-    val enum_double_cost_double_cost_depth_cresultsq : cost -> @{AllT_args} cresultsq
   end
 end
 
@@ -55,7 +48,6 @@ functor Zippy_Instance_CResults(
     sharing type Ctxt.M.t = Z.M.t
     structure Log_CAction : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_CAction_CResults : ZIPPY_LOGGER_MIXIN_BASE
-    val double : Z.Base_Data.CAction.cost -> Z.Base_Data.CAction.cost
   ) : ZIPPY_INSTANCE_CRESULTS =
 struct
 
@@ -114,14 +106,6 @@ fun cons_action x = caction_data_from_data x |> Z.CAction.cons_action
 fun cons_action_cluster exn meta =
   List.map (apsnd (fn data => fn focus => cons_action data focus >>> Up4.morph))
   #> Node.cons3 exn meta
-
-(* cost *)
-fun enum_double_cresultsq x = CResults.enum_cresultsq (arr double) x
-fun with_double_cost_depth_cresultsq x = CResults_Pos.with_depth_cresultsq
-  (fn i => arr (funpow i double)) x
-fun enum_double_cost_depth_cresultsq next = CResults.enum_cresultsq next
-  #> with_double_cost_depth_cresultsq
-fun enum_double_cost_double_cost_depth_cresultsq x = enum_double_cost_depth_cresultsq (arr double) x
 end
 end
 

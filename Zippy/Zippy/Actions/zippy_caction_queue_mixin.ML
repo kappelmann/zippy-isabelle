@@ -26,6 +26,7 @@ sig
     (*zipper to start the enumeration*)
     (@{ParaT_args} @{AllT_args} CAction.zipper, (@{AllT_args} CAction.zipper * 'r) Co.Co.res) morph
 
+  val insert : Queue.prio * @{AllT_args} entry -> (@{ParaT_args} @{AllT_args} queue) emorph
   val mk_entry_insert : @{AllT_args} CAction.zipper -> (@{ParaT_args} @{AllT_args} queue) emorph
 
   val insert_cactions_queue :
@@ -61,6 +62,10 @@ functor Zippy_CAction_Queue_Mixin(
     sharing type Show_Container1.t = Z.Z1.ZM.container
     structure Show4 : ZIPPY_SHOW_MIXIN_BASE
     sharing type Show4.t = Z.Z4.zipper
+    structure Show_Queue_Entry : ZIPPY_SHOW_MIXIN_BASE
+    where type @{AllT_args} t = @{AllT_args} CAction_Queue.entry
+    structure Show_Prio : ZIPPY_SHOW_MIXIN_BASE
+    where type @{AllT_args} t = CAction_Queue.Queue.prio
   ) : ZIPPY_CACTION_QUEUE_MIXIN =
 struct
 
@@ -69,7 +74,12 @@ structure MU = Zippy_Monad_Util(CAction.M); open MU
 
 local open SC Mo A Co CAction.Exn
 in
-fun mk_entry zipper = CAction.get_run_caction zipper
+fun mk_entry zipper = Ctxt.get_ctxt () >>= (fn ctxt =>
+  (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
+      Pretty.str "Creating entry for",
+      Show4.pretty ctxt zipper
+    ] |> Pretty.block |> Pretty.string_of);
+  CAction.get_run_caction zipper))
   >>= arr (fn (cost, action) => {cost = cost, action = action, zipper = zipper})
 fun run_entry entry = CAction.run_action (#cost entry, #action entry)
 
@@ -78,20 +88,21 @@ val mk_prio = mk_prio
 fun fold_cactions update = Co.repeat_step_res_init (arr fst)
   (AE.catch' (first mk_entry >>> update) (arr (snd #> Co.continue))) (AE.id ())
 
-fun mk_entry_insert z queue = Ctxt.get_ctxt () >>= (fn ctxt =>
-    (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
-        Pretty.str "Inserting caction of",
-        Show4.pretty ctxt z,
-        Pretty.str "to queue."
-      ] |> Pretty.block |> Pretty.string_of);
-    mk_entry z
-    >>= (fn entry => mk_prio entry
-    >>= arr (fn prio => Queue.insert (prio, entry) queue))))
+fun insert (prio, entry) = Ctxt.with_ctxt (fn ctxt => arr (fn queue =>
+  (@{log Logger.TRACE} ctxt (fn _ => Pretty.breaks [
+      Pretty.str "Inserting entry",
+      Show_Queue_Entry.pretty ctxt entry,
+      Pretty.block [Pretty.str "with priority ", Show_Prio.pretty ctxt prio],
+      Pretty.str "to queue."
+    ] |> Pretty.block |> Pretty.string_of);
+  Queue.insert (prio, entry) queue)))
+
+fun mk_entry_insert z queue =
+  mk_entry z >>= (fn entry => mk_prio entry >>= (fn prio => insert (prio, entry) queue))
 
 fun insert_cactions_queue co z = AE.try (fn queue =>
   fold_cactions
-    (fn (entry, queue) => mk_prio entry
-      >>= arr (fn prio => Queue.insert (prio, entry) queue |> Co.continue))
+    (fn (entry, queue) => mk_prio entry >>= (fn prio => insert (prio, entry) queue >>= arr Co.continue))
     (fn z => mk_entry_insert z queue >>= arr Co.continue) co z
   >>= arr (Co.dest_res #> snd))
 
@@ -111,7 +122,13 @@ fun init_cactions_queue c = insert_descendant_cactions_queue c Queue.empty
 
 local fun mk_entry_insert_safe z = AE.try (mk_entry_insert z)
 in
-fun update_unchanged z = mk_entry_insert_safe z
+fun update_unchanged z = Ctxt.with_ctxt (fn ctxt => fn queue =>
+  (@{log Logger.DEBUG} ctxt (fn _ => Pretty.breaks [
+      Pretty.str "Inserting caction of unchanged action's zipper",
+      Show4.pretty ctxt z,
+      Pretty.str "to queue."
+    ] |> Pretty.block |> Pretty.string_of);
+  mk_entry_insert_safe z queue))
 fun update_expanded insert_descendant_cactions_queue z = insert_descendant_cactions_queue z
   >>> (fn queue => Z.Up5.morph z >>= (fn z => mk_entry_insert_safe z queue))
 end

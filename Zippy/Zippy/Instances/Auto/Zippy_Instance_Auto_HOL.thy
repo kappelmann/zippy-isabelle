@@ -22,7 +22,7 @@ local
   structure Base = struct structure Z = Zippy; structure Ctxt = Z.Ctxt end
   structure Zippy_Classical = Zippy_Instance_Classical(open Base)
 in
-structure Zippy = struct open Zippy Zippy_Classical end
+structure Zippy = struct open Zippy_Classical Zippy end
 structure Zippy_Auto =
 struct open Zippy_Auto
 \<^functor_instance>\<open>struct_name: Extended_Blast_Data
@@ -44,10 +44,10 @@ declare [[zippy_init_gc \<open>
     val update = Library.maps snd
       #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
     val mk_cud = Result_Action.copy_update_data_empty_changed
-    val cresultsq_safe = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.VERY_LOW
-    val cresultsq_inst0 = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.LOW3
-    val cresultsq_instp = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.MEDIUM
-    val cresultsq_unsafe = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.MEDIUM
+    val cresultsq_safe = Zippy_Auto.CResults.enum_scale_cresultsq_default Cost.VERY_LOW
+    val cresultsq_inst0 = Zippy_Auto.CResults.enum_scale_cresultsq_default Cost.LOW3
+    val cresultsq_instp = Zippy_Auto.CResults.enum_scale_cresultsq_default Cost.MEDIUM
+    val cresultsq_unsafe = Zippy_Auto.CResults.enum_scale_cresultsq_default Cost.MEDIUM
     val data = Classical.slow_step_data Util.exn id update mk_cud
       cresultsq_safe cresultsq_inst0 cresultsq_instp cresultsq_unsafe
     fun init _ focus z =
@@ -61,7 +61,7 @@ declare [[zippy_init_gc \<open>
     val update = Library.maps snd
       #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
     val mk_cud = Result_Action.copy_update_data_empty_changed
-    val cresultsq_atomize_prems = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.LOW1
+    val cresultsq_atomize_prems = Zippy_Auto.CResults.enum_scale_cresultsq_default Cost.LOW1
     val data = Classical.atomize_prems_data id update mk_cud
       cresultsq_atomize_prems
     fun init _ focus z =
@@ -76,7 +76,7 @@ declare [[zippy_init_gc \<open>
   let
     open Zippy Zippy_Auto; open ZLPC MU; open A Mo
     val id = @{binding blast}
-    val cresultsq = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.HIGH
+    val cresultsq = Zippy_Auto.CResults.enum_scale_cresultsq_default Cost.HIGH
     val tac = Extended_Blast_Data.blast_tac
     val ztac = tac
       #> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
@@ -121,7 +121,7 @@ declare [[zippy_parse \<open>(@{binding blast}, Scan.depend (fn context =>
 
     val args = PAA.empty_entries () |> fold PAA.set_entry [PAA.updates [],
       PAA.progress Base_Data.AAMeta.P.Promising,
-      PAA.cresultsq (Tac_Util.enum_double_cost_double_cost_depth_cresultsq cost.HIGH)]
+      PAA.cresultsq (Tac_Util.enum_double_cresultsq cost.HIGH)]
     val context = context
       |> fold (Zippy_Auto.Resolve_Unif.insert_args_context_defaults args) sintro
       |> fold (Zippy_Auto.EResolve_Unif.insert_args_context_defaults args) selim
@@ -147,7 +147,7 @@ declare [[zippy_parse \<open>(@{binding blast}, Scan.depend (fn context =>
       empty_action = CAction.disable_action,
       meta = Mixin_Base4.Meta.Meta.empty id,
       result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      cresultsq = CResults.enum_double_cost_double_cost_depth_cresultsq cost.HIGH,
+      cresultsq = CResults.enum_double_cresultsq cost.HIGH,
       tac = Ctxt.with_ctxt (ztac #> arr)
     }
     fun init_ac _ focus =
@@ -173,7 +173,7 @@ in
       empty_action = SOME (Library.K CAction.disable_action),
       default_update = SOME Zippy_Auto.Run.init_gpos,
       mk_cud = SOME Result_Action.copy_update_data_empty_changed,
-      cresultsq = SOME (CResults.enum_double_cost_double_cost_depth_cresultsq Cost.MEDIUM),
+      cresultsq = SOME (Zippy_Auto.CResults.enum_scale_cresultsq_default Cost.MEDIUM),
       progress = SOME Base_Data.AAMeta.P.Promising,
       del_select = SOME (apsnd (snd #> #thm #> the) #> Thm.eq_thm)}
     structure Log = Logging\<close>\<close>
@@ -254,7 +254,7 @@ local open Zippy
       empty_action = SOME (Library.K CAction.disable_action),
       default_update = SOME Zippy_Auto.Run.init_gpos,
       mk_cud = SOME Result_Action.copy_update_data_empty_changed,
-      cresultsq = SOME (CResults.enum_double_cost_double_cost_depth_cresultsq cost),
+      cresultsq = SOME (Zippy_Auto.CResults.enum_scale_cresultsq_default cost),
       progress = SOME Base_Data.AAMeta.P.Unclear}
     structure Log = Logging
     structure Log_Base = Logging.Base

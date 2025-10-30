@@ -149,10 +149,11 @@ lemma binomial_le_pow2: "n choose k \<le> 2^n"
 proof (induction n arbitrary: k)
   case 0
   then show ?case
+  using less_le_trans
   (*NEW*)
-  using less_le_trans by (zippy simp: le_less where blast depth: 0)
+  by (zippy simp: le_less where blast depth: 0)
   (*ORIG*)
-  (* using less_le_trans by fastforce_orig *)
+  (*by fastforce_orig *)
 next
   case (Suc n)
   show ?case
@@ -1230,7 +1231,7 @@ proof -
     by metis
   then show ?thesis
     (*NEW*)
-    by (zippy simp flip: all_simps ex_simps where simp timeout: 0.1)
+    by (zippy simp flip: all_simps ex_simps where simp depth: 10)
     (*ORIG*)
     (* by (auto simp flip: all_simps ex_simps) *)
 qed
@@ -1320,7 +1321,9 @@ proof -
           using * by blast
         have inj: "inj_on (insert a) (Pow A)"
           (*NEW*)
-          using "*" by (zippy simp: inj_on_def where blast depth: 0)
+          using "*" inj_on_def by -
+            ((zippy 10 where run run:
+              "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
           (*ORIG*)
           (* using "*" inj_on_def by fastforce *)
         show ?thesis
@@ -1386,7 +1389,7 @@ proof -
   have card_eq: "card ` {I. I \<subseteq> A \<and> I \<noteq> {}} = {1..card A}"
     using not_less_eq_eq card_mono
     (*NEW*)
-    by - ((zippy 9 simp: image_iff
+    by - ((zippy 8 simp: image_iff
       where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq"
       where blast depth: 2)[1])+
     (*ORIG*)

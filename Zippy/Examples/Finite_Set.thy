@@ -864,7 +864,11 @@ next
   show ?case
   proof (cases "x = a")
     case True
-    with insertI show ?thesis by auto
+    with insertI show ?thesis
+      (*NEW*)
+      by (zippy where simp timeout: 0.1)
+      (*ORIG*)
+      (* by (auto where simp timeout: 0.1) *)
   next
     case False
     then obtain y' where y: "y = f a y'" and y': "fold_graph f z (A - {a}) y'"
@@ -2015,10 +2019,7 @@ qed
 
 lemma insert_partition:
   "x \<notin> F \<Longrightarrow> \<forall>c1 \<in> insert x F. \<forall>c2 \<in> insert x F. c1 \<noteq> c2 \<longrightarrow> c1 \<inter> c2 = {} \<Longrightarrow> x \<inter> \<Union>F = {}"
-  (*NEW*)
-  by (auto where blast depth: 0)
-  (*ORIG*)
-  (* by auto *)
+  by auto
 
 lemma finite_psubset_induct [consumes 1, case_names psubset]:
   assumes finite: "finite A"
@@ -2303,7 +2304,7 @@ proof -
     case Suc
     thus ?case
       (*NEW*)
-      by (zippy simp add: card_Suc_eq where simp timeout: 0.1 where blast depth: 2)
+      by (zippy simp add: card_Suc_eq where simp depth: 0 where blast depth: 2)
       (*ORIG*)
       (* by (auto simp add: card_Suc_eq) *)
   qed
@@ -2519,7 +2520,11 @@ proof -
   next
     case (insert c C)
     then have "c \<inter> \<Union>C = {}"
-      by auto
+      (*NEW*)
+      by - (zippy 10 where run run:
+        "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
+      (*ORIG*)
+      (* by auto *)
     with insert show ?case
       by (simp add: card_Un_disjoint)
   qed

@@ -300,7 +300,10 @@ next
   moreover from False * have "gcd (c * a) (c * b) dvd c * gcd a b"
     by (metis div_dvd_iff_mult dvd_mult_left gcd_dvd1 gcd_dvd2 gcd_greatest mult_commute)
   ultimately have "normalize (gcd (c * a) (c * b)) = normalize (c * gcd a b)"
-    by (auto intro: associated_eqI)
+    (*NEW*)
+    by (zippy intro: associated_eqI where simp depth: 0)
+    (*ORIG*)
+    (* by (auto intro: associated_eqI) *)
   then show ?thesis
     by (simp add: normalize_mult)
 qed
@@ -1963,7 +1966,7 @@ lemma gcd_unique_nat: "d dvd a \<and> d dvd b \<and> (\<forall>e. e dvd a \<and>
   for d a :: nat
   using gcd_unique
   (*NEW*)
-  by - (zippy 100 blast depth: 0 where run run:
+  by - (zippy 120 blast depth: 0 where run run:
     "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
   (*ORIG*)
   (* by fastforce+ *)
@@ -2267,7 +2270,10 @@ lemma bezout_lemma_nat:
   fixes d::nat
   shows "\<lbrakk>d dvd a; d dvd b; a * x = b * y + d \<or> b * x = a * y + d\<rbrakk>
     \<Longrightarrow> \<exists>x y. d dvd a \<and> d dvd a + b \<and> (a * x = (a + b) * y + d \<or> (a + b) * x = a * y + d)"
-  apply auto
+  (*NEW*)
+  apply (zippy 100)
+  (*ORIG*)
+  (* apply (auto) *)
   apply (metis add_mult_distrib2 left_add_mult_distrib)
   apply (rule_tac x=x in exI)
   by (metis add_mult_distrib2 mult.commute add.assoc)

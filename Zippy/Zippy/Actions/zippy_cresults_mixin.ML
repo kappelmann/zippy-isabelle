@@ -60,9 +60,9 @@ fun pure_cresultsq cost_co = (fn (z, sq) => Co.resume cost_co (z, sq)
   >>= arr (fn (p, cost_co) => ((p, sq), pure_cresultsq cost_co)))
   |> Co.coroutine
 
-fun enum_cresultsq next p =
+fun enum_cresultsq next c =
   let
-    val cost_co = Co.enum next (A.K p)
+    val cost_co = Co.enum next (A.K c)
     fun mk_co cost_co = (fn _ => Co.resume cost_co () >>= A.second (arr mk_co)) |> Co.coroutine
   in pure_cresultsq (mk_co cost_co) end
 end

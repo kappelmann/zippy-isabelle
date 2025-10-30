@@ -2006,7 +2006,11 @@ lemma disjnt_Diff1: "disjnt (X-Y) (U-V)" and disjnt_Diff2: "disjnt (U-V) (X-Y)" 
   using that by (auto simp: disjnt_def)
 
 lemma disjoint_image_subset: "\<lbrakk>pairwise disjnt \<A>; \<And>X. X \<in> \<A> \<Longrightarrow> f X \<subseteq> X\<rbrakk> \<Longrightarrow> pairwise disjnt (f `\<A>)"
-  unfolding disjnt_def pairwise_def by fast
+  unfolding disjnt_def pairwise_def
+  (*NEW*)
+  by - ((fast 10 where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+  (*ORIG*)
+  (* by fast *)
 
 lemma pairwise_disjnt_iff: "pairwise disjnt \<A> \<longleftrightarrow> (\<forall>x. \<exists>\<^sub>\<le>\<^sub>1 X. X \<in> \<A> \<and> x \<in> X)"
   by (auto simp: Uniq_def disjnt_iff pairwise_def)

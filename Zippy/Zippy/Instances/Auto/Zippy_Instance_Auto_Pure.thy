@@ -14,25 +14,37 @@ local
   structure Base = struct structure Z = Zippy; structure Ctxt = Z.Ctxt end
   structure Zippy_Simp = Zippy_Instance_Simp(open Base)
 in
-structure Zippy = struct open Zippy Zippy_Simp end
+structure Zippy = struct open Zippy_Simp Zippy end
 end\<close>
 
 ML\<open>
+local val default_cresultsq_scale = Rat.make (12, 10)
+in
 \<^functor_instance>\<open>struct_name: Zippy_Auto
   functor_name: Zippy_Instance_Auto
   id: \<open>"zippy"\<close>
   more_args: \<open>
     structure Z = Zippy
-    open Z
+    open Z; open MU.A
     structure TI = Discrimination_Tree
     val resolve_init_args = {
       empty_action = SOME (Library.K CAction.disable_action),
       default_update = NONE,
       mk_cud = SOME Result_Action.copy_update_data_empty_changed,
-      cresultsq = SOME (CResults.enum_double_cost_double_cost_depth_cresultsq Cost.MEDIUM),
+      cresultsq = SOME (CResults.enum_scale_cresultsq default_cresultsq_scale Cost.MEDIUM),
       progress = SOME Base_Data.AAMeta.P.Promising,
       del_select = SOME (apsnd (snd #> #thm #> the) #> Thm.eq_thm)}
+    val simp_init_args = {timeout = SOME 7.0, depth = NONE}
     structure Log_Base = Z.Logging.Base\<close>\<close>
+structure Zippy_Auto =
+struct open Zippy_Auto
+structure CResults =
+struct
+val default_cresultsq_scale = default_cresultsq_scale
+val enum_scale_cresultsq_default = Zippy.CResults.enum_scale_cresultsq default_cresultsq_scale
+end
+end
+end
 \<close>
 local_setup\<open>Zippy_Auto.Run.Init_Goal_Cluster.Data.setup_attribute
   (Either.Right "goal cluster initialisation")\<close>
@@ -369,20 +381,25 @@ declare [[zippy_init_gc \<open>
     val update = Library.maps snd
       #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
     val mk_cud = Result_Action.copy_update_data_empty_changed
-    val cresultsq_safe = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.LOW
-    val cresultsq_unsafe = CResults.enum_double_cost_double_cost_depth_cresultsq Cost.LOW1
+    val cresultsq_safe = Zippy_Auto.CResults.enum_scale_cresultsq_default Cost.LOW
+    val cresultsq_unsafe = Zippy_Auto.CResults.enum_scale_cresultsq_default Cost.LOW1
     fun f_timeout ctxt i state n time = (@{log Logger.WARN Zippy_Auto.Simp.logger} ctxt
       (fn _ => Pretty.breaks [
           Pretty.block [Pretty.str (name ^ " timeout at pull number "), SpecCheck_Show.int n,
             Pretty.str " after ", Pretty.str (Time.print time), Pretty.str " seconds."],
-          Pretty.block [Pretty.str "Called on subgoal ", SpecCheck_Show.int i, Pretty.str " of state ",
-            Thm.pretty_thm ctxt state],
+          Pretty.block [Pretty.str "Called on subgoal ", SpecCheck_Show.term ctxt (Thm.prem_of state i)],
           Pretty.str (implode ["Consider removing ", name,
             " for this proof, increase/disable the timeout, or check for looping simp rules."])
         ] |> Pretty.block0 |> Pretty.string_of);
       NONE)
+    (*FIXME: why is the simplifier raising Option.Option in some cases?*)
+    fun handle_option_exn_sq ctxt sq = Seq.make (fn _ =>
+      sq |> Seq.pull |> Option.map (apsnd (handle_option_exn_sq ctxt))
+      handle Option.Option => (@{log Logger.WARN Zippy_Auto.Simp.logger} ctxt (fn _ =>
+          "Simplifier raised unexpected Option.Option exception. Returning NONE instead.");
+        NONE))
     fun wrap_tac tac ctxt i state = Zippy_Auto.Simp.Extended_Data.wrap_simp_tac
-      (f_timeout ctxt i state) tac ctxt i state
+      (f_timeout ctxt i state) (fn ctxt => handle_option_exn_sq ctxt oo tac ctxt) ctxt i state
     val (safe_tac, tac) = apply2 wrap_tac tacs
     val data = Simp.gen_data name safe_tac tac Util.exn id update mk_cud
       cresultsq_safe cresultsq_unsafe
@@ -393,8 +410,8 @@ declare [[zippy_init_gc \<open>
 declare [[zippy_parse add: \<open>(@{binding simp}, Zippy_Auto.Simp.parse_extended [])\<close>
   and default: \<open>@{binding simp}\<close>]]
 
-(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Step.logger Logger.ALL\<close>]] *)
-(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run_Best_First.Logging.Run.logger Logger.ALL\<close>]] *)
+(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run.Best_First.Logging.Step.logger Logger.ALL\<close>]] *)
+(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run.Best_First.Logging.Run.logger Logger.ALL\<close>]] *)
 (* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.logger Logger.ALL\<close>]] *)
 
 (*

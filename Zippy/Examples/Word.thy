@@ -1988,7 +1988,7 @@ lift_definition word_rotr :: \<open>nat \<Rightarrow> 'a::len word \<Rightarrow>
     (take_bit (n mod LENGTH('a)) k)\<close>
   using take_bit_tightened
   (*NEW*)
-  by (fastforce blast depth: 0)
+  by (zippy blast depth: 0)
   (*ORIG*)
   (* by fastforce *)
 
@@ -1998,7 +1998,7 @@ lift_definition word_rotl :: \<open>nat \<Rightarrow> 'a::len word \<Rightarrow>
     (take_bit (LENGTH('a) - n mod LENGTH('a)) k)\<close>
   using take_bit_tightened
   (*NEW*)
-  by (fastforce blast depth: 0)
+  by (zippy blast depth: 0)
   (*ORIG*)
   (* by fastforce *)
 
@@ -4659,7 +4659,7 @@ proof (cases \<open>a < b\<close>)
   then show ?thesis
     (*NEW*)
     apply -
-    apply (zippy 120 simp add: range_eq finite_atLeastLessThan intro!: insort_is_Cons
+    apply (zippy 200 simp add: range_eq finite_atLeastLessThan intro!: insort_is_Cons
       where subst insort_is_Cons)+
     (*ORIG*)
     (* apply (auto simp add: range_eq finite_atLeastLessThan intro!: insort_is_Cons)
@@ -4720,14 +4720,20 @@ qualified definition all_range :: \<open>('a::len word \<Rightarrow> bool) \<Rig
 
 qualified lemma all_range_code [code]:
   \<open>all_range P a b \<longleftrightarrow> (a < b \<longrightarrow> P a \<and> all_range P (a + 1) b)\<close>
-  apply (auto simp add: Ball_def simp flip: less_iff_succ_less_eq)
+  (*NEW*)
+  apply (zippy 200 simp add: Ball_def simp flip: less_iff_succ_less_eq)
+  (*ORIG*)
+  (* apply (auto simp add: Ball_def simp flip: less_iff_succ_less_eq) *)
    apply (metis inc_less_eq_iff order_le_less word_not_simps(3))
   apply (metis antisym_conv2 inc_le)
   done
 
 qualified lemma forall_atLeast_iff [code_unfold]:
   \<open>(\<forall>n\<in>{a..}. P n) \<longleftrightarrow> all_range P a (- 1) \<and> P (- 1)\<close>
-  apply auto
+  (*NEW*)
+  apply (zippy 100)
+  (*ORIG*)
+  (* apply (auto) *)
   using atLeastLessThan_iff word_order.not_eq_extremum apply blast
   done
 
@@ -4737,7 +4743,10 @@ qualified lemma forall_greater_eq_iff [code_unfold]:
 
 qualified lemma forall_greaterThan_iff [code_unfold]:
   \<open>(\<forall>n\<in>{a<..}. P n) \<longleftrightarrow> a = - 1 \<or> all_range P (a + 1) (- 1) \<and> P (- 1)\<close>
-  apply (auto simp add: inc_less_eq_iff word_order.not_eq_extremum)
+  (*NEW*)
+  apply (zippy 200 simp add: inc_less_eq_iff word_order.not_eq_extremum)
+  (*ORIG*)
+  (* apply (auto simp add: inc_less_eq_iff word_order.not_eq_extremum) *)
   apply (metis atLeastLessThan_iff inc_le word_order.not_eq_extremum)
   done
 
@@ -4767,7 +4776,10 @@ qualified lemma forall_atLeastLessThan_iff [code_unfold]:
 
 qualified lemma forall_atLeastAtMost_iff [code_unfold]:
   \<open>(\<forall>n\<in>{a..b}. P n) \<longleftrightarrow> (if b = - 1 then (\<forall>n\<in>{a..}. P n) else all_range P a (b + 1))\<close>
-  apply auto
+  (*NEW*)
+  apply (zippy 200)
+  (*ORIG*)
+  (* apply (auto) *)
    apply (metis atLeastAtMost_iff inc_le not_less_iff_gr_or_eq order_le_less)
   apply (metis (no_types, lifting) antisym_conv2 atLeastLessThan_iff dual_order.trans inc_less_eq_triv_imp
       nle_le)
@@ -4779,7 +4791,10 @@ qualified lemma forall_greaterThanLessThan_iff [code_unfold]:
 
 qualified lemma forall_greaterThanAtMost_iff [code_unfold]:
   \<open>(\<forall>n\<in>{a<..b}. P n) \<longleftrightarrow> (if b = - 1 then (\<forall>n\<in>{a<..}. P n) else a = - 1 \<or> all_range P (a + 1) (b + 1))\<close>
-  apply auto
+  (*NEW*)
+  apply (zippy 200)
+  (*ORIG*)
+  (* apply (auto) *)
    apply (metis greaterThanAtMost_iff inc_less_eq_iff linorder_not_less)
   apply (meson atLeastLessThan_iff inc_less_eq_iff order_le_less_trans word_le_less_eq)
   done

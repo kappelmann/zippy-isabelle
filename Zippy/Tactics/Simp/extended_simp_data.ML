@@ -1,34 +1,39 @@
 (*  Title:      Zippy/extended_simp_data.ML
     Author:     Kevin Kappelmann
 *)
-@{parse_entries (sig) PARSE_EXTENDED_SIMP_DATA_ARGS [timeout]}
+@{parse_entries (sig) PARSE_EXTENDED_SIMP_DATA_ARGS [depth, timeout]}
 
 signature EXTENDED_SIMP_DATA_ARGS =
 sig
   structure PA : PARSE_EXTENDED_SIMP_DATA_ARGS
-  type args = real PA.entries
+  type args = (int, real) PA.entries
 
   val wrap_simp_tac : (int -> Time.time -> (thm * thm Seq.seq) option) ->
     (Proof.context -> int -> tactic) -> args -> Proof.context -> int -> tactic
 
-  val parsers : real parser PA.entries
+  val arg_parsers : (int parser, real parser) PA.entries
 end
 
 structure Extended_Simp_Data_Args : EXTENDED_SIMP_DATA_ARGS =
 struct
 
-@{parse_entries (struct) PA [timeout]}
+@{parse_entries (struct) PA [depth, timeout]}
 
-type args = real PA.entries
+type args = (int, real) PA.entries
 
 fun wrap_simp_tac f_timeout tac args ctxt i state =
-  let val timeout = the_default 0.0 (PA.get_timeout_safe args)
+  let
+    val timeout = the_default 0.0 (PA.get_timeout_safe args)
+    val ctxt = PA.get_depth_safe args
+      |> Option.map (fn depth => Config.put Raw_Simplifier.simp_depth_limit depth ctxt)
+      |> the_default ctxt
   in
     Seq.make (fn _ => tac ctxt i state |> Seq.pull)
     |> General_Util.seq_with_timeout false f_timeout (K (seconds timeout))
   end
 
-val parsers = {
+val arg_parsers = {
+  depth = SOME Parse.int,
   timeout = SOME Parse.real
 }
 end
@@ -42,6 +47,8 @@ sig
 
   val get_args : Context.generic -> Data.T
   val map_args : (Data.T -> Data.T) -> Context.generic -> Context.generic
+  val get_depth : Context.generic -> int
+  val map_depth : (int -> int) -> Context.generic -> Context.generic
   val get_timeout : Context.generic -> real
   val map_timeout : (real -> real) -> Context.generic -> Context.generic
 
@@ -76,6 +83,9 @@ structure Data = Generic_Data(
 val get_args = Data.get
 val map_args = Data.map
 
+val get_depth = PA.get_depth o get_args
+val map_depth = map_args o PA.map_depth
+
 val get_timeout = PA.get_timeout o get_args
 val map_timeout = map_args o PA.map_timeout
 
@@ -86,8 +96,8 @@ val binding = Binding.make (FI.id, FI.pos)
 
 val parse_arg_entries =
   let
-    val parsers = ESDA.parsers
-    val parse_value = PA.parse_entry (PA.get_timeout parsers)
+    val parsers = ESDA.arg_parsers
+    val parse_value = PA.parse_entry (PA.get_depth parsers) (PA.get_timeout parsers)
     val parse_entry = Parse_Key_Value.parse_entry PA.parse_key (K (Parse.$$$ ":")) parse_value
   in PA.parse_entries_required Scan.repeat1 true [] parse_entry (PA.empty_entries ()) end
 

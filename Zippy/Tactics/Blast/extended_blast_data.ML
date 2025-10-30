@@ -83,12 +83,11 @@ val map_depth = map_args o PA.map_depth
 
 val get_timeout = PA.get_timeout o get_args
 val map_timeout = map_args o PA.map_timeout
-
+structure A = Thm
 fun f_timeout ctxt i state n time = (@{log Logger.WARN} ctxt (fn _ => Pretty.breaks [
     Pretty.block [Pretty.str "blast timeout at pull number ", SpecCheck_Show.int n,
       Pretty.str " after ", Pretty.str (Time.print time), Pretty.str " seconds."],
-    Pretty.block [Pretty.str "Called on subgoal ", SpecCheck_Show.int i, Pretty.str " of state ",
-      Thm.pretty_thm ctxt state],
+    Pretty.block [Pretty.str "Called on subgoal ", SpecCheck_Show.term ctxt (Thm.prem_of state i)],
     Pretty.str "Consider removing blast for this proof, increase/disable the timeout, or check for looping rules in the classical reasoner."
   ] |> Pretty.block0 |> Pretty.string_of);
   NONE)

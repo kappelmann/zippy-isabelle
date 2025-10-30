@@ -81,7 +81,7 @@ fun slow_step_data exn id update_result mk_cud cresultsq_safe cresultsq_inst0
       |> Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising
       |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1 Tac_AAM.madd
     val data = {
-      empty_action = CResults.orelse_update_action empty_action inst0_step_data,
+      empty_action = Library.K (CAction.update_action inst0_step_data),
       meta = Mixin_Base4.Meta.Meta.metadata (id, descr "safe_tac"),
       result_action = result_action,
       cresultsq = cresultsq_safe,

@@ -76,7 +76,6 @@ local
     structure Log_Copy = Logging.Copy; structure Log_Enum_Copy = Logging.Enum_Copy)
   structure Zippy_CResults = Zippy_Instance_CResults(
     structure Z = Zippy_CAction
-    val double = Cost.double
     structure Ctxt = Ctxt; structure Log_CAction = Logging.CAction
     structure Log_CAction_CResults = Logging.CAction_CResults)
   structure Zippy_Tactic = Zippy_Instance_Tactic(
@@ -108,6 +107,12 @@ in
 structure ZB = Zippy_Base(open Base_Mixins; structure Z = ZLPC; structure Log = Logging.Base
   \<^imap>\<open>\<open>{i}\<close> => \<open>structure Show{i} = Show.Zipper{i}\<close>\<close>)
 structure ZL = Zippy_Lists(open Base_Mixins; structure Z = ZLPC)
+structure CResults =
+struct
+  local structure CResults_More = Zippy_CResults_Mixin(CResults)
+  in open CResults_More CResults end
+  fun enum_scale_cresultsq s = enum_cresultsq (MU.A.arr (Cost.scale s))
+end
 structure LGoals_Pos_Copy = Zippy_Lists_Goals_Pos_Copy_Mixin(open Base_Mixins; structure Z = ZL
   structure GPC = Goals_Pos_Copy;
   structure Log = Logging.LGoals_Pos_Copy; structure Log_Base = Logging.Base;
@@ -214,30 +219,32 @@ struct
     structure Step = Zippy_Logger_Mixin_Base(open Base; val name = "Step")
     end
   end
-  local open MU.Mo
-    structure ZCost = Zippy_Collect_Trace_Mixin(ZLPC.ZCollect)
+  local open MU.Mo; structure ZCost = Zippy_Collect_Trace_Mixin(ZLPC.ZCollect)
   in
   fun mk_prio {cost, zipper,...} = ZCost.ZZCollect_Co4.getter zipper |> ZCost.get_current
     |> Option.map (Library.curry Cost.add cost) |> the_default cost |> pure
-  structure CAction_Queue = Zippy_CAction_Queue_Mixin(open Base_Mixins
-    structure Z = ZE
-    structure CAction_Queue = Zippy_CAction_Queue_Mixin_Base(structure CAction = CAction
-      structure Queue = Leftist_Heap(type prio = Cost.cost; val ord = Cost.ord))
-    val mk_prio = mk_prio
-    val mk_exn = mk_exn
-    structure Log = Logging.CAction_Queue)
   end
+  structure CAction_Queue = Zippy_CAction_Queue_Mixin_Base(structure CAction = CAction
+    structure Queue = Leftist_Heap(type prio = Cost.cost; val ord = Cost.ord))
   structure Show_Queue_Entry = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} CAction_Queue.entry
     fun pretty ctxt {cost, zipper,...} = SpecCheck_Show.record [
       ("Cost", Show.Cost.pretty ctxt cost),
       ("Zipper", Show.Zipper4.pretty ctxt zipper)])
+  structure CAction_Queue = Zippy_CAction_Queue_Mixin(open Base_Mixins
+    structure Z = ZE
+    structure CAction_Queue = CAction_Queue
+    val mk_prio = mk_prio
+    val mk_exn = mk_exn
+    structure Log = Logging.CAction_Queue
+    structure Show_Queue_Entry = Show_Queue_Entry
+    structure Show_Prio = Show.Cost)
   structure Step = Zippy_Step_Mixin(open Base_Mixins
     structure Step = Zippy_Step_Mixin_Base(open Goals_Results_TMV
       structure CAction_Queue = CAction_Queue)
     val mk_prio = mk_prio
     val mk_exn = mk_exn
-    structure Log = Logging
+    structure Log = Logging.Step
     structure Log_LGoals = Zippy.Logging.LGoals
     structure Log_CAction_Queue = Logging.CAction_Queue
     structure Show_Queue_Entry = Show_Queue_Entry

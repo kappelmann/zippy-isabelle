@@ -879,11 +879,22 @@ lemma tendsto_mult_right_iff [simp]:
 
 lemma tendsto_zero_mult_left_iff [simp]:
   fixes c::"'a::{topological_semigroup_mult,field}" assumes "c \<noteq> 0" shows "(\<lambda>n. c * a n)\<longlonglongrightarrow> 0 \<longleftrightarrow> a \<longlonglongrightarrow> 0"
-  using assms tendsto_mult_left tendsto_mult_left_iff by (fastforce blast depth: 0)
+  using assms tendsto_mult_left tendsto_mult_left_iff
+  (*NEW*)
+  by -
+    ((zippy 10 blast depth: 0
+    where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+  (*ORIG*)
+  (* by (fastforce) *)
 
 lemma tendsto_zero_mult_right_iff [simp]:
   fixes c::"'a::{topological_semigroup_mult,field}" assumes "c \<noteq> 0" shows "(\<lambda>n. a n * c)\<longlonglongrightarrow> 0 \<longleftrightarrow> a \<longlonglongrightarrow> 0"
-  using assms tendsto_mult_right tendsto_mult_right_iff by (fastforce blast depth: 0)
+  using assms tendsto_mult_right tendsto_mult_right_iff
+  (*NEW*)
+  by - ((zippy 10 blast depth: 0
+    where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+  (*ORIG*)
+  (* by (fastforce) *)
 
 lemma tendsto_zero_divide_iff [simp]:
   fixes c::"'a::{topological_semigroup_mult,field}" assumes "c \<noteq> 0" shows "(\<lambda>n. a n / c)\<longlonglongrightarrow> 0 \<longleftrightarrow> a \<longlonglongrightarrow> 0"
@@ -1055,7 +1066,11 @@ lemma LIMSEQ_prod_0:
   shows "(\<lambda>n. prod f {..n}) \<longlonglongrightarrow> 0"
 proof (subst tendsto_cong)
   show "\<forall>\<^sub>F n in sequentially. prod f {..n} = 0"
-    using assms eventually_at_top_linorder by (auto blast depth: 3)
+    using assms eventually_at_top_linorder
+    (*NEW*)
+    by (zippy blast depth: 3)
+    (*ORIG*)
+    (* by (auto) *)
 qed auto
 
 lemma LIMSEQ_prod_nonneg:
@@ -1628,8 +1643,9 @@ proof (rule filtermap_fun_inverse[symmetric])
   show "filterlim uminus at_top (at_bot::'a filter)"
     using eventually_at_bot_linorder filterlim_at_top le_minus_iff
     (*NEW*)
-    by (zippy 25 where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")
-    zippy
+    supply [[unify_search_bound=1,
+      ML_map_context "Context.map_proof Tactic_Util.silence_kernel_ho_bound_exceeded"]]
+    by (zippy where blast timeout: 0.1)
     (*ORIG*)
     (* by force+ *)
   show "filterlim uminus (at_bot::'a filter) at_top"
@@ -2281,7 +2297,12 @@ proposition Lim_transform_eq: "((\<lambda>x. f x - g x) \<longlongrightarrow> 0)
 
 lemma Lim_transform_eventually:
   "\<lbrakk>(f \<longlongrightarrow> l) F; eventually (\<lambda>x. f x = g x) F\<rbrakk> \<Longrightarrow> (g \<longlongrightarrow> l) F"
-  using eventually_elim2 by (fastforce simp add: tendsto_def where blast depth: 0)
+  using eventually_elim2
+  (*NEW*)
+  by - ((zippy 60 simp add: tendsto_def where blast depth: 0
+    where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+  (*ORIG*)
+  (* by (fastforce simp add: tendsto_def) *)
 
 lemma Lim_transform_within:
   assumes "(f \<longlongrightarrow> l) (at x within S)"
@@ -2717,7 +2738,7 @@ proof
   then have "LIM x F. inverse (f x) * (f x / g x) :> at_infinity"
     using assms tendsto_inverse tendsto_mult_filterlim_at_infinity
       (*NEW*)
-      by - ((zippy 60
+      by - ((zippy 20
         where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
       (*ORIG*)
       (* by fastforce+ *)
@@ -3176,7 +3197,14 @@ proof (cases "a \<le> b", rule compactI)
       where "C1\<subseteq>C" "finite C1" "{a..b} \<subseteq> \<Union>C1" "C2\<subseteq>C" "finite C2" "{b..c} \<subseteq> \<Union>C2"
       by auto
     with trans show ?case
-      unfolding * by (intro exI[of _ "C1 \<union> C2"]) auto
+      unfolding *
+        by (intro exI[of _ "C1 \<union> C2"])
+        (*new *)
+        (simp | step)+
+        (* ((auto 20
+          where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+ *)
+        (*ORIG*)
+        (* auto *)
   next
     case (local x)
     with C have "x \<in> \<Union>C" by auto
@@ -3187,7 +3215,7 @@ proof (cases "a \<le> b", rule compactI)
     with \<open>c \<in> C\<close> show ?case
       by (safe intro!: exI[of _ "e/2"] exI[of _ "{c}"])
       (*NEW*)
-      (auto blast depth: 0)
+      (zippy blast depth: 0)
       (*ORIG*)
       (* auto *)
   qed
@@ -3219,7 +3247,10 @@ lemma open_Collect_positive:
   assumes f: "continuous_on s f"
   shows "\<exists>A. open A \<and> A \<inter> s = {x\<in>s. 0 < f x}"
   using continuous_on_open_invariant[THEN iffD1, OF f, rule_format, of "{0 <..}"]
-  by (auto simp: Int_def field_simps where blast depth: 2)
+  (*NEW*)
+  by (zippy simp: Int_def field_simps where blast depth: 2)
+  (*ORIG*)
+  (* by (auto simp: Int_def field_simps) *)
 
 lemma open_Collect_less_Int:
   fixes f g :: "'a::topological_space \<Rightarrow> real"
@@ -3238,7 +3269,7 @@ lemma isCont_eq_Ub:
   shows "a \<le> b \<Longrightarrow> \<forall>x::real. a \<le> x \<and> x \<le> b \<longrightarrow> isCont f x \<Longrightarrow>
     \<exists>M. (\<forall>x. a \<le> x \<and> x \<le> b \<longrightarrow> f x \<le> M) \<and> (\<exists>x. a \<le> x \<and> x \<le> b \<and> f x = M)"
   using continuous_attains_sup[of "{a..b}" f]
-  by (auto simp: continuous_at_imp_continuous_on Ball_def Bex_def where blast depth: 1)
+  by (auto simp: continuous_at_imp_continuous_on Ball_def Bex_def)
 
 lemma isCont_eq_Lb:
   fixes f :: "real \<Rightarrow> 'a::linorder_topology"
@@ -3330,7 +3361,7 @@ text \<open>Bartle/Sherbert: Introduction to Real Analysis, Theorem 4.2.9, p. 11
 lemma LIM_fun_gt_zero: "f \<midarrow>c\<rightarrow> l \<Longrightarrow> 0 < l \<Longrightarrow> \<exists>r. 0 < r \<and> (\<forall>x. x \<noteq> c \<and> \<bar>c - x\<bar> < r \<longrightarrow> 0 < f x)"
   for f :: "real \<Rightarrow> real"
     (*NEW*)
-    by (zippy 80 dest: LIM_D
+    by (zippy 20 dest: LIM_D
       where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
     (*ORIG*)
     (* by (force_orig simp: dest: LIM_D)+ *)

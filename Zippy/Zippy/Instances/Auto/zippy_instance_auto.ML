@@ -18,6 +18,7 @@ functor Zippy_Instance_Auto(
         @{AllT_args} Z.CResults.cresultsq)
         Zippy_Instance_Hom_Changed_Goals_Data_Args.PD.entries) -> bool)
         Zippy_Instance_Hom_Changed_Goals_Data_Args.PDC.entries
+    val simp_init_args : Extended_Simp_Data_Args.args
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
     structure Log_Base : ZIPPY_LOGGER_MIXIN_BASE
@@ -52,7 +53,7 @@ struct
     path: \<open>FI.struct_op "Simp"\<close>
     more_args: \<open>
       structure Z = Z
-      val init_args = {timeout = SOME 7.0}
+      val init_args = simp_init_args
       val parent_logger = logger\<close>\<close>
   local
     (*modified version of old section parser in Method that allows backtracking to alternatives

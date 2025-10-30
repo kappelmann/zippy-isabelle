@@ -663,9 +663,10 @@ lemma filtercomap_ident: "filtercomap (\<lambda>x. x) F = F"
 lemma filtercomap_filtercomap: "filtercomap f (filtercomap g F) = filtercomap (\<lambda>x. g (f x)) F"
   unfolding filter_eq_iff
   (*NEW*)
-  by (zippy simp: eventually_filtercomap where resolve exI conjI)
+  by ((zippy 20 simp: eventually_filtercomap intro: exI conjI where run run:
+    "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
   (*ORIG*)
-  (* by (auto_orig simp: eventually_filtercomap) *)
+  (* by (auto simp: eventually_filtercomap) *)
 
 lemma filtercomap_mono: "F \<le> F' \<Longrightarrow> filtercomap f F \<le> filtercomap f F'"
   by (auto simp: eventually_filtercomap le_filter_def)
@@ -895,7 +896,9 @@ lemma eventually_at_bot_linorderI:
 lemma eventually_filtercomap_at_bot_linorder:
   "eventually P (filtercomap f at_bot) \<longleftrightarrow> (\<exists>N::'a::linorder. \<forall>x. f x \<le> N \<longrightarrow> P x)"
   (*NEW*)
-  by (zippy simp: eventually_filtercomap eventually_at_bot_linorder where resolve exI conjI)
+  supply [[unify_search_bound=1]]
+  by ((zippy 20 simp: eventually_filtercomap eventually_at_bot_linorder intro: exI conjI
+    where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
   (*ORIG*)
   (* by (auto simp: eventually_filtercomap eventually_at_bot_linorder) *)
 
@@ -916,7 +919,9 @@ qed
 lemma eventually_filtercomap_at_bot_dense:
   "eventually P (filtercomap f at_bot) \<longleftrightarrow> (\<exists>N::'a::{no_bot, linorder}. \<forall>x. f x < N \<longrightarrow> P x)"
   (*NEW*)
-  by (zippy simp: eventually_filtercomap eventually_at_bot_dense where resolve exI conjI)
+  supply [[unify_search_bound=1]]
+  by ((zippy 20 simp: eventually_filtercomap eventually_at_bot_dense intro: exI conjI
+    where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
   (*ORIG*)
   (* by (auto simp: eventually_filtercomap eventually_at_bot_dense) *)
 
@@ -1041,7 +1046,7 @@ lemma eventually_finite_subsets_at_top_finite:
   shows   "eventually P (finite_subsets_at_top A) \<longleftrightarrow> P A"
   unfolding eventually_finite_subsets_at_top using assms
   (*NEW*)
-  by (force where blast depth: 0)
+  by (zippy where blast depth: 0)
   (*ORIG*)
   (* by (force) *)
 
@@ -1861,7 +1866,14 @@ proof(safe intro!: ext elim!: rel_filter.cases)
         apply step
         apply step
         apply step
+        apply step
+        apply step
+        apply step
+        apply step
+        apply step
+        apply step
         by zippy
+        (**)
         (*ORIG*)
         (* by (fastforce_orig intro: always_eventually) *)
     qed
@@ -1881,12 +1893,17 @@ proof(safe intro!: ext elim!: rel_filter.cases)
       show ?rhs
         apply (clarsimp elim!: eventually_rev_mp simp add: le_fun_def)
         (*NEW*)
-        apply (zippy 100 resolve always_eventually)
+        apply (zippy 120 resolve always_eventually)
         apply step back back
         apply step back back
         apply step
         apply step
-        by zippy
+        apply step back back
+        apply simp
+        apply step
+        apply step
+        apply (zippy intro: always_eventually)
+        done
         (*ORIG*)
         (* by (fastforce intro: always_eventually)+ *)
     qed
@@ -1992,12 +2009,8 @@ proof(rule rel_funI rel_filter.intros)+
   have SS': "SS' \<subseteq> {(x, y). A x y}" and [simp]: "S = fst ` SS'" "S' = snd ` SS'"
     using *
     (*NEW*)
-    apply -
-    supply rel_setD1[dest] rel_setD2[dest] rev_image_eqI[intro] SS'_def[simp]
-    apply simp
-    apply step
-    apply simp_all
-    by zippy
+    by - ((zippy 20 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def
+      where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
     (*ORIG*)
     (* by (auto_orig 4 3 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def) *)
   let ?Z = "principal SS'"
@@ -2031,14 +2044,10 @@ proof(rule rel_funI)
   assume "rel_set (rel_filter A) S S'"
   then have SS': "SS' \<subseteq> {(F, G). rel_filter A F G}" and [simp]: "S = fst ` SS'" "S' = snd ` SS'"
     (*NEW*)
-    apply -
-    supply rel_setD1[dest] rel_setD2[dest] rev_image_eqI[intro] SS'_def[simp]
-    apply simp
-    apply step
-    apply simp_all
-    by zippy
+    by - ((zippy 20 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def
+      where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
     (*ORIG*)
-    (* by(auto dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def) *)
+    (* by(auto_orig 4 3 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def) *)
   from SS' obtain Z where Z: "\<And>F G. (F, G) \<in> SS' \<Longrightarrow>
     (\<forall>\<^sub>F (x, y) in Z F G. A x y) \<and>
     id F = map_filter_on {(x, y). A x y} fst (Z F G) \<and>
@@ -2124,7 +2133,8 @@ proof(intro rel_funI; elim rel_filter.cases; hypsubst)
         subgoal
           by(rule exI[where x="\<lambda>a. \<exists>b. P'' (a, b) \<and> S a b"])(fastforce elim: eventually_rev_mp eventually_mono)
         done
-      subgoal by fastforce
+      subgoal
+        by fastforce
       done
     show "map_filter_on {(x, y). ?RS x y} snd ?Z = ?G"
       using F G
