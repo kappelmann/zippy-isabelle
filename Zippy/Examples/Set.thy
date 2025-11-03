@@ -804,9 +804,9 @@ proof
     have "A = insert b ?C \<and> b \<notin> ?C \<and> B = insert a ?C \<and> a \<notin> ?C"
       using assms \<open>?L\<close> \<open>a \<noteq> b\<close> by auto
     then show ?R using \<open>a \<noteq> b\<close>
-    (*ORIG*)
-    by (zippy blast depth: 0)
     (*NEW*)
+    by (zippy blast depth: 0)
+    (*ORIG*)
     (* by auto *)
   qed
   show ?L if ?R
@@ -1852,7 +1852,7 @@ proof (rule the1_equality)
   with * \<open>y \<in> A\<close> have "a \<in> f ` A" by blast
   with * show "f ` A = {a}"
   (*NEW*)
-  supply [[zippy_init_gc del: "@{binding asm_full_simp}"]] by zippy
+  by (zippy simp depth: 0)
   (*ORIG*)
   (* by auto *)
   then show "\<exists>!x. f ` A = {x}" by auto
@@ -2008,7 +2008,7 @@ lemma disjnt_Diff1: "disjnt (X-Y) (U-V)" and disjnt_Diff2: "disjnt (U-V) (X-Y)" 
 lemma disjoint_image_subset: "\<lbrakk>pairwise disjnt \<A>; \<And>X. X \<in> \<A> \<Longrightarrow> f X \<subseteq> X\<rbrakk> \<Longrightarrow> pairwise disjnt (f `\<A>)"
   unfolding disjnt_def pairwise_def
   (*NEW*)
-  by - ((fast 10 where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+  by - ((zippy 10 where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
   (*ORIG*)
   (* by fast *)
 

@@ -1401,8 +1401,8 @@ next
   next
     assume "x \<noteq> a" thus ?case using Cons
       (*NEW*)
-      by - ((zippy 20 intro!: Cons_eq_appendI
-        where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+      by - ((zippy 10 intro!: Cons_eq_appendI
+        where run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
       (*ORIG*)
       (* by(fastforce intro!: Cons_eq_appendI) *)
   qed
@@ -1485,7 +1485,9 @@ next
     assume "\<not> P x"
     hence "\<exists>x\<in>set xs. P x" using snoc(2) by simp
     thus ?thesis using \<open>\<not> P x\<close> snoc(1)
-      by - ((zippy 8 where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+      (*NEW*)
+      by - ((zippy 8 run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+      (*ORIG*)
       (* by fastforce *)
   qed
 qed
@@ -1681,9 +1683,9 @@ next
   case (Cons x xs) thus ?case
     using Suc_le_eq
     (*NEW*)
-    by (zippy where blast depth: 0)
+    by (zippy run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
     (*ORIG*)
-    (* by (fastforce where blast depth: 0) *)
+    (* by (fastforce) *)
 qed
 
 lemma length_filter_conv_card:
@@ -1865,8 +1867,7 @@ proof (induct xs arbitrary: ys)
     case (Cons y ys)
     with Cons.hyps show ?thesis
       (*NEW*)
-      supply [[unify_search_bound=1]]
-      by (zippy blast depth: 0)
+      by (zippy run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
       (*ORIG*)
       (* by fastforce *)
   qed simp
@@ -4503,10 +4504,11 @@ proof (induction xs)
 next
   case (Cons x xs) thus ?case
     (*NEW*)
-    apply(zippy 2000 simp: nth_Cons' split: if_splits)
+    apply(zippy 2500 simp: nth_Cons' split: if_splits)
     (*TODO NEW: why is this not solved by zippy?*)
     apply(zippy blast depth: 0)[1]
-    by (zippy 17 where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
+    by (zippy 8 run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq"
+      where blast depth: 0)+
     (*ORIG*)
     (* apply (auto simp: nth_Cons' split: if_splits) *)
     (* using diff_Suc_1 less_Suc_eq_0_disj by fastforce *)
@@ -7121,7 +7123,8 @@ proof (induction n)
       using r' Suc
       by (cases xys)
       (*NEW*)
-      ((zippy 15 simp: lex_prod_def image_Collect where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+      (zippy simp: lex_prod_def image_Collect
+        where run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
       (*ORIG*)
       (* (fastforce simp: lex_prod_def image_Collect) *)
   qed
@@ -7547,7 +7550,11 @@ proof (induction us)
 next
   case (Cons u us)
   with lex_append_rightI show ?case
-    by (fastforce simp add: lenlex_def eq)
+    (*NEW*)
+    by (zippy simp add: lenlex_def eq
+      where run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
+    (*ORIG*)
+    (* by (fastforce simp add: lenlex_def eq) *)
 qed
 
 lemma lenlex_append2 [simp]:
@@ -8884,7 +8891,11 @@ lemma set_Cons_transfer [transfer_rule]:
   "(rel_set A ===> rel_set (list_all2 A) ===> rel_set (list_all2 A))
     set_Cons set_Cons"
   unfolding rel_fun_def rel_set_def set_Cons_def
-  by (fastforce simp add: list_all2_Cons1 list_all2_Cons2)
+  (*NEW*)
+  by (zippy simp add: list_all2_Cons1 list_all2_Cons2
+    where run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
+  (*ORIG*)
+  (* by (fastforce simp add: list_all2_Cons1 list_all2_Cons2) *)
 
 lemma listset_transfer [transfer_rule]:
   "(list_all2 (rel_set A) ===> rel_set (list_all2 A)) listset listset"

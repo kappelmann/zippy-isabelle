@@ -5,12 +5,12 @@ Data for tactic actions creating a homogeneous number of changed goals for a giv
 *)
 @{parse_entries (sig) PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_MODE [add, del, config]}
 @{parse_entries (sig) PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA
-  [thm, progress, empty_action, updates, mk_cud, cresultsq]}
+  [thm, mk_meta, empty_action, updates, mk_cud, presultsq]}
 @{parse_entries (sig) PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_ADD_ARGS
-  [progress, empty_action, default_update, updates, mk_cud, cresultsq]}
+  [mk_meta, empty_action, default_update, updates, mk_cud, presultsq]}
 @{parse_entries (sig) PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_DEL_ARGS [select]}
 @{parse_entries (sig) PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_CONFIG
-  [progress, empty_action, default_update, mk_cud, cresultsq, del_select]}
+  [mk_meta, empty_action, default_update, mk_cud, presultsq, del_select]}
 
 signature ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_ARGS =
 sig
@@ -45,18 +45,18 @@ structure PU = Parse_Util
 structure MCU = ML_Code_Util
 
 @{parse_entries (struct) PM [add, del, config]}
-@{parse_entries (struct) PD [thm, progress, empty_action, updates, mk_cud, cresultsq]}
-@{parse_entries (struct) PAA [progress, empty_action, default_update, updates, mk_cud, cresultsq]}
+@{parse_entries (struct) PD [thm, mk_meta, empty_action, updates, mk_cud, presultsq]}
+@{parse_entries (struct) PAA [mk_meta, empty_action, default_update, updates, mk_cud, presultsq]}
 @{parse_entries (struct) PDA [select]}
-@{parse_entries (struct) PDC [progress, empty_action, default_update, mk_cud, cresultsq, del_select]}
+@{parse_entries (struct) PDC [mk_meta, empty_action, default_update, mk_cud, presultsq, del_select]}
 
-fun PD_entries_from_PAA_entries {progress, empty_action, updates, mk_cud, cresultsq,...} thm =
-  {thm = SOME thm, progress = progress, empty_action = empty_action, updates = updates,
-  mk_cud = mk_cud, cresultsq = cresultsq}
-fun PAA_entries_from_PDC_entries {progress, empty_action, default_update, mk_cud, cresultsq,...}
+fun PD_entries_from_PAA_entries {mk_meta, empty_action, updates, mk_cud, presultsq,...} thm =
+  {thm = SOME thm, mk_meta = mk_meta, empty_action = empty_action, updates = updates,
+  mk_cud = mk_cud, presultsq = presultsq}
+fun PAA_entries_from_PDC_entries {mk_meta, empty_action, default_update, mk_cud, presultsq,...}
   updates = {
-  progress = progress, empty_action = empty_action, default_update = default_update,
-  mk_cud = mk_cud, cresultsq = cresultsq, updates = updates}
+  mk_meta = mk_meta, empty_action = empty_action, default_update = default_update,
+  mk_cud = mk_cud, presultsq = presultsq, updates = updates}
 
 fun mk_updates_default num_new_goals thm default_update updates ctxt =
   let
@@ -95,26 +95,26 @@ val updates_parser = Args.bracks (
     >> (tag_list 1 #> map_filter (fn (_, NONE) => NONE | (i, SOME x) => SOME (i, x)))))
 
 val mk_cud_parser = PU.nonempty_code (K "copy update data function must not be empty")
-val cresultsq_parser = PU.nonempty_code (K "(cost * result sequence) coroutine must not be empty")
-val progress_parser = PU.nonempty_code (K "progress must not be empty")
+val presultsq_parser = PU.nonempty_code (K "(prio * result sequence) coroutine must not be empty")
+val mk_meta_parser = PU.nonempty_code (K "function to create metadata must not be empty")
 
 val add_arg_parsers = {
-  progress = SOME progress_parser,
+  mk_meta = SOME mk_meta_parser,
   empty_action = SOME empty_action_parser,
   default_update = SOME default_update_parser,
   updates = SOME updates_parser,
   mk_cud = SOME mk_cud_parser,
-  cresultsq = SOME cresultsq_parser}
+  presultsq = SOME presultsq_parser}
 
 val del_select_parser = PU.nonempty_code (K "deletion selector must not be empty")
 val del_arg_parsers = {select = SOME del_select_parser}
 
 val config_data_parsers = {
-  progress = SOME progress_parser,
+  mk_meta = SOME mk_meta_parser,
   empty_action = SOME empty_action_parser,
   default_update = SOME default_update_parser,
   mk_cud = SOME mk_cud_parser,
-  cresultsq = SOME cresultsq_parser,
+  presultsq = SOME presultsq_parser,
   del_select = SOME del_select_parser}
 
 val code_updates = map (fn (i, update) => MCU.tuple [MCU.read (string_of_int i), update]) #> MCU.list
@@ -127,22 +127,22 @@ sig
   structure Hom_Changed_Goals_Data :
   sig
     type data = (thm,
-      Base_Data.AAMeta.P.progress,
-      int -> @{AllT_args} Base_Data.CAction.action,
+      Tac_AAM.mk_meta,
+      int -> @{AllT_args} Base_Data.PAction.action,
       (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph) list,
       @{AllT_args} Result_Action.mk_copy_update_data,
-      @{AllT_args} CResults.cresultsq) Zippy_Instance_Hom_Changed_Goals_Data_Args.PD.entries
+      @{AllT_args} PResults.presultsq) Zippy_Instance_Hom_Changed_Goals_Data_Args.PD.entries
 
     val transfer_data : theory -> data -> data
 
     structure Data : GENERIC_TERM_INDEX_DATA
     where type value = data
 
-    type config = (Base_Data.AAMeta.P.progress,
-      int -> @{AllT_args} Base_Data.CAction.action,
+    type config = (Tac_AAM.mk_meta,
+      int -> @{AllT_args} Base_Data.PAction.action,
       Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph,
       @{AllT_args} Result_Action.mk_copy_update_data,
-      @{AllT_args} CResults.cresultsq,
+      @{AllT_args} PResults.presultsq,
       thm * Data.term_value -> bool) Zippy_Instance_Hom_Changed_Goals_Data_Args.PDC.entries
 
     structure Config_Data : GENERIC_DATA
@@ -151,13 +151,12 @@ sig
     val get_config : Context.generic -> Config_Data.T
     val map_config : (Config_Data.T -> Config_Data.T) -> Context.generic -> Context.generic
 
-    val get_progress : Context.generic -> Base_Data.AAMeta.P.progress
-    val map_progress : (Base_Data.AAMeta.P.progress -> Base_Data.AAMeta.P.progress) ->
-      Context.generic -> Context.generic
+    val get_mk_meta : Context.generic -> Tac_AAM.mk_meta
+    val map_mk_meta : (Tac_AAM.mk_meta -> Tac_AAM.mk_meta) -> Context.generic -> Context.generic
 
-    val get_empty_action : Context.generic -> int -> @{AllT_args} Base_Data.CAction.action
-    val map_empty_action : ((int -> @{AllT_args} Base_Data.CAction.action) ->
-        int -> @{AllT_args} Base_Data.CAction.action) ->
+    val get_empty_action : Context.generic -> int -> @{AllT_args} Base_Data.PAction.action
+    val map_empty_action : ((int -> @{AllT_args} Base_Data.PAction.action) ->
+        int -> @{AllT_args} Base_Data.PAction.action) ->
       Context.generic -> Context.generic
 
     val get_default_update : Context.generic -> Base_Data.GCS.goal_pos ->
@@ -171,20 +170,20 @@ sig
     val map_mk_cud : (@{AllT_args} Result_Action.mk_copy_update_data ->
       @{AllT_args} Result_Action.mk_copy_update_data) -> Context.generic -> Context.generic
 
-    val get_cresultsq : Context.generic -> @{AllT_args} CResults.cresultsq
-    val map_cresultsq : (@{AllT_args} CResults.cresultsq ->
-      @{AllT_args} CResults.cresultsq) -> Context.generic -> Context.generic
+    val get_presultsq : Context.generic -> @{AllT_args} PResults.presultsq
+    val map_presultsq : (@{AllT_args} PResults.presultsq ->
+      @{AllT_args} PResults.presultsq) -> Context.generic -> Context.generic
 
     val get_del_select : Context.generic -> thm * Data.term_value -> bool
     val map_del_select : ((thm * Data.term_value -> bool) -> thm * Data.term_value -> bool) ->
       Context.generic -> Context.generic
 
-    type add_args = (Base_Data.AAMeta.P.progress,
-      int -> @{AllT_args} Base_Data.CAction.action,
+    type add_args = (Tac_AAM.mk_meta,
+      int -> @{AllT_args} Base_Data.PAction.action,
       Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph,
       (int * (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph)) list,
       @{AllT_args} Result_Action.mk_copy_update_data,
-      @{AllT_args} CResults.cresultsq) Zippy_Instance_Hom_Changed_Goals_Data_Args.PAA.entries
+      @{AllT_args} PResults.presultsq) Zippy_Instance_Hom_Changed_Goals_Data_Args.PAA.entries
 
     val insert : Data.value -> Context.generic -> Context.generic
     val insert_add_args : add_args -> thm -> Context.generic -> Context.generic
@@ -228,30 +227,30 @@ sig
       Base_Data.GFocus.focus -> (Base_Data.GFocus.focus * Data.value) list
 
     val tac_data_from_data : Base_Data.AMeta.metadata ->
-      (Base_Data.AAMeta.P.progress -> thm -> (@{ParaT_args} Base_Data.GFocus.focus,
-        Tac_AAM.ztactic) morph) ->
+      (Tac_AAM.mk_meta -> thm -> @{AllT_args} ZLPC.Z4.zipper ->
+        (@{ParaT_args} Base_Data.GFocus.focus, Tac_AAM.ztactic) morph) ->
       data -> @{AllT_args} Tac.data
 
-    val caction_data_from_data : @{ParaT_args encl: "(" ")"} Exn.ME.exn ->
+    val paction_data_from_data : @{ParaT_args encl: "(" ")"} Exn.ME.exn ->
       Base_Data.AMeta.metadata ->
-      (Base_Data.AAMeta.P.progress -> thm -> (@{ParaT_args} Base_Data.GFocus.focus,
-        Tac_AAM.ztactic) morph) ->
-      data -> @{AllT_args} CAction.data
+      (Tac_AAM.mk_meta -> thm -> @{AllT_args} ZLPC.Z4.zipper ->
+        (@{ParaT_args} Base_Data.GFocus.focus, Tac_AAM.ztactic) morph) ->
+      data -> @{AllT_args} PAction.data
 
     val cons_action : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.AMeta.metadata ->
-      (Base_Data.AAMeta.P.progress -> thm -> (@{ParaT_args} Base_Data.GFocus.focus,
-        Tac_AAM.ztactic) morph) ->
+      (Tac_AAM.mk_meta -> thm -> @{AllT_args} ZLPC.Z4.zipper ->
+        (@{ParaT_args} Base_Data.GFocus.focus, Tac_AAM.ztactic) morph) ->
       data -> Base_Data.GFocus.focus -> (@{ParaT_args} @{AllT_args} ZLPC.Z3.zipper,
         @{AllT_args} ZLPC.Z4.zipper) morph
     val cons_nth_action : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
-      (Base_Data.AAMeta.P.progress -> thm -> (@{ParaT_args} Base_Data.GFocus.focus,
-        Tac_AAM.ztactic) morph) ->
+      (Tac_AAM.mk_meta -> thm -> @{AllT_args} ZLPC.Z4.zipper ->
+        (@{ParaT_args} Base_Data.GFocus.focus, Tac_AAM.ztactic) morph) ->
       Proof.context -> int -> data -> Base_Data.GFocus.focus ->
       (@{ParaT_args} @{AllT_args} ZLPC.Z3.zipper, @{AllT_args} ZLPC.Z4.zipper) morph
 
     val cons_action_cluster : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
-      (Base_Data.AAMeta.P.progress -> thm -> (@{ParaT_args} Base_Data.GFocus.focus,
-        Tac_AAM.ztactic) morph) ->
+      (Tac_AAM.mk_meta -> thm -> @{AllT_args} ZLPC.Z4.zipper ->
+        (@{ParaT_args} Base_Data.GFocus.focus, Tac_AAM.ztactic) morph) ->
       Proof.context -> (Base_Data.GFocus.focus * data) list ->
       (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper, @{AllT_args} ZLPC.Z3.zipper option) morph
   end
@@ -263,17 +262,17 @@ functor Zippy_Instance_Hom_Changed_Goals_Data(
     structure TI : TERM_INDEX
     val key_of_thm : thm -> term
     val num_new_goals : thm -> int
-    val init_args : (Z.Base_Data.AAMeta.P.progress,
-      int -> @{AllT_args} Z.Base_Data.CAction.action,
+    val init_args : (Z.Tac_AAM.mk_meta,
+      int -> @{AllT_args} Z.Base_Data.PAction.action,
       Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLPC.Z2.zipper) Z.emorph,
       @{AllT_args} Z.Result_Action.mk_copy_update_data,
-      @{AllT_args} Z.CResults.cresultsq,
+      @{AllT_args} Z.PResults.presultsq,
       thm * (term * (thm,
-        Z.Base_Data.AAMeta.P.progress,
-        int -> @{AllT_args} Z.Base_Data.CAction.action,
+        Z.Tac_AAM.mk_meta,
+        int -> @{AllT_args} Z.Base_Data.PAction.action,
         (Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLPC.Z2.zipper) Z.emorph) list,
         @{AllT_args} Z.Result_Action.mk_copy_update_data,
-        @{AllT_args} Z.CResults.cresultsq)
+        @{AllT_args} Z.PResults.presultsq)
         Zippy_Instance_Hom_Changed_Goals_Data_Args.PD.entries) -> bool)
         Zippy_Instance_Hom_Changed_Goals_Data_Args.PDC.entries
     structure Log : ZIPPY_LOGGER_MIXIN_BASE
@@ -291,16 +290,15 @@ structure FI = Functor_Instance(FI_Hom_Changed_Goals_Data)
 local open Zippy_Instance_Hom_Changed_Goals_Data_Args ZLPC Base_Data
 in
 type data = (thm,
-  AAMeta.P.progress,
-  int -> @{AllT_args} CAction.action,
+  Tac_AAM.mk_meta,
+  int -> @{AllT_args} PAction.action,
   (GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z2.zipper) emorph) list,
   @{AllT_args} Result_Action.mk_copy_update_data,
-  @{AllT_args} CResults.cresultsq) PD.entries
+  @{AllT_args} PResults.presultsq) PD.entries
 
-fun eq_data data = Thm.eq_thm (apply2 PD.get_thm data) andalso (op =) (apply2 PD.get_progress data)
+fun eq_data data = Thm.eq_thm (apply2 PD.get_thm data)
 fun pretty_data ctxt data = SpecCheck_Show.record [
-    ("thm", Thm.pretty_thm ctxt (PD.get_thm data)),
-    ("progress", Mixin_Base5.Meta.Meta.P.pretty (PD.get_progress data))
+    ("thm", Thm.pretty_thm ctxt (PD.get_thm data))
   ]
 fun transfer_data thy = PD.map_thm (Thm.transfer thy)
 
@@ -315,11 +313,11 @@ fun transfer_data thy = PD.map_thm (Thm.transfer thy)
     val eq_value = eq_data
     val pretty_value = pretty_data\<close>\<close>
 
-type config = (AAMeta.P.progress,
-  int -> @{AllT_args} CAction.action,
+type config = (Tac_AAM.mk_meta,
+  int -> @{AllT_args} PAction.action,
   GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z2.zipper) emorph,
   @{AllT_args} Result_Action.mk_copy_update_data,
-  @{AllT_args} CResults.cresultsq,
+  @{AllT_args} PResults.presultsq,
   thm * Data.term_value -> bool) PDC.entries
 
 structure Config_Data = Generic_Data(
@@ -330,8 +328,8 @@ structure Config_Data = Generic_Data(
 val get_config = Config_Data.get
 val map_config = Config_Data.map
 
-val get_progress = PDC.get_progress o get_config
-val map_progress = map_config o PDC.map_progress
+val get_mk_meta = PDC.get_mk_meta o get_config
+val map_mk_meta = map_config o PDC.map_mk_meta
 
 val get_empty_action = PDC.get_empty_action o get_config
 val map_empty_action = map_config o PDC.map_empty_action
@@ -342,18 +340,18 @@ val map_default_update = map_config o PDC.map_default_update
 val get_mk_cud = PDC.get_mk_cud o get_config
 val map_mk_cud = map_config o PDC.map_mk_cud
 
-val get_cresultsq = PDC.get_cresultsq o get_config
-val map_cresultsq = map_config o PDC.map_cresultsq
+val get_presultsq = PDC.get_presultsq o get_config
+val map_presultsq = map_config o PDC.map_presultsq
 
 val get_del_select = PDC.get_del_select o get_config
 val map_del_select = map_config o PDC.map_del_select
 
-type add_args = (AAMeta.P.progress,
-  int -> @{AllT_args} CAction.action,
+type add_args = (Tac_AAM.mk_meta,
+  int -> @{AllT_args} PAction.action,
   GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z2.zipper) emorph,
   (int * (GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z2.zipper) emorph)) list,
   @{AllT_args} Result_Action.mk_copy_update_data,
-  @{AllT_args} CResults.cresultsq) PAA.entries
+  @{AllT_args} PResults.presultsq) PAA.entries
 
 fun insert data context =
   let
@@ -395,9 +393,9 @@ val add_default_entries = PAA.entries_from_entry_list [PAA.updates []]
 val parse_add_arg_entry =
   let
     val parsers = add_arg_parsers
-    val parse_value = PAA.parse_entry (PAA.get_progress parsers) (PAA.get_empty_action parsers)
+    val parse_value = PAA.parse_entry (PAA.get_mk_meta parsers) (PAA.get_empty_action parsers)
       (PAA.get_default_update parsers) (PAA.get_updates parsers) (PAA.get_mk_cud parsers)
-      (PAA.get_cresultsq parsers)
+      (PAA.get_presultsq parsers)
   in Parse_Key_Value.parse_entry PAA.parse_key (K (Parse.$$$ ":")) parse_value end
 
 fun gen_parse_add_arg_entries repeat =
@@ -412,12 +410,12 @@ fun add_attribute (entries, pos) =
   let
     val code_PAA_op = Args_substructure_op "PAA"
     val code_from_key = code_PAA_op o PAA.key_to_string
-    fun code_from_entry (PAA.progress c) = c
+    fun code_from_entry (PAA.mk_meta c) = c
       | code_from_entry (PAA.empty_action c) = c
       | code_from_entry (PAA.default_update c) = c
       | code_from_entry (PAA.updates updates) = code_updates updates
       | code_from_entry (PAA.mk_cud c) = c
-      | code_from_entry (PAA.cresultsq c) = c
+      | code_from_entry (PAA.presultsq c) = c
     val code_entries = PAA.key_entry_entries_from_entries entries
       |> map (fn (k, v) => code_from_key k @ MCU.atomic (code_from_entry v))
       |> MCU.list
@@ -443,8 +441,8 @@ fun del_attribute (NONE, _) = Thm.declaration_attribute (delete_context_defaults
 val parse_config_arg_entries =
   let
     val parsers = config_data_parsers
-    val parse_value = PDC.parse_entry (PDC.get_progress parsers) (PDC.get_empty_action parsers)
-      (PDC.get_default_update parsers) (PDC.get_mk_cud parsers) (PDC.get_cresultsq parsers)
+    val parse_value = PDC.parse_entry (PDC.get_mk_meta parsers) (PDC.get_empty_action parsers)
+      (PDC.get_default_update parsers) (PDC.get_mk_cud parsers) (PDC.get_presultsq parsers)
       (PDC.get_del_select parsers)
     val parse_entry = Parse_Key_Value.parse_entry PDC.parse_key (K (Parse.$$$ ":")) parse_value
     val default_entries = PDC.empty_entries ()
@@ -454,11 +452,11 @@ fun config_attribute (entries, pos) =
   let
     val code_PDC_op = Args_substructure_op "PDC"
     val code_from_key = code_PDC_op o PDC.key_to_string
-    fun code_from_entry (PDC.progress c) = c
+    fun code_from_entry (PDC.mk_meta c) = c
       | code_from_entry (PDC.empty_action c) = c
       | code_from_entry (PDC.default_update c) = c
       | code_from_entry (PDC.mk_cud c) = c
-      | code_from_entry (PDC.cresultsq c) = c
+      | code_from_entry (PDC.presultsq c) = c
       | code_from_entry (PDC.del_select c) = c
     val code_entries = PDC.key_entry_entries_from_entries entries
       |> map (fn (k, v) => code_from_key k @ MCU.atomic (code_from_entry v))
@@ -533,13 +531,13 @@ fun tac_data_from_data meta tac data = {
   meta = meta,
   empty_action = PD.get_empty_action data,
   result_action = Result_Action.hom_changed_goals_action (PD.get_updates data) (PD.get_mk_cud data),
-  cresultsq = PD.get_cresultsq data,
-  tac = tac (PD.get_progress data) (PD.get_thm data)}
+  presultsq = PD.get_presultsq data,
+  tac = tac (PD.get_mk_meta data) (PD.get_thm data)}
 
-fun caction_data_from_data exn meta tac = tac_data_from_data meta tac
-  #> Tac.caction_data_from_data exn
+fun paction_data_from_data exn meta tac = tac_data_from_data meta tac
+  #> Tac.paction_data_from_data exn
 
-fun cons_action exn meta tac = caction_data_from_data exn meta tac #> Z.CAction.cons_action
+fun cons_action exn meta tac = paction_data_from_data exn meta tac #> Z.PAction.cons_action
 
 fun cons_nth_action exn meta tac ctxt i data =
   let val meta = AMeta.metadata (

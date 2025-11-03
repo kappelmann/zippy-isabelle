@@ -3,7 +3,7 @@
 *)
 signature ZIPPY_INSTANCE_TACTIC =
 sig
-  include ZIPPY_INSTANCE_CRESULTS
+  include ZIPPY_INSTANCE_PRESULTS
 
   structure Tac_AAM : ZIPPY_TACTIC_ACTION_APP_METADATA_MIXIN
   sharing type Tac_AAM.Tac.GPU.GCS.gcpos = Base_Data.GCS.gcpos
@@ -18,15 +18,16 @@ sig
 
     type @{AllT_args} data = {
       meta : Base_Data.AMeta.metadata,
-      empty_action : int -> @{AllT_args} Base_Data.CAction.action,
-      result_action : Result_Action.result -> @{AllT_args} Base_Data.CAction.action,
-      cresultsq : @{AllT_args} CResults.cresultsq,
-      tac : (@{ParaT_args} Base_Data.GFocus.focus, Tac_AAM.ztactic) morph}
+      empty_action : int -> @{AllT_args} Base_Data.PAction.action,
+      result_action : Result_Action.result -> @{AllT_args} Base_Data.PAction.action,
+      presultsq : @{AllT_args} PResults.presultsq,
+      tac : @{AllT_args} ZLPC.Z4.zipper ->
+        (@{ParaT_args} Base_Data.GFocus.focus, Tac_AAM.ztactic) morph}
 
-    val cresults_data_from_data : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> @{AllT_args} data ->
-      @{AllT_args} CResults.data
-    val caction_data_from_data : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> @{AllT_args} data ->
-      @{AllT_args} CAction.data
+    val presults_data_from_data : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> @{AllT_args} data ->
+      @{AllT_args} PResults.data
+    val paction_data_from_data : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> @{AllT_args} data ->
+      @{AllT_args} PAction.data
     val cons_action : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> @{AllT_args} data ->
       Base_Data.GFocus.focus -> (@{ParaT_args} @{AllT_args} ZLPC.Z3.zipper,
         @{AllT_args} ZLPC.Z4.zipper) morph
@@ -37,19 +38,19 @@ sig
 end
 
 functor Zippy_Instance_Tactic(
-    structure Z : ZIPPY_INSTANCE_CRESULTS
+    structure Z : ZIPPY_INSTANCE_PRESULTS
     structure Ctxt : ZIPPY_CTXT_STATE_MIXIN
     sharing type Ctxt.M.t = Z.M.t
-    structure Log_CAction : ZIPPY_LOGGER_MIXIN_BASE
+    structure Log_PAction : ZIPPY_LOGGER_MIXIN_BASE
   ) : ZIPPY_INSTANCE_TACTIC =
 struct
 open Z; open ZLPC MU
 structure GCluster = Zippy_Goal_Cluster_Mixin(Mixin_Base2.GCluster)
-structure CAction_More = Zippy_CAction_Mixin(
-  structure CAction = Mixin_Base4.CAction
-  structure Exn = Exn; structure Ctxt = Ctxt; structure Log = Log_CAction
+structure PAction_More = Zippy_PAction_Mixin(
+  structure PAction = Mixin_Base4.PAction
+  structure Exn = Exn; structure Ctxt = Ctxt; structure Log = Log_PAction
   structure Show = Show.Zipper4)
-structure CResults_More = Zippy_CResults_Mixin(CResults)
+structure PResults_More = Zippy_PResults_Mixin(PResults)
 
 structure Tac_AAM = Zippy_Tactic_Action_App_Metadata_Mixin(
   Zippy_Tactic_Action_App_Metadata_Mixin_Base(
@@ -66,25 +67,26 @@ local open Base_Data
 in
 type @{AllT_args} data = {
   meta : AMeta.metadata,
-  empty_action : int -> @{AllT_args} CAction.action,
-  result_action : CResults.result -> @{AllT_args} CAction.action,
-  cresultsq : @{AllT_args} CResults.cresultsq,
-  tac : (@{ParaT_args} GFocus.focus, Tac_AAM.ztactic) morph}
+  empty_action : int -> @{AllT_args} PAction.action,
+  result_action : PResults.result -> @{AllT_args} PAction.action,
+  presultsq : @{AllT_args} PResults.presultsq,
+  tac : @{AllT_args} ZLPC.Z4.zipper -> (@{ParaT_args} GFocus.focus, Tac_AAM.ztactic) morph}
 end
 
 local open SC Mo A
 in
-fun cresults_from_data exn {cresultsq, tac,...} focus = Up4.morph >>> Up3.morph
-  >>> (fn z2 => tac focus
-  >>= arr (fn tac => ztactic_resultsq tac z2 |> CResults_More.cresults_from_resultsq exn cresultsq))
+fun presults_from_data exn {presultsq, tac,...} focus z4 = Up4.morph z4
+  >>= Up3.morph
+  >>= (fn z2 => tac z4 focus
+  >>= arr (fn tac => ztactic_resultsq tac z2 |> PResults_More.presults_from_resultsq exn presultsq))
 
-fun cresults_data_from_data exn (data as {meta, result_action, empty_action,...}) =
+fun presults_data_from_data exn (data as {meta, result_action, empty_action,...}) =
   {meta = meta, empty_action = empty_action, result_action = result_action,
-    cresults = cresults_from_data exn data}
+    presults = presults_from_data exn data}
 
-fun caction_data_from_data exn = cresults_data_from_data exn #> CResults.caction_data_from_data
+fun paction_data_from_data exn = presults_data_from_data exn #> PResults.paction_data_from_data
 
-fun cons_action x = caction_data_from_data x #> Z.CAction.cons_action
+fun cons_action x = paction_data_from_data x #> Z.PAction.cons_action
 
 fun cons_action_cluster exn meta =
   List.map (apsnd (fn data => fn focus => cons_action exn data focus >>> Up4.morph))

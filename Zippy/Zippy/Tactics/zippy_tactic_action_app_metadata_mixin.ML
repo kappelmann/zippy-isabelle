@@ -10,11 +10,10 @@ sig
   type result = Meta.Meta.metadata Tac.result
 
   (* liftings *)
-  val madd : Meta.Meta.metadata * Meta.Meta.metadata -> Meta.Meta.metadata
-  val lift_tac_progress : Meta.Meta.P.progress -> (int -> tactic) -> Tac.GPU.GCS.goal_pos -> ztactic
-
-  (* concrete tactics *)
-  val all_ztac : Meta.Meta.P.progress -> ztactic
+  val madd : (Meta.Meta.cost * Meta.Meta.cost -> Meta.Meta.cost) ->
+    Meta.Meta.metadata * Meta.Meta.metadata -> Meta.Meta.metadata
+  type mk_meta = Tac.GPU.GCS.goal_pos -> Tac.state * Tac.state -> Meta.Meta.metadata
+  val lift_tac : mk_meta -> (int -> tactic) -> Tac.GPU.GCS.goal_pos -> ztactic
 end
 
 functor Zippy_Tactic_Action_App_Metadata_Mixin(
@@ -31,11 +30,7 @@ type result = Meta.metadata Tac.result
 
 (* liftings *)
 val madd = Meta.add
-
-fun lift_tac_progress progress = Tac.RTac.lift_tac' (Library.K (Meta.metadata progress))
-  #> Tac.lift_rtac_single_goal
-
-(* concrete tactics *)
-fun all_ztac progress = Tac.all_ztac (Meta.metadata progress)
+type mk_meta = Tac.GPU.GCS.goal_pos -> Tac.state * Tac.state -> Meta.metadata
+fun lift_tac mk_meta = Tac.RTac.lift_tac' mk_meta #> Tac.lift_rtac_single_goal
 end
 end

@@ -2304,7 +2304,13 @@ proof -
     case Suc
     thus ?case
       (*NEW*)
-      by (zippy simp add: card_Suc_eq where simp depth: 0 where blast depth: 2)
+      (*TODO: debug crash*)
+      (* apply (zippy 11750 simp add: card_Suc_eq where simp depth: 0 where blast depth: 2
+      where run run:
+        "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_promising_statesq"
+      ) *)
+      by (zippy simp add: card_Suc_eq
+        where run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
       (*ORIG*)
       (* by (auto simp add: card_Suc_eq) *)
   qed
@@ -2521,8 +2527,8 @@ proof -
     case (insert c C)
     then have "c \<inter> \<Union>C = {}"
       (*NEW*)
-      by - (zippy 10 where run run:
-        "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
+      by (zippy where run run:
+        "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
       (*ORIG*)
       (* by auto *)
     with insert show ?case

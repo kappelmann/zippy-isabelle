@@ -5,17 +5,17 @@ functor Zippy_Instance_Auto(
     structure FI : FUNCTOR_INSTANCE_BASE
     structure Z : ZIPPY_INSTANCE_TACTIC
     structure TI : TERM_INDEX
-    val resolve_init_args : (Z.Base_Data.AAMeta.P.progress,
-      int -> @{AllT_args} Z.Base_Data.CAction.action,
+    val resolve_init_args : (Z.Tac_AAM.mk_meta,
+      int -> @{AllT_args} Z.Base_Data.PAction.action,
       Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLPC.Z2.zipper) Z.emorph,
       @{AllT_args} Z.Result_Action.mk_copy_update_data,
-      @{AllT_args} Z.CResults.cresultsq,
+      @{AllT_args} Z.PResults.presultsq,
       thm * (term * (thm,
-        Z.Base_Data.AAMeta.P.progress,
-        int -> @{AllT_args} Z.Base_Data.CAction.action,
+        Z.Tac_AAM.mk_meta,
+        int -> @{AllT_args} Z.Base_Data.PAction.action,
         (Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLPC.Z2.zipper) Z.emorph) list,
         @{AllT_args} Z.Result_Action.mk_copy_update_data,
-        @{AllT_args} Z.CResults.cresultsq)
+        @{AllT_args} Z.PResults.presultsq)
         Zippy_Instance_Hom_Changed_Goals_Data_Args.PD.entries) -> bool)
         Zippy_Instance_Hom_Changed_Goals_Data_Args.PDC.entries
     val simp_init_args : Extended_Simp_Data_Args.args

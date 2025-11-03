@@ -10,8 +10,8 @@ begin
 
 ML_file\<open>zippy_instance_base.ML\<close>
 ML_file\<open>zippy_instance.ML\<close>
-ML_file\<open>zippy_instance_caction.ML\<close>
-ML_file\<open>zippy_instance_cresults.ML\<close>
+ML_file\<open>zippy_instance_paction.ML\<close>
+ML_file\<open>zippy_instance_presults.ML\<close>
 ML_file\<open>zippy_instance_tactic.ML\<close>
 
 end

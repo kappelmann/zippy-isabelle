@@ -1322,8 +1322,8 @@ proof -
         have inj: "inj_on (insert a) (Pow A)"
           (*NEW*)
           using "*" inj_on_def by -
-            ((zippy 10 where run run:
-              "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+            ((zippy run run:
+              "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq"))
           (*ORIG*)
           (* using "*" inj_on_def by fastforce *)
         show ?thesis
@@ -1389,11 +1389,10 @@ proof -
   have card_eq: "card ` {I. I \<subseteq> A \<and> I \<noteq> {}} = {1..card A}"
     using not_less_eq_eq card_mono
     (*NEW*)
-    by - ((zippy 8 simp: image_iff
-      where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq"
-      where blast depth: 2)[1])+
+    by (zippy simp: image_iff
+      where run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
     (*ORIG*)
-    (* using not_less_eq_eq card_mono by (fastforce simp: image_iff) *)
+    (* by (fastforce_orig simp: image_iff) *)
   have "int(card(\<Union> A))
       = (\<Sum>y = 1..card A. \<Sum>I\<in>{x. x \<subseteq> A \<and> x \<noteq> {} \<and> card x = y}. - ((- 1) ^ y * int (card (\<Inter> I))))"
     by (simp add: int_card_UNION assms sum.image_gen [OF fin, where g=card] card_eq)

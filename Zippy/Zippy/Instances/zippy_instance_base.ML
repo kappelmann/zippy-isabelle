@@ -6,8 +6,8 @@ Base data and skeleton of the standard zippy instance.
 @{record (sig) ZIPPY_INSTANCE_NODE_CO_BASE1 [gclusters, results]}
 @{record (sig) ZIPPY_INSTANCE_NODE_CO_BASE2 [gcluster, results, top_meta_vars]}
 @{record (sig) ZIPPY_INSTANCE_NODE_CO_BASE3 [copy, meta]}
-@{record (sig) ZIPPY_INSTANCE_NODE_CO_BASE4 [caction, action_app_num, focus, meta]}
-@{record (sig) ZIPPY_INSTANCE_NODE_CO_BASE5 [action_app_num, focus, cost, gpos_update, meta]}
+@{record (sig) ZIPPY_INSTANCE_NODE_CO_BASE4 [paction, action_app_num, focus, meta]}
+@{record (sig) ZIPPY_INSTANCE_NODE_CO_BASE5 [action_app_num, focus, prio, gpos_update, meta]}
 
 signature ZIPPY_INSTANCE_BASE =
 sig
@@ -29,8 +29,8 @@ sig
     where type (@{ParaT_args} 'a) M.t = (@{ParaT_args} 'a) M.t
     where type copy_update_data = Tac_Res.GPU.focus_update
     structure ACMeta : ZIPPY_ACTION_CLUSTER_METADATA
-    structure CAction : ZIPPY_CACTION_MIXIN_BASE
-    sharing type CAction.M.t = Copy.M.t
+    structure PAction : ZIPPY_PACTION_MIXIN_BASE
+    sharing type PAction.M.t = Copy.M.t
     structure AANum : ZIPPY_ACTION_APP_NUM
     structure GFocus : ZIPPY_GOAL_FOCUS
     sharing type GFocus.focus = Tac_Res.GPU.F.focus
@@ -52,17 +52,17 @@ sig
   where type @{AllT_args} ZN.N3.content =
     (@{AllT_args} Base_Data.Copy.copy, Base_Data.ACMeta.metadata) Base_Data.NCB3.data
   where type @{AllT_args} ZN.N4.content =
-    (@{AllT_args} Base_Data.CAction.caction, Base_Data.AANum.action_app_num, Base_Data.GFocus.focus,
+    (@{AllT_args} Base_Data.PAction.paction, Base_Data.AANum.action_app_num, Base_Data.GFocus.focus,
       Base_Data.AMeta.metadata) Base_Data.NCB4.data
   where type @{AllT_args} ZN.N5.content =
-    (Base_Data.AANum.action_app_num, Base_Data.GFocus.focus, Base_Data.CAction.cost,
+    (Base_Data.AANum.action_app_num, Base_Data.GFocus.focus, Base_Data.PAction.prio,
       Base_Data.Tac_Res.gpos_update, Base_Data.AAMeta.metadata) Base_Data.NCB5.data
-  where type @{AllT_args} ZCollect.data = Base_Data.CAction.cost
+  where type @{AllT_args} ZCollect.data = Base_Data.AAMeta.cost
   sharing type ZLPC.Z3.zipper = Base_Data.Copy.zipper_from
   sharing type ZLPC.Z1.zipper = Base_Data.Copy.zipper_to
-  sharing type ZLPC.Z4.zipper = Base_Data.CAction.zipper
-  sharing type ZLPC.Z5.zipper = Base_Data.CAction.zipper_expanded
-  sharing type ZLPC.Z1.zipper = Base_Data.CAction.zipper_changed
+  sharing type ZLPC.Z4.zipper = Base_Data.PAction.zipper
+  sharing type ZLPC.Z5.zipper = Base_Data.PAction.zipper_expanded
+  sharing type ZLPC.Z1.zipper = Base_Data.PAction.zipper_changed
   sharing type ZLPC.ZN_AZ2.L.M.exn = Exn.ME.exn
   sharing type ZLPC.M.t = M.t
 end
@@ -70,7 +70,10 @@ end
 functor Zippy_Instance_Base(
     structure ME : \<^eval>\<open>sfx_ParaT_nargs "MONAD_EXCEPTION_BASE"\<close>
     where type @{ParaT_args encl: "(" ")"} exn = unit
+    type prio
     type cost
+    val eq_cost : cost * cost -> bool
+    val pretty_cost : cost -> Pretty.T
     val update_cost : cost -> (cost * cost list) option -> cost
   ) :
   sig
@@ -93,8 +96,8 @@ struct
   @{record (struct) NCB1 ZIPPY_INSTANCE_NODE_CO_BASE1 [gclusters, results]}
   @{record (struct) NCB2 ZIPPY_INSTANCE_NODE_CO_BASE2 [gcluster, results, top_meta_vars]}
   @{record (struct) NCB3 ZIPPY_INSTANCE_NODE_CO_BASE3 [copy, meta]}
-  @{record (struct) NCB4 ZIPPY_INSTANCE_NODE_CO_BASE4 [caction, action_app_num, focus, meta]}
-  @{record (struct) NCB5 ZIPPY_INSTANCE_NODE_CO_BASE5 [action_app_num, focus, cost, gpos_update, meta]}
+  @{record (struct) NCB4 ZIPPY_INSTANCE_NODE_CO_BASE4 [paction, action_app_num, focus, meta]}
+  @{record (struct) NCB5 ZIPPY_INSTANCE_NODE_CO_BASE5 [action_app_num, focus, prio, gpos_update, meta]}
   structure GCS = Standard_Zippy_Goal_Clusters
   structure GResults = Zippy_Goal_Results
   structure GC = Standard_Zippy_Goal_Cluster
@@ -104,8 +107,10 @@ struct
   structure AANum = Zippy_Action_App_Num
   structure GFocus = Standard_Zippy_Goal_Focus
   structure AMeta = Zippy_Action_Metadata
-  type cost = cost
-  structure AAMeta = Zippy_Action_App_Metadata
+  structure AAMeta = Zippy_Action_App_Metadata(
+    type cost = cost
+    val eq_cost = eq_cost
+    val pretty_cost = pretty_cost)
 end
 
 structure Exn = Zippy_Exception_Mixin(Zippy_Exception_Mixin_Base(ME))
@@ -126,8 +131,8 @@ local
   in
   datatype @{AllT_args} copy = Copy of copy_update_data -> @{AllT_args} zipper3 ->
     (@{ParaT_args} @{AllT_args} zipper1) emorph
-  and @{AllT_args} caction = CAction of (@{ParaT_args} @{AllT_args} zipper4, cost *
-    (cost -> (@{ParaT_args} @{AllT_args} zipper4,
+  and @{AllT_args} paction = PAction of (@{ParaT_args} @{AllT_args} zipper4, prio *
+    (prio -> (@{ParaT_args} @{AllT_args} zipper4,
       (@{AllT_args} zipper4, @{AllT_args} zipper5, @{AllT_args} zipper1) AResult.result) morph))
     morph
   withtype
@@ -136,19 +141,19 @@ local
       (GCS.gclusters, GResults.results) NCB1.data,
       (GC.gcluster, GResults.results, TMV.top_meta_vars) NCB2.data,
       (@{AllT_args} copy, ACMeta.metadata) NCB3.data,
-      (@{AllT_args} caction, AANum.action_app_num, GFocus.focus, AMeta.metadata)
+      (@{AllT_args} paction, AANum.action_app_num, GFocus.focus, AMeta.metadata)
         NCB4.data,
-      (AANum.action_app_num, GFocus.focus, cost, Tac_Res.gpos_update, AAMeta.metadata) NCB5.data
+      (AANum.action_app_num, GFocus.focus, prio, Tac_Res.gpos_update, AAMeta.metadata) NCB5.data
     ) Z{i}.zipper (*instantiated base skeleton*)
-    * (cost * cost list) option (*dependent cost collection*)
+    * (cost * cost list) option (*cost trace*)
   \<close> sep: "and"\<close>
   end
   type @{AllT_args} inst1 = (GCS.gclusters, GResults.results) NCB1.data
   type @{AllT_args} inst2 = (GC.gcluster, GResults.results, TMV.top_meta_vars) NCB2.data
   type @{AllT_args} inst3 = (@{AllT_args} copy, ACMeta.metadata) NCB3.data
-  type @{AllT_args} inst4 = (@{AllT_args} caction, AANum.action_app_num, GFocus.focus,
+  type @{AllT_args} inst4 = (@{AllT_args} paction, AANum.action_app_num, GFocus.focus,
     AMeta.metadata) NCB4.data
-  type @{AllT_args} inst5 = (AANum.action_app_num, GFocus.focus, cost, Tac_Res.gpos_update,
+  type @{AllT_args} inst5 = (AANum.action_app_num, GFocus.focus, prio, Tac_Res.gpos_update,
     AAMeta.metadata) NCB5.data
 
   (*** instantiate data in base skeleton ***)
@@ -223,7 +228,7 @@ structure ZLPC = Zippy_Lists_Positions_Collect_Trace_Mixin_Base5(
   structure Z = Zippy_Lists_Positions_Mixin(
     structure Z = struct open ZL; structure ZP = ZP end; structure Exn = Exn)
   type @{AllT_args} data = cost
-  fun update z = ZN.Node_Co5.getter z |> NCB5.get_cost |> update_cost
+  fun update z = ZN.Node_Co5.getter z |> NCB5.get_meta |> Base_Data.AAMeta.Cost.getter |> update_cost
   structure Exn = Exn)
 end
 local structure Z : ZIPPY_BASE_BASE = ZLPC in open Z end
@@ -271,17 +276,17 @@ struct open Base_Data
       fun mk_lens x = gen_mk_lens ZN.Node_Co4.lens x
     end
   in
-  structure CAction = Zippy_CAction_Mixin_Base(
+  structure PAction = Zippy_PAction_Mixin_Base(
     structure M = Exn
     structure L = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-      type @{AllT_args} data = @{AllT_args} caction
-      fun lens _ = mk_lens NCB.get_caction NCB.map_caction)
+      type @{AllT_args} data = @{AllT_args} paction
+      fun lens _ = mk_lens NCB.get_paction NCB.map_paction)
     structure AResult = AResult
     type @{AllT_args} zipper_expanded = @{AllT_args} Z5.zipper
     type @{AllT_args} zipper_changed = @{AllT_args} Z1.zipper
-    type cost = cost
-    val caction = CAction
-    fun run_caction (CAction caction) = caction)
+    type prio = prio
+    val paction = PAction
+    fun run_paction (PAction paction) = paction)
   end
 end
 end

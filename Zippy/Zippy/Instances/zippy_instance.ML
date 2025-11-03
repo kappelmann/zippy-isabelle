@@ -40,9 +40,9 @@ sig
   end
   structure Lens4 :
   sig
-    structure CAction : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
+    structure PAction : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
     where type @{AllT_args} container = @{AllT_args} ZLPC.Z4.zipper
-    where type @{AllT_args} data = @{AllT_args} Base_Data.CAction.caction
+    where type @{AllT_args} data = @{AllT_args} Base_Data.PAction.paction
     structure Action_App_Num : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
     where type @{AllT_args} container = @{AllT_args} ZLPC.Z4.zipper
     where type @{AllT_args} data = Base_Data.AANum.action_app_num
@@ -61,9 +61,9 @@ sig
     structure Focus : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
     where type @{AllT_args} container = @{AllT_args} ZLPC.Z5.zipper
     where type @{AllT_args} data = Base_Data.GFocus.focus
-    structure Cost : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
+    structure Prio : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
     where type @{AllT_args} container = @{AllT_args} ZLPC.Z5.zipper
-    where type @{AllT_args} data = Base_Data.CAction.cost
+    where type @{AllT_args} data = Base_Data.PAction.prio
     structure GPos_Update : \<^eval>\<open>sfx_T_nargs "SSTRUCTURED_LENS"\<close>
     where type @{AllT_args} container = @{AllT_args} ZLPC.Z5.zipper
     where type @{AllT_args} data = Base_Data.Tac_Res.gpos_update
@@ -80,8 +80,8 @@ sig
     where type @{AllT_args} t = @{AllT_args} ZLPC.Z{i}.zipper
     structure Container{i} : ZIPPY_SHOW_MIXIN_BASE
     where type @{AllT_args} t = @{AllT_args} ZLPC.Z{i}.ZM.container\<close>\<close>
-    structure Cost : ZIPPY_SHOW_MIXIN_BASE
-    where type @{AllT_args} t = Base_Data.CAction.cost
+    structure Prio : ZIPPY_SHOW_MIXIN_BASE
+    where type @{AllT_args} t = Base_Data.PAction.prio
   end
 
   (* mixins *)
@@ -130,14 +130,14 @@ sig
   end
   structure Mixin_Base4 :
   sig
-    structure CAction : ZIPPY_CACTION_MIXIN_BASE
-    where type @{AllT_args} L.container = @{AllT_args} Lens4.CAction.container
-    where type @{AllT_args} caction = @{AllT_args} Base_Data.CAction.caction
-    where type @{AllT_args} zipper = @{AllT_args} Base_Data.CAction.zipper
-    where type @{AllT_args} zipper_expanded = @{AllT_args} Base_Data.CAction.zipper_expanded
-    where type @{AllT_args} zipper_changed = @{AllT_args} Base_Data.CAction.zipper_changed
-    where type cost = Base_Data.CAction.cost
-    where type ('u, 'e, 'c) AResult.result = ('u, 'e, 'c) Base_Data.CAction.AResult.result
+    structure PAction : ZIPPY_PACTION_MIXIN_BASE
+    where type @{AllT_args} L.container = @{AllT_args} Lens4.PAction.container
+    where type @{AllT_args} paction = @{AllT_args} Base_Data.PAction.paction
+    where type @{AllT_args} zipper = @{AllT_args} Base_Data.PAction.zipper
+    where type @{AllT_args} zipper_expanded = @{AllT_args} Base_Data.PAction.zipper_expanded
+    where type @{AllT_args} zipper_changed = @{AllT_args} Base_Data.PAction.zipper_changed
+    where type prio = Base_Data.PAction.prio
+    where type ('u, 'e, 'c) AResult.result = ('u, 'e, 'c) Base_Data.PAction.AResult.result
     where type (@{ParaT_args} 'a) M.t = (@{ParaT_args} 'a) M.t
     structure Action_App_Num : ZIPPY_ACTION_APP_NUM_MIXIN_BASE
     where type @{AllT_args} L.container = @{AllT_args} Lens4.Action_App_Num.container
@@ -159,9 +159,9 @@ sig
     where type F.focus = Base_Data.GFocus.focus
     where type F.GCS.gcpos = Base_Data.GCS.gcpos
     where type F.GCS.gclusters = Base_Data.GCS.gclusters
-    structure Cost : ZIPPY_COST_MIXIN_BASE
-    where type @{AllT_args} L.container = @{AllT_args} Lens5.Cost.container
-    where type cost = Base_Data.CAction.cost
+    structure Prio : ZIPPY_PRIO_MIXIN_BASE
+    where type @{AllT_args} L.container = @{AllT_args} Lens5.Prio.container
+    where type prio = Base_Data.PAction.prio
     structure Meta : ZIPPY_ACTION_APP_METADATA_MIXIN_BASE
     where type @{AllT_args} L.container = @{AllT_args} Lens5.Meta.container
     where type Meta.metadata = Base_Data.AAMeta.metadata
@@ -174,22 +174,22 @@ sig
     val co2 : Base_Data.TMV.top_meta_vars -> Base_Data.GC.gcluster -> @{AllT_args} ZLPC.ZN.N2.content
     val co3 : Base_Data.ACMeta.metadata -> @{AllT_args} Base_Data.Copy.copy ->
       @{AllT_args} ZLPC.ZN.N3.content
-    val co4 : Base_Data.AMeta.metadata -> @{AllT_args} Base_Data.CAction.caction ->
+    val co4 : Base_Data.AMeta.metadata -> @{AllT_args} Base_Data.PAction.paction ->
       Base_Data.GFocus.focus -> @{AllT_args} ZLPC.ZN.N4.content
     val co5 : Base_Data.AAMeta.metadata -> Base_Data.Tac_Res.gpos_update ->
-      Base_Data.CAction.cost -> @{AllT_args} ZLPC.Z4.zipper -> @{AllT_args} ZLPC.ZN.N5.content
+      Base_Data.PAction.prio -> @{AllT_args} ZLPC.Z4.zipper -> @{AllT_args} ZLPC.ZN.N5.content
 
     val cons3 : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
       (Base_Data.GFocus.focus * (Base_Data.GFocus.focus ->
         (@{ParaT_args} @{AllT_args} ZLPC.Z3.zipper) emorph)) list ->
       (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper, @{AllT_args} ZLPC.Z3.zipper option) morph
     val cons4 : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.AMeta.metadata ->
-      @{AllT_args} Base_Data.CAction.caction -> Base_Data.GFocus.focus ->
+      @{AllT_args} Base_Data.PAction.paction -> Base_Data.GFocus.focus ->
       (@{ParaT_args} @{AllT_args} ZLPC.Z3.zipper, @{AllT_args} ZLPC.Z4.zipper) morph
     (*Note: results are added to the back since this keeps the paths of existing nodes (e.g. those
     stored in a queue during search) unchanged.*)
     val snoc5 : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.AAMeta.metadata ->
-      Base_Data.Tac_Res.gpos_update -> Base_Data.CAction.cost ->
+      Base_Data.Tac_Res.gpos_update -> Base_Data.PAction.prio ->
       (@{ParaT_args} @{AllT_args} ZLPC.Z4.zipper, @{AllT_args} ZLPC.Z5.zipper) morph
   end
 end
@@ -201,8 +201,8 @@ functor Zippy_Instance(
     structure Log_Base : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals : ZIPPY_LOGGER_MIXIN_BASE
     structure Log_LGoals_Pos_Copy : ZIPPY_LOGGER_MIXIN_BASE
-    structure Show_Cost : ZIPPY_SHOW_MIXIN_BASE
-    where type @{AllT_args} t = Z.Base_Data.CAction.cost
+    structure Show_Prio : ZIPPY_SHOW_MIXIN_BASE
+    where type @{AllT_args} t = Z.Base_Data.PAction.prio
   ) : ZIPPY_INSTANCE
   =
 struct
@@ -291,9 +291,9 @@ in
 structure Lens4 =
 struct
   structure NCB = Base.NCB
-  structure CAction = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-    type @{AllT_args} data = @{AllT_args} CAction.caction
-    fun lens _ = mk_lens NCB.get_caction NCB.map_caction)
+  structure PAction = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = @{AllT_args} PAction.paction
+    fun lens _ = mk_lens NCB.get_paction NCB.map_paction)
   structure Action_App_Num = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
     type @{AllT_args} data = AANum.action_app_num
     fun lens _ = mk_lens NCB.get_action_app_num NCB.map_action_app_num)
@@ -321,9 +321,9 @@ struct
   structure Focus = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
     type @{AllT_args} data = GFocus.focus
     fun lens _ = mk_lens NCB.get_focus NCB.map_focus)
-  structure Cost = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
-    type @{AllT_args} data = CAction.cost
-    fun lens _ = mk_lens NCB.get_cost NCB.map_cost)
+  structure Prio = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
+    type @{AllT_args} data = PAction.prio
+    fun lens _ = mk_lens NCB.get_prio NCB.map_prio)
   structure GPos_Update = \<^eval>\<open>sfx_T_nargs "SStructured_Lens"\<close>(open Base
     type @{AllT_args} data = Base_Data.Tac_Res.gpos_update
     fun lens _ = mk_lens NCB.get_gpos_update NCB.map_gpos_update)
@@ -340,24 +340,24 @@ local
       Pretty.block [Pretty.str "at position ", pretty_position z]
     ] |> Pretty.block0
   structure ZCost = Zippy_Collect_Trace_Mixin(ZLPC.ZCollect)
-  fun with_cost_trace get_trace ctxt z p = Pretty.breaks [
+  fun with_cost_trace get_trace z p = Pretty.breaks [
       p,
       Pretty.block [Pretty.str "with cost trace ",
-        ZCost.pretty_trace (Show_Cost.pretty ctxt) (get_trace z)]
+        ZCost.pretty_trace Base_Data.AAMeta.pretty_cost (get_trace z)]
     ] |> Pretty.block0
   \<^imap>\<open>\<open>{i}\<close> => \<open>
-  fun pretty_zipper{i} ctxt z = SpecCheck_Show.record
+  fun pretty_zipper{i} z = SpecCheck_Show.record
     #> with_position ZLP.pretty_position_zipper{i} z
-    #> with_cost_trace ZCost.ZZCollect_Co{i}.getter ctxt z\<close>\<close>
+    #> with_cost_trace ZCost.ZZCollect_Co{i}.getter z\<close>\<close>
 in
 structure Show =
 struct
-  structure Cost = Show_Cost
+  structure Prio = Show_Prio
   local structure L = Lens1
   in
   structure Zipper1 = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} Z1.zipper
-    fun pretty ctxt z = pretty_zipper1 ctxt z [
+    fun pretty ctxt z = pretty_zipper1 z [
       ("Goal clusters", GCS.pretty_gclusters ctxt (L.GClusters.getter z)),
       ("Results", GResults.pretty_results (L.Results.getter z))
     ])
@@ -366,7 +366,7 @@ struct
   in
   structure Zipper2 = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} Z2.zipper
-    fun pretty ctxt z = pretty_zipper2 ctxt z [
+    fun pretty ctxt z = pretty_zipper2 z [
       ("Goal cluster", GC.pretty_gcluster ctxt (L.GCluster.getter z)),
       ("Results", GResults.pretty_results (L.Results.getter z)),
       ("Top Meta Variables", TMV.pretty ctxt (L.Top_Meta_Vars.getter z))
@@ -376,7 +376,7 @@ struct
   in
   structure Zipper3 = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} Z3.zipper
-    fun pretty ctxt z = pretty_zipper3 ctxt z [
+    fun pretty _ z = pretty_zipper3 z [
       ("Metadata", ACMeta.pretty_metadata (L.Meta.getter z))
     ])
   end
@@ -384,7 +384,7 @@ struct
   in
   structure Zipper4 = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} Z4.zipper
-    fun pretty ctxt z = pretty_zipper4 ctxt z [
+    fun pretty _ z = pretty_zipper4 z [
       ("Action application number", AANum.pretty (L.Action_App_Num.getter z)),
       ("Focus", GFocus.pretty (L.Focus.getter z)),
       ("Metadata", AMeta.pretty_metadata (L.Meta.getter z))
@@ -394,10 +394,10 @@ struct
   in
   structure Zipper5 = Zippy_Show_Mixin_Base(
     type @{AllT_args} t = @{AllT_args} Z5.zipper
-    fun pretty ctxt z = pretty_zipper5 ctxt z [
+    fun pretty ctxt z = pretty_zipper5 z [
       ("Action application number", AANum.pretty (L.Action_App_Num.getter z)),
       ("Focus", GFocus.pretty (L.Focus.getter z)),
-      ("cost", Cost.pretty ctxt (L.Cost.getter z)),
+      ("Priority", Prio.pretty ctxt (L.Prio.getter z)),
       ("Metadata", AAMeta.pretty_metadata (L.Meta.getter z))
     ])
   end
@@ -452,7 +452,7 @@ local structure L = Lens4
 in
 structure Mixin_Base4 =
 struct
-  structure CAction = Base_Data.CAction
+  structure PAction = Base_Data.PAction
   structure Action_App_Num = Zippy_Action_App_Num_Mixin_Base(
     structure AANum = AANum; structure L = L.Action_App_Num)
   structure Focus = Zippy_Goal_Focus_Mixin_Base(structure F = GFocus; structure L = L.Focus)
@@ -468,7 +468,7 @@ struct
   structure Action_App_Num = Zippy_Action_App_Num_Mixin_Base(
     structure AANum = AANum; structure L = L.Action_App_Num)
   structure Focus = Zippy_Goal_Focus_Mixin_Base(structure F = GFocus; structure L = L.Focus)
-  structure Cost = Zippy_Cost_Mixin_Base(type cost = Mixin_Base4.CAction.cost; structure L = L.Cost)
+  structure Prio = Zippy_Prio_Mixin_Base(type prio = Mixin_Base4.PAction.prio; structure L = L.Prio)
   structure Meta = Zippy_Action_App_Metadata_Mixin_Base(
     structure Meta = AAMeta; structure L = L.Meta)
 end
@@ -500,24 +500,24 @@ fun co2 parent_top_meta_vars gcluster = {
   top_meta_vars = TMV.init parent_top_meta_vars (GC.get_state gcluster)}
 
 fun co3 meta copy = {meta = meta, copy = copy}
-fun co4 meta caction focus = {
+fun co4 meta paction focus = {
   action_app_num = AANum.init,
   focus = focus,
-  caction = caction,
+  paction = paction,
   meta = meta}
 
-fun co5 meta gpos_update cost z =
+fun co5 meta gpos_update prio z =
   let
     val action_app_num = Lens4.Action_App_Num.getter z
     val focus = Lens4.Focus.getter z
   in
-    {action_app_num = action_app_num, focus = focus, cost = cost, gpos_update = gpos_update,
+    {action_app_num = action_app_num, focus = focus, prio = prio, gpos_update = gpos_update,
     meta = meta}
   end
 
 fun cons3 exn meta = LGoals_Pos_Copy.cons_action_cluster exn (co3 meta)
-fun cons4 exn meta caction focus = ZL.cons_content_move_safe3 exn (co4 meta caction focus)
-fun snoc5 exn meta gpu cost z = ZL.snoc_content_move_safe4 exn (co5 meta gpu cost z) z
+fun cons4 exn meta paction focus = ZL.cons_content_move_safe3 exn (co4 meta paction focus)
+fun snoc5 exn meta gpu prio z = ZL.snoc_content_move_safe4 exn (co5 meta gpu prio z) z
 end
 
 end

@@ -45,7 +45,7 @@ enum_df_post_promising_children{i} mk_exn = gen_enum_promising_zippers mk_exn Do
   enum_df_post_promising_children\<^eval>\<open>succ_mod_nzippers {i}\<close>\<close>
 sep: "and" start: 2 stop: 4\<close>
 and enum_df_post_promising_children5 mk_exn z = z |>
-  (if Progress.getter z = Meta.P.Promising
+  (if Progress.getter z = Meta.P.promising
   then Down5.morph >>> arr (Co.enum_co (DF_Post1.enum_zipper mk_exn))
   else K (Co.throw (mk_exn ())))
 end

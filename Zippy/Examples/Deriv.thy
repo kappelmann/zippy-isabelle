@@ -400,7 +400,7 @@ proof -
     have [tendsto_intros]: "?L Ng"
       unfolding Ng_def by (rule filterlim_compose[OF g' f'])
     show "((\<lambda>y. Nf y * kG + Ng y * (Nf y + kF)) \<longlongrightarrow> 0) (at x within s)"
-      by (intro tendsto_eq_intros) auto
+      by (intro tendsto_eq_intros) (auto)
   qed simp
 qed
 

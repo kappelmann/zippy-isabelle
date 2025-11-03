@@ -13,6 +13,6 @@ ML_file\<open>zippy_action_app_metadata_mixin_base.ML\<close>
 ML_file\<open>zippy_action_app_metadata_mixin.ML\<close>
 ML_file\<open>zippy_enum_action_app_metadata_mixin.ML\<close>
 
-ML_file\<open>zippy_cost_mixin_base.ML\<close>
+ML_file\<open>zippy_prio_mixin_base.ML\<close>
 
 end

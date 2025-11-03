@@ -7,6 +7,14 @@ theory Zippy_Examples
     ML_Unification.ML_Term_Index
 begin
 
+(* theorem my_theorem:
+  "\<And>(s :: (bool \<times> bool) set) (fst :: bool) (e1 :: bool).
+  ({x. (x = (fst, e1) \<or> x \<in> s) \<and> \<not>(snd x) = e1}) =
+  (insert (fst, e1) {x. x \<in> s \<and> \<not>(snd x) = e1})
+  ==> False"
+ *)
+
+
 text \<open>Some simple examples showcasing navigation in the zipper and the creation of theorems using
 the best-first search presented in the Zippy paper.\<close>
 

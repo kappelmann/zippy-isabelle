@@ -881,9 +881,7 @@ lemma tendsto_zero_mult_left_iff [simp]:
   fixes c::"'a::{topological_semigroup_mult,field}" assumes "c \<noteq> 0" shows "(\<lambda>n. c * a n)\<longlonglongrightarrow> 0 \<longleftrightarrow> a \<longlonglongrightarrow> 0"
   using assms tendsto_mult_left tendsto_mult_left_iff
   (*NEW*)
-  by -
-    ((zippy 10 blast depth: 0
-    where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+  by (zippy run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
   (*ORIG*)
   (* by (fastforce) *)
 
@@ -891,8 +889,7 @@ lemma tendsto_zero_mult_right_iff [simp]:
   fixes c::"'a::{topological_semigroup_mult,field}" assumes "c \<noteq> 0" shows "(\<lambda>n. a n * c)\<longlonglongrightarrow> 0 \<longleftrightarrow> a \<longlonglongrightarrow> 0"
   using assms tendsto_mult_right tendsto_mult_right_iff
   (*NEW*)
-  by - ((zippy 10 blast depth: 0
-    where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+  by (zippy run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
   (*ORIG*)
   (* by (fastforce) *)
 
@@ -2299,8 +2296,8 @@ lemma Lim_transform_eventually:
   "\<lbrakk>(f \<longlongrightarrow> l) F; eventually (\<lambda>x. f x = g x) F\<rbrakk> \<Longrightarrow> (g \<longlongrightarrow> l) F"
   using eventually_elim2
   (*NEW*)
-  by - ((zippy 60 simp add: tendsto_def where blast depth: 0
-    where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+  by (zippy simp add: tendsto_def
+    where run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
   (*ORIG*)
   (* by (fastforce simp add: tendsto_def) *)
 
@@ -2738,8 +2735,7 @@ proof
   then have "LIM x F. inverse (f x) * (f x / g x) :> at_infinity"
     using assms tendsto_inverse tendsto_mult_filterlim_at_infinity
       (*NEW*)
-      by - ((zippy 20
-        where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+      by (zippy where run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
       (*ORIG*)
       (* by fastforce+ *)
   then have "LIM x F. inverse (g x) :> at_infinity"
@@ -3199,9 +3195,10 @@ proof (cases "a \<le> b", rule compactI)
     with trans show ?case
       unfolding *
         by (intro exI[of _ "C1 \<union> C2"])
-        (*new *)
+        (*NEW*)
+        (*TODO NEW: why not working*)
         (simp | step)+
-        (* ((auto 20
+        (* ((zippy 20
           where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+ *)
         (*ORIG*)
         (* auto *)

@@ -11,9 +11,7 @@ sig
 
   (*creates missing data from input and result state*)
   val lift_tac : (state * state -> 'm) -> tactic -> 'm rtactic
-  val lift_tac' : (state * state -> 'm) -> ('a -> tactic) -> 'a -> 'm rtactic
-
-  val no_tac : 'm rtactic
+  val lift_tac' : ('a -> state * state -> 'm) -> ('a -> tactic) -> 'a -> 'm rtactic
 end
 
 functor Zippy_RTactic(R : ZIPPY_RTACTIC_RESULT) : ZIPPY_RTACTIC =
@@ -26,10 +24,8 @@ type 'm rtactic = state -> 'm result Seq.seq
 
 fun lift_tac mk_more tac state = tac state
   |> Seq.map (fn state' => result (mk_more (state, state')) state')
-fun lift_tac' mk_more tac i = lift_tac mk_more (tac i)
-
-fun no_tac _ = Seq.empty
-
+fun lift_tac' mk_more tac i state = tac i state
+  |> Seq.map (fn state' => result (mk_more i (state, state')) state')
 end
 
 structure Standard_Zippy_RTactic = Zippy_RTactic(Zippy_RTactic_Result)

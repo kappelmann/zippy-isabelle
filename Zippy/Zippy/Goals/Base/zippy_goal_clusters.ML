@@ -125,22 +125,26 @@ fun pretty_gclusters ctxt gclusters = get_clustered_state gclusters |> TS.pretty
 val get_cclusters = get_clustered_state #> TS.unprotect_prems #> Thm.cprems_of
 val get_clusters_goals = get_cclusters #> map (Thm.term_of #> Logic.dest_conjunctions)
 
-fun init state =
-  Thm.prems_of state
-  |> build_veclasses
-  |> fst
-  |> map (fn veclass => fold_map (apfst fst #> apsnd GU.succ |> curry) veclass 0)
-  |> `(fn vss =>
-    let
-      val (veclasses, ss) = split_list vss
-      val clustered_state = rearrange_veclasses_state veclasses state
-        |> mk_conj_list_state ss
-        |> TS.protect_prems
-      val gcpos_index = mk_gcpos_index (map fst vss)
-    in
-      GClusters {state = state, clustered_state = clustered_state, gcpos_index = gcpos_index,
-        nclusters = length veclasses}
-    end)
+fun init state = let val state = state
+(*TODO: make correct*)
+(* Thm.flexflex_rule NONE state |> Seq.hd *)
+  in
+    Thm.prems_of state
+    |> build_veclasses
+    |> fst
+    |> map (fn veclass => fold_map (apfst fst #> apsnd GU.succ |> curry) veclass 0)
+    |> `(fn vss =>
+      let
+        val (veclasses, ss) = split_list vss
+        val clustered_state = rearrange_veclasses_state veclasses state
+          |> mk_conj_list_state ss
+          |> TS.protect_prems
+        val gcpos_index = mk_gcpos_index (map fst vss)
+      in
+        GClusters {state = state, clustered_state = clustered_state, gcpos_index = gcpos_index,
+          nclusters = length veclasses}
+      end)
+  end
 
 val is_finished = get_state #> TS.is_finished
 val has_meta_vars = get_state #> TS.has_meta_vars
@@ -152,11 +156,25 @@ fun finish_cluster_state_tac cluster_state ctxt =
     val match = Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match
       |> Unification_Combinator.flip_match
   in
-    (*Note: above matcher and match_tac are incomplete. As a last resort, we use the unifier,
-    though in principle, one only ought to match the cluster state*)
     Unify_Resolve_Base.unify_resolve_tac norms match cluster_state ctxt
-    ORELSE' match_tac ctxt [cluster_state]
-    ORELSE' resolve_tac ctxt [cluster_state]
+    (*Note: above matcher and match in Thm.bicompose are incomplete. As a last resort, we use the
+    unifier, though in principle, one only ought to match the cluster state*)
+    ORELSE' let fun compose match = PRIMSEQ o Thm.bicompose (SOME ctxt)
+        {flatten = true, match = match, incremented = false}
+        (false, cluster_state, Thm.nprems_of cluster_state)
+      in
+        compose true
+        ORELSE' compose false
+        ORELSE' (fn i => fn state =>
+          (warning (Pretty.breaks [
+            Pretty.str "Failed to resolve cluster state",
+            Thm.pretty_thm ctxt cluster_state,
+            Pretty.str ("with subgoal " ^ string_of_int i ^ " from goal clusters state"),
+            Thm.pretty_thm ctxt state,
+            Pretty.str "Note that this could be caused due to incompleteness of Thm.bicompose and/or unwanted flexflex pairs."
+          ] |> Pretty.block0 |> Pretty.string_of);
+          no_tac state))
+      end
   end
 
 fun finish_cluster_states ctxt cluster_states = get_clustered_state

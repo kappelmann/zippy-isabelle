@@ -1590,7 +1590,7 @@ lemma mod_word_by_minus_1_eq [simp]:
   \<open>w mod - 1 = w * of_bool (w < - 1)\<close> for w :: \<open>'a::len word\<close>
   using mod_word_less word_order.not_eq_extremum
   (*NEW*)
-  by (zippy blast depth: 2)
+  by (zippy run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
   (*ORIG*)
   (* by (fastforce) *)
 
@@ -3342,7 +3342,7 @@ lemma word_half_less_imp_less_eq:
   \<open>v \<le> w\<close> if \<open>v div 2 < w div 2\<close> for v w :: \<open>'a::len word\<close>
   using that linorder_linear word_less_eq_imp_half_less_eq
   (*NEW*)
-  by (zippy where blast depth: 0)
+  by (zippy run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
   (*ORIG*)
   (* by fastforce_orig *)
 
@@ -4520,8 +4520,7 @@ next
     with False have "m \<le> n"
       using inc_le linorder_not_le suc.prems word_le_minus_mono_left
       (*NEW*)
-      by - ((zippy 8 where run run:
-        "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+      by (zippy run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
       (*ORIG*)
       (* by fastforce *)
     with False "suc.hyps" show ?thesis

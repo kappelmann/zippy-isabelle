@@ -18,7 +18,7 @@ structure Zippy = struct open Zippy_Simp Zippy end
 end\<close>
 
 ML\<open>
-local val default_cresultsq_scale = Rat.make (12, 10)
+local val default_presultsq_scale = Rat.make (12, 10)
 in
 \<^functor_instance>\<open>struct_name: Zippy_Auto
   functor_name: Zippy_Instance_Auto
@@ -27,21 +27,23 @@ in
     structure Z = Zippy
     open Z; open MU.A
     structure TI = Discrimination_Tree
+    val cost = Cost.MEDIUM
+    open Base_Data.AAMeta
     val resolve_init_args = {
-      empty_action = SOME (Library.K CAction.disable_action),
+      empty_action = SOME (Library.K PAction.disable_action),
       default_update = NONE,
       mk_cud = SOME Result_Action.copy_update_data_empty_changed,
-      cresultsq = SOME (CResults.enum_scale_cresultsq default_cresultsq_scale Cost.MEDIUM),
-      progress = SOME Base_Data.AAMeta.P.Promising,
+      presultsq = SOME (PResults.enum_scale_presultsq default_presultsq_scale cost),
+      mk_meta = SOME (Library.K (Library.K (metadata {cost = cost, progress = P.promising}))),
       del_select = SOME (apsnd (snd #> #thm #> the) #> Thm.eq_thm)}
     val simp_init_args = {timeout = SOME 7.0, depth = NONE}
     structure Log_Base = Z.Logging.Base\<close>\<close>
 structure Zippy_Auto =
 struct open Zippy_Auto
-structure CResults =
+structure PResults =
 struct
-val default_cresultsq_scale = default_cresultsq_scale
-val enum_scale_cresultsq_default = Zippy.CResults.enum_scale_cresultsq default_cresultsq_scale
+val default_presultsq_scale = default_presultsq_scale
+val enum_scale_presultsq_default = Zippy.PResults.enum_scale_presultsq default_presultsq_scale
 end
 end
 end
@@ -74,8 +76,12 @@ fun init st = st |>
     (arr (GC.get_ngoals #> Base_Data.Tac_Res.GPU.F.all_upto))
   >>> top2 >>> Z1.ZM.Unzip.morph)
 
-fun run_best_first x = Zippy.Run.run_statesq' Zippy.Run.Best_First.CAction_Queue.init_cactions_queue
+fun run_best_first x = Zippy.Run.run_statesq' Zippy.Run.Best_First.PAction_Queue.init_pactions_queue
   Zippy.Run.Best_First.Step.step_queue x
+fun run_depth_first x = Zippy.Run.run_statesq' Zippy.Run.Depth_First.PAction_Queue.init_pactions_queue
+  Zippy.Run.Depth_First.Step.step_queue x
+fun run_breadth_first x = Zippy.Run.run_statesq' Zippy.Run.Breadth_First.PAction_Queue.init_pactions_queue
+  Zippy.Run.Breadth_First.Step.step_queue x
 
 val are_thm_variants = apply2 Thm.prop_of #> Term_Util.are_term_variants
 fun changed_uniquesq st = Seq.filter (fn st' => not (are_thm_variants (st, st')))
@@ -147,8 +153,8 @@ declare [[zippy_init_gc \<open>
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "resolution with higher-order unification on first possible goal")
     val tac = resolve_tac
-    fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
-      |> Tac_AAM.lift_tac_progress progress
+    fun ztac mk_meta thm _ = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
+      |> Tac_AAM.lift_tac mk_meta
       |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.unifiables
@@ -174,8 +180,8 @@ declare [[zippy_init_gc \<open>
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "resolution with higher-order matching on first possible goal")
     val tac = match_tac
-    fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
-      |> Tac_AAM.lift_tac_progress progress
+    fun ztac mk_meta thm _ = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
+      |> Tac_AAM.lift_tac mk_meta
       |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.generalisations
@@ -202,8 +208,8 @@ declare [[zippy_init_gc
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "e-resolution with higher-order unification on first possible goal")
     val tac = eresolve_tac
-    fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
-      |> Tac_AAM.lift_tac_progress progress
+    fun ztac mk_meta thm _ = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
+      |> Tac_AAM.lift_tac mk_meta
       |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.unifiables
@@ -227,8 +233,8 @@ declare [[zippy_init_gc
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "e-resolution with higher-order matching on first possible goal")
     val tac = ematch_tac
-    fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
-      |> Tac_AAM.lift_tac_progress progress
+    fun ztac mk_meta thm _ = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
+      |> Tac_AAM.lift_tac mk_meta
       |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.generalisations
@@ -260,8 +266,8 @@ declare [[zippy_init_gc
           let val resolve = Thm.biresolution (SOME ctxt) false [(false, thm)] |> HEADGOAL #> Seq.hd
           in zero_var_indexes (resolve revcut_rl) end
       in eresolve_tac ctxt (List.map (make_elim ctxt) thms) end
-    fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
-      |> Tac_AAM.lift_tac_progress progress
+    fun ztac mk_meta thm _ = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
+      |> Tac_AAM.lift_tac mk_meta
       |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.unifiables
@@ -290,8 +296,8 @@ declare [[zippy_init_gc
           let val resolve = Thm.biresolution (SOME ctxt) false [(false, thm)] |> HEADGOAL #> Seq.hd
           in zero_var_indexes (resolve revcut_rl) end
       in ematch_tac ctxt (List.map (make_elim ctxt) thms) end
-    fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
-      |> Tac_AAM.lift_tac_progress progress
+    fun ztac mk_meta thm _ = Ctxt.with_ctxt (fn ctxt => tac ctxt [thm]
+      |> Tac_AAM.lift_tac mk_meta
       |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.generalisations
@@ -317,8 +323,8 @@ declare [[zippy_init_gc
       Lazy.value "f-resolution with higher-order unification on first possible goal")
     val tac = Unify_Resolve_Base.unify_fresolve_tac
       Higher_Order_Unification.norms Higher_Order_Unification.unify
-    fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac thm ctxt
-      |> Tac_AAM.lift_tac_progress progress
+    fun ztac mk_meta thm _ = Ctxt.with_ctxt (fn ctxt => tac thm ctxt
+      |> Tac_AAM.lift_tac mk_meta
       |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.unifiables
@@ -345,8 +351,8 @@ declare [[zippy_init_gc
     val tac = Unify_Resolve_Base.unify_fresolve_tac
       Mixed_Unification.norms_first_higherp_match
       (Mixed_Unification.first_higherp_e_match Unification_Combinator.fail_match)
-    fun ztac progress thm = Ctxt.with_ctxt (fn ctxt => tac thm ctxt
-      |> Tac_AAM.lift_tac_progress progress
+    fun ztac mk_meta thm _ = Ctxt.with_ctxt (fn ctxt => tac thm ctxt
+      |> Tac_AAM.lift_tac mk_meta
       |> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
       |> arr)
     val retrieval = Data.TI.generalisations
@@ -376,13 +382,8 @@ declare [[zippy_init_gc \<open>
   let
     open Zippy; open ZLPC MU; open SC A Mo
     val name = "asm_full_simp"
-    val tacs = (safe_asm_full_simp_tac, asm_full_simp_tac)
     val id = Zippy_Identifier.make (SOME @{here}) name
-    val update = Library.maps snd
-      #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
-    val mk_cud = Result_Action.copy_update_data_empty_changed
-    val cresultsq_safe = Zippy_Auto.CResults.enum_scale_cresultsq_default Cost.LOW
-    val cresultsq_unsafe = Zippy_Auto.CResults.enum_scale_cresultsq_default Cost.LOW1
+    val tacs = (safe_asm_full_simp_tac, asm_full_simp_tac)
     fun f_timeout ctxt i state n time = (@{log Logger.WARN Zippy_Auto.Simp.logger} ctxt
       (fn _ => Pretty.breaks [
           Pretty.block [Pretty.str (name ^ " timeout at pull number "), SpecCheck_Show.int n,
@@ -400,9 +401,22 @@ declare [[zippy_init_gc \<open>
         NONE))
     fun wrap_tac tac ctxt i state = Zippy_Auto.Simp.Extended_Data.wrap_simp_tac
       (f_timeout ctxt i state) (fn ctxt => handle_option_exn_sq ctxt oo tac ctxt) ctxt i state
-    val (safe_tac, tac) = apply2 wrap_tac tacs
-    val data = Simp.gen_data name safe_tac tac Util.exn id update mk_cud
-      cresultsq_safe cresultsq_unsafe
+    val (safe_tac, tac) = apply2 wrap_tac (safe_asm_full_simp_tac, asm_full_simp_tac)
+    val update = Library.maps snd
+      #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
+    val mk_cud = Result_Action.copy_update_data_empty_changed
+    open Base_Data
+    val costs_progress = ((Cost.LOW, AAMeta.P.promising), (Cost.LOW1, AAMeta.P.promising))
+    val madd_safe = fst
+    val madd_unsafe_every = AAMeta.add Cost.add
+    fun mk_meta (cost, progress) = A.K (Library.K (Library.K (AAMeta.metadata
+      {cost = cost, progress = progress})))
+    val (mk_meta_safe, mk_meta_unsafe) = apply2 mk_meta costs_progress
+    val (presultsq_safe, presultsq_unsafe) =
+      apply2 (fst #> Zippy_Auto.PResults.enum_scale_presultsq_default) costs_progress
+    val data = Simp.gen_data Util.exn id name safe_tac tac update mk_cud
+      madd_safe madd_unsafe_every mk_meta_safe mk_meta_unsafe mk_meta_unsafe presultsq_safe
+      presultsq_unsafe presultsq_unsafe
     fun init _ focus z = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
