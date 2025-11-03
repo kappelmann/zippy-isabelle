@@ -114,6 +114,7 @@ in
 structure ZB = Zippy_Base(open Base_Mixins; structure Z = ZLPC; structure Log = Logging.Base
   \<^imap>\<open>\<open>{i}\<close> => \<open>structure Show{i} = Show.Zipper{i}\<close>\<close>)
 structure ZL = Zippy_Lists(open Base_Mixins; structure Z = ZLPC)
+structure ZE = Zippy_Enum_Mixin(open Base_Mixins; open ZLPC)
 structure PResults =
 struct
   local structure PResults_More = Zippy_PResults_Mixin(PResults)
@@ -130,6 +131,7 @@ end
 structure Util =
 struct
   val exn = exn
+  fun mk_exn _ = exn
   local
     open ZLPC
     structure ZN = Zippy_Node(structure Z = ZLPC; structure Exn = Exn)
@@ -163,13 +165,9 @@ end
 \<close>
 
 ML\<open>
-(*add runs*)
+(*add run and steps*)
 structure Zippy =
 struct open Zippy
-structure Run =
-struct
-fun with_state f = Ctxt.with_ctxt (fn ctxt => (*State.with_state (fn state =>*)
-  f {ctxt = ctxt(*, state = state*)})
 local open MU; open SC A Mo
   structure Base_Mixins =
   struct
@@ -179,45 +177,68 @@ local open MU; open SC A Mo
     structure Show{i} = Show.Zipper{i}
     structure Show_Container{i} = Show.Container{i}\<close>\<close>
   end
-  structure ZE = Zippy_Enum_Mixin(open Base_Mixins; open Z)
-  structure ZP = Zippy_Positions_Mixin(open Base_Mixins; structure Z = ZLPC.ZP)
-  structure ZCost = Zippy_Collect_Trace_Mixin(ZLPC.ZCollect)
   structure Goals_Results = Zippy_Goals_Results_Mixin_Base(open LGoals_Pos_Copy
     structure GClusters_Results = Mixin_Base1.Results; structure GCluster_Results = Mixin_Base2.Results)
   structure Goals_Results_TMV = Zippy_Goals_Results_Top_Meta_Vars_Mixin_Base(open Goals_Results
     structure Top_Meta_Vars = Mixin_Base2.Top_Meta_Vars)
+in
+(* steps *)
+(** base **)
+structure Step =
+struct
+local structure Log = Zippy_Logger_Mixin_Base(val parent_logger = Logging.logger; val name =  "Step")
+in open Log end
+local
+  structure ZP = Zippy_Positions_Mixin(open Base_Mixins; structure Z = ZLPC.ZP)
+  structure ZCost = Zippy_Collect_Trace_Mixin(ZLPC.ZCollect)
   structure PAction = Zippy_PAction_Mixin(open Base_Mixins
     structure PAction = Mixin_Base4.PAction; structure Log = Logging.PAction; structure Show = Show4)
-  structure Run = Zippy_Run_Mixin(open Base_Mixins
-    structure Run = Zippy_Run_Mixin_Base(open Goals_Results
-      structure Seq_From_Monad = Seq_From_Monad)
-    val with_state = with_state
-    structure Log = Zippy_Logger_Mixin_Base(val parent_logger = Logging.logger; val name =  "Run"))
-  val mk_exn = Library.K Util.exn
 in
-open Run
-val with_state = with_state
-local
-  structure GClusters = Zippy_Goal_Clusters_Mixin(GClusters)
-  structure GClusters_Results = Zippy_Goal_Results_Mixin(GClusters_Results)
-  structure LGoals_Results_TMV = Zippy_Lists_Goals_Results_Top_Meta_Vars_Mixin(open Base_Mixins
-    structure Z = Zippy_Lists(open Base_Mixins)
-    structure Goals_Results_Top_Meta_Vars = Goals_Results_TMV; structure Log_LGoals = Logging.LGoals)
-  structure EAction_App_Meta = Zippy_Enum_Action_App_Metadata_Mixin(
-    structure Z = ZE
-    structure Meta = Zippy_Action_App_Metadata_Mixin(Zippy.Mixin_Base5.Meta))
-in
-fun run_statesq init_sstate step finish fuel c = init_sstate c
-  >>= with_state (fn ms => arr (fn ss =>
-    repeat_step step finish finish fuel ss ms c))
-  >>= arr (Seq.maps (Zippy_Run_Result.cases #thm_states I))
-fun run_statesq' init_sstate step mk_unreturned_statesq = run_statesq init_sstate step (fn _ => fn _ =>
-  ZLPC.Z1.ZM.Zip.morph >>> mk_unreturned_statesq >>> arr (Zippy_Run_Result.Unfinished #> Seq.single))
-fun mk_df_post_unreturned_statesq x = mk_unreturned_statesq (Ctxt.with_ctxt
-  (LGoals_Results_TMV.mk_statesq (LGoals_Results_TMV.enum_df_post_children2 mk_exn))) x
-fun mk_df_post_unreturned_promising_statesq x = mk_unreturned_statesq (Ctxt.with_ctxt
-  (LGoals_Results_TMV.mk_statesq (EAction_App_Meta.enum_df_post_promising_children2 mk_exn))) x
+fun check_depth_limit opt_limit = ZP.ZZDepth_Co4.getter
+  #> (fn depth => case opt_limit of
+      NONE => pure depth
+    | SOME l => if depth <= l then pure depth else Exn.ME.throw Util.exn)
+structure AStar =
+struct
+  structure Logging =
+  struct
+    val logger = Logger.setup_new_logger logger "AStar"
+    local structure Base = struct val parent_logger = logger end
+    in
+    structure PAction_Queue = Zippy_Logger_Mixin_Base(open Base; val name = "PAction_Queue")
+    structure Step = Zippy_Logger_Mixin_Base(open Base; val name = "Step")
+    end
+  end
+  structure PAction_Queue = Zippy_PAction_Queue_Mixin_Base(
+    structure PAction = PAction
+    structure Queue = Leftist_Heap(type prio = PAction.prio; val ord = Cost.ord))
+  structure Show =
+  struct
+    structure Queue_Entry = Zippy_Show_Mixin_Base(
+      type @{AllT_args} t = @{AllT_args} PAction_Queue.entry
+      fun pretty ctxt {prio, zipper,...} = SpecCheck_Show.record [
+        ("Priority", Show.Prio.pretty ctxt prio),
+        ("Zipper", Show.Zipper4.pretty ctxt zipper)])
+    structure Prio = Show.Prio
+  end
+  structure PAction_Queue = Zippy_PAction_Queue_Mixin(open Base_Mixins
+    structure Z = ZE; structure PAction_Queue = PAction_Queue
+    val mk_exn = Util.mk_exn; structure Log = Logging.PAction_Queue
+    structure Show_Queue_Entry = Show.Queue_Entry; structure Show_Prio = Show.Prio)
+  structure Step = Zippy_Step_Mixin(open Base_Mixins
+    structure Step = Zippy_Step_Mixin_Base(open Goals_Results_TMV
+      structure PAction_Queue = PAction_Queue)
+    val mk_exn = Util.mk_exn; structure Log = Logging.Step
+    structure Log_LGoals = Zippy.Logging.LGoals
+    structure Log_PAction_Queue = Logging.PAction_Queue
+    structure Show_Queue_Entry = Show.Queue_Entry; structure Show_Prio = Show.Prio)
+  fun mk_prio ({prio, zipper,...} : @{AllT_args} PAction_Queue.entry) =
+    ZCost.ZZCollect_Co4.getter zipper |> ZCost.get_current
+    |> Option.map (Library.curry Cost.add prio) |> the_default prio
+  fun mk_prio_depth_limit opt_depth_limit (entry as {zipper,...}) =
+    check_depth_limit opt_depth_limit zipper >>= arr (fn _ => mk_prio entry)
 end
+
 structure Best_First =
 struct
   structure Logging =
@@ -229,34 +250,39 @@ struct
     structure Step = Zippy_Logger_Mixin_Base(open Base; val name = "Step")
     end
   end
-  fun mk_prio {prio, zipper,...} = ZCost.ZZCollect_Co4.getter zipper |> ZCost.get_current
-    |> Option.map (Library.curry Cost.add prio) |> the_default prio |> pure
-  structure PAction_Queue = Zippy_PAction_Queue_Mixin_Base(structure PAction = PAction
-    structure Queue = Leftist_Heap(type prio = Cost.cost; val ord = Cost.ord))
-  structure Show_Queue_Entry = Zippy_Show_Mixin_Base(
-    type @{AllT_args} t = @{AllT_args} PAction_Queue.entry
-    fun pretty ctxt {prio, zipper,...} = SpecCheck_Show.record [
-      ("Priority", Show.Prio.pretty ctxt prio),
-      ("Zipper", Show.Zipper4.pretty ctxt zipper)])
+  structure PAction_Queue = Zippy_PAction_Queue_Mixin_Base(
+    structure PAction = PAction
+    structure Queue = AStar.PAction_Queue.Queue)
+  structure Show =
+  struct
+    structure Queue_Entry = Zippy_Show_Mixin_Base(
+      type @{AllT_args} t = @{AllT_args} PAction_Queue.entry
+      fun pretty ctxt {prio, zipper,...} = SpecCheck_Show.record [
+        ("Priority", Show.Prio.pretty ctxt prio),
+        ("Zipper", Show.Zipper4.pretty ctxt zipper)])
+    structure Prio = AStar.Show.Prio
+  end
   structure PAction_Queue = Zippy_PAction_Queue_Mixin(open Base_Mixins
-    structure Z = ZE
-    structure PAction_Queue = PAction_Queue
-    val mk_prio = mk_prio
-    val mk_exn = mk_exn
-    structure Log = Logging.PAction_Queue
-    structure Show_Queue_Entry = Show_Queue_Entry
-    structure Show_Prio = Show.Prio)
+    structure Z = ZE; structure PAction_Queue = PAction_Queue
+    val mk_exn = Util.mk_exn; structure Log = Logging.PAction_Queue
+    structure Show_Queue_Entry = Show.Queue_Entry; structure Show_Prio = Show.Prio)
   structure Step = Zippy_Step_Mixin(open Base_Mixins
     structure Step = Zippy_Step_Mixin_Base(open Goals_Results_TMV
       structure PAction_Queue = PAction_Queue)
-    val mk_prio = mk_prio
-    val mk_exn = mk_exn
-    structure Log = Logging.Step
+    val mk_exn = Util.mk_exn; structure Log = Logging.Step
     structure Log_LGoals = Zippy.Logging.LGoals
     structure Log_PAction_Queue = Logging.PAction_Queue
-    structure Show_Queue_Entry = Show_Queue_Entry
-    structure Show_Prio = Show.Prio)
+    structure Show_Queue_Entry = Show.Queue_Entry; structure Show_Prio = Show.Prio)
+  fun mk_prio ({prio,...} : @{AllT_args} PAction_Queue.entry) = prio
+  fun mk_prio_depth_limit opt_depth_limit (entry as {zipper,...}) =
+    check_depth_limit opt_depth_limit zipper >>= arr (fn _ => mk_prio entry)
 end
+
+local
+  type prio = {depth : int, prio : PAction.prio}
+  fun prio_ord depth_ord ({depth = depth1, prio = prio1}, {depth = depth2, prio = prio2}) =
+  prod_ord depth_ord Cost.ord ((depth1, prio1), (depth2, prio2))
+in
 structure Depth_First =
 struct
   structure Logging =
@@ -268,11 +294,9 @@ struct
     structure Step = Zippy_Logger_Mixin_Base(open Base; val name = "Step")
     end
   end
-  fun mk_prio (entry as {zipper,...}) = Best_First.mk_prio entry
-    >>= arr (pair (ZP.ZZDepth_Co4.getter zipper))
-  structure PAction_Queue = Zippy_PAction_Queue_Mixin_Base(structure PAction = PAction
-    structure Queue = Leftist_Heap(type prio = int * Cost.cost
-      val ord = prod_ord (int_ord #> rev_order) Cost.ord))
+  structure PAction_Queue = Zippy_PAction_Queue_Mixin_Base(
+    structure PAction = PAction
+    structure Queue = Leftist_Heap(type prio = prio; val ord = prio_ord (int_ord #> rev_order)))
   structure Show =
   struct
     structure Queue_Entry = Zippy_Show_Mixin_Base(
@@ -282,29 +306,26 @@ struct
         ("Zipper", Show.Zipper4.pretty ctxt zipper)])
     structure Prio = Zippy_Show_Mixin_Base(
       type @{AllT_args} t = PAction_Queue.Queue.prio
-      fun pretty ctxt (depth, prio) = SpecCheck_Show.record [
+      fun pretty ctxt {depth, prio} = SpecCheck_Show.record [
         ("Depth", SpecCheck_Show.int depth),
         ("Priority", Show.Prio.pretty ctxt prio)])
   end
   structure PAction_Queue = Zippy_PAction_Queue_Mixin(open Base_Mixins
-    structure Z = ZE
-    structure PAction_Queue = PAction_Queue
-    val mk_prio = mk_prio
-    val mk_exn = mk_exn
-    structure Log = Logging.PAction_Queue
-    structure Show_Queue_Entry = Show.Queue_Entry
-    structure Show_Prio = Show.Prio)
+    structure Z = ZE; structure PAction_Queue = PAction_Queue
+    val mk_exn = Util.mk_exn; structure Log = Logging.PAction_Queue
+    structure Show_Queue_Entry = Show.Queue_Entry; structure Show_Prio = Show.Prio)
   structure Step = Zippy_Step_Mixin(open Base_Mixins
     structure Step = Zippy_Step_Mixin_Base(open Goals_Results_TMV
       structure PAction_Queue = PAction_Queue)
-    val mk_prio = mk_prio
-    val mk_exn = mk_exn
-    structure Log = Logging.Step
+    val mk_exn = Util.mk_exn; structure Log = Logging.Step
     structure Log_LGoals = Zippy.Logging.LGoals
     structure Log_PAction_Queue = Logging.PAction_Queue
-    structure Show_Queue_Entry = Show.Queue_Entry
-    structure Show_Prio = Show.Prio)
+    structure Show_Queue_Entry = Show.Queue_Entry; structure Show_Prio = Show.Prio)
+  fun mk_prio_depth_limit opt_depth_limit (entry as {zipper,...}) =
+    check_depth_limit opt_depth_limit zipper
+    >>= arr (fn depth => AStar.mk_prio entry |> (fn prio => {depth = depth, prio = prio}))
 end
+
 structure Breadth_First =
 struct
   structure Logging =
@@ -316,10 +337,9 @@ struct
     structure Step = Zippy_Logger_Mixin_Base(open Base; val name = "Step")
     end
   end
-  val mk_prio = Depth_First.mk_prio
   structure PAction_Queue = Zippy_PAction_Queue_Mixin_Base(structure PAction = PAction
     structure Queue = Leftist_Heap(type prio = Depth_First.PAction_Queue.Queue.prio
-      val ord = prod_ord int_ord Cost.ord))
+      val ord = prio_ord int_ord))
   structure Show =
   struct
     structure Queue_Entry = Zippy_Show_Mixin_Base(
@@ -330,23 +350,101 @@ struct
     structure Prio = Depth_First.Show.Prio
   end
   structure PAction_Queue = Zippy_PAction_Queue_Mixin(open Base_Mixins
-    structure Z = ZE
-    structure PAction_Queue = PAction_Queue
-    val mk_prio = mk_prio
-    val mk_exn = mk_exn
-    structure Log = Logging.PAction_Queue
-    structure Show_Queue_Entry = Show.Queue_Entry
-    structure Show_Prio = Show.Prio)
+    structure Z = ZE; structure PAction_Queue = PAction_Queue
+    val mk_exn = Util.mk_exn; structure Log = Logging.PAction_Queue
+    structure Show_Queue_Entry = Show.Queue_Entry; structure Show_Prio = Show.Prio)
   structure Step = Zippy_Step_Mixin(open Base_Mixins
     structure Step = Zippy_Step_Mixin_Base(open Goals_Results_TMV
       structure PAction_Queue = PAction_Queue)
-    val mk_prio = mk_prio
-    val mk_exn = mk_exn
-    structure Log = Logging.Step
+    val mk_exn = Util.mk_exn; structure Log = Logging.Step
     structure Log_LGoals = Zippy.Logging.LGoals
     structure Log_PAction_Queue = Logging.PAction_Queue
-    structure Show_Queue_Entry = Show.Queue_Entry
-    structure Show_Prio = Show.Prio)
+    structure Show_Queue_Entry = Show.Queue_Entry; structure Show_Prio = Show.Prio)
+  val mk_prio_depth_limit = Depth_First.mk_prio_depth_limit
+end
+end
+end
+end
+
+(* run *)
+structure Run =
+struct
+(** base **)
+fun with_state f = Ctxt.with_ctxt (fn ctxt => (*State.with_state (fn state =>*)
+  f {ctxt = ctxt(*, state = state*)})
+local structure Run = Zippy_Run_Mixin(open Base_Mixins
+  structure Run = Zippy_Run_Mixin_Base(open Goals_Results
+    structure Seq_From_Monad = Seq_From_Monad)
+  val with_state = with_state
+  structure Log = Zippy_Logger_Mixin_Base(val parent_logger = Logging.logger; val name =  "Run"))
+in open Run end
+(** utility functions **)
+local
+  structure GClusters = Zippy_Goal_Clusters_Mixin(GClusters)
+  structure GClusters_Results = Zippy_Goal_Results_Mixin(GClusters_Results)
+  structure LGoals_Results_TMV = Zippy_Lists_Goals_Results_Top_Meta_Vars_Mixin(open Base_Mixins
+    structure Z = Zippy_Lists(open Base_Mixins)
+    structure Goals_Results_Top_Meta_Vars = Goals_Results_TMV; structure Log_LGoals = Logging.LGoals)
+  structure EAction_App_Meta = Zippy_Enum_Action_App_Metadata_Mixin(
+    structure Z = ZE
+    structure Meta = Zippy_Action_App_Metadata_Mixin(Zippy.Mixin_Base5.Meta))
+in
+fun run_statesq init_sstate step finish fuel c = init_sstate c
+  >>= with_state (fn ms => arr (fn ss => repeat_step step finish finish fuel ss ms c
+    |> Seq.maps (Zippy_Run_Result.cases #thm_states I)))
+fun run_statesq' init_sstate step mk_unreturned_statesq = run_statesq init_sstate step (fn _ => fn _ =>
+  ZLPC.Z1.ZM.Zip.morph >>> mk_unreturned_statesq >>> arr (Zippy_Run_Result.Unfinished #> Seq.single))
+fun mk_df_post_unreturned_statesq x = mk_unreturned_statesq (Ctxt.with_ctxt
+  (LGoals_Results_TMV.mk_statesq (LGoals_Results_TMV.enum_df_post_children2 Util.mk_exn))) x
+fun mk_df_post_unreturned_promising_statesq x = mk_unreturned_statesq (Ctxt.with_ctxt
+  (LGoals_Results_TMV.mk_statesq (EAction_App_Meta.enum_df_post_promising_children2 Util.mk_exn))) x
+
+local
+  fun mk_funs mk_prio_depth_limit init_pactions_queue step_queue =
+  let
+    fun gen finish opt_depth_limit =
+      let val mk_prio = mk_prio_depth_limit opt_depth_limit
+      in run_statesq' (init_pactions_queue mk_prio) (step_queue mk_prio) finish end
+    fun mk_limit_variants f = (gen f, SOME #> gen f, gen f NONE)
+  in
+    (gen,
+    mk_limit_variants mk_df_post_unreturned_statesq,
+    mk_limit_variants mk_df_post_unreturned_promising_statesq)
+  end
+in
+structure AStar =
+struct
+local open Step.AStar
+in
+val (gen, (gen_all, all, all'), (gen_promising, promising, promising')) =
+  mk_funs mk_prio_depth_limit PAction_Queue.init_pactions_queue Step.step_queue
+end
+end
+structure Best_First =
+struct
+local open Step.Best_First
+in
+val (gen, (gen_all, all, all'), (gen_promising, promising, promising')) =
+  mk_funs mk_prio_depth_limit PAction_Queue.init_pactions_queue Step.step_queue
+end
+end
+structure Depth_First =
+struct
+local open Step.Depth_First
+in
+val (gen, (gen_all, all, all'), (gen_promising, promising, promising')) =
+  mk_funs mk_prio_depth_limit PAction_Queue.init_pactions_queue Step.step_queue
+end
+end
+structure Breadth_First =
+struct
+local open Step.Breadth_First
+in
+val (gen, (gen_all, all, all'), (gen_promising, promising, promising')) =
+  mk_funs mk_prio_depth_limit PAction_Queue.init_pactions_queue Step.step_queue
+end
+end
+end
 end
 end
 end

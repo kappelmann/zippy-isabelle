@@ -149,11 +149,11 @@ lemma binomial_le_pow2: "n choose k \<le> 2^n"
 proof (induction n arbitrary: k)
   case 0
   then show ?case
-  using less_le_trans
+  using le_less less_le_trans
   (*NEW*)
-  by (zippy simp: le_less where blast depth: 0)
+  by (zippy where blast depth: 0)
   (*ORIG*)
-  (*by fastforce_orig *)
+  (* by fastforce *)
 next
   case (Suc n)
   show ?case
@@ -1231,7 +1231,7 @@ proof -
     by metis
   then show ?thesis
     (*NEW*)
-    by (zippy simp flip: all_simps ex_simps where simp depth: 10)
+    by (zippy simp flip: all_simps ex_simps where run run: Zippy.Run.Depth_First.all')
     (*ORIG*)
     (* by (auto simp flip: all_simps ex_simps) *)
 qed
@@ -1320,12 +1320,11 @@ proof -
         have disj: "{B. B \<subseteq> A \<and> B \<noteq> {}} \<inter> {insert a B |B. B \<subseteq> A} = {}"
           using * by blast
         have inj: "inj_on (insert a) (Pow A)"
+          using "*" inj_on_def
           (*NEW*)
-          using "*" inj_on_def by -
-            ((zippy run run:
-              "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq"))
+          by (zippy run run: Zippy.Run.Depth_First.all')
           (*ORIG*)
-          (* using "*" inj_on_def by fastforce *)
+          (* by fastforce *)
         show ?thesis
           apply (auto simp add: * subset_insert_lemma sum.union_disjoint disj sum_negf)
           apply (simp add: F G sum_negf sum.reindex [OF inj] o_def sum_diff *)
@@ -1389,10 +1388,9 @@ proof -
   have card_eq: "card ` {I. I \<subseteq> A \<and> I \<noteq> {}} = {1..card A}"
     using not_less_eq_eq card_mono
     (*NEW*)
-    by (zippy simp: image_iff
-      where run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
+    by (zippy simp: image_iff where run run: Zippy.Run.Depth_First.all')
     (*ORIG*)
-    (* by (fastforce_orig simp: image_iff) *)
+    (* by (fastforce simp: image_iff) *)
   have "int(card(\<Union> A))
       = (\<Sum>y = 1..card A. \<Sum>I\<in>{x. x \<subseteq> A \<and> x \<noteq> {} \<and> card x = y}. - ((- 1) ^ y * int (card (\<Inter> I))))"
     by (simp add: int_card_UNION assms sum.image_gen [OF fin, where g=card] card_eq)

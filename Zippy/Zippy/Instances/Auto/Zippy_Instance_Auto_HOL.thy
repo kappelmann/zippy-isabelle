@@ -285,7 +285,7 @@ in
   id: \<open>FI.id\<close>
   path: \<open>FI.long_name\<close>
   more_args: \<open>open Base_Args
-    val init_args = mk_init_args Cost.HIGH
+    val init_args = mk_init_args Cost.MEDIUM
   \<close>\<close>
 structure Cases = Cases.Cases_Data
 \<^functor_instance>\<open>struct_name: Induction
@@ -294,7 +294,7 @@ structure Cases = Cases.Cases_Data
   id: \<open>FI.id\<close>
   path: \<open>FI.long_name\<close>
   more_args: \<open>open Base_Args
-    val init_args = mk_init_args Cost.VERY_HIGH
+    val init_args = mk_init_args Cost.HIGH
   \<close>\<close>
 structure Induction = Induction.Induction_Data
 end

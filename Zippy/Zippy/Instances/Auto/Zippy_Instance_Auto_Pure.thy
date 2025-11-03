@@ -13,9 +13,7 @@ ML\<open>
 local
   structure Base = struct structure Z = Zippy; structure Ctxt = Z.Ctxt end
   structure Zippy_Simp = Zippy_Instance_Simp(open Base)
-in
-structure Zippy = struct open Zippy_Simp Zippy end
-end\<close>
+in structure Zippy = struct open Zippy_Simp Zippy end end\<close>
 
 ML\<open>
 local val default_presultsq_scale = Rat.make (12, 10)
@@ -76,18 +74,11 @@ fun init st = st |>
     (arr (GC.get_ngoals #> Base_Data.Tac_Res.GPU.F.all_upto))
   >>> top2 >>> Z1.ZM.Unzip.morph)
 
-fun run_best_first x = Zippy.Run.run_statesq' Zippy.Run.Best_First.PAction_Queue.init_pactions_queue
-  Zippy.Run.Best_First.Step.step_queue x
-fun run_depth_first x = Zippy.Run.run_statesq' Zippy.Run.Depth_First.PAction_Queue.init_pactions_queue
-  Zippy.Run.Depth_First.Step.step_queue x
-fun run_breadth_first x = Zippy.Run.run_statesq' Zippy.Run.Breadth_First.PAction_Queue.init_pactions_queue
-  Zippy.Run.Breadth_First.Step.step_queue x
-
 val are_thm_variants = apply2 Thm.prop_of #> Term_Util.are_term_variants
 fun changed_uniquesq st = Seq.filter (fn st' => not (are_thm_variants (st, st')))
   #> Tactic_Util.unique_thmsq are_thm_variants
 
-\<^functor_instance>\<open>struct_name: Tac
+\<^functor_instance>\<open>struct_name: Data
   functor_name: Zippy_Run_Data
   id: \<open>FI.prefix_id "run"\<close>
   path: \<open>FI.struct_op "Run"\<close>
@@ -98,18 +89,18 @@ fun changed_uniquesq st = Seq.filter (fn st' => not (are_thm_variants (st, st'))
     type run_config = int option
     val init_args = {
       init = SOME init,
-      run = SOME (run_best_first Zippy.Run.mk_df_post_unreturned_promising_statesq),
+      run = SOME Run.AStar.promising',
       post = SOME (fn st => Ctxt.with_ctxt (fn ctxt =>
         arr (changed_uniquesq st #> Seq.maps (prune_params_tac ctxt))))}
     \<close>\<close>
-fun tac fuel ctxt = Tac.tac fuel {ctxt = ctxt}
+fun tac fuel ctxt = Data.tac fuel {ctxt = ctxt}
 end
 end
 end
 \<close>
 local_setup\<open>Zippy_Auto.Context_Parsers.setup_attribute NONE\<close>
-local_setup\<open>Zippy_Auto.Run.Tac.setup_attribute NONE\<close>
-declare [[zippy_parse add: \<open>(@{binding run}, Zippy_Auto.Run.Tac.parse_context_update)\<close>]]
+local_setup\<open>Zippy_Auto.Run.Data.setup_attribute NONE\<close>
+declare [[zippy_parse add: \<open>(@{binding run}, Zippy_Auto.Run.Data.parse_context_update)\<close>]]
 
 paragraph \<open>Method\<close>
 
@@ -393,14 +384,15 @@ declare [[zippy_init_gc \<open>
             " for this proof, increase/disable the timeout, or check for looping simp rules."])
         ] |> Pretty.block0 |> Pretty.string_of);
       NONE)
-    (*FIXME: why is the simplifier raising Option.Option in some cases?*)
-    fun handle_option_exn_sq ctxt sq = Seq.make (fn _ =>
-      sq |> Seq.pull |> Option.map (apsnd (handle_option_exn_sq ctxt))
-      handle Option.Option => (@{log Logger.WARN Zippy_Auto.Simp.logger} ctxt (fn _ =>
-          "Simplifier raised unexpected Option.Option exception. Returning NONE instead.");
-        NONE))
+    (*FIXME: why is the simplifier raising Option.Option and ERROR exceptions in some cases?*)
+    fun handle_exn ctxt exn = (@{log Logger.WARN Zippy_Auto.Simp.logger} ctxt
+      (fn _ => "Simplifier raised unexpected " ^ exn ^ "exception. Returning NONE instead.");
+      NONE)
+    fun handle_exns_sq ctxt sq = Seq.make (fn _ =>
+      sq |> Seq.pull |> Option.map (apsnd (handle_exns_sq ctxt))
+      handle Option.Option => handle_exn ctxt "Option.Option" | ERROR _ => handle_exn ctxt "ERROR")
     fun wrap_tac tac ctxt i state = Zippy_Auto.Simp.Extended_Data.wrap_simp_tac
-      (f_timeout ctxt i state) (fn ctxt => handle_option_exn_sq ctxt oo tac ctxt) ctxt i state
+      (f_timeout ctxt i state) (fn ctxt => handle_exns_sq ctxt oo tac ctxt) ctxt i state
     val (safe_tac, tac) = apply2 wrap_tac (safe_asm_full_simp_tac, asm_full_simp_tac)
     val update = Library.maps snd
       #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
@@ -423,13 +415,5 @@ declare [[zippy_init_gc \<open>
 
 declare [[zippy_parse add: \<open>(@{binding simp}, Zippy_Auto.Simp.parse_extended [])\<close>
   and default: \<open>@{binding simp}\<close>]]
-
-(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run.Best_First.Logging.Step.logger Logger.ALL\<close>]] *)
-(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Run.Best_First.Logging.Run.logger Logger.ALL\<close>]] *)
-(* declare [[ML_map_context \<open>Logger.set_log_levels Zippy.Logging.logger Logger.ALL\<close>]] *)
-
-(*
-TODO: DFS and BFS
-*)
 
 end

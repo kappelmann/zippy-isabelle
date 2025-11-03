@@ -866,9 +866,9 @@ next
     case True
     with insertI show ?thesis
       (*NEW*)
-      by (zippy where simp timeout: 0.1)
+      by (zippy run run: Zippy.Run.Depth_First.all')
       (*ORIG*)
-      (* by (auto where simp timeout: 0.1) *)
+      (* by auto *)
   next
     case False
     then obtain y' where y: "y = f a y'" and y': "fold_graph f z (A - {a}) y'"
@@ -1832,7 +1832,7 @@ proof (induction arbitrary: A rule: finite_induct)
   case (insert b B)
   then have A: "finite A" "A - {b} \<subseteq> B"
     (*NEW*)
-    by (zippy where blast depth: 0)
+    by (zippy where run run: Zippy.Run.Depth_First.all')
     (*ORIG*)
     (* by force+ *)
   then have "card B \<le> card (A - {b})"
@@ -2176,7 +2176,7 @@ lemma card_Suc_eq_finite:
   "card A = Suc k \<longleftrightarrow> (\<exists>b B. A = insert b B \<and> b \<notin> B \<and> card B = k \<and> finite B)"
   unfolding card_Suc_eq using card_gt_0_iff
   (*NEW*)
-  by (zippy blast depth: 2)
+  by (zippy blast depth: 2 where run run: "Zippy.Run.Depth_First.all 4")
   (*ORIG*)
   (* by fastforce *)
 
@@ -2224,7 +2224,8 @@ proof (cases "finite A")
   case True
   then show ?thesis
     (*NEW*)
-    by (zippy simp: card_Suc_eq less_eq_nat.simps split: nat.splits where blast depth: 2)
+    by (zippy simp: card_Suc_eq less_eq_nat.simps split: nat.splits
+       where run run: Zippy.Run.Depth_First.all')
     (*ORIG*)
     (* by (fastforce simp: card_Suc_eq less_eq_nat.simps split: nat.splits) *)
 qed auto
@@ -2297,20 +2298,14 @@ proof -
     case 0
     thus ?case by (cases "finite S")
       (*NEW*)
-      (zippy blast depth: 0)
+      (zippy run run: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* auto *)
   next
     case Suc
     thus ?case
       (*NEW*)
-      (*TODO: debug crash*)
-      (* apply (zippy 11750 simp add: card_Suc_eq where simp depth: 0 where blast depth: 2
-      where run run:
-        "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_promising_statesq"
-      ) *)
-      by (zippy simp add: card_Suc_eq
-        where run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
+      by (zippy simp add: card_Suc_eq where run run: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* by (auto simp add: card_Suc_eq) *)
   qed
@@ -2527,8 +2522,7 @@ proof -
     case (insert c C)
     then have "c \<inter> \<Union>C = {}"
       (*NEW*)
-      by (zippy where run run:
-        "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
+      by (zippy run run: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* by auto *)
     with insert show ?case

@@ -87,5 +87,6 @@ session Zippy_Examples in Examples = "HOL" +
     GCD
     List
     Set
+    Streamlined_Examples
     Word
 

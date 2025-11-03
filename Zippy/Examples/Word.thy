@@ -1590,7 +1590,7 @@ lemma mod_word_by_minus_1_eq [simp]:
   \<open>w mod - 1 = w * of_bool (w < - 1)\<close> for w :: \<open>'a::len word\<close>
   using mod_word_less word_order.not_eq_extremum
   (*NEW*)
-  by (zippy run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
+  by (zippy run run: Zippy.Run.Depth_First.all')
   (*ORIG*)
   (* by (fastforce) *)
 
@@ -1945,10 +1945,7 @@ proof (cases \<open>LENGTH('a)\<close>)
 next
   case (Suc n)
   then show ?thesis
-    (*NEW*)
-    by (zippy simp: bit_signed_drop_bit_iff not_le less_diff_conv ac_simps intro: bit_word_eqI)
-    (*ORIG*)
-    (* by (force simp: bit_signed_drop_bit_iff not_le less_diff_conv ac_simps intro!!: bit_word_eqI) *)
+    by (force simp: bit_signed_drop_bit_iff not_le less_diff_conv ac_simps intro!: bit_word_eqI)
 qed
 
 lemma signed_drop_bit_0 [simp]:
@@ -1988,7 +1985,7 @@ lift_definition word_rotr :: \<open>nat \<Rightarrow> 'a::len word \<Rightarrow>
     (take_bit (n mod LENGTH('a)) k)\<close>
   using take_bit_tightened
   (*NEW*)
-  by (zippy blast depth: 0)
+  by (zippy run run: Zippy.Run.Depth_First.all')
   (*ORIG*)
   (* by fastforce *)
 
@@ -1998,7 +1995,7 @@ lift_definition word_rotl :: \<open>nat \<Rightarrow> 'a::len word \<Rightarrow>
     (take_bit (LENGTH('a) - n mod LENGTH('a)) k)\<close>
   using take_bit_tightened
   (*NEW*)
-  by (zippy blast depth: 0)
+  by (zippy run run: Zippy.Run.Depth_First.all')
   (*ORIG*)
   (* by fastforce *)
 
@@ -3342,9 +3339,9 @@ lemma word_half_less_imp_less_eq:
   \<open>v \<le> w\<close> if \<open>v div 2 < w div 2\<close> for v w :: \<open>'a::len word\<close>
   using that linorder_linear word_less_eq_imp_half_less_eq
   (*NEW*)
-  by (zippy run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
+  by (zippy run run: Zippy.Run.Depth_First.all')
   (*ORIG*)
-  (* by fastforce_orig *)
+  (* by fastforce *)
 
 
 subsection \<open>Word and nat\<close>
@@ -4129,7 +4126,8 @@ proof (intro conjI)
     show "bit u n = bit ((slice LENGTH('b) w)::'a word) n" if "n < LENGTH('a)" for n
       using assms bit_imp_le_length
       unfolding word_split_def bit_slice_iff
-      by (fastforce simp: \<section> ac_simps word_size bit_ucast_iff bit_drop_bit_eq)
+      by (fastforce simp: \<section> ac_simps word_size bit_ucast_iff bit_drop_bit_eq
+        where run run: Zippy.Run.Depth_First.all')
   qed
   show "v = slice 0 w"
     by (metis Pair_inject assms ucast_slice word_split_bin')
@@ -4520,7 +4518,7 @@ next
     with False have "m \<le> n"
       using inc_le linorder_not_le suc.prems word_le_minus_mono_left
       (*NEW*)
-      by (zippy run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
+      by (zippy run run: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* by fastforce *)
     with False "suc.hyps" show ?thesis

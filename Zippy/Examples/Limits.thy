@@ -881,7 +881,7 @@ lemma tendsto_zero_mult_left_iff [simp]:
   fixes c::"'a::{topological_semigroup_mult,field}" assumes "c \<noteq> 0" shows "(\<lambda>n. c * a n)\<longlonglongrightarrow> 0 \<longleftrightarrow> a \<longlonglongrightarrow> 0"
   using assms tendsto_mult_left tendsto_mult_left_iff
   (*NEW*)
-  by (zippy run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
+  by - ((zippy 10 run run: "Zippy.Run.AStar.all 1")[1])+
   (*ORIG*)
   (* by (fastforce) *)
 
@@ -889,7 +889,7 @@ lemma tendsto_zero_mult_right_iff [simp]:
   fixes c::"'a::{topological_semigroup_mult,field}" assumes "c \<noteq> 0" shows "(\<lambda>n. a n * c)\<longlonglongrightarrow> 0 \<longleftrightarrow> a \<longlonglongrightarrow> 0"
   using assms tendsto_mult_right tendsto_mult_right_iff
   (*NEW*)
-  by (zippy run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
+  by - ((zippy 10 run run: "Zippy.Run.AStar.all 1")[1])+
   (*ORIG*)
   (* by (fastforce) *)
 
@@ -1065,7 +1065,7 @@ proof (subst tendsto_cong)
   show "\<forall>\<^sub>F n in sequentially. prod f {..n} = 0"
     using assms eventually_at_top_linorder
     (*NEW*)
-    by (zippy blast depth: 3)
+    by (zippy run run: Zippy.Run.Depth_First.all')
     (*ORIG*)
     (* by (auto) *)
 qed auto
@@ -1640,9 +1640,7 @@ proof (rule filtermap_fun_inverse[symmetric])
   show "filterlim uminus at_top (at_bot::'a filter)"
     using eventually_at_bot_linorder filterlim_at_top le_minus_iff
     (*NEW*)
-    supply [[unify_search_bound=1,
-      ML_map_context "Context.map_proof Tactic_Util.silence_kernel_ho_bound_exceeded"]]
-    by (zippy where blast timeout: 0.1)
+    by (zippy run run: "Zippy.Run.Depth_First.all 5")
     (*ORIG*)
     (* by force+ *)
   show "filterlim uminus (at_bot::'a filter) at_top"
@@ -2296,8 +2294,7 @@ lemma Lim_transform_eventually:
   "\<lbrakk>(f \<longlongrightarrow> l) F; eventually (\<lambda>x. f x = g x) F\<rbrakk> \<Longrightarrow> (g \<longlongrightarrow> l) F"
   using eventually_elim2
   (*NEW*)
-  by (zippy simp add: tendsto_def
-    where run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
+  by (zippy simp add: tendsto_def where run run: Zippy.Run.Depth_First.all')
   (*ORIG*)
   (* by (fastforce simp add: tendsto_def) *)
 
@@ -2735,7 +2732,7 @@ proof
   then have "LIM x F. inverse (f x) * (f x / g x) :> at_infinity"
     using assms tendsto_inverse tendsto_mult_filterlim_at_infinity
       (*NEW*)
-      by (zippy where run run: "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")
+      by (zippy run run: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* by fastforce+ *)
   then have "LIM x F. inverse (g x) :> at_infinity"
@@ -3196,10 +3193,7 @@ proof (cases "a \<le> b", rule compactI)
       unfolding *
         by (intro exI[of _ "C1 \<union> C2"])
         (*NEW*)
-        (*TODO NEW: why not working*)
-        (simp | step)+
-        (* ((zippy 20
-          where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+ *)
+        ((zippy 20 where run run: "Zippy.Run.AStar.all 1")[1])+
         (*ORIG*)
         (* auto *)
   next
@@ -3210,11 +3204,7 @@ proof (cases "a \<le> b", rule compactI)
     then obtain e where "0 < e" "{x - e <..< x + e} \<subseteq> c"
       by (auto simp: open_dist dist_real_def subset_eq Ball_def abs_less_iff)
     with \<open>c \<in> C\<close> show ?case
-      by (safe intro!: exI[of _ "e/2"] exI[of _ "{c}"])
-      (*NEW*)
-      (zippy blast depth: 0)
-      (*ORIG*)
-      (* auto *)
+      by (safe intro!: exI[of _ "e/2"] exI[of _ "{c}"]) auto
   qed
 qed simp
 
@@ -3245,7 +3235,7 @@ lemma open_Collect_positive:
   shows "\<exists>A. open A \<and> A \<inter> s = {x\<in>s. 0 < f x}"
   using continuous_on_open_invariant[THEN iffD1, OF f, rule_format, of "{0 <..}"]
   (*NEW*)
-  by (zippy simp: Int_def field_simps where blast depth: 2)
+  by (zippy simp: Int_def field_simps where run run: "Zippy.Run.Depth_First.all 1")
   (*ORIG*)
   (* by (auto simp: Int_def field_simps) *)
 
@@ -3358,8 +3348,7 @@ text \<open>Bartle/Sherbert: Introduction to Real Analysis, Theorem 4.2.9, p. 11
 lemma LIM_fun_gt_zero: "f \<midarrow>c\<rightarrow> l \<Longrightarrow> 0 < l \<Longrightarrow> \<exists>r. 0 < r \<and> (\<forall>x. x \<noteq> c \<and> \<bar>c - x\<bar> < r \<longrightarrow> 0 < f x)"
   for f :: "real \<Rightarrow> real"
     (*NEW*)
-    by (zippy 20 dest: LIM_D
-      where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
+    by (zippy 10 dest: LIM_D where run run: "Zippy.Run.AStar.all 1")+
     (*ORIG*)
     (* by (force_orig simp: dest: LIM_D)+ *)
 
@@ -3367,7 +3356,7 @@ lemma LIM_fun_less_zero: "f \<midarrow>c\<rightarrow> l \<Longrightarrow> l < 0 
   for f :: "real \<Rightarrow> real"
   by (drule LIM_D [where r="-l"])
   (*NEW*)
-  (zippy 20 where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+
+  (zippy 10 run run: "Zippy.Run.AStar.all 1")+
   (*ORIG*)
   (* force+ *)
 

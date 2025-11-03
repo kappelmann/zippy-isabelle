@@ -1517,11 +1517,9 @@ qed
 lemma lemma_interval: "a < x \<Longrightarrow> x < b \<Longrightarrow> \<exists>d. 0 < d \<and> (\<forall>y. \<bar>x - y\<bar> < d \<longrightarrow> a \<le> y \<and> y \<le> b)"
   for a b x :: real
   (*NEW*)
-  (*TODO NEW: fix*)
-  (* by (zippy 30 dest: lemma_interval_lt *)
-    (* where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+ *)
+  by (drule lemma_interval_lt) ((zippy where blast depth: 0)[1])+
   (*ORIG*)
-  by (force_orig dest: lemma_interval_lt)
+  (* by (force dest: lemma_interval_lt) *)
 
 text \<open>Rolle's Theorem.
    If \<^term>\<open>f\<close> is defined and continuous on the closed interval
@@ -1626,8 +1624,7 @@ proof -
     by (metis Rolle_deriv [OF ab])
   then show ?thesis
     using f' has_derivative_imp_has_field_derivative
-    by - ((zippy 10
-      run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+    by (zippy run run: Zippy.Run.Depth_First.all')
     (*ORIG*)
     (* by fastforce *)
 qed
@@ -1698,11 +1695,9 @@ lemma DERIV_isconst_end:
   shows "f b = f a"
   using MVT [OF \<open>a < b\<close>] "0" DERIV_unique contf real_differentiable_def
   (*NEW*)
-  (*TODO NEW: fix*)
-  (* by - (zippy 15 simp: algebra_simps *)
-    (* where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+ *)
+  by (zippy simp: algebra_simps where run run: Zippy.Run.Depth_First.all')
   (*ORIG*)
-  by (fastforce_orig simp: algebra_simps)
+  (* by (fastforce simp: algebra_simps) *)
 
 lemma DERIV_isconst2:
   fixes f :: "real \<Rightarrow> real"
@@ -1908,10 +1903,9 @@ proof -
   have "(\<lambda>x. -f x) a \<le> (\<lambda>x. -f x) b"
     using DERIV_nonneg_imp_nondecreasing [of a b "\<lambda>x. -f x"] assms DERIV_minus
       (*NEW*)
-      (*TODO NEW: fix*)
-      (* by - (zippy 50 run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")+ *)
+      by (zippy where run run: Zippy.Run.Depth_First.all')
       (*ORIG*)
-      by fastforce_orig
+      (* by fastforce *)
   then show ?thesis
     by simp
 qed
@@ -2124,14 +2118,17 @@ lemma GMVT':
 proof -
   have "\<exists>g'c f'c c. DERIV g c :> g'c \<and> DERIV f c :> f'c \<and>
       a < c \<and> c < b \<and> (f b - f a) * g'c = (g b - g a) * f'c"
-    using assms by (intro GMVT) (force simp: real_differentiable_def)+
+    using assms by (intro GMVT)
+      (*NEW*)
+      (zippy simp: real_differentiable_def where run run: Zippy.Run.Depth_First.all')
+      (*ORIG*)
+      (* (force simp: real_differentiable_def)+ *)
   then obtain c where "a < c" "c < b" "(f b - f a) * g' c = (g b - g a) * f' c"
     using DERIV_f DERIV_g
       (*NEW*)
-      (*TODO NEW: fix*)
-      (* by (force dest: DERIV_unique) *)
+      by (zippy dest: DERIV_unique where run run: Zippy.Run.Depth_First.all')
       (*ORIG*)
-      by (force_orig dest: DERIV_unique)
+      (* by (force dest: DERIV_unique) *)
   then show ?thesis
     by auto
 qed

@@ -18,11 +18,14 @@ sig
   val pretty_gcpos : gcpos SpecCheck_Show.show
 
   structure UF : IMPERATIVE_UNION_FIND
-  type veclass = term UF.set
-  val eq_opt_veclass: 'a UF.set option * 'a UF.set option -> bool
-  val init_veclasses : term list -> veclass option list * veclass Termtab.table
-  val group_veclasses : veclass option list -> (goal_pos * veclass option) list list
-  val build_veclasses : term list -> (goal_pos * veclass option) list list * veclass Termtab.table
+  (*meta variable equivalence class*)
+  type mvar_eclass = (term, typ) Either.either UF.set
+  val eq_opt_mvar_eclass: 'a UF.set option * 'a UF.set option -> bool
+  val init_mvar_eclasses : term list -> mvar_eclass option list *
+    (mvar_eclass Termtab.table * mvar_eclass Typtab.table)
+  val group_mvar_eclasses : mvar_eclass option list -> (goal_pos * mvar_eclass option) list list
+  val build_mvar_eclasses : term list -> (goal_pos * mvar_eclass option) list list *
+    (mvar_eclass Termtab.table * mvar_eclass Typtab.table)
 
   type gclusters
   val pretty_gclusters : Proof.context -> gclusters SpecCheck_Show.show
@@ -67,41 +70,48 @@ fun gcpos cluster goal = GCPos {cluster = cluster, goal = goal}
 fun get_gcpos_cluster (GCPos {cluster,...}) = cluster
 fun get_gcpos_goal (GCPos {goal,...}) = goal
 
-fun mk_gcpos_index veclasses = fold_index (fn (cpos, ps) => fold_index
+fun mk_gcpos_index mvar_eclasses = fold_index (fn (cpos, ps) => fold_index
     (fn (gpos, gpos_in) => General_Util.fun_update (equal gpos_in) (gcpos cpos (GU.succ gpos)))
     ps)
-  veclasses (fn i => error (implode ["Goal position ", string_of_int i, " is out of bounds (1-",
-    string_of_int (fold (length #> curry (op +)) veclasses 0), ")."]))
+  mvar_eclasses (fn i => error (implode ["Goal position ", string_of_int i, " is out of bounds (1-",
+    string_of_int (fold (length #> curry (op +)) mvar_eclasses 0), ")."]))
 
 fun pretty_gcpos gcpos = Show.record [
     ("cluster", pretty_cluster_pos (get_gcpos_cluster gcpos)),
     ("goal", pretty_cluster_pos (get_gcpos_goal gcpos))
   ]
 
-type veclass = term UF.set
+type mvar_eclass = (term, typ) Either.either UF.set
+fun add_mvar_eclass goal index =
+  let
+    fun gen_merge constr lookup insert x (opt_mvar_eclass, index) =
+      let
+        val (mvar_eclass', index) = case lookup index x of
+            NONE => let val mvar_eclass = UF.new (constr x)
+              in (mvar_eclass, insert (K true) (x, mvar_eclass) index) end
+          | SOME mvar_eclass => (mvar_eclass, index)
+        val mvar_eclass = opt_mvar_eclass
+          |> Option.map (fn mvar_eclass => (UF.union fst mvar_eclass mvar_eclass'; mvar_eclass))
+          |> the_default mvar_eclass'
+      in (SOME mvar_eclass, index) end
+    val merge_term = gen_merge Either.Left Termtab.lookup Termtab.insert
+    val merge_typ = gen_merge Either.Right Typtab.lookup Typtab.insert
+    val merge_types = fold_atyps (fn v as TVar _ => merge_typ v | _ => I)
+    fun merge t T (opt_mvar_eclass, (term_index, typ_index)) =
+      (is_Var t ? merge_term t) (opt_mvar_eclass, term_index)
+      |> (fn (opt_mvar_eclass, term_index) => merge_types T (opt_mvar_eclass, typ_index)
+        |> apsnd (pair term_index))
+    in fold_term_types merge goal (NONE, index) end
+fun init_mvar_eclasses goals = fold_map add_mvar_eclass goals (Termtab.empty, Typtab.empty)
 
-fun add_veclass goal vindex =
-  let fun merge v (opt_veclass, vindex) =
-    let
-      val (veclass', vindex) = case Termtab.lookup vindex v of
-          NONE => let val veclass = UF.new v
-            in (veclass, Termtab.insert (K true) (v, veclass) vindex) end
-        | SOME veclass => (veclass, vindex)
-      val veclass = opt_veclass
-        |> Option.map (fn veclass => (UF.union fst veclass veclass'; veclass))
-        |> the_default veclass'
-    in (SOME veclass, vindex) end
-  in fold_aterms (fn (v as Var _) => merge v | _ => I) goal (NONE, vindex) end
-fun init_veclasses goals = fold_map add_veclass goals Termtab.empty
+fun eq_opt_mvar_eclass (SOME mvar_eclass1, SOME mvar_eclass2) = UF.eq (mvar_eclass1, mvar_eclass2)
+  | eq_opt_mvar_eclass _ = false
 
-fun eq_opt_veclass (SOME veclass1, SOME veclass2) = UF.eq (veclass1, veclass2)
-  | eq_opt_veclass _ = false
+val group_mvar_eclasses = map_index (apfst GU.succ #> uncurry pair)
+  #> Library.partition_eq (eq_snd eq_opt_mvar_eclass)
+val build_mvar_eclasses = init_mvar_eclasses #> apfst group_mvar_eclasses
 
-val group_veclasses = map_index (apfst GU.succ #> uncurry pair)
-  #> Library.partition_eq (eq_snd eq_opt_veclass)
-val build_veclasses = init_veclasses #> apfst group_veclasses
-
-fun rearrange_veclasses_state veclasses = Drule.rearrange_prems (flat veclasses |> map GU.pred)
+fun rearrange_mvar_eclasses_state mvar_eclasses = Drule.rearrange_prems (flat mvar_eclasses |> map GU.pred)
 val mk_conj_list_state = fold (fn n => TS.mk_conj n #> Drule.rotate_prems 1)
 
 type state = Zippy_Thm_State.state
@@ -129,20 +139,20 @@ fun init state = let val state = state
 (*TODO: make correct*)
 (* Thm.flexflex_rule NONE state |> Seq.hd *)
   in
-    Thm.prems_of state
-    |> build_veclasses
-    |> fst
-    |> map (fn veclass => fold_map (apfst fst #> apsnd GU.succ |> curry) veclass 0)
-    |> `(fn vss =>
+    (if TS.has_meta_vars state
+    then Thm.prems_of state |> build_mvar_eclasses |> fst
+      |> map (fn mvar_eclass => fold_map (apfst fst #> apsnd GU.succ |> curry) mvar_eclass 0)
+    else Thm.nprems_of state |> map_range (GU.succ #> single #> rpair 1))
+    |> `(fn mvss =>
       let
-        val (veclasses, ss) = split_list vss
-        val clustered_state = rearrange_veclasses_state veclasses state
+        val (mvar_eclasses, ss) = split_list mvss
+        val clustered_state = rearrange_mvar_eclasses_state mvar_eclasses state
           |> mk_conj_list_state ss
           |> TS.protect_prems
-        val gcpos_index = mk_gcpos_index (map fst vss)
+        val gcpos_index = mk_gcpos_index mvar_eclasses
       in
         GClusters {state = state, clustered_state = clustered_state, gcpos_index = gcpos_index,
-          nclusters = length veclasses}
+          nclusters = length mvar_eclasses}
       end)
   end
 
@@ -171,7 +181,7 @@ fun finish_cluster_state_tac cluster_state ctxt =
             Thm.pretty_thm ctxt cluster_state,
             Pretty.str ("with subgoal " ^ string_of_int i ^ " from goal clusters state"),
             Thm.pretty_thm ctxt state,
-            Pretty.str "Note that this could be caused due to incompleteness of Thm.bicompose and/or unwanted flexflex pairs."
+            Pretty.str "This could be caused due to incompleteness of Thm.bicompose and/or unwanted flexflex pairs."
           ] |> Pretty.block0 |> Pretty.string_of);
           no_tac state))
       end

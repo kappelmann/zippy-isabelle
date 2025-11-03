@@ -805,7 +805,7 @@ proof
       using assms \<open>?L\<close> \<open>a \<noteq> b\<close> by auto
     then show ?R using \<open>a \<noteq> b\<close>
     (*NEW*)
-    by (zippy blast depth: 0)
+    by (zippy run run: "Zippy.Run.Depth_First.all 2")
     (*ORIG*)
     (* by auto *)
   qed
@@ -2008,7 +2008,7 @@ lemma disjnt_Diff1: "disjnt (X-Y) (U-V)" and disjnt_Diff2: "disjnt (U-V) (X-Y)" 
 lemma disjoint_image_subset: "\<lbrakk>pairwise disjnt \<A>; \<And>X. X \<in> \<A> \<Longrightarrow> f X \<subseteq> X\<rbrakk> \<Longrightarrow> pairwise disjnt (f `\<A>)"
   unfolding disjnt_def pairwise_def
   (*NEW*)
-  by - ((zippy 10 where run run: "Zippy_Auto.Run.run_best_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+  by (zippy run run: "Zippy.Run.Depth_First.all 4")
   (*ORIG*)
   (* by fast *)
 

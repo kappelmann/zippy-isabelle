@@ -300,10 +300,7 @@ next
   moreover from False * have "gcd (c * a) (c * b) dvd c * gcd a b"
     by (metis div_dvd_iff_mult dvd_mult_left gcd_dvd1 gcd_dvd2 gcd_greatest mult_commute)
   ultimately have "normalize (gcd (c * a) (c * b)) = normalize (c * gcd a b)"
-    (*NEW*)
-    by (zippy intro: associated_eqI where simp depth: 0)
-    (*ORIG*)
-    (* by (auto intro: associated_eqI) *)
+    by (auto intro: associated_eqI)
   then show ?thesis
     by (simp add: normalize_mult)
 qed
@@ -1966,8 +1963,7 @@ lemma gcd_unique_nat: "d dvd a \<and> d dvd b \<and> (\<forall>e. e dvd a \<and>
   for d a :: nat
   using gcd_unique
   (*NEW*)
-  by - ((zippy 20 where run run:
-    "Zippy_Auto.Run.run_depth_first Zippy.Run.mk_df_post_unreturned_statesq")[1])+
+  by (zippy run run: "Zippy.Run.AStar.all 3")
   (*ORIG*)
   (* by fastforce+ *)
 
