@@ -2,7 +2,7 @@
 section \<open>Zippy Paper Guide\<close>
 theory Zippy_Paper
   imports
-    Zippy_Instance_Auto_HOL
+    Pure
 begin
 
 text \<open>
@@ -81,11 +81,11 @@ text \<open>
     classical reasoners, one for simplification actions, etc. This gives the search tree some more
     structure but is not strictly necessary (it is thus omitted in the paper).
 
-  \<^item> Example usages can be found here @{file "Examples/Zippy_Examples.thy"}.
+  \<^item> Example usages can be found here @{file "Examples/Old/Zippy_Examples.thy"}.
 
-  \<^item> Adding Actions @{file "Zippy/Actions/zippy_caction_mixin_base.ML"}
+  \<^item> Adding Actions @{file "Zippy/Actions/zippy_paction_mixin_base.ML"}
     \<^item> Action nodes do not store a static cost and action but, more generally,
-      an "action with cost" (caction) that dynamically computes a cost and action pair.
+      an "action with cost" (paction) that dynamically computes a cost and action pair.
     \<^item> Action clusters store a "copy" morphism such that actions generating new children can move
       their action siblings to the newly created child while updating their siblings' goal focuses
       (since the number and order of goals may have changed in the new child).

@@ -400,7 +400,7 @@ declare [[zippy_init_gc \<open>
     open Base_Data
     val costs_progress = ((Cost.LOW, AAMeta.P.promising), (Cost.LOW1, AAMeta.P.promising))
     val madd_safe = fst
-    val madd_unsafe_every = AAMeta.add Cost.add
+    val madd_unsafe_every = fst
     fun mk_meta (cost, progress) = A.K (Library.K (Library.K (AAMeta.metadata
       {cost = cost, progress = progress})))
     val (mk_meta_safe, mk_meta_unsafe) = apply2 mk_meta costs_progress

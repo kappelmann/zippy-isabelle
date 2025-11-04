@@ -926,11 +926,7 @@ lemma list_induct2':
   \<And>y ys. P [] (y#ys);
    \<And>x xs y ys. P xs ys  \<Longrightarrow> P (x#xs) (y#ys) \<rbrakk>
  \<Longrightarrow> P xs ys"
-by (induct xs arbitrary: ys)
-(*NEW*)
-(zippy cases (pat) ("_ :: _ list", "[]" "_ _"))
-(*ORIG*)
-(* (case_tac x, auto) *)
+by (induct xs arbitrary: ys) (case_tac x; auto)+
 
 lemma list_all2_iff:
   "list_all2 P xs ys \<longleftrightarrow> length xs = length ys \<and> (\<forall>(x, y) \<in> set (zip xs ys). P x y)"
@@ -970,7 +966,10 @@ lemmas self_append_conv [iff] = append_self_conv[THEN eq_iff_swap]
 lemma append_eq_append_conv [simp]:
   "length xs = length ys \<or> length us = length vs
   \<Longrightarrow> (xs@us = ys@vs) = (xs=ys \<and> us=vs)"
-  by (induct xs arbitrary: ys; case_tac ys; force)
+  (*ORIG*)
+  by (induct xs arbitrary: ys; case_tac ys; force 0 2)
+  (*NEW*)
+  (* by (induct xs arbitrary: ys; case_tac ys; force) *)
 
 lemma append_eq_append_conv2: "(xs @ ys = zs @ ts) =
   (\<exists>us. xs = zs @ us \<and> us @ ys = ts \<or> xs @ us = zs \<and> ys = us @ ts)"
@@ -1401,7 +1400,7 @@ next
   next
     assume "x \<noteq> a" thus ?case using Cons
       (*NEW*)
-      by (zippy intro!: Cons_eq_appendI where run run: "Zippy.Run.Depth_First.all 10")
+      by (adapted intro!: Cons_eq_appendI where run run: "Zippy.Run.Depth_First.all 10")
       (*ORIG*)
       (* by(fastforce intro!: Cons_eq_appendI) *)
   qed
@@ -1485,7 +1484,7 @@ next
     hence "\<exists>x\<in>set xs. P x" using snoc(2) by simp
     thus ?thesis using \<open>\<not> P x\<close> snoc(1)
       (*NEW*)
-      by (zippy run run: "Zippy.Run.Depth_First.all 10")
+      by (adapted run run: "Zippy.Run.Depth_First.all 10")
       (*ORIG*)
       (* by fastforce *)
   qed
@@ -1567,7 +1566,7 @@ proof(induction xss arbitrary: ys)
     case 1
     then show ?thesis using Cons.IH[OF 1(2)]
       (*NEW*)
-      by (cases xss) (zippy 200 intro: exI[where x="[]"] simp: append.assoc, metis append.assoc append_Cons concat.simps(2))
+      by (cases xss) (adapted 200 intro: exI[where x="[]"] simp: append.assoc, metis append.assoc append_Cons concat.simps(2))
       (*ORIG*)
       (* by(cases xss)(auto intro: exI[where x="[]"], metis append.assoc append_Cons concat.simps(2)) *)
   qed(auto intro: exI[where x="[]"])
@@ -1682,7 +1681,7 @@ next
   case (Cons x xs) thus ?case
     using Suc_le_eq
     (*NEW*)
-    by (zippy run run: Zippy.Run.Depth_First.all')
+    by (adapted run run: Zippy.Run.Depth_First.all')
     (*ORIG*)
     (* by (fastforce) *)
 qed
@@ -1866,7 +1865,7 @@ proof (induct xs arbitrary: ys)
     case (Cons y ys)
     with Cons.hyps show ?thesis
       (*NEW*)
-      by (zippy run run: Zippy.Run.Depth_First.all')
+      by (adapted run run: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* by fastforce *)
   qed simp
@@ -2691,7 +2690,7 @@ proof (induct xs)
   case (Cons a xs)
   then show ?case
     (*NEW*)
-    by(zippy subst dropWhile_append2)
+    by (subst dropWhile_append2 | adapted 200)+
     (*ORIG*)
     (* by(auto, subst dropWhile_append2, auto) *)
 qed simp
@@ -3155,7 +3154,7 @@ lemma list_all2_eq:
 lemma list_eq_iff_zip_eq:
   "xs = ys \<longleftrightarrow> length xs = length ys \<and> (\<forall>(x,y) \<in> set (zip xs ys). x = y)"
   (*NEW*)
-  by (zippy simp add: set_zip list_all2_eq list_all2_conv_all_nth cong: conj_cong
+  by (adapted simp add: set_zip list_all2_eq list_all2_conv_all_nth cong: conj_cong
     where simp depth: 1)
   (*ORIG*)
   (* by (auto simp add: set_zip list_all2_eq list_all2_conv_all_nth cong: conj_cong) *)
@@ -3724,7 +3723,7 @@ proof
       with \<open>P x y\<close> show "P x z"
         using "3.prems" asm
         (*NEW*)
-        by (zippy simp depth: 0)
+        by (adapted simp depth: 0)
         (*ORIG*)
         (* by auto *)
     qed
@@ -3883,7 +3882,7 @@ proof (induct xs)
   case (Cons x xs)
   show ?case
     (*NEW*)
-    apply (zippy 200 simp add: Cons nth_Cons less_Suc_eq_le split: nat.split_asm)
+    apply (adapted 200 simp add: Cons nth_Cons less_Suc_eq_le split: nat.split_asm)
     (*ORIG*)
     (* apply (auto simp add: Cons nth_Cons less_Suc_eq_le split: nat.split_asm) *)
     apply (metis Suc_leI in_set_conv_nth length_pos_if_in_set lessI less_imp_le_nat less_nat_zero_code)
@@ -3948,7 +3947,7 @@ proof (induct n == "length ws" arbitrary:ws)
   then show ?case
     using length_Suc_conv [of ws n]
     (*NEW*)
-    apply (zippy 300)
+    apply (adapted 300 simp: eq_commute)
     (*ORIG*)
     (* apply (auto simp: eq_commute) *)
      apply (metis append_Nil in_set_conv_decomp_first)
@@ -4502,13 +4501,13 @@ proof (induction xs)
   case Nil thus ?case by simp
 next
   case (Cons x xs) thus ?case
+    (*NOTE keep original non-terminal auto call for reproducibility*)
+    apply (auto_orig simp: nth_Cons' split: if_splits)
+    using diff_Suc_1 less_Suc_eq_0_disj
     (*NEW*)
-    apply(zippy 2500 simp: nth_Cons' split: if_splits)
-    supply [[zippy_blast depth: 0]]
-    by zippy[1] (zippy run run: "Zippy.Run.Depth_First.all 10")
+    by (adapted run run: "Zippy.Run.Depth_First.all 10")
     (*ORIG*)
-    (* apply (auto simp: nth_Cons' split: if_splits) *)
-    (* using diff_Suc_1 less_Suc_eq_0_disj by fastforce *)
+    (* by fastforce *)
 qed
 
 lemmas find_Some_iff2 = find_Some_iff[THEN eq_iff_swap]
@@ -4596,11 +4595,7 @@ lemma split_list_cycles:
   "\<exists>pref xss. xs = pref @ concat xss \<and> x \<notin> set pref \<and> (\<forall>ys \<in> set xss. \<exists>zs. ys = x # zs)"
 proof (induction "count_list xs x" arbitrary: xs)
   case 0
-  show ?case
-  (*NEW*)
-  using 0 concat.simps(1) by (zippy iff: count_list_0_iff)
-  (*ORIG*)
-  (* using 0[symmetric] concat.simps(1) count_list_0_iff by fastforce_orig *)
+  show ?case using 0[symmetric] concat.simps(1) by (fastforce iff: count_list_0_iff)
 next
   case (Suc n)
   from Suc.hyps(2) obtain pref rest where
@@ -4620,9 +4615,9 @@ subsubsection \<open>\<^const>\<open>List.extract\<close>\<close>
 
 lemma extract_None_iff: "List.extract P xs = None \<longleftrightarrow> \<not> (\<exists> x\<in>set xs. P x)"
 (*NEW*)
-by(zippy 100 simp: extract_def dropWhile_eq_Cons_conv split: list.splits)
+by(adapted 100 simp: extract_def dropWhile_eq_Cons_conv split: list.splits)
 (*ORIG*)
-(* by(auto 100 simp: extract_def dropWhile_eq_Cons_conv split: list.splits) *)
+(* by(auto simp: extract_def dropWhile_eq_Cons_conv split: list.splits) *)
   (metis in_set_conv_decomp)
 
 lemma extract_SomeE:
@@ -5471,7 +5466,7 @@ proof (induct xs arbitrary: ys)
   case (Cons x xs ys)
   then show ?case
     (*NEW*)
-    by (auto 200 simp: Let_def)
+    by (adapted 200 simp: Let_def)
     (*ORIG*)
     (* by (auto simp: Let_def)  *)
     (metis Pow_iff contra_subsetD image_eqI subseqs_powset)
@@ -6232,11 +6227,7 @@ by (induct xs) simp_all
 lemma insort_key_left_comm:
   assumes "f x \<noteq> f y"
   shows "insort_key f y (insort_key f x xs) = insort_key f x (insort_key f y xs)"
-by (induct xs)
-  (*NEW*)
-  (zippy simp add: assms dest: order.antisym where simp depth: 0)
-  (*ORIG*)
-  (* (auto simp add: assms dest: order.antisym) *)
+by (induct xs) (auto simp add: assms dest: order.antisym)
 
 lemma insort_left_comm:
   "insort x (insort y xs) = insort y (insort x xs)"
@@ -6400,10 +6391,8 @@ lemma filter_insort_triv:
 lemma filter_insort:
   "sorted (map f xs) \<Longrightarrow> P x \<Longrightarrow> filter P (insort_key f x xs) = insort_key f x (filter P xs)"
   by (induct xs)
-  (*NEW*)
-  (auto subst insort_is_Cons)
-  (*ORIG*)
-  (* (auto, subst insort_is_Cons, auto) *)
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  (auto_orig, subst insort_is_Cons, auto)
 
 lemma filter_sort:
   "filter P (sort_key f xs) = sort_key f (filter P xs)"
@@ -7117,17 +7106,16 @@ proof (induction n)
       using r' Suc
       by (cases xys)
       (*NEW*)
-      (zippy simp: lex_prod_def image_Collect where run run: Zippy.Run.Depth_First.all')
+      (adapted simp: lex_prod_def image_Collect where run run: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* (fastforce simp: lex_prod_def image_Collect) *)
   qed
   moreover have "(xs,ys) \<in> ?L (Suc n) \<Longrightarrow> (xs,ys) \<in> ?R (Suc n)" for xs ys
     using Suc by
     (*NEW*)
-    (zippy 100 simp add: image_Collect lex_prod_def)
+    (adapted 100 simp add: image_Collect lex_prod_def)
     (*ORIG*)
-    (* (auto 100 simp add: image_Collect lex_prod_def) *)
-    (* (auto 100 simp add: image_Collect lex_prod_def) *)
+    (* (auto simp add: image_Collect lex_prod_def) *)
     (blast, meson Cons_eq_appendI)
   ultimately show ?case by (meson pred_equals_eq2)
 qed auto
@@ -7336,9 +7324,9 @@ proof
     apply (metis hd_append list.sel(1) list.sel(3) tl_append2)
     done
 (*NEW*)
-qed (auto simp add: lexord_def intro: Cons_eq_appendI)
+qed (adapted 4 8 simp add: lexord_def intro: Cons_eq_appendI)
 (*ORIG*)
-(* qed (auto_orig 2 8 simp add: lexord_def intro: Cons_eq_appendI) *)
+(* qed (auto simp add: lexord_def; (blast | meson Cons_eq_appendI)) *)
 
 lemmas lexord_simps = lexord_Nil_left lexord_Nil_right lexord_cons_cons
 
@@ -7544,7 +7532,7 @@ next
   case (Cons u us)
   with lex_append_rightI show ?case
     (*NEW*)
-    by (zippy simp add: lenlex_def eq where run run: Zippy.Run.Depth_First.all')
+    by (adapted simp add: lenlex_def eq where run run: Zippy.Run.Depth_First.all')
     (*ORIG*)
     (* by (fastforce simp add: lenlex_def eq) *)
 qed
@@ -7790,7 +7778,7 @@ lemma append_listrel1I:
     \<Longrightarrow> (xs @ us, ys @ vs) \<in> listrel1 r"
   unfolding listrel1_def
   (*NEW*)
-  by (zippy intro: append_eq_appendI)
+  by (adapted 4 6 intro: append_eq_appendI)
   (*ORIG*)
   (* by auto (blast intro: append_eq_appendI)+ *)
 
@@ -8305,10 +8293,8 @@ qualified definition all_range :: \<open>('a \<Rightarrow> bool) \<Rightarrow> '
 
 qualified lemma all_range_code [code]:
   \<open>all_range P a b \<longleftrightarrow> (a < b \<longrightarrow> P a \<and> all_range P (a + 1) b)\<close>
-  (*NEW*)
-  by (zippy 100 simp add: Ball_def simp flip: less_iff_succ_less_eq)
-  (*ORIG*)
-  (* by (auto 100 simp add: Ball_def simp flip: less_iff_succ_less_eq) *)
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  by (auto_orig simp add: Ball_def simp flip: less_iff_succ_less_eq)
     (auto simp add: le_less)
 
 lemma forall_atLeastAtMost_iff [code_unfold]:

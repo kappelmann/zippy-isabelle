@@ -1296,7 +1296,7 @@ lemma le_prod_filterI:
   (*NEW*)
   by ((zippy 10 elim: eventually_elim2 where run run: "Zippy.Run.AStar.all 1")[1])+
   (*ORIG*)
-  (* by (force_orig) *)
+  (* by (force elim: eventually_elim2) *)
 
 lemma filtermap_fst_prod_filter: "filtermap fst (A \<times>\<^sub>F B) \<le> A"
   unfolding le_filter_def eventually_filtermap eventually_prod_filter

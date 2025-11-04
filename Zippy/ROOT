@@ -73,13 +73,14 @@ session Zippy = "Pure" +
   theories
     Zippy_Paper
 
-session Zippy_Examples in Examples = "HOL" +
-  options [quick_and_dirty]
+session Zippy_Examples_Prepare in "Examples/Prepare" = Zippy +
   sessions
+    "HOL"
+    "HOL-Data_Structures"
     "HOL-Library"
-    Zippy
-  (*directories
-    Old*)
+
+session Zippy_Examples in Examples = Zippy_Examples_Prepare +
+  options [quick_and_dirty]
   theories
     Binomial
     Filter
@@ -88,5 +89,5 @@ session Zippy_Examples in Examples = "HOL" +
     List
     Set
     Streamlined_Examples
+    Tree234_Set
     Word
-

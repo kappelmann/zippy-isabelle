@@ -65,6 +65,17 @@ by (zippy induct xs arbitrary: ys where cases (pat) ("_ :: _ list", "[]" "_ _"))
 (* by (induct xs arbitrary: ys) *)
 (* (case_tac x, auto) *)
 
+lemma dropWhile_neq_rev: "\<lbrakk>distinct xs; x \<in> set xs\<rbrakk> \<Longrightarrow>
+  dropWhile (\<lambda>y. y \<noteq> x) (rev xs) = x # rev (takeWhile (\<lambda>y. y \<noteq> x) xs)"
+(*NEW*)
+by (zippy induct xs where subst dropWhile_append2)
+(*ORIG*)
+(* proof (induct xs)
+  case (Cons a xs)
+  then show ?case
+    by(auto, subst dropWhile_append2, auto)
+qed simp *)
+
 lemma rev_eq_append_conv: "rev xs = ys @ zs \<longleftrightarrow> xs = rev zs @ rev ys"
 (*NEW*)
 by (zippy subst rev_rev_ident[symmetric])
@@ -121,17 +132,6 @@ by (induct xs arbitrary: m n)
 (* proof (induct xs arbitrary: m n)
   case (Cons x xs m n) then show ?case
     by (cases n) (auto simp: take_Cons)
-qed simp *)
-
-lemma dropWhile_neq_rev: "\<lbrakk>distinct xs; x \<in> set xs\<rbrakk> \<Longrightarrow>
-  dropWhile (\<lambda>y. y \<noteq> x) (rev xs) = x # rev (takeWhile (\<lambda>y. y \<noteq> x) xs)"
-(*NEW*)
-by (zippy induct xs where subst dropWhile_append2)
-(*ORIG*)
-(* proof (induct xs)
-  case (Cons a xs)
-  then show ?case
-    by(auto, subst dropWhile_append2, auto)
 qed simp *)
 
 lemma filter_insort:

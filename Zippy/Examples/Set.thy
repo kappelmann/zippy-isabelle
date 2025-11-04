@@ -805,7 +805,7 @@ proof
       using assms \<open>?L\<close> \<open>a \<noteq> b\<close> by auto
     then show ?R using \<open>a \<noteq> b\<close>
     (*NEW*)
-    by (zippy run run: "Zippy.Run.Depth_First.all 2")
+    by (adapted run run: "Zippy.Run.Depth_First.all 2")
     (*ORIG*)
     (* by auto *)
   qed
@@ -1852,7 +1852,7 @@ proof (rule the1_equality)
   with * \<open>y \<in> A\<close> have "a \<in> f ` A" by blast
   with * show "f ` A = {a}"
   (*NEW*)
-  by (zippy simp depth: 0)
+  by (adapted simp depth: 0)
   (*ORIG*)
   (* by auto *)
   then show "\<exists>!x. f ` A = {x}" by auto
@@ -1956,7 +1956,10 @@ lemma pairwise_subset: "pairwise P S \<Longrightarrow> T \<subseteq> S \<Longrig
   by (force simp: pairwise_def)
 
 lemma pairwise_mono: "\<lbrakk>pairwise P A; \<And>x y. P x y \<Longrightarrow> Q x y; B \<subseteq> A\<rbrakk> \<Longrightarrow> pairwise Q B"
-  by (fastforce simp: pairwise_def)
+  (*NEW*)
+  by (adapted 0 4 simp: pairwise_def where run run: "Zippy.Run.Depth_First.all 3")
+  (*ORIG*)
+  (* by (fastforce simp: pairwise_def) *)
 
 lemma pairwise_imageI:
   "pairwise P (f ` A)"
@@ -2008,7 +2011,7 @@ lemma disjnt_Diff1: "disjnt (X-Y) (U-V)" and disjnt_Diff2: "disjnt (U-V) (X-Y)" 
 lemma disjoint_image_subset: "\<lbrakk>pairwise disjnt \<A>; \<And>X. X \<in> \<A> \<Longrightarrow> f X \<subseteq> X\<rbrakk> \<Longrightarrow> pairwise disjnt (f `\<A>)"
   unfolding disjnt_def pairwise_def
   (*NEW*)
-  by (zippy run run: "Zippy.Run.Depth_First.all 4")
+  by (adapted run run: "Zippy.Run.Depth_First.all 4")
   (*ORIG*)
   (* by fast *)
 
