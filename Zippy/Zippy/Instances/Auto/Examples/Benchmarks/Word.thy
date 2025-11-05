@@ -1,7 +1,7 @@
 theory Word
   imports
     "HOL-Library.Type_Length"
-    Zippy_Replace_Setup
+    Zippy_Auto_Benchmarks
 begin
 
 subsection \<open>Preliminaries\<close>

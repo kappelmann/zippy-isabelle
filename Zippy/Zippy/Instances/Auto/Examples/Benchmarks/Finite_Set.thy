@@ -1,7 +1,7 @@
 theory Finite_Set
   imports
     HOL.Product_Type HOL.Sum_Type HOL.Fields HOL.Relation
-    Zippy_Replace_Setup
+    Zippy_Auto_Benchmarks
 begin
 
 subsection \<open>Predicate for finite sets\<close>

@@ -1,7 +1,7 @@
 theory Limits
   imports
     HOL.Real_Vector_Spaces
-    Zippy_Replace_Setup
+    Zippy_Auto_Benchmarks
 begin
 
 lemma range_mult [simp]:

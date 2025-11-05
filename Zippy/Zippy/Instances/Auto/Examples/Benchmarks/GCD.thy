@@ -1,7 +1,7 @@
 theory GCD
   imports
     HOL.Groups_List HOL.Code_Numeral
-    Zippy_Replace_Setup
+    Zippy_Auto_Benchmarks
 begin
 
 subsection \<open>Abstract bounded quasi semilattices as common foundation\<close>

@@ -1,7 +1,7 @@
 theory Binomial
   imports
     HOL.Presburger HOL.Factorial
-    Zippy_Replace_Setup
+    Zippy_Auto_Benchmarks
 begin
 
 subsection \<open>Binomial coefficients\<close>

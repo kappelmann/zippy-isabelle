@@ -1,0 +1,1150 @@
+trueline=100, offset=2763, end_offset=2768, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=100, offset=2763, end_offset=2768, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.005s elapsed time, 0.043s cpu time, 0.000s GC time
+line=105, offset=2879, end_offset=2884, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=105, offset=2879, end_offset=2884, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.016s cpu time, 0.000s GC time
+line=79, offset=1987, end_offset=1989, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=79, offset=1987, end_offset=1989, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.017s elapsed time, 0.118s cpu time, 0.023s GC time
+line=83, offset=2094, end_offset=2096, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=83, offset=2094, end_offset=2096, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.016s cpu time, 0.000s GC time
+line=107, offset=2733, end_offset=2737, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=123, offset=3168, end_offset=3172, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=123, offset=3168, end_offset=3172, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.033s elapsed time, 0.245s cpu time, 0.022s GC time
+line=129, offset=3322, end_offset=3326, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=129, offset=3322, end_offset=3326, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.040s elapsed time, 0.261s cpu time, 0.042s GC time
+line=151, offset=4070, end_offset=4074, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=143, offset=3796, end_offset=3800, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=143, offset=3796, end_offset=3800, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.012s elapsed time, 0.083s cpu time, 0.022s GC time
+line=151, offset=4070, end_offset=4074, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.023s elapsed time, 0.170s cpu time, 0.022s GC time
+line=25, offset=595, end_offset=597, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=43, offset=1270, end_offset=1272, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=43, offset=1270, end_offset=1272, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.022s elapsed time, 0.169s cpu time, 0.026s GC time
+line=62, offset=1907, end_offset=1911, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=25, offset=595, end_offset=597, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.060s elapsed time, 0.430s cpu time, 0.053s GC time
+line=62, offset=1907, end_offset=1911, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.030s elapsed time, 0.213s cpu time, 0.022s GC time
+line=77, offset=2425, end_offset=2427, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=104, offset=3411, end_offset=3415, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=77, offset=2425, end_offset=2427, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.012s elapsed time, 0.090s cpu time, 0.022s GC time
+line=50, offset=1612, end_offset=1616, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=79, offset=2481, end_offset=2483, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=79, offset=2481, end_offset=2483, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.019s cpu time, 0.000s GC time
+line=104, offset=3411, end_offset=3415, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.027s elapsed time, 0.160s cpu time, 0.000s GC time
+line=98, offset=3214, end_offset=3218, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=50, offset=1612, end_offset=1616, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.359s elapsed time, 2.061s cpu time, 0.270s GC time
+line=98, offset=3214, end_offset=3218, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.244s elapsed time, 1.485s cpu time, 0.210s GC time
+line=94, offset=3040, end_offset=3044, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=94, offset=3040, end_offset=3044, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.576s elapsed time, 2.424s cpu time, 0.394s GC time
+line=75, offset=2300, end_offset=2303, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=75, offset=2300, end_offset=2303, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.064s elapsed time, 0.253s cpu time, 0.040s GC time
+line=263, offset=7381, end_offset=7383, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=136, offset=4451, end_offset=4453, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=263, offset=7381, end_offset=7383, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.000s elapsed time, 0.004s cpu time, 0.000s GC time
+line=136, offset=4451, end_offset=4453, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.004s cpu time, 0.000s GC time
+line=144, offset=4584, end_offset=4588, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=164, offset=5025, end_offset=5028, label=command.qed, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=169, offset=5181, end_offset=5183, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=164, offset=5025, end_offset=5028, label=command.qed, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.011s cpu time, 0.000s GC time
+line=154, offset=4825, end_offset=4830, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=169, offset=5181, end_offset=5183, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.009s cpu time, 0.000s GC time
+line=179, offset=5707, end_offset=5712, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=300, offset=8613, end_offset=8615, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=144, offset=4584, end_offset=4588, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.055s elapsed time, 0.357s cpu time, 0.057s GC time
+line=145, offset=4656, end_offset=4659, label=command.qed, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=145, offset=4656, end_offset=4659, label=command.qed, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.012s cpu time, 0.000s GC time
+line=179, offset=5707, end_offset=5712, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.040s elapsed time, 0.273s cpu time, 0.039s GC time
+line=300, offset=8613, end_offset=8615, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.064s elapsed time, 0.443s cpu time, 0.069s GC time
+line=21, offset=490, end_offset=495, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=21, offset=490, end_offset=495, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.008s elapsed time, 0.062s cpu time, 0.012s GC time
+line=389, offset=11310, end_offset=11312, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=389, offset=11310, end_offset=11312, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.039s cpu time, 0.012s GC time
+line=392, offset=11396, end_offset=11400, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=395, offset=11526, end_offset=11530, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=395, offset=11526, end_offset=11530, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.010s elapsed time, 0.073s cpu time, 0.012s GC time
+line=392, offset=11396, end_offset=11400, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.250s elapsed time, 1.539s cpu time, 0.247s GC time
+line=398, offset=11641, end_offset=11645, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=193, offset=6133, end_offset=6135, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=398, offset=11641, end_offset=11645, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.018s elapsed time, 0.136s cpu time, 0.012s GC time
+line=63, offset=1789, end_offset=1794, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=63, offset=1789, end_offset=1794, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.007s elapsed time, 0.051s cpu time, 0.012s GC time
+line=415, offset=12183, end_offset=12185, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=193, offset=6133, end_offset=6135, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.030s elapsed time, 0.189s cpu time, 0.034s GC time
+line=201, offset=6536, end_offset=6540, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=415, offset=12183, end_offset=12185, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.039s elapsed time, 0.257s cpu time, 0.045s GC time
+line=201, offset=6536, end_offset=6540, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.008s elapsed time, 0.049s cpu time, 0.012s GC time
+line=66, offset=1893, end_offset=1897, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=66, offset=1893, end_offset=1897, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.000s elapsed time, 0.001s cpu time, 0.000s GC time
+line=212, offset=7257, end_offset=7261, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=212, offset=7257, end_offset=7261, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.041s elapsed time, 0.250s cpu time, 0.044s GC time
+line=424, offset=12438, end_offset=12440, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=237, offset=8343, end_offset=8345, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=237, offset=8343, end_offset=8345, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.016s elapsed time, 0.098s cpu time, 0.027s GC time
+line=424, offset=12438, end_offset=12440, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.041s elapsed time, 0.266s cpu time, 0.052s GC time
+line=107, offset=2733, end_offset=2737, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 2.283s elapsed time, 12.709s cpu time, 1.940s GC time
+line=438, offset=12739, end_offset=12741, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=438, offset=12739, end_offset=12741, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.000s elapsed time, 0.002s cpu time, 0.000s GC time
+line=442, offset=12890, end_offset=12895, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=442, offset=12890, end_offset=12895, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.000s elapsed time, 0.002s cpu time, 0.000s GC time
+line=445, offset=12942, end_offset=12944, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=445, offset=12942, end_offset=12944, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.027s cpu time, 0.011s GC time
+line=449, offset=13093, end_offset=13098, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=449, offset=13093, end_offset=13098, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.000s elapsed time, 0.004s cpu time, 0.000s GC time
+line=453, offset=13196, end_offset=13201, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=453, offset=13196, end_offset=13201, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.024s elapsed time, 0.151s cpu time, 0.033s GC time
+line=99, offset=2888, end_offset=2893, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=99, offset=2888, end_offset=2893, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.024s elapsed time, 0.146s cpu time, 0.034s GC time
+line=106, offset=3119, end_offset=3123, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=106, offset=3119, end_offset=3123, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.008s elapsed time, 0.044s cpu time, 0.011s GC time
+line=469, offset=13733, end_offset=13735, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=469, offset=13733, end_offset=13735, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.334s elapsed time, 1.925s cpu time, 1.827s GC time
+line=471, offset=13795, end_offset=13797, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=471, offset=13795, end_offset=13797, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.026s cpu time, 0.000s GC time
+line=293, offset=10188, end_offset=10190, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=293, offset=10188, end_offset=10190, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.006s elapsed time, 0.050s cpu time, 0.000s GC time
+line=294, offset=10216, end_offset=10218, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=294, offset=10216, end_offset=10218, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.016s elapsed time, 0.095s cpu time, 0.057s GC time
+line=115, offset=3477, end_offset=3481, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=310, offset=10676, end_offset=10678, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=310, offset=10676, end_offset=10678, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.017s cpu time, 0.000s GC time
+line=115, offset=3477, end_offset=3481, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.028s cpu time, 0.000s GC time
+line=313, offset=10764, end_offset=10766, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=487, offset=14288, end_offset=14292, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=313, offset=10764, end_offset=10766, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.005s elapsed time, 0.039s cpu time, 0.000s GC time
+line=503, offset=14784, end_offset=14788, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=471, offset=14652, end_offset=14654, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=487, offset=14288, end_offset=14292, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.028s elapsed time, 0.223s cpu time, 0.000s GC time
+line=503, offset=14784, end_offset=14788, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.025s elapsed time, 0.199s cpu time, 0.000s GC time
+line=495, offset=14568, end_offset=14572, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=495, offset=14568, end_offset=14572, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.009s cpu time, 0.000s GC time
+line=511, offset=15064, end_offset=15068, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=511, offset=15064, end_offset=15068, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.016s cpu time, 0.000s GC time
+line=516, offset=15216, end_offset=15220, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=119, offset=3629, end_offset=3633, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=119, offset=3629, end_offset=3633, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.014s cpu time, 0.000s GC time
+line=471, offset=14652, end_offset=14654, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.047s elapsed time, 0.363s cpu time, 0.027s GC time
+line=516, offset=15216, end_offset=15220, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.025s elapsed time, 0.188s cpu time, 0.027s GC time
+line=154, offset=4825, end_offset=4830, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 1.602s elapsed time, 9.895s cpu time, 3.028s GC time
+line=497, offset=15366, end_offset=15370, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=497, offset=15366, end_offset=15370, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.008s elapsed time, 0.019s cpu time, 0.000s GC time
+line=131, offset=4046, end_offset=4051, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=131, offset=4046, end_offset=4051, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.010s elapsed time, 0.073s cpu time, 0.000s GC time
+line=133, offset=4122, end_offset=4124, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=133, offset=4122, end_offset=4124, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.013s cpu time, 0.000s GC time
+line=134, offset=4140, end_offset=4145, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=137, offset=4272, end_offset=4277, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=83, offset=2198, end_offset=2202, file=~/Programming/isabelle/zippy/Zippy/Examples/GCD.thy, id=456
+Running: "zippy"
+line=137, offset=4272, end_offset=4277, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.013s elapsed time, 0.110s cpu time, 0.000s GC time
+line=148, offset=4614, end_offset=4618, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=148, offset=4614, end_offset=4618, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.005s cpu time, 0.000s GC time
+line=149, offset=4666, end_offset=4670, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=83, offset=2198, end_offset=2202, file=~/Programming/isabelle/zippy/Zippy/Examples/GCD.thy, id=456
+Finished: "zippy"
+Timing: 0.010s elapsed time, 0.072s cpu time, 0.000s GC time
+line=134, offset=4140, end_offset=4145, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.024s elapsed time, 0.211s cpu time, 0.000s GC time
+line=168, offset=5242, end_offset=5246, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=559, offset=16634, end_offset=16636, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=168, offset=5242, end_offset=5246, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.005s elapsed time, 0.029s cpu time, 0.000s GC time
+line=171, offset=5385, end_offset=5387, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=171, offset=5385, end_offset=5387, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.024s cpu time, 0.000s GC time
+line=573, offset=17026, end_offset=17028, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=573, offset=17026, end_offset=17028, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.017s cpu time, 0.000s GC time
+line=559, offset=16634, end_offset=16636, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.009s elapsed time, 0.084s cpu time, 0.000s GC time
+line=579, offset=17183, end_offset=17187, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=177, offset=5595, end_offset=5600, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=177, offset=5595, end_offset=5600, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.003s cpu time, 0.000s GC time
+line=179, offset=5680, end_offset=5684, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=582, offset=17276, end_offset=17278, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=179, offset=5680, end_offset=5684, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.007s elapsed time, 0.044s cpu time, 0.000s GC time
+line=585, offset=17358, end_offset=17360, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=563, offset=16760, end_offset=16764, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=582, offset=17276, end_offset=17278, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.007s elapsed time, 0.035s cpu time, 0.000s GC time
+line=585, offset=17358, end_offset=17360, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.034s cpu time, 0.000s GC time
+line=591, offset=17550, end_offset=17552, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=403, offset=14378, end_offset=14381, label=command.qed, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=403, offset=14378, end_offset=14381, label=command.qed, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.009s cpu time, 0.000s GC time
+line=579, offset=17183, end_offset=17187, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.036s elapsed time, 0.262s cpu time, 0.000s GC time
+line=422, offset=14957, end_offset=14959, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=149, offset=4666, end_offset=4670, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.090s elapsed time, 0.651s cpu time, 0.047s GC time
+line=607, offset=17963, end_offset=17965, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=607, offset=17963, end_offset=17965, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.010s elapsed time, 0.067s cpu time, 0.000s GC time
+line=202, offset=6523, end_offset=6527, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=422, offset=14957, end_offset=14959, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.018s elapsed time, 0.135s cpu time, 0.000s GC time
+line=202, offset=6523, end_offset=6527, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.005s elapsed time, 0.037s cpu time, 0.000s GC time
+line=463, offset=16716, end_offset=16718, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=430, offset=15209, end_offset=15211, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=463, offset=16716, end_offset=16718, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.019s elapsed time, 0.140s cpu time, 0.000s GC time
+line=591, offset=17550, end_offset=17552, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.103s elapsed time, 0.751s cpu time, 0.047s GC time
+line=475, offset=17168, end_offset=17172, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=475, offset=17168, end_offset=17172, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.005s elapsed time, 0.037s cpu time, 0.000s GC time
+line=213, offset=6985, end_offset=6989, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=213, offset=6985, end_offset=6989, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.006s cpu time, 0.000s GC time
+line=430, offset=15209, end_offset=15211, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.047s elapsed time, 0.340s cpu time, 0.000s GC time
+line=496, offset=17864, end_offset=17868, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=650, offset=19075, end_offset=19077, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=650, offset=19075, end_offset=19077, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.005s cpu time, 0.000s GC time
+line=496, offset=17864, end_offset=17868, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.005s elapsed time, 0.044s cpu time, 0.000s GC time
+line=497, offset=17894, end_offset=17897, label=command.qed, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=223, offset=7333, end_offset=7337, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=497, offset=17894, end_offset=17897, label=command.qed, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.033s cpu time, 0.000s GC time
+line=424, offset=15017, end_offset=15022, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=616, offset=18059, end_offset=18061, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=616, offset=18059, end_offset=18061, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.031s cpu time, 0.000s GC time
+line=229, offset=7535, end_offset=7540, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=229, offset=7535, end_offset=7540, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.019s elapsed time, 0.140s cpu time, 0.000s GC time
+line=510, offset=18710, end_offset=18712, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=510, offset=18710, end_offset=18712, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.010s elapsed time, 0.081s cpu time, 0.000s GC time
+line=677, offset=19828, end_offset=19830, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=527, offset=19616, end_offset=19618, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=527, offset=19616, end_offset=19618, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.013s elapsed time, 0.092s cpu time, 0.000s GC time
+line=424, offset=15017, end_offset=15022, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.192s elapsed time, 1.437s cpu time, 0.030s GC time
+line=732, offset=21241, end_offset=21245, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=732, offset=21241, end_offset=21245, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.017s elapsed time, 0.117s cpu time, 0.000s GC time
+line=644, offset=24240, end_offset=24244, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=644, offset=24240, end_offset=24244, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.018s elapsed time, 0.131s cpu time, 0.000s GC time
+line=690, offset=26217, end_offset=26219, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=714, offset=27250, end_offset=27252, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=690, offset=26217, end_offset=26219, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.007s elapsed time, 0.064s cpu time, 0.000s GC time
+line=223, offset=7333, end_offset=7337, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.466s elapsed time, 3.527s cpu time, 0.149s GC time
+line=714, offset=27250, end_offset=27252, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.056s elapsed time, 0.450s cpu time, 0.000s GC time
+line=746, offset=28687, end_offset=28689, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=754, offset=28959, end_offset=28961, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=754, offset=28959, end_offset=28961, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.009s elapsed time, 0.081s cpu time, 0.000s GC time
+line=804, offset=23382, end_offset=23387, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=804, offset=23382, end_offset=23387, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.005s elapsed time, 0.039s cpu time, 0.000s GC time
+line=806, offset=23467, end_offset=23471, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=806, offset=23467, end_offset=23471, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.009s cpu time, 0.000s GC time
+line=812, offset=23641, end_offset=23646, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=812, offset=23641, end_offset=23646, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.006s elapsed time, 0.046s cpu time, 0.000s GC time
+line=310, offset=9956, end_offset=9958, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=310, offset=9956, end_offset=9958, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.036s cpu time, 0.000s GC time
+line=314, offset=10094, end_offset=10096, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=314, offset=10094, end_offset=10096, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.005s cpu time, 0.000s GC time
+line=320, offset=10335, end_offset=10339, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=563, offset=16760, end_offset=16764, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.698s elapsed time, 5.289s cpu time, 0.238s GC time
+line=722, offset=20291, end_offset=20293, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=722, offset=20291, end_offset=20293, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.027s cpu time, 0.000s GC time
+line=820, offset=23914, end_offset=23916, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=320, offset=10335, end_offset=10339, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.011s elapsed time, 0.088s cpu time, 0.000s GC time
+line=328, offset=10621, end_offset=10626, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=335, offset=10824, end_offset=10829, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=335, offset=10824, end_offset=10829, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.068s elapsed time, 0.491s cpu time, 0.041s GC time
+line=347, offset=11253, end_offset=11255, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=347, offset=11253, end_offset=11255, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.040s elapsed time, 0.322s cpu time, 0.000s GC time
+line=349, offset=11359, end_offset=11364, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=677, offset=19828, end_offset=19830, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.547s elapsed time, 4.252s cpu time, 0.196s GC time
+line=385, offset=12925, end_offset=12929, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=385, offset=12925, end_offset=12929, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.011s elapsed time, 0.094s cpu time, 0.000s GC time
+line=349, offset=11359, end_offset=11364, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.030s elapsed time, 0.245s cpu time, 0.000s GC time
+line=389, offset=13113, end_offset=13117, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=389, offset=13113, end_offset=13117, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.000s elapsed time, 0.001s cpu time, 0.000s GC time
+line=391, offset=13212, end_offset=13216, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=391, offset=13212, end_offset=13216, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.000s elapsed time, 0.004s cpu time, 0.000s GC time
+line=393, offset=13315, end_offset=13319, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=393, offset=13315, end_offset=13319, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.006s cpu time, 0.000s GC time
+line=395, offset=13417, end_offset=13421, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=395, offset=13417, end_offset=13421, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.006s cpu time, 0.000s GC time
+line=397, offset=13516, end_offset=13520, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=366, offset=12243, end_offset=12247, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=366, offset=12243, end_offset=12247, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.011s elapsed time, 0.082s cpu time, 0.049s GC time
+line=397, offset=13516, end_offset=13520, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.020s elapsed time, 0.144s cpu time, 0.049s GC time
+line=399, offset=13617, end_offset=13621, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=369, offset=12422, end_offset=12426, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=369, offset=12422, end_offset=12426, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.000s elapsed time, 0.002s cpu time, 0.000s GC time
+line=352, offset=11497, end_offset=11502, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=399, offset=13617, end_offset=13621, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.036s elapsed time, 0.280s cpu time, 0.000s GC time
+line=401, offset=13674, end_offset=13679, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=328, offset=10621, end_offset=10626, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.229s elapsed time, 1.791s cpu time, 0.090s GC time
+line=401, offset=13674, end_offset=13679, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.009s elapsed time, 0.056s cpu time, 0.000s GC time
+line=830, offset=24290, end_offset=24294, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=830, offset=24290, end_offset=24294, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.013s cpu time, 0.000s GC time
+line=841, offset=24661, end_offset=24663, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=415, offset=14022, end_offset=14026, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=415, offset=14022, end_offset=14026, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.009s elapsed time, 0.070s cpu time, 0.000s GC time
+line=812, offset=30889, end_offset=30891, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=841, offset=24661, end_offset=24663, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.016s elapsed time, 0.129s cpu time, 0.000s GC time
+line=419, offset=14176, end_offset=14180, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=812, offset=30889, end_offset=30891, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.007s elapsed time, 0.062s cpu time, 0.000s GC time
+line=419, offset=14176, end_offset=14180, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.032s cpu time, 0.000s GC time
+line=427, offset=14446, end_offset=14450, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=427, offset=14446, end_offset=14450, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.012s elapsed time, 0.071s cpu time, 0.056s GC time
+line=428, offset=14528, end_offset=14530, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=428, offset=14528, end_offset=14530, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.009s cpu time, 0.000s GC time
+line=432, offset=14627, end_offset=14631, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=432, offset=14627, end_offset=14631, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.025s cpu time, 0.000s GC time
+line=891, offset=25992, end_offset=25996, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=869, offset=25264, end_offset=25267, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=869, offset=25264, end_offset=25267, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.008s elapsed time, 0.059s cpu time, 0.000s GC time
+line=875, offset=25457, end_offset=25459, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=891, offset=25992, end_offset=25996, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.033s elapsed time, 0.260s cpu time, 0.000s GC time
+line=875, offset=25457, end_offset=25459, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.026s elapsed time, 0.205s cpu time, 0.000s GC time
+line=876, offset=25503, end_offset=25505, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=876, offset=25503, end_offset=25505, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.019s elapsed time, 0.130s cpu time, 0.000s GC time
+line=883, offset=25788, end_offset=25790, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=883, offset=25788, end_offset=25790, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.011s elapsed time, 0.081s cpu time, 0.000s GC time
+line=20, offset=538, end_offset=543, file=~/Programming/isabelle/zippy/Zippy/Examples/Word.thy, id=462
+Running: "zippy"
+line=20, offset=538, end_offset=543, file=~/Programming/isabelle/zippy/Zippy/Examples/Word.thy, id=462
+Finished: "zippy"
+Timing: 0.011s elapsed time, 0.073s cpu time, 0.037s GC time
+line=900, offset=26262, end_offset=26264, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=900, offset=26262, end_offset=26264, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.001s cpu time, 0.000s GC time
+line=915, offset=26689, end_offset=26693, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=939, offset=27429, end_offset=27433, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=939, offset=27429, end_offset=27433, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.000s elapsed time, 0.002s cpu time, 0.000s GC time
+line=746, offset=28687, end_offset=28689, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.559s elapsed time, 4.383s cpu time, 0.182s GC time
+line=942, offset=27507, end_offset=27511, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=915, offset=26689, end_offset=26693, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.067s elapsed time, 0.558s cpu time, 0.000s GC time
+line=942, offset=27507, end_offset=27511, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.037s cpu time, 0.000s GC time
+line=943, offset=36608, end_offset=36612, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=943, offset=36608, end_offset=36612, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.014s elapsed time, 0.110s cpu time, 0.000s GC time
+line=820, offset=23914, end_offset=23916, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.578s elapsed time, 4.492s cpu time, 0.206s GC time
+line=774, offset=21482, end_offset=21484, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=926, offset=35860, end_offset=35864, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=774, offset=21482, end_offset=21484, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.042s cpu time, 0.000s GC time
+line=495, offset=16760, end_offset=16764, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=926, offset=35860, end_offset=35864, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.014s elapsed time, 0.111s cpu time, 0.000s GC time
+line=495, offset=16760, end_offset=16764, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.008s elapsed time, 0.063s cpu time, 0.000s GC time
+line=998, offset=29211, end_offset=29213, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=498, offset=16895, end_offset=16899, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=498, offset=16895, end_offset=16899, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.005s elapsed time, 0.044s cpu time, 0.000s GC time
+line=777, offset=21576, end_offset=21578, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=998, offset=29211, end_offset=29213, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.013s elapsed time, 0.108s cpu time, 0.000s GC time
+line=489, offset=16614, end_offset=16618, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=352, offset=11497, end_offset=11502, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.430s elapsed time, 3.374s cpu time, 0.116s GC time
+line=1008, offset=29475, end_offset=29477, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=1008, offset=29475, end_offset=29477, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.000s elapsed time, 0.005s cpu time, 0.000s GC time
+line=1010, offset=29520, end_offset=29522, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=1010, offset=29520, end_offset=29522, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.000s elapsed time, 0.002s cpu time, 0.000s GC time
+line=788, offset=21834, end_offset=21836, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=489, offset=16614, end_offset=16618, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.021s elapsed time, 0.147s cpu time, 0.032s GC time
+line=481, offset=16360, end_offset=16364, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=1025, offset=30028, end_offset=30030, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=788, offset=21834, end_offset=21836, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.029s elapsed time, 0.217s cpu time, 0.000s GC time
+line=1025, offset=30028, end_offset=30030, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.007s elapsed time, 0.043s cpu time, 0.000s GC time
+line=1039, offset=30349, end_offset=30354, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=1039, offset=30349, end_offset=30354, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.023s cpu time, 0.000s GC time
+line=1044, offset=30481, end_offset=30483, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=777, offset=21576, end_offset=21578, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.081s elapsed time, 0.637s cpu time, 0.032s GC time
+line=1023, offset=39886, end_offset=39888, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=813, offset=22473, end_offset=22478, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=813, offset=22473, end_offset=22478, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.031s cpu time, 0.000s GC time
+line=1023, offset=39886, end_offset=39888, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.014s elapsed time, 0.119s cpu time, 0.000s GC time
+line=1025, offset=39989, end_offset=39991, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1025, offset=39989, end_offset=39991, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.016s cpu time, 0.000s GC time
+line=1064, offset=31032, end_offset=31037, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=808, offset=22356, end_offset=22359, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=1064, offset=31032, end_offset=31037, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.022s cpu time, 0.000s GC time
+line=1071, offset=31354, end_offset=31359, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=808, offset=22356, end_offset=22359, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.020s elapsed time, 0.149s cpu time, 0.049s GC time
+line=805, offset=22289, end_offset=22291, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=1071, offset=31354, end_offset=31359, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.010s elapsed time, 0.085s cpu time, 0.000s GC time
+line=1084, offset=31715, end_offset=31720, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=1084, offset=31715, end_offset=31720, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.009s cpu time, 0.000s GC time
+line=1088, offset=31837, end_offset=31839, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=1088, offset=31837, end_offset=31839, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.009s cpu time, 0.000s GC time
+line=1044, offset=30481, end_offset=30483, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.088s elapsed time, 0.667s cpu time, 0.049s GC time
+line=1105, offset=32253, end_offset=32257, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=817, offset=22546, end_offset=22548, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=817, offset=22546, end_offset=22548, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.010s cpu time, 0.000s GC time
+line=537, offset=18285, end_offset=18289, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=537, offset=18285, end_offset=18289, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.013s cpu time, 0.000s GC time
+line=539, offset=18395, end_offset=18399, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=539, offset=18395, end_offset=18399, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.018s cpu time, 0.000s GC time
+line=540, offset=18426, end_offset=18431, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=1105, offset=32253, end_offset=32257, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.016s elapsed time, 0.139s cpu time, 0.000s GC time
+line=1109, offset=32343, end_offset=32347, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=1109, offset=32343, end_offset=32347, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.007s cpu time, 0.000s GC time
+line=540, offset=18426, end_offset=18431, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.006s elapsed time, 0.051s cpu time, 0.000s GC time
+line=528, offset=18036, end_offset=18038, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=528, offset=18036, end_offset=18038, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.024s cpu time, 0.000s GC time
+line=1047, offset=40897, end_offset=40901, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=532, offset=18131, end_offset=18133, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=1047, offset=40897, end_offset=40901, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.014s cpu time, 0.000s GC time
+line=1052, offset=41172, end_offset=41176, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1052, offset=41172, end_offset=41176, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.023s cpu time, 0.000s GC time
+line=532, offset=18131, end_offset=18133, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.014s elapsed time, 0.109s cpu time, 0.000s GC time
+line=534, offset=18204, end_offset=18209, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=1067, offset=41768, end_offset=41770, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=545, offset=18612, end_offset=18614, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=545, offset=18612, end_offset=18614, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.021s elapsed time, 0.155s cpu time, 0.056s GC time
+line=481, offset=16360, end_offset=16364, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.194s elapsed time, 1.549s cpu time, 0.105s GC time
+line=1101, offset=43409, end_offset=43413, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1156, offset=33637, end_offset=33639, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=1156, offset=33637, end_offset=33639, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.005s cpu time, 0.000s GC time
+line=1101, offset=43409, end_offset=43413, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.005s elapsed time, 0.043s cpu time, 0.000s GC time
+line=1135, offset=44978, end_offset=44982, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1103, offset=43532, end_offset=43536, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1135, offset=44978, end_offset=44982, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.014s cpu time, 0.000s GC time
+line=1144, offset=45275, end_offset=45279, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1103, offset=43532, end_offset=43536, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.019s elapsed time, 0.153s cpu time, 0.000s GC time
+line=1144, offset=45275, end_offset=45279, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.012s elapsed time, 0.090s cpu time, 0.000s GC time
+line=1109, offset=43825, end_offset=43829, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1067, offset=41768, end_offset=41770, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.067s elapsed time, 0.522s cpu time, 0.056s GC time
+line=1155, offset=45589, end_offset=45591, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1155, offset=45589, end_offset=45591, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.009s elapsed time, 0.072s cpu time, 0.000s GC time
+line=805, offset=22289, end_offset=22291, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.155s elapsed time, 1.262s cpu time, 0.056s GC time
+line=844, offset=23178, end_offset=23180, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=1161, offset=45731, end_offset=45733, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=844, offset=23178, end_offset=23180, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.017s elapsed time, 0.135s cpu time, 0.000s GC time
+line=1192, offset=46975, end_offset=46977, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1192, offset=46975, end_offset=46977, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.025s elapsed time, 0.182s cpu time, 0.037s GC time
+line=1078, offset=42541, end_offset=42545, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1194, offset=47102, end_offset=47104, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1194, offset=47102, end_offset=47104, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.000s elapsed time, 0.001s cpu time, 0.000s GC time
+line=1196, offset=47213, end_offset=47215, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1196, offset=47213, end_offset=47215, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.006s cpu time, 0.000s GC time
+line=1109, offset=43825, end_offset=43829, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.072s elapsed time, 0.571s cpu time, 0.037s GC time
+line=1198, offset=47320, end_offset=47322, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1198, offset=47320, end_offset=47322, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.000s elapsed time, 0.003s cpu time, 0.000s GC time
+line=1200, offset=47437, end_offset=47439, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1111, offset=44015, end_offset=44017, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1200, offset=47437, end_offset=47439, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.037s cpu time, 0.000s GC time
+line=1111, offset=44015, end_offset=44017, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.037s cpu time, 0.000s GC time
+line=1114, offset=44183, end_offset=44187, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1204, offset=47632, end_offset=47635, label=command.qed, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1204, offset=47632, end_offset=47635, label=command.qed, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.006s cpu time, 0.000s GC time
+line=558, offset=19091, end_offset=19093, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=558, offset=19091, end_offset=19093, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.000s elapsed time, 0.005s cpu time, 0.000s GC time
+line=1114, offset=44183, end_offset=44187, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.013s elapsed time, 0.117s cpu time, 0.000s GC time
+line=1117, offset=44356, end_offset=44360, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=567, offset=19546, end_offset=19548, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=1117, offset=44356, end_offset=44360, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.023s cpu time, 0.000s GC time
+line=1120, offset=44468, end_offset=44470, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1120, offset=44468, end_offset=44470, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.016s cpu time, 0.000s GC time
+line=567, offset=19546, end_offset=19548, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.008s elapsed time, 0.061s cpu time, 0.000s GC time
+line=1161, offset=45731, end_offset=45733, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.098s elapsed time, 0.781s cpu time, 0.037s GC time
+line=571, offset=19627, end_offset=19629, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=571, offset=19627, end_offset=19629, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.004s elapsed time, 0.039s cpu time, 0.000s GC time
+line=575, offset=19779, end_offset=19782, label=command.qed, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=575, offset=19779, end_offset=19782, label=command.qed, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.004s cpu time, 0.000s GC time
+line=1171, offset=34027, end_offset=34032, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=1173, offset=46167, end_offset=46169, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1173, offset=46167, end_offset=46169, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.007s elapsed time, 0.065s cpu time, 0.000s GC time
+line=1171, offset=34027, end_offset=34032, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.044s elapsed time, 0.346s cpu time, 0.042s GC time
+line=1177, offset=46367, end_offset=46371, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1177, offset=46367, end_offset=46371, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.015s elapsed time, 0.120s cpu time, 0.000s GC time
+line=1179, offset=46509, end_offset=46511, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1234, offset=48856, end_offset=48860, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1179, offset=46509, end_offset=46511, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.022s elapsed time, 0.176s cpu time, 0.000s GC time
+line=593, offset=20384, end_offset=20388, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=868, offset=23825, end_offset=23827, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=593, offset=20384, end_offset=20388, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.009s elapsed time, 0.064s cpu time, 0.000s GC time
+line=598, offset=20557, end_offset=20559, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=1181, offset=34428, end_offset=34433, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=598, offset=20557, end_offset=20559, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.019s elapsed time, 0.122s cpu time, 0.000s GC time
+line=1181, offset=34428, end_offset=34433, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.023s elapsed time, 0.154s cpu time, 0.000s GC time
+line=871, offset=23932, end_offset=23934, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=1234, offset=48856, end_offset=48860, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.065s elapsed time, 0.474s cpu time, 0.000s GC time
+line=1262, offset=49785, end_offset=49787, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1209, offset=35219, end_offset=35221, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=1209, offset=35219, end_offset=35221, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.015s cpu time, 0.000s GC time
+line=1219, offset=35615, end_offset=35617, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Running: "zippy"
+line=1219, offset=35615, end_offset=35617, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Finite_Set.thy, id=452
+Finished: "zippy"
+Timing: 0.002s elapsed time, 0.008s cpu time, 0.000s GC time
+line=1078, offset=42541, end_offset=42545, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.263s elapsed time, 2.016s cpu time, 0.087s GC time
+line=534, offset=18204, end_offset=18209, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.414s elapsed time, 3.197s cpu time, 0.180s GC time
+line=897, offset=24736, end_offset=24738, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=897, offset=24736, end_offset=24738, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.022s cpu time, 0.000s GC time
+line=1343, offset=53399, end_offset=53401, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1262, offset=49785, end_offset=49787, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.085s elapsed time, 0.615s cpu time, 0.000s GC time
+line=1279, offset=50586, end_offset=50588, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1343, offset=53399, end_offset=53401, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.014s elapsed time, 0.110s cpu time, 0.000s GC time
+line=1279, offset=50586, end_offset=50588, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.007s elapsed time, 0.050s cpu time, 0.000s GC time
+line=1289, offset=50990, end_offset=50994, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1289, offset=50990, end_offset=50994, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.020s cpu time, 0.000s GC time
+line=918, offset=25301, end_offset=25303, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Running: "zippy"
+line=646, offset=22448, end_offset=22453, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=646, offset=22448, end_offset=22453, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.012s cpu time, 0.000s GC time
+line=661, offset=22851, end_offset=22855, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=654, offset=22714, end_offset=22719, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=654, offset=22714, end_offset=22719, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.023s cpu time, 0.000s GC time
+line=665, offset=23051, end_offset=23055, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=918, offset=25301, end_offset=25303, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Set.thy, id=460
+Finished: "zippy"
+Timing: 0.021s elapsed time, 0.177s cpu time, 0.000s GC time
+line=1300, offset=51652, end_offset=51654, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=1300, offset=51652, end_offset=51654, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.001s elapsed time, 0.009s cpu time, 0.000s GC time
+line=661, offset=22851, end_offset=22855, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Finished: "zippy"
+Timing: 0.018s elapsed time, 0.151s cpu time, 0.000s GC time
+line=1372, offset=54372, end_offset=54376, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"
+line=668, offset=23163, end_offset=23167, file=~/Programming/isabelle/zippy/Zippy/Examples/Filter.thy, id=450
+Running: "zippy"
+line=1372, offset=54372, end_offset=54376, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Finished: "zippy"
+Timing: 0.003s elapsed time, 0.026s cpu time, 0.000s GC time
+line=1374, offset=54440, end_offset=54442, label=command.by, file=~/Programming/isabelle/zippy/Zippy/Examples/Binomial.thy, id=448
+Running: "zippy"

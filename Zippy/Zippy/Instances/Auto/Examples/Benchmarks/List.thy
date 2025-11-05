@@ -3,7 +3,7 @@ theory List
 imports
   HOL.Sledgehammer
   HOL.Lifting_Set
-  Zippy_Replace_Setup
+  Zippy_Auto_Benchmarks
 begin
 
 datatype (set: 'a) list =
@@ -1400,7 +1400,7 @@ next
   next
     assume "x \<noteq> a" thus ?case using Cons
       (*NEW*)
-      by (adapted intro!: Cons_eq_appendI where run run: "Zippy.Run.Depth_First.all 10")
+      by (fastforce intro!: Cons_eq_appendI where run run: "Zippy.Run.Depth_First.all 10")
       (*ORIG*)
       (* by(fastforce intro!: Cons_eq_appendI) *)
   qed
@@ -1484,7 +1484,7 @@ next
     hence "\<exists>x\<in>set xs. P x" using snoc(2) by simp
     thus ?thesis using \<open>\<not> P x\<close> snoc(1)
       (*NEW*)
-      by (adapted run run: "Zippy.Run.Depth_First.all 10")
+      by (fastforce run run: "Zippy.Run.Depth_First.all 10")
       (*ORIG*)
       (* by fastforce *)
   qed
@@ -1566,7 +1566,7 @@ proof(induction xss arbitrary: ys)
     case 1
     then show ?thesis using Cons.IH[OF 1(2)]
       (*NEW*)
-      by (cases xss) (adapted 200 intro: exI[where x="[]"] simp: append.assoc, metis append.assoc append_Cons concat.simps(2))
+      by (cases xss) (auto 200 intro: exI[where x="[]"] simp: append.assoc, metis append.assoc append_Cons concat.simps(2))
       (*ORIG*)
       (* by(cases xss)(auto intro: exI[where x="[]"], metis append.assoc append_Cons concat.simps(2)) *)
   qed(auto intro: exI[where x="[]"])
@@ -1681,7 +1681,7 @@ next
   case (Cons x xs) thus ?case
     using Suc_le_eq
     (*NEW*)
-    by (adapted run run: Zippy.Run.Depth_First.all')
+    by (fastforce run run: Zippy.Run.Depth_First.all')
     (*ORIG*)
     (* by (fastforce) *)
 qed
@@ -1865,7 +1865,7 @@ proof (induct xs arbitrary: ys)
     case (Cons y ys)
     with Cons.hyps show ?thesis
       (*NEW*)
-      by (adapted run run: Zippy.Run.Depth_First.all')
+      by (fastforce run run: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* by fastforce *)
   qed simp
@@ -2690,7 +2690,7 @@ proof (induct xs)
   case (Cons a xs)
   then show ?case
     (*NEW*)
-    by (subst dropWhile_append2 | adapted 200)+
+    by (subst dropWhile_append2 | auto 200)+
     (*ORIG*)
     (* by(auto, subst dropWhile_append2, auto) *)
 qed simp
@@ -3154,7 +3154,7 @@ lemma list_all2_eq:
 lemma list_eq_iff_zip_eq:
   "xs = ys \<longleftrightarrow> length xs = length ys \<and> (\<forall>(x,y) \<in> set (zip xs ys). x = y)"
   (*NEW*)
-  by (adapted simp add: set_zip list_all2_eq list_all2_conv_all_nth cong: conj_cong
+  by (auto simp add: set_zip list_all2_eq list_all2_conv_all_nth cong: conj_cong
     where simp depth: 1)
   (*ORIG*)
   (* by (auto simp add: set_zip list_all2_eq list_all2_conv_all_nth cong: conj_cong) *)
@@ -3723,7 +3723,7 @@ proof
       with \<open>P x y\<close> show "P x z"
         using "3.prems" asm
         (*NEW*)
-        by (adapted simp depth: 0)
+        by (auto simp depth: 0)
         (*ORIG*)
         (* by auto *)
     qed
@@ -3882,7 +3882,7 @@ proof (induct xs)
   case (Cons x xs)
   show ?case
     (*NEW*)
-    apply (adapted 200 simp add: Cons nth_Cons less_Suc_eq_le split: nat.split_asm)
+    apply (auto 200 simp add: Cons nth_Cons less_Suc_eq_le split: nat.split_asm)
     (*ORIG*)
     (* apply (auto simp add: Cons nth_Cons less_Suc_eq_le split: nat.split_asm) *)
     apply (metis Suc_leI in_set_conv_nth length_pos_if_in_set lessI less_imp_le_nat less_nat_zero_code)
@@ -3947,7 +3947,7 @@ proof (induct n == "length ws" arbitrary:ws)
   then show ?case
     using length_Suc_conv [of ws n]
     (*NEW*)
-    apply (adapted 300 simp: eq_commute)
+    apply (auto 300 simp: eq_commute)
     (*ORIG*)
     (* apply (auto simp: eq_commute) *)
      apply (metis append_Nil in_set_conv_decomp_first)
@@ -4505,7 +4505,7 @@ next
     apply (auto_orig simp: nth_Cons' split: if_splits)
     using diff_Suc_1 less_Suc_eq_0_disj
     (*NEW*)
-    by (adapted run run: "Zippy.Run.Depth_First.all 10")
+    by (fastforce run run: "Zippy.Run.Depth_First.all 10")
     (*ORIG*)
     (* by fastforce *)
 qed
@@ -4615,7 +4615,7 @@ subsubsection \<open>\<^const>\<open>List.extract\<close>\<close>
 
 lemma extract_None_iff: "List.extract P xs = None \<longleftrightarrow> \<not> (\<exists> x\<in>set xs. P x)"
 (*NEW*)
-by(adapted 100 simp: extract_def dropWhile_eq_Cons_conv split: list.splits)
+by(auto 100 simp: extract_def dropWhile_eq_Cons_conv split: list.splits)
 (*ORIG*)
 (* by(auto simp: extract_def dropWhile_eq_Cons_conv split: list.splits) *)
   (metis in_set_conv_decomp)
@@ -5466,7 +5466,7 @@ proof (induct xs arbitrary: ys)
   case (Cons x xs ys)
   then show ?case
     (*NEW*)
-    by (adapted 200 simp: Let_def)
+    by (auto 200 simp: Let_def)
     (*ORIG*)
     (* by (auto simp: Let_def)  *)
     (metis Pow_iff contra_subsetD image_eqI subseqs_powset)
@@ -7106,14 +7106,14 @@ proof (induction n)
       using r' Suc
       by (cases xys)
       (*NEW*)
-      (adapted simp: lex_prod_def image_Collect where run run: Zippy.Run.Depth_First.all')
+      (fastforce simp: lex_prod_def image_Collect where run run: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* (fastforce simp: lex_prod_def image_Collect) *)
   qed
   moreover have "(xs,ys) \<in> ?L (Suc n) \<Longrightarrow> (xs,ys) \<in> ?R (Suc n)" for xs ys
     using Suc by
     (*NEW*)
-    (adapted 100 simp add: image_Collect lex_prod_def)
+    (auto 100 simp add: image_Collect lex_prod_def)
     (*ORIG*)
     (* (auto simp add: image_Collect lex_prod_def) *)
     (blast, meson Cons_eq_appendI)
@@ -7324,7 +7324,7 @@ proof
     apply (metis hd_append list.sel(1) list.sel(3) tl_append2)
     done
 (*NEW*)
-qed (adapted 4 8 simp add: lexord_def intro: Cons_eq_appendI)
+qed (auto 4 8 simp add: lexord_def intro: Cons_eq_appendI)
 (*ORIG*)
 (* qed (auto simp add: lexord_def; (blast | meson Cons_eq_appendI)) *)
 
@@ -7532,7 +7532,7 @@ next
   case (Cons u us)
   with lex_append_rightI show ?case
     (*NEW*)
-    by (adapted simp add: lenlex_def eq where run run: Zippy.Run.Depth_First.all')
+    by (fastforce simp add: lenlex_def eq where run run: Zippy.Run.Depth_First.all')
     (*ORIG*)
     (* by (fastforce simp add: lenlex_def eq) *)
 qed
@@ -7778,7 +7778,7 @@ lemma append_listrel1I:
     \<Longrightarrow> (xs @ us, ys @ vs) \<in> listrel1 r"
   unfolding listrel1_def
   (*NEW*)
-  by (adapted 4 6 intro: append_eq_appendI)
+  by (auto 4 6 intro: append_eq_appendI)
   (*ORIG*)
   (* by auto (blast intro: append_eq_appendI)+ *)
 

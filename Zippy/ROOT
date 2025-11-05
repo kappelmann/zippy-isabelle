@@ -1,5 +1,6 @@
 session Zippy = "Pure" +
   sessions
+    HOL
     ML_Typeclasses
     ML_Unification
     SpecCheck
@@ -73,21 +74,28 @@ session Zippy = "Pure" +
   theories
     Zippy_Paper
 
-session Zippy_Examples_Prepare in "Examples/Prepare" = Zippy +
+session Zippy_Examples_Prepare in "Zippy/Instances/Auto/Examples/Prepare" = Zippy +
   sessions
     "HOL"
     "HOL-Data_Structures"
     "HOL-Library"
-
-session Zippy_Examples in Examples = Zippy_Examples_Prepare +
-  options [quick_and_dirty]
   theories
-    Binomial
+    "HOL.Main"
+    "HOL-Data_Structures.Tree234"
+    "HOL-Library.Type_Length"
+    "Zippy.Zippy_Instance_Auto_HOL"
+
+session Zippy_Examples in "Zippy/Instances/Auto/Examples" = Zippy_Examples_Prepare +
+  options [quick_and_dirty]
+  directories
+    "Benchmarks"
+  theories
+    (*Binomial
     Filter
     Finite_Set
     GCD
-    List
+    List*)
     Set
-    Streamlined_Examples
+    (*Streamlined_Examples
     Tree234_Set
-    Word
+    Word*)

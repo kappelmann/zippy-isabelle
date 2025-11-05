@@ -1,7 +1,7 @@
 theory Deriv
   imports
     HOL.Limits
-    Zippy_Replace_Setup
+    Zippy_Auto_Benchmarks
 begin
 
 subsection \<open>Frechet derivative\<close>

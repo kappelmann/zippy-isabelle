@@ -1,7 +1,7 @@
 theory Filter
   imports
     HOL.Set_Interval HOL.Lifting_Set
-    Zippy_Replace_Setup
+    Zippy_Auto_Benchmarks
 begin
 
 subsection \<open>Filters\<close>
