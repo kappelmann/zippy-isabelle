@@ -1,9 +1,9 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
-section \<open>Zippers\<close>
+section \<open>Zipper Utils\<close>
 theory ML_Zipper_Utils
   imports
     ML_Zippers
-    ML_Typeclasses.ML_Coroutines
+    ML_Coroutines
 begin
 
 ML_gen_file\<open>enumerate_zipper.ML\<close>

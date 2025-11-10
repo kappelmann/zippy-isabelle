@@ -1,8 +1,11 @@
 theory Word
   imports
     "HOL-Library.Type_Length"
-    Zippy_Auto_Benchmarks
+    Zippy_Auto_Benchmarks_Setup
 begin
+
+text \<open>Note: this benchmark file is an adjusted copy of HOL-Library.Word from the standard
+distribution (dated 07.11.2025)\<close>
 
 subsection \<open>Preliminaries\<close>
 
@@ -742,7 +745,11 @@ qed
 
 instance word :: (len) semiring_parity
   by (standard; transfer)
-    (auto simp: mod_2_eq_odd take_bit_Suc elim: evenE dest: le_Suc_ex)
+  (*NEW*)
+  (auto simp: mod_2_eq_odd take_bit_Suc elim: evenE dest: le_Suc_ex
+    where run exec: Zippy.Run.Depth_First.all')
+  (*ORIG*)
+  (* (auto simp: mod_2_eq_odd take_bit_Suc elim: evenE dest: le_Suc_ex) *)
 
 lemma word_bit_induct [case_names zero even odd]:
   \<open>P a\<close> if word_zero: \<open>P 0\<close>
@@ -853,9 +860,9 @@ lemma even_mult_exp_div_word_iff:
   \<open>even (a * 2 ^ m div 2 ^ n) \<longleftrightarrow> \<not> (
     m \<le> n \<and>
     n < LENGTH('a) \<and> odd (a div 2 ^ (n - m)))\<close> for a :: \<open>'a::len word\<close>
-  by transfer
-    (auto simp flip: drop_bit_eq_div simp add: even_drop_bit_iff_not_bit bit_take_bit_iff,
-      simp_all flip: push_bit_eq_mult add: bit_push_bit_iff_int)
+  apply transfer
+  by (auto simp flip: drop_bit_eq_div push_bit_eq_mult simp add: even_drop_bit_iff_not_bit bit_take_bit_iff
+    simp: bit_push_bit_iff_int)
 
 instantiation word :: (len) semiring_bits
 begin
@@ -916,7 +923,8 @@ instance proof
     for a :: \<open>'a word\<close> and m n :: nat
     apply transfer
     using drop_bit_eq_div [symmetric, where ?'a = int,of _ 1]
-    apply (auto simp:  not_less take_bit_drop_bit ac_simps simp flip: drop_bit_eq_div simp del: power.simps)
+    (*NOTE keep original non-terminal auto call for reproducibility*)
+    apply (auto_orig simp:  not_less take_bit_drop_bit ac_simps simp flip: drop_bit_eq_div simp del: power.simps)
     apply (simp add: drop_bit_take_bit)
     done
   show \<open>even (2 * a div 2 ^ Suc n) \<longleftrightarrow> even (a div 2 ^ n)\<close> if \<open>2 ^ Suc n \<noteq> (0::'a word)\<close>
@@ -930,7 +938,11 @@ end
 lemma bit_word_eqI:
   \<open>a = b\<close> if \<open>\<And>n. n < LENGTH('a) \<Longrightarrow> bit a n \<longleftrightarrow> bit b n\<close>
   for a b :: \<open>'a::len word\<close>
-  using that by transfer (auto simp: nat_less_le bit_eq_iff bit_take_bit_iff)
+  using that by transfer
+  (*NEW*)
+  (auto simp: nat_less_le bit_eq_iff bit_take_bit_iff where run exec: Zippy.Run.Depth_First.all')
+  (*ORIG*)
+  (* (auto simp: nat_less_le bit_eq_iff bit_take_bit_iff where run exec: Zippy.Run.Depth_First.all') *)
 
 lemma bit_imp_le_length: \<open>n < LENGTH('a)\<close> if \<open>bit w n\<close> for w :: \<open>'a::len word\<close>
   by (meson bit_word.rep_eq that)
@@ -1590,7 +1602,7 @@ lemma mod_word_by_minus_1_eq [simp]:
   \<open>w mod - 1 = w * of_bool (w < - 1)\<close> for w :: \<open>'a::len word\<close>
   using mod_word_less word_order.not_eq_extremum
   (*NEW*)
-  by (zippy run run: Zippy.Run.Depth_First.all')
+  by (fastforce run exec: Zippy.Run.Depth_First.all')
   (*ORIG*)
   (* by (fastforce) *)
 
@@ -1915,7 +1927,7 @@ subsection \<open>More shift operations\<close>
 lift_definition signed_drop_bit :: \<open>nat \<Rightarrow> 'a word \<Rightarrow> 'a::len word\<close>
   is \<open>\<lambda>n. drop_bit n \<circ> signed_take_bit (LENGTH('a) - Suc 0)\<close>
   using signed_take_bit_decr_length_iff
-  by (simp add: take_bit_drop_bit) force
+  by (simp add: take_bit_drop_bit) (force)
 
 lemma bit_signed_drop_bit_iff [bit_simps]:
   \<open>bit (signed_drop_bit m w) n \<longleftrightarrow> bit w (if LENGTH('a) - m \<le> n \<and> n < LENGTH('a) then LENGTH('a) - 1 else m + n)\<close>
@@ -1944,8 +1956,13 @@ proof (cases \<open>LENGTH('a)\<close>)
     using len_not_eq_0 by blast
 next
   case (Suc n)
-  then show ?thesis
-    by (force simp: bit_signed_drop_bit_iff not_le less_diff_conv ac_simps intro!: bit_word_eqI)
+  show ?thesis
+    apply (rule bit_word_eqI)
+    using Suc
+    (*NEW*)
+    by (force simp: bit_signed_drop_bit_iff not_le less_diff_conv ac_simps)
+    (*ORIG*)
+    (* by (force simp: bit_signed_drop_bit_iff not_le less_diff_conv ac_simps)  *)
 qed
 
 lemma signed_drop_bit_0 [simp]:
@@ -1985,7 +2002,7 @@ lift_definition word_rotr :: \<open>nat \<Rightarrow> 'a::len word \<Rightarrow>
     (take_bit (n mod LENGTH('a)) k)\<close>
   using take_bit_tightened
   (*NEW*)
-  by (zippy run run: Zippy.Run.Depth_First.all')
+  by (fastforce run exec: Zippy.Run.Depth_First.all')
   (*ORIG*)
   (* by fastforce *)
 
@@ -1995,7 +2012,7 @@ lift_definition word_rotl :: \<open>nat \<Rightarrow> 'a::len word \<Rightarrow>
     (take_bit (LENGTH('a) - n mod LENGTH('a)) k)\<close>
   using take_bit_tightened
   (*NEW*)
-  by (zippy run run: Zippy.Run.Depth_First.all')
+  by (fastforce run exec: Zippy.Run.Depth_First.all')
   (*ORIG*)
   (* by fastforce *)
 
@@ -2054,8 +2071,11 @@ proof transfer
     n < LENGTH('a) \<and> bit k ((n + q) mod LENGTH('a))\<close>
     using \<open>q < LENGTH('a)\<close>
     by (cases \<open>q + n \<ge> LENGTH('a)\<close>)
-     (auto simp: bit_concat_bit_iff bit_drop_bit_eq
-        bit_take_bit_iff le_mod_geq ac_simps)
+     (*NEW*)
+     (auto simp: bit_concat_bit_iff bit_drop_bit_eq bit_take_bit_iff le_mod_geq ac_simps
+      where run exec: Zippy.Run.Depth_First.all')
+     (*ORIG*)
+     (* (auto simp: bit_concat_bit_iff bit_drop_bit_eq bit_take_bit_iff le_mod_geq ac_simps) *)
   ultimately show \<open>n < LENGTH('a) \<and>
     bit (concat_bit (LENGTH('a) - m mod LENGTH('a))
       (drop_bit (m mod LENGTH('a)) (take_bit LENGTH('a) k))
@@ -2602,7 +2622,8 @@ lemma signed_drop_bit_of_1 [simp]:
   \<open>signed_drop_bit n (1 :: 'a::len word) = of_bool (LENGTH('a) = 1 \<or> n = 0)\<close>
   apply (transfer fixing: n)
   apply (cases \<open>LENGTH('a)\<close>)
-   apply (auto simp: take_bit_signed_take_bit)
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  apply (auto_orig simp: take_bit_signed_take_bit)
   apply (auto simp: take_bit_drop_bit gr0_conv_Suc simp flip: take_bit_eq_self_iff_drop_bit_eq_0)
   done
 
@@ -2658,7 +2679,8 @@ proof (cases \<open>LENGTH('a) \<le> numeral m\<close>)
   have **: \<open>2 ^ numeral m = (0 :: 'a word)\<close>
     using True by (simp flip: exp_eq_zero_iff)
   show ?thesis
-    by (auto simp only: * ** split: option.split
+    (*NOTE keep original non-terminal auto call for reproducibility*)
+    by (auto_orig simp only: * ** split: option.split
       dest!: take_bit_num_eq_None_imp [where ?'a = \<open>'a word\<close>] take_bit_num_eq_Some_imp [where ?'a = \<open>'a word\<close>])
       simp_all
 next
@@ -2964,9 +2986,11 @@ lemma unat_plus_if':
     (if unat a + unat b < 2 ^ LENGTH('a)
     then unat a + unat b
     else unat a + unat b - 2 ^ LENGTH('a))\<close> for a b :: \<open>'a::len word\<close>
-  apply (auto simp: not_less le_iff_add)
-  using of_nat_inverse apply force[1]
-  by (smt (verit, ccfv_SIG) numeral_Bit0 numerals(1) of_nat_0_le_iff of_nat_1 of_nat_add of_nat_eq_iff of_nat_power of_nat_unat uint_plus_if')
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  apply (auto_orig simp: not_less le_iff_add)
+  defer
+  apply (smt (verit, ccfv_SIG) numeral_Bit0 numerals(1) of_nat_0_le_iff of_nat_1 of_nat_add of_nat_eq_iff of_nat_power of_nat_unat uint_plus_if')[1]
+  using of_nat_inverse by (force)
 
 lemma unat_sub_if_size:
   "unat (x - y) =
@@ -3273,7 +3297,9 @@ lemma inc_less_eq_self_iff_eq:
 lemma udvd_incr_lem:
   "\<lbrakk>up < uq; up = ua + n * uint K; uq = ua + n' * uint K\<rbrakk>
     \<Longrightarrow> up + uint K \<le> uq"
-  by auto (metis int_distrib(1) linorder_not_less mult.left_neutral mult_right_mono uint_nonnegative zless_imp_add1_zle)
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  by auto_orig
+  (metis int_distrib(1) linorder_not_less mult.left_neutral mult_right_mono uint_nonnegative zless_imp_add1_zle)
 
 lemma udvd_incr':
   "p < q \<Longrightarrow> uint p = ua + n * uint K \<Longrightarrow>
@@ -3339,7 +3365,7 @@ lemma word_half_less_imp_less_eq:
   \<open>v \<le> w\<close> if \<open>v div 2 < w div 2\<close> for v w :: \<open>'a::len word\<close>
   using that linorder_linear word_less_eq_imp_half_less_eq
   (*NEW*)
-  by (zippy run run: Zippy.Run.Depth_First.all')
+  by (fastforce run exec: Zippy.Run.Depth_First.all')
   (*ORIG*)
   (* by fastforce *)
 
@@ -3535,15 +3561,14 @@ lemma inj_on_word_of_int: \<open>inj_on (word_of_int :: int \<Rightarrow> 'a wor
 
 lemma range_uint: \<open>range (uint :: 'a word \<Rightarrow> int) = {0..<2 ^ LENGTH('a::len)}\<close>
   apply transfer
-  apply (auto simp: image_iff)
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  apply (auto_orig simp: image_iff)
   apply (metis take_bit_int_eq_self_iff)
   done
 
 lemma UNIV_eq: \<open>(UNIV :: 'a word set) = word_of_int ` {0..<2 ^ LENGTH('a::len)}\<close>
-  (*NEW*)
-  by (zippy simp: image_iff)
-  (*ORIG*)
-  (* by (auto simp: image_iff) (metis atLeastLessThan_iff linorder_not_le uint_split) *)
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  by (auto_orig simp: image_iff) (metis atLeastLessThan_iff linorder_not_le uint_split)?
 
 lemma card_word: "CARD('a word) = 2 ^ LENGTH('a::len)"
   by (simp add: UNIV_eq card_image inj_on_word_of_int)
@@ -3775,7 +3800,7 @@ lemma word_eq_reverseI:
   by (metis that word_rev_rev)
 
 lemma uint_2p: "(0::'a::len word) < 2 ^ n \<Longrightarrow> uint (2 ^ n::'a::len word) = 2 ^ n"
-  by (cases \<open>n < LENGTH('a)\<close>; transfer; force)
+  by (cases \<open>n < LENGTH('a)\<close>; transfer) force
 
 lemma word_of_int_2p: "(word_of_int (2 ^ n) :: 'a::len word) = 2 ^ n"
   by simp
@@ -4047,7 +4072,7 @@ proof (rule bit_word_eqI)
   show \<open>bit (slice1 n (word_reverse w :: 'b word) :: 'a word) m \<longleftrightarrow> bit (word_reverse (slice1 k w :: 'a word)) m\<close>
     unfolding bit_slice1_iff bit_word_reverse_iff
     using * **
-    by (cases \<open>n \<le> LENGTH('a)\<close>; cases \<open>k \<le> LENGTH('a)\<close>) auto
+    by (cases \<open>n \<le> LENGTH('a)\<close>; cases \<open>k \<le> LENGTH('a)\<close>) (auto)
 qed
 
 lemma rev_slice:
@@ -4127,7 +4152,7 @@ proof (intro conjI)
       using assms bit_imp_le_length
       unfolding word_split_def bit_slice_iff
       by (fastforce simp: \<section> ac_simps word_size bit_ucast_iff bit_drop_bit_eq
-        where run run: Zippy.Run.Depth_First.all')
+        where run exec: Zippy.Run.Depth_First.all')
   qed
   show "v = slice 0 w"
     by (metis Pair_inject assms ucast_slice word_split_bin')
@@ -4273,7 +4298,7 @@ lemma word_rot_logs:
   "word_rotr n (x OR y) = word_rotr n x OR word_rotr n y"
   "word_rotl n (x XOR y) = word_rotl n x XOR word_rotl n y"
   "word_rotr n (x XOR y) = word_rotr n x XOR word_rotr n y"
-  by (rule bit_word_eqI, auto simp: bit_word_rotl_iff bit_word_rotr_iff bit_and_iff bit_or_iff bit_xor_iff bit_not_iff algebra_simps not_le)+
+  by (auto intro: bit_word_eqI simp: bit_word_rotl_iff bit_word_rotr_iff bit_and_iff bit_or_iff bit_xor_iff bit_not_iff algebra_simps not_le)
 
 end
 
@@ -4474,7 +4499,7 @@ lemma word_induct: "P 0 \<Longrightarrow> (\<And>n. P n \<Longrightarrow> P (1 +
 
 lemma word_induct2 [case_names zero suc, induct type]: "P 0 \<Longrightarrow> (\<And>n. 1 + n \<noteq> 0 \<Longrightarrow> P n \<Longrightarrow> P (1 + n)) \<Longrightarrow> P n"
   for P :: "'b::len word \<Rightarrow> bool"
-by (induction rule: word_induct_less; force)
+by (induction rule: word_induct_less) force
 
 
 subsection \<open>Recursion combinator for words\<close>
@@ -4518,7 +4543,7 @@ next
     with False have "m \<le> n"
       using inc_le linorder_not_le suc.prems word_le_minus_mono_left
       (*NEW*)
-      by (zippy run run: Zippy.Run.Depth_First.all')
+      by (fastforce run exec: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* by fastforce *)
     with False "suc.hyps" show ?thesis
@@ -4649,19 +4674,16 @@ qualified lemma range_code [code]:
 proof (cases \<open>a < b\<close>)
   case True
   then have \<open>{a..<b} = insert a {a + 1..<b}\<close>
-    apply (auto simp add: not_le)
+    (*NOTE keep original non-terminal auto call for reproducibility*)
+    apply (auto_orig simp add: not_le)
      apply (metis inc_le leD word_le_less_eq)
     apply (metis dual_order.strict_implies_order inc_less_eq_iff word_not_simps(3))
     done
   then show ?thesis
-    (*NEW*)
-    apply -
-    apply (zippy 200 simp add: range_eq finite_atLeastLessThan intro!: insort_is_Cons
-      where subst insort_is_Cons)+
-    (*ORIG*)
-    (* apply (auto simp add: range_eq finite_atLeastLessThan intro!: insort_is_Cons)
+    (*NOTE keep original non-terminal auto call for reproducibility*)
+    apply (auto_orig simp add: range_eq finite_atLeastLessThan intro!: insort_is_Cons)
     apply (subst insort_is_Cons)
-     apply auto *)
+    apply (auto)[1]
     apply (metis Diff_insert Diff_insert0 atLeastAtMost_iff
         atLeastLessThan_eq_atLeastAtMost_diff inc_less_eq_triv_imp
         word_not_simps(3))
@@ -4678,9 +4700,7 @@ qualified lemma atLeast_eq_range [code_unfold]:
 
 qualified lemma greaterThan_eq_range [code_unfold]:
   \<open>{a<..} = (if a = - 1 then {} else insert (- 1) (set (range (a + 1) (- 1))))\<close>
-  apply (auto simp add: not_less not_le word_order.extremum_unique inc_less_eq_iff)
-  apply (simp add: order_neq_le_trans)
-  done
+  by (auto simp add: order_neq_le_trans not_less not_le word_order.extremum_unique inc_less_eq_iff)
 
 qualified lemma lessThan_eq_range [code_unfold]:
   \<open>{..<b} = set (range 0 b)\<close>
@@ -4696,7 +4716,8 @@ qualified lemma atLeastLessThan_eq_range [code_unfold]:
 
 qualified lemma atLeastAtMost_eq_range [code_unfold]:
   \<open>{a..b} = (if b = - 1 then {a..} else set (range a (b + 1)))\<close>
-  apply auto
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  apply auto_orig
   using inc_less_eq_iff linorder_not_le apply blast
   using inc_le linorder_not_less apply blast
   done
@@ -4707,7 +4728,8 @@ qualified lemma greaterThanLessThan_eq_range [code_unfold]:
 
 qualified lemma greaterThanAtMost_eq_range [code_unfold]:
   \<open>{a<..b} = (if b = - 1 then {a<..} else if a = - 1 then {} else set (range (a + 1) (b + 1)))\<close>
-  apply (auto simp add: inc_less_eq_iff)
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  apply (auto_orig simp add: inc_less_eq_iff)
    apply (metis add_diff_cancel add_eq_0_iff2 less_eq_dec_iff)
   using inc_le linorder_not_less apply blast
   done
@@ -4717,20 +4739,16 @@ qualified definition all_range :: \<open>('a::len word \<Rightarrow> bool) \<Rig
 
 qualified lemma all_range_code [code]:
   \<open>all_range P a b \<longleftrightarrow> (a < b \<longrightarrow> P a \<and> all_range P (a + 1) b)\<close>
-  (*NEW*)
-  apply (zippy 200 simp add: Ball_def simp flip: less_iff_succ_less_eq)
-  (*ORIG*)
-  (* apply (auto simp add: Ball_def simp flip: less_iff_succ_less_eq) *)
-   apply (metis inc_less_eq_iff order_le_less word_not_simps(3))
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  apply (auto_orig 200 simp add: Ball_def simp flip: less_iff_succ_less_eq)
+  apply (metis inc_less_eq_iff order_le_less word_not_simps(3))
   apply (metis antisym_conv2 inc_le)
   done
 
 qualified lemma forall_atLeast_iff [code_unfold]:
   \<open>(\<forall>n\<in>{a..}. P n) \<longleftrightarrow> all_range P a (- 1) \<and> P (- 1)\<close>
-  (*NEW*)
-  apply (zippy 100)
-  (*ORIG*)
-  (* apply (auto) *)
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  apply (auto_orig 100)
   using atLeastLessThan_iff word_order.not_eq_extremum apply blast
   done
 
@@ -4740,12 +4758,9 @@ qualified lemma forall_greater_eq_iff [code_unfold]:
 
 qualified lemma forall_greaterThan_iff [code_unfold]:
   \<open>(\<forall>n\<in>{a<..}. P n) \<longleftrightarrow> a = - 1 \<or> all_range P (a + 1) (- 1) \<and> P (- 1)\<close>
-  (*NEW*)
-  apply (zippy 200 simp add: inc_less_eq_iff word_order.not_eq_extremum)
-  (*ORIG*)
-  (* apply (auto simp add: inc_less_eq_iff word_order.not_eq_extremum) *)
-  apply (metis atLeastLessThan_iff inc_le word_order.not_eq_extremum)
-  done
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  by (auto_orig 200 simp add: inc_less_eq_iff word_order.not_eq_extremum)
+  (metis atLeastLessThan_iff inc_le word_order.not_eq_extremum)
 
 qualified lemma forall_greater_iff [code_unfold]:
   \<open>(\<forall>n>a. P n) \<longleftrightarrow> (\<forall>n\<in>{a<..}. P n)\<close>
@@ -4773,10 +4788,8 @@ qualified lemma forall_atLeastLessThan_iff [code_unfold]:
 
 qualified lemma forall_atLeastAtMost_iff [code_unfold]:
   \<open>(\<forall>n\<in>{a..b}. P n) \<longleftrightarrow> (if b = - 1 then (\<forall>n\<in>{a..}. P n) else all_range P a (b + 1))\<close>
-  (*NEW*)
-  apply (zippy 200)
-  (*ORIG*)
-  (* apply (auto) *)
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  apply (auto_orig 200)
    apply (metis atLeastAtMost_iff inc_le not_less_iff_gr_or_eq order_le_less)
   apply (metis (no_types, lifting) antisym_conv2 atLeastLessThan_iff dual_order.trans inc_less_eq_triv_imp
       nle_le)
@@ -4788,10 +4801,8 @@ qualified lemma forall_greaterThanLessThan_iff [code_unfold]:
 
 qualified lemma forall_greaterThanAtMost_iff [code_unfold]:
   \<open>(\<forall>n\<in>{a<..b}. P n) \<longleftrightarrow> (if b = - 1 then (\<forall>n\<in>{a<..}. P n) else a = - 1 \<or> all_range P (a + 1) (b + 1))\<close>
-  (*NEW*)
-  apply (zippy 200)
-  (*ORIG*)
-  (* apply (auto) *)
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  apply (auto_orig 200)
    apply (metis greaterThanAtMost_iff inc_less_eq_iff linorder_not_less)
   apply (meson atLeastLessThan_iff inc_less_eq_iff order_le_less_trans word_le_less_eq)
   done
@@ -4806,7 +4817,11 @@ qualified lemma exists_greater_eq_iff [code_unfold]:
 
 qualified lemma exists_greaterThan_iff [code_unfold]:
   \<open>(\<exists>n\<in>{a<..}. P n) \<longleftrightarrow> a \<noteq> - 1 \<and> (\<not> all_range (Not \<circ> P) (a + 1) (- 1) \<or> P (- 1))\<close>
-  using forall_greaterThan_iff [of a \<open>Not \<circ> P\<close>] by auto
+  using forall_greaterThan_iff [of a \<open>Not \<circ> P\<close>]
+  (*NEW*)
+  by (auto run exec: Zippy.Run.Depth_First.all')
+  (*ORIG*)
+  (* by (auto) *)
 
 qualified lemma exists_greater_iff [code_unfold]:
   \<open>(\<exists>n>a. P n) \<longleftrightarrow> (\<exists>n\<in>{a<..}. P n)\<close>
@@ -4822,7 +4837,11 @@ qualified lemma exists_less_iff [code_unfold]:
 
 qualified lemma exists_atMost_iff [code_unfold]:
   \<open>(\<exists>n\<in>{..b}. P n) \<longleftrightarrow> P b \<or> \<not> all_range (Not \<circ> P) 0 b\<close>
-  using forall_atMost_iff [of b \<open>Not \<circ> P\<close>] by auto
+  using forall_atMost_iff [of b \<open>Not \<circ> P\<close>]
+  (*ORIG*)
+  by (auto run exec: Zippy.Run.Depth_First.all')
+  (*NEW*)
+  (* by (auto) *)
 
 qualified lemma exists_less_eq_iff [code_unfold]:
   \<open>(\<exists>n\<le>b. P n) \<longleftrightarrow> (\<exists>n\<in>{..b}. P n)\<close>

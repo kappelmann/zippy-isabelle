@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+subsection \<open>Simplifier\<close>
 theory Extended_Simp_Data
   imports
     ML_Unification.ML_Functor_Instances

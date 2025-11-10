@@ -135,26 +135,22 @@ fun pretty_gclusters ctxt gclusters = get_clustered_state gclusters |> TS.pretty
 val get_cclusters = get_clustered_state #> TS.unprotect_prems #> Thm.cprems_of
 val get_clusters_goals = get_cclusters #> map (Thm.term_of #> Logic.dest_conjunctions)
 
-fun init state = let val state = state
-(*TODO: make correct*)
-(* Thm.flexflex_rule NONE state |> Seq.hd *)
-  in
-    (if TS.has_meta_vars state
-    then Thm.prems_of state |> build_mvar_eclasses |> fst
-      |> map (fn mvar_eclass => fold_map (apfst fst #> apsnd GU.succ |> curry) mvar_eclass 0)
-    else Thm.nprems_of state |> map_range (GU.succ #> single #> rpair 1))
-    |> `(fn mvss =>
-      let
-        val (mvar_eclasses, ss) = split_list mvss
-        val clustered_state = rearrange_mvar_eclasses_state mvar_eclasses state
-          |> mk_conj_list_state ss
-          |> TS.protect_prems
-        val gcpos_index = mk_gcpos_index mvar_eclasses
-      in
-        GClusters {state = state, clustered_state = clustered_state, gcpos_index = gcpos_index,
-          nclusters = length mvar_eclasses}
-      end)
-  end
+fun init state =
+  (if TS.has_meta_vars state
+  then Thm.prems_of state |> build_mvar_eclasses |> fst
+    |> map (fn mvar_eclass => fold_map (apfst fst #> apsnd GU.succ |> curry) mvar_eclass 0)
+  else Thm.nprems_of state |> map_range (GU.succ #> single #> rpair 1))
+  |> `(fn mvss =>
+    let
+      val (mvar_eclasses, ss) = split_list mvss
+      val clustered_state = rearrange_mvar_eclasses_state mvar_eclasses state
+        |> mk_conj_list_state ss
+        |> TS.protect_prems
+      val gcpos_index = mk_gcpos_index mvar_eclasses
+    in
+      GClusters {state = state, clustered_state = clustered_state, gcpos_index = gcpos_index,
+        nclusters = length mvar_eclasses}
+    end)
 
 val is_finished = get_state #> TS.is_finished
 val has_meta_vars = get_state #> TS.has_meta_vars

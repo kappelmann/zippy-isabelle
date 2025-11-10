@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+subsection \<open>Blast\<close>
 theory Extended_Blast_Data
   imports
     HOL.HOL

@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Nodes\<close>
 theory Zippy_Nodes
   imports
     ML_Alternating_Zipper_Nodes

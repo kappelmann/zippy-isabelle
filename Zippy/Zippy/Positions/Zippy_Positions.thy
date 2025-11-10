@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Positions\<close>
 theory Zippy_Positions
   imports
     ML_Alternating_Zipper_Paths

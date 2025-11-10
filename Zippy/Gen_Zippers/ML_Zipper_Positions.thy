@@ -1,7 +1,7 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory ML_Zipper_Positions
   imports
-    ML_Typeclasses.ML_Categories
+    ML_Categories
     Zippy_Base_Setup
 begin
 

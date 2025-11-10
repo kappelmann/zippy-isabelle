@@ -1,7 +1,6 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
 theory Zippy_Tactics
   imports
-    ML_Unification.Unify_Resolve_Tactics_Base
     Zippy_Action_Applications
     Zippy_Tactics_Base
 begin

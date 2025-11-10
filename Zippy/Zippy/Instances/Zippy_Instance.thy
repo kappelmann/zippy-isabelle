@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Instance of Zippy for Proof Search\<close>
 theory Zippy_Instance
   imports
     ML_Unification.ML_Costs_Priorities

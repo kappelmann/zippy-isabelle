@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Runs\<close>
 theory Zippy_Runs
   imports
     Zippy_Action_Applications

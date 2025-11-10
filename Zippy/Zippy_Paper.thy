@@ -5,6 +5,9 @@ theory Zippy_Paper
     Pure
 begin
 
+paragraph \<open>Summary\<close>
+text \<open>Guide for the preprint\<^cite>\<open>zippy\<close>\<close>
+
 text \<open>
 \<^item> General Information
   \<^item> Unfortunately, employing the polymorphic record extension mechanism described in the paper
@@ -19,7 +22,7 @@ text \<open>
 
 \<^item> Section 2.1
   \<^item> Categories and Arrows
-    @{file "../ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/Categories/category.ML"}
+    @{file "ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/Categories/category.ML"}
 
   \<^item> Morphs
     \<^item> Morphism Base @{file "Gen_Zippers/Zippers5/Morphs/morph_base.ML"}
@@ -44,10 +47,10 @@ text \<open>
 
 \<^item> Section 2.1.1
   \<^item> Monads
-    @{file "../ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/typeclass_base.ML"}
+    @{file "ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/typeclass_base.ML"}
 
   \<^item> Kleisli Category
-    @{file "../ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/Categories/category_instance.ML"}
+    @{file "ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/Categories/category_instance.ML"}
 
   \<^item> Generating Alternating Zippers from Node Zippers
     \<^item> Extending the Alternating Zipper
@@ -59,18 +62,18 @@ text \<open>
     @{file "Gen_Zippers/Zippers5/Alternating_Zippers/Instances/Nodes/alternating_zipper_nodes_simple_zippers.ML"}
 
 \<^item> Section 2.2
-  \<^item> Lenses @{file "../ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/Lenses/lens.ML"}
+  \<^item> Lenses @{file "ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/Lenses/lens.ML"}
 
 \<^item> Section 3
   \<^item> We implemented a generalisation of the state monad that also allows the state type to change
     during computation. Such states are not monads but (Atkey) indexed monads.
-    \<^item> Atkey Indexed Monads @{file "../ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/itypeclass_base.ML"}
-    \<^item> Indexed State Monad @{file "../ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/State/istate.ML"}
-    \<^item> State Monad @{file "../ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/State/istate.ML"}
+    \<^item> Atkey Indexed Monads @{file "ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/itypeclass_base.ML"}
+    \<^item> Indexed State Monad @{file "ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/State/istate.ML"}
+    \<^item> State Monad @{file "ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/State/istate.ML"}
   \<^item> Antiquotations
     \<^item> Sources
-      @{file "../ML_Typeclasses/Antiquotations/ML_Eval_Antiquotation.thy"}
-      @{file "../ML_Typeclasses/Antiquotations/ML_Args_Antiquotations.thy"}
+      @{file "ML_Typeclasses/Antiquotations/ML_Eval_Antiquotation.thy"}
+      @{file "ML_Typeclasses/Antiquotations/ML_Args_Antiquotations.thy"}
       @{file "Antiquotations/ML_IMap_Antiquotation.thy"}
     \<^item> Example Configuration and Follow-Up ML-Code Generation
       @{file "Gen_Zippers/Zippers5/Morphs/ML_Morphs.thy"}
@@ -81,11 +84,9 @@ text \<open>
     classical reasoners, one for simplification actions, etc. This gives the search tree some more
     structure but is not strictly necessary (it is thus omitted in the paper).
 
-  \<^item> Example usages can be found here @{file "Examples/Old/Zippy_Examples.thy"}.
-
   \<^item> Adding Actions @{file "Zippy/Actions/zippy_paction_mixin_base.ML"}
     \<^item> Action nodes do not store a static cost and action but, more generally,
-      an "action with cost" (paction) that dynamically computes a cost and action pair.
+      an "action with priority" (paction) that dynamically computes a priority, action pair.
     \<^item> Action clusters store a "copy" morphism such that actions generating new children can move
       their action siblings to the newly created child while updating their siblings' goal focuses
       (since the number and order of goals may have changed in the new child).
@@ -106,22 +107,25 @@ text \<open>
 
   \<^item> Adding Failure and State @{file "Zippy/Instances/Zippy_Instance_Pure.thy"}
     \<^item> Option Monad and Transformers
-      @{file "../ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/typeclass_base_instance.ML"}
+      @{file "ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/typeclass_base_instance.ML"}
 
   \<^item> Adding Positional Information
     \<^item> Extending the Alternating Zipper @{file "Zippy/Positions/zippy_positions_mixin_base.ML"}
     \<^item> Alternating (Global) Position Zipper
       @{file "Gen_Zippers/Zippers5/Alternating_Zippers/Instances/alternating_global_position_zipper.ML"}
 
-  \<^item> Running a Best-First Search
+  \<^item> Running a Search
     \<^item> Postorder Depth-First Enumeration for Zippers
       @{file "Gen_Zippers/Zippers5/Zippers/Utils/df_postorder_enumerate_zipper.ML"}
     \<^item> Postorder Depth-First Enumeration for Alternating Zippers
       @{file "Gen_Zippers/Zippers5/Alternating_Zippers/Utils/df_postorder_enumerate_alternating_zipper.ML"}
-    \<^item> Best-First Search @{file "Zippy/Runs/zippy_run_mixin.ML"}
+    \<^item> Runs @{file "Zippy/Runs/zippy_run_mixin.ML"}
 
-  \<^item> Retrieving all theorems found by the zipper
+  \<^item> Retrieving Theorems from the Tree
     @{file "Zippy/Goals/Lists/zippy_lists_goals_results_top_meta_vars_mixin.ML"}
+
+  \<^item> Final example usages can be found here
+    @{file "Zippy/Instances/Auto/Examples/Zippy_Auto_Examples.thy"}.
 \<close>
 
 end

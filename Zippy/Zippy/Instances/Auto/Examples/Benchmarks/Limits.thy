@@ -1,8 +1,11 @@
 theory Limits
   imports
     HOL.Real_Vector_Spaces
-    Zippy_Auto_Benchmarks
+    Zippy_Auto_Benchmarks_Setup
 begin
+
+text \<open>Note: this benchmark file is an adjusted copy of HOL.Limits from the standard distribution
+(dated 07.11.2025)\<close>
 
 lemma range_mult [simp]:
   fixes a::"real" shows "range ((*) a) = (if a=0 then {0} else UNIV)"
@@ -393,7 +396,8 @@ next
   proof (cases "c (Suc m) = 0")
     case True
     then show ?thesis using Suc k
-      by auto (metis antisym_conv less_eq_Suc_le not_le)
+      (*NOTE keep original non-terminal auto call for reproducibility*)
+      by auto_orig (metis antisym_conv less_eq_Suc_le not_le)
   next
     case False
     then obtain M where M:
@@ -879,19 +883,24 @@ lemma tendsto_mult_right_iff [simp]:
 
 lemma tendsto_zero_mult_left_iff [simp]:
   fixes c::"'a::{topological_semigroup_mult,field}" assumes "c \<noteq> 0" shows "(\<lambda>n. c * a n)\<longlonglongrightarrow> 0 \<longleftrightarrow> a \<longlonglongrightarrow> 0"
-  using assms tendsto_mult_left tendsto_mult_left_iff
   (*NEW*)
-  by - ((zippy 10 run run: "Zippy.Run.AStar.all 1")[1])+
+  (*NOTE the two passed rules contain meta variables. If we insert them to the goal state with
+  "using", any meta variable instantiation of the rule will be persistent to the follow-up search
+  (root cause: Isabelle uses prenex polymorphism and thus there is no universal type abstraction to
+  the rule when inserted to the goal state).
+  In particular, an unwanted instantiation will block follow-up usages of the rule. Passing the
+  rules explicitly to the classical reasoner will make them available with with several possible
+  instantiations*)
+  using assms by (fastforce dest: tendsto_mult_left tendsto_mult_left_iff)
   (*ORIG*)
-  (* by (fastforce) *)
+  (* using assms tendsto_mult_left tendsto_mult_left_iff by fastforce *)
 
 lemma tendsto_zero_mult_right_iff [simp]:
   fixes c::"'a::{topological_semigroup_mult,field}" assumes "c \<noteq> 0" shows "(\<lambda>n. a n * c)\<longlonglongrightarrow> 0 \<longleftrightarrow> a \<longlonglongrightarrow> 0"
-  using assms tendsto_mult_right tendsto_mult_right_iff
   (*NEW*)
-  by - ((zippy 10 run run: "Zippy.Run.AStar.all 1")[1])+
+  using assms by (fastforce dest: tendsto_mult_right tendsto_mult_right_iff)
   (*ORIG*)
-  (* by (fastforce) *)
+  (* using assms tendsto_mult_right tendsto_mult_right_iff by fastforce *)
 
 lemma tendsto_zero_divide_iff [simp]:
   fixes c::"'a::{topological_semigroup_mult,field}" assumes "c \<noteq> 0" shows "(\<lambda>n. a n / c)\<longlonglongrightarrow> 0 \<longleftrightarrow> a \<longlonglongrightarrow> 0"
@@ -1065,7 +1074,7 @@ proof (subst tendsto_cong)
   show "\<forall>\<^sub>F n in sequentially. prod f {..n} = 0"
     using assms eventually_at_top_linorder
     (*NEW*)
-    by (zippy run run: Zippy.Run.Depth_First.all')
+    by (auto run exec: Zippy.Run.Depth_First.all')
     (*ORIG*)
     (* by (auto) *)
 qed auto
@@ -1274,7 +1283,7 @@ lemma continuous_cdivide_iff:
 lemma continuous_cong:
   assumes "eventually (\<lambda>x. f x = g x) F" "f (Lim F (\<lambda>x. x)) = g (Lim F (\<lambda>x. x))"
   shows "continuous F f \<longleftrightarrow> continuous F g"
-  unfolding continuous_def using assms filterlim_cong by force
+  unfolding continuous_def using assms filterlim_cong by (force 10 4)
 
 lemma continuous_at_within_cong:
   assumes "f x = g x" "eventually (\<lambda>x. f x = g x) (at x within S)"
@@ -1640,7 +1649,7 @@ proof (rule filtermap_fun_inverse[symmetric])
   show "filterlim uminus at_top (at_bot::'a filter)"
     using eventually_at_bot_linorder filterlim_at_top le_minus_iff
     (*NEW*)
-    by (zippy run run: "Zippy.Run.Depth_First.all 5")
+    by (force run exec: "Zippy.Run.Depth_First.all 5")
     (*ORIG*)
     (* by force+ *)
   show "filterlim uminus (at_bot::'a filter) at_top"
@@ -1768,7 +1777,8 @@ lemma tendsto_add_filterlim_at_infinity':
 
 lemma filterlim_inverse_at_right_top: "LIM x at_top. inverse x :> at_right (0::real)"
   unfolding filterlim_at
-  by (auto simp: eventually_at_top_dense)
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  by (auto_orig simp: eventually_at_top_dense)
      (metis tendsto_inverse_0 filterlim_mono at_top_le_at_infinity order_refl)
 
 lemma filterlim_inverse_at_top:
@@ -1936,7 +1946,11 @@ proof (rule antisym)
   have "(inverse \<longlongrightarrow> (0::'a)) at_infinity"
     by (fact tendsto_inverse_0)
   then show "filtermap inverse at_infinity \<le> at (0::'a)"
-    using filterlim_def filterlim_ident filterlim_inverse_at_iff by fastforce
+    using filterlim_def filterlim_ident filterlim_inverse_at_iff
+    (*NEW*)
+    by (fastforce run exec: Zippy.Run.Depth_First.all')
+    (*ORIG*)
+    (* by (fastforce) *)
 next
   have "filtermap inverse (filtermap inverse (at (0::'a))) \<le> filtermap inverse at_infinity"
     using filterlim_inverse_at_infinity unfolding filterlim_def
@@ -2092,7 +2106,11 @@ proof
   moreover have "((\<lambda>x. - f x) \<longlongrightarrow> - c) F"
     by (simp add: f tendsto_minus)
   ultimately show "filterlim g at_top F"
-    using filterlim_tendsto_add_at_top  by fastforce
+    using filterlim_tendsto_add_at_top
+    (*NEW*)
+    by (fastforce where run exec: Zippy.Run.Depth_First.all')
+    (*ORIG*)
+    (* by (fastforce) *)
 qed (auto simp: filterlim_tendsto_add_at_top[OF f])
 
 lemma filterlim_tendsto_add_at_bot_iff:
@@ -2294,7 +2312,7 @@ lemma Lim_transform_eventually:
   "\<lbrakk>(f \<longlongrightarrow> l) F; eventually (\<lambda>x. f x = g x) F\<rbrakk> \<Longrightarrow> (g \<longlongrightarrow> l) F"
   using eventually_elim2
   (*NEW*)
-  by (zippy simp add: tendsto_def where run run: Zippy.Run.Depth_First.all')
+  by (fastforce simp add: tendsto_def where run exec: Zippy.Run.Depth_First.all')
   (*ORIG*)
   (* by (fastforce simp add: tendsto_def) *)
 
@@ -2477,7 +2495,7 @@ lemma (in bounded_bilinear) convergent:
 lemma convergent_minus_iff:
   fixes X :: "nat \<Rightarrow> 'a::topological_group_add"
   shows "convergent X \<longleftrightarrow> convergent (\<lambda>n. - X n)"
-  unfolding convergent_def by (force dest: tendsto_minus)
+  unfolding convergent_def by (force 0 4 dest: tendsto_minus)
 
 lemma convergent_diff:
   fixes X Y :: "nat \<Rightarrow> 'a::topological_group_add"
@@ -2732,14 +2750,14 @@ proof
   then have "LIM x F. inverse (f x) * (f x / g x) :> at_infinity"
     using assms tendsto_inverse tendsto_mult_filterlim_at_infinity
       (*NEW*)
-      by (zippy run run: Zippy.Run.Depth_First.all')
+      by (fastforce run exec: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* by fastforce+ *)
   then have "LIM x F. inverse (g x) :> at_infinity"
     apply (elim filterlim_mono_eventually)
     using eventually_times_inverse_1[OF assms]
     by (auto elim:eventually_mono simp add:field_simps)
-  then show "filterlim g (at 0) F" using filterlim_inverse_at_iff[symmetric] by force
+  then show "filterlim g (at 0) F" using filterlim_inverse_at_iff[symmetric] by (force)
 next
   assume "filterlim g (at 0) F"
   then have "filterlim (\<lambda>x. inverse (g x)) at_infinity F"
@@ -2768,7 +2786,7 @@ next
   then show "LIM x F. g x :> at_top"
     apply (elim filterlim_mono_eventually)
       apply simp_all[2]
-    using eventually_times_inverse_1[OF assms(1)] \<open>c>0\<close> eventually_mono by fastforce
+    using eventually_times_inverse_1[OF assms(1)] \<open>c>0\<close> eventually_mono by (fastforce)
 qed
 
 lemma filterlim_tendsto_pos_mult_at_bot_iff:
@@ -3031,7 +3049,11 @@ lemma uniformly_continuous_on_def:
     (\<forall>e>0. \<exists>d>0. \<forall>x\<in>s. \<forall>x'\<in>s. dist x' x < d \<longrightarrow> dist (f x') (f x) < e)"
   unfolding uniformly_continuous_on_uniformity
     uniformity_dist filterlim_INF filterlim_principal eventually_inf_principal
-  by (force simp: Ball_def uniformity_dist[symmetric] eventually_uniformity_metric)
+  (*NEW*)
+  by (force 4 3 simp: Ball_def uniformity_dist[symmetric] eventually_uniformity_metric
+    where run exec: "Zippy.Run.Depth_First.all 5")
+  (*ORIG*)
+  (* by (force 4 3 simp: Ball_def uniformity_dist[symmetric] eventually_uniformity_metric) *)
 
 abbreviation isUCont :: "['a::metric_space \<Rightarrow> 'b::metric_space] \<Rightarrow> bool"
   where "isUCont f \<equiv> uniformly_continuous_on UNIV f"
@@ -3191,9 +3213,9 @@ proof (cases "a \<le> b", rule compactI)
       by auto
     with trans show ?case
       unfolding *
-        by (intro exI[of _ "C1 \<union> C2"])
+        apply (intro exI[of _ "C1 \<union> C2"])
         (*NEW*)
-        ((zippy 20 where run run: "Zippy.Run.AStar.all 1")[1])+
+        by (auto run exec: Zippy.Run.Breadth_First.all')
         (*ORIG*)
         (* auto *)
   next
@@ -3235,7 +3257,7 @@ lemma open_Collect_positive:
   shows "\<exists>A. open A \<and> A \<inter> s = {x\<in>s. 0 < f x}"
   using continuous_on_open_invariant[THEN iffD1, OF f, rule_format, of "{0 <..}"]
   (*NEW*)
-  by (zippy simp: Int_def field_simps where run run: "Zippy.Run.Depth_First.all 1")
+  by (auto simp: Int_def field_simps where run exec: "Zippy.Run.Depth_First.all 1")
   (*ORIG*)
   (* by (auto simp: Int_def field_simps) *)
 
@@ -3256,7 +3278,11 @@ lemma isCont_eq_Ub:
   shows "a \<le> b \<Longrightarrow> \<forall>x::real. a \<le> x \<and> x \<le> b \<longrightarrow> isCont f x \<Longrightarrow>
     \<exists>M. (\<forall>x. a \<le> x \<and> x \<le> b \<longrightarrow> f x \<le> M) \<and> (\<exists>x. a \<le> x \<and> x \<le> b \<and> f x = M)"
   using continuous_attains_sup[of "{a..b}" f]
-  by (auto simp: continuous_at_imp_continuous_on Ball_def Bex_def)
+  (*NEW*)
+  by (auto simp: continuous_at_imp_continuous_on Ball_def Bex_def
+    where run exec: "Zippy.Run.Breadth_First.all'")
+  (*ORIG*)
+  (* by (auto simp: continuous_at_imp_continuous_on Ball_def Bex_def) *)
 
 lemma isCont_eq_Lb:
   fixes f :: "real \<Rightarrow> 'a::linorder_topology"
@@ -3348,17 +3374,19 @@ text \<open>Bartle/Sherbert: Introduction to Real Analysis, Theorem 4.2.9, p. 11
 lemma LIM_fun_gt_zero: "f \<midarrow>c\<rightarrow> l \<Longrightarrow> 0 < l \<Longrightarrow> \<exists>r. 0 < r \<and> (\<forall>x. x \<noteq> c \<and> \<bar>c - x\<bar> < r \<longrightarrow> 0 < f x)"
   for f :: "real \<Rightarrow> real"
     (*NEW*)
-    by (zippy 10 dest: LIM_D where run run: "Zippy.Run.AStar.all 1")+
+    (*NOTE: not a minor change and hence excluded*)
+    (* by (force dest: LIM_D[where r=l]) *)
     (*ORIG*)
-    (* by (force_orig simp: dest: LIM_D)+ *)
+    (*NOTE not working with zippy*)
+    by (force 4 4 dest: LIM_D)
 
 lemma LIM_fun_less_zero: "f \<midarrow>c\<rightarrow> l \<Longrightarrow> l < 0 \<Longrightarrow> \<exists>r. 0 < r \<and> (\<forall>x. x \<noteq> c \<and> \<bar>c - x\<bar> < r \<longrightarrow> f x < 0)"
   for f :: "real \<Rightarrow> real"
   by (drule LIM_D [where r="-l"])
   (*NEW*)
-  (zippy 10 run run: "Zippy.Run.AStar.all 1")+
+  (force 4 4)
   (*ORIG*)
-  (* force+ *)
+  (* (force) *)
 
 lemma LIM_fun_not_zero: "f \<midarrow>c\<rightarrow> l \<Longrightarrow> l \<noteq> 0 \<Longrightarrow> \<exists>r. 0 < r \<and> (\<forall>x. x \<noteq> c \<and> \<bar>c - x\<bar> < r \<longrightarrow> f x \<noteq> 0)"
   for f :: "real \<Rightarrow> real"

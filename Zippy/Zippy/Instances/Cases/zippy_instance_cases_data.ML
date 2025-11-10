@@ -207,9 +207,9 @@ sig
       ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code,
       ML_Code_Util.code, ML_Code_Util.code) Zippy_Instance_Cases_Data_Args.PDC.entries parser
     val config_attribute : (bool, ML_Code_Util.code,
-      ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code,
-      ML_Code_Util.code, ML_Code_Util.code) Zippy_Instance_Cases_Data_Args.PDC.entries * Position.T ->
-      attribute
+        ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code,
+        ML_Code_Util.code, ML_Code_Util.code) Zippy_Instance_Cases_Data_Args.PDC.entries
+        * Position.T -> attribute
 
     val parse_attribute : attribute context_parser
     val setup_attribute : string option -> local_theory -> local_theory
@@ -280,7 +280,6 @@ functor Zippy_Instance_Cases_Data(
   ) : ZIPPY_INSTANCE_CASES_DATA =
 struct
 open Z
-
 structure AU = ML_Attribute_Util
 structure MCU = ML_Code_Util
 structure PU = Parse_Util
@@ -295,7 +294,6 @@ structure FI = Functor_Instance(FI_Cases_Data)
 
 local open Zippy_Instance_Cases_Data_Args ZLPC Base_Data
 in
-
 structure Log = Zippy_Logger_Mixin_Base(val parent_logger = Log.logger; val name = "Cases_Data")
 open Log
 
@@ -629,7 +627,7 @@ fun attribute (entries, pos) =
     val add_attr = PM.get_add_safe entries
       |> (fn SOME entries => add_attribute (entries, pos) | NONE => default_attr)
     val del_attr = PM.get_del_safe entries
-      |> (fn SOME sel => del_attribute (sel, pos) | NONE => default_attr)
+      |> (fn SOME entries => del_attribute (entries, pos) | NONE => default_attr)
     val config_attr = PM.get_config_safe entries
       |> (fn SOME entries => config_attribute (entries, pos) | NONE => default_attr)
   in AU.apply_attribute config_attr #> AU.apply_attribute del_attr #> add_attr end

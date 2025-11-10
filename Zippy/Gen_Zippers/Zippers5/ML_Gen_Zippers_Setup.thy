@@ -3,7 +3,7 @@ section \<open>Generic Zippers Setup\<close>
 theory ML_Gen_Zippers_Setup
   imports
     ML_Gen_Zippers_Base
-    ML_Typeclasses.ML_Lenses
+    ML_Lenses
 begin
 
 declare [[ParaT_args sep: ", " encl: "" ", " encl_arg: "" "" stop: ]]

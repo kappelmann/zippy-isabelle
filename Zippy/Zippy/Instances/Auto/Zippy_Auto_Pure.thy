@@ -1,5 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
-theory Zippy_Instance_Auto_Pure
+theory Zippy_Auto_Pure
   imports
     Context_Parsers
     Zippy_Instance_Auto
@@ -7,37 +7,76 @@ theory Zippy_Instance_Auto_Pure
     Zippy_Instance_Simp
 begin
 
-text \<open>Setup the standard instance with short name \<open>zippy\<close>.\<close>
+text \<open>Setup the standard zippy auto instance with short name \<open>zippy\<close>.\<close>
 
 ML\<open>
-local
-  structure Base = struct structure Z = Zippy; structure Ctxt = Z.Ctxt end
-  structure Zippy_Simp = Zippy_Instance_Simp(open Base)
+local structure Zippy_Simp = Zippy_Instance_Simp(structure Z = Zippy; structure Ctxt = Z.Ctxt)
 in structure Zippy = struct open Zippy_Simp Zippy end end\<close>
 
 ML\<open>
-local val default_presultsq_scale = Rat.make (12, 10)
+local open Zippy
+  val default_presultsq_scale = Rat.make (12, 10)
+  structure Resolve_Base =
+  struct
+    structure Z = Zippy
+    val cost = Cost.MEDIUM
+    structure TI = Discrimination_Tree
+    open Base_Data.AAMeta
+    fun init_args get_thm = {
+      empty_action = SOME (Library.K PAction.disable_action),
+      default_update = SOME (fn _ => @{undefined}), (*just a temporary placeholder*)
+      mk_cud = SOME Result_Action.copy_update_data_empty_changed,
+      presultsq = SOME (PResults.enum_scale_presultsq default_presultsq_scale cost),
+      mk_meta = SOME (Library.K (Library.K (metadata {cost = cost, progress = P.promising}))),
+      del_select = SOME (apsnd (snd #> get_thm) #> Thm.eq_thm)}
+  end
 in
 \<^functor_instance>\<open>struct_name: Zippy_Auto
   functor_name: Zippy_Instance_Auto
   id: \<open>"zippy"\<close>
-  more_args: \<open>
-    structure Z = Zippy
-    open Z; open MU.A
-    structure TI = Discrimination_Tree
-    val cost = Cost.MEDIUM
-    open Base_Data.AAMeta
-    val resolve_init_args = {
-      empty_action = SOME (Library.K PAction.disable_action),
-      default_update = NONE,
-      mk_cud = SOME Result_Action.copy_update_data_empty_changed,
-      presultsq = SOME (PResults.enum_scale_presultsq default_presultsq_scale cost),
-      mk_meta = SOME (Library.K (Library.K (metadata {cost = cost, progress = P.promising}))),
-      del_select = SOME (apsnd (snd #> #thm #> the) #> Thm.eq_thm)}
-    val simp_init_args = {timeout = SOME 7.0, depth = NONE}
+  more_args: \<open>open Resolve_Base; open Z
+    val resolve_init_args = init_args Zippy_Instance_Hom_Changed_Goals_Data_Args.PD.get_thm
+    val simp_init_args = {timeout = SOME 10.0, depth = NONE}
     structure Log_Base = Z.Logging.Base\<close>\<close>
 structure Zippy_Auto =
 struct open Zippy_Auto
+
+(*add resolution with certifying unification*)
+structure Logging =
+struct open Logging
+  structure URule = Zippy_Logger_Mixin_Base(val parent_logger = logger; val name = "URule")
+end
+
+local val default_update = Run.init_gpos
+in
+\<^functor_instance>\<open>struct_name: URule
+  functor_name: Zippy_Instance_UResolves_Data
+  id: \<open>FI.prefix_id "urule"\<close>
+  path: \<open>FI.long_name\<close>
+  more_args: \<open>open Resolve_Base
+    structure PDC = Zippy_Instance_Hom_Changed_Goals_Data_Args.PDC
+    val init_args = init_args Zippy_Instance_UResolve_Data_Args.PD.get_rule |> (fn args => {
+      normalisers = SOME Standard_Mixed_Comb_Unification.norms_first_higherp_comb_unify,
+      unifier = SOME Standard_Mixed_Comb_Unification.first_higherp_comb_unify,
+      mk_meta = SOME (PDC.get_mk_meta args),
+      empty_action = SOME (PDC.get_empty_action args),
+      default_update = SOME default_update,
+      mk_cud = SOME (PDC.get_mk_cud args),
+      presultsq = SOME (PDC.get_presultsq args),
+      del_select = SOME (PDC.get_del_select args)})
+    structure Log = Logging.URule\<close>\<close>
+
+val _ = Theory.setup (Rule.Resolve.map_default_update (K default_update)
+  #> Rule.EResolve.map_default_update (K default_update)
+  #> Rule.DResolve.map_default_update (K default_update)
+  #> Rule.FResolve.map_default_update (K default_update)
+  #> Match.Resolve.map_default_update (K default_update)
+  #> Match.EResolve.map_default_update (K default_update)
+  #> Match.DResolve.map_default_update (K default_update)
+  #> Match.FResolve.map_default_update (K default_update)
+  |> Context.theory_map)
+end
+
 structure PResults =
 struct
 val default_presultsq_scale = default_presultsq_scale
@@ -65,13 +104,12 @@ struct open Zippy_Auto
 (* add instance specific utilities *)
 structure Run =
 struct open Run
-local open Zippy; open ZLPC MU; open SC A Mo
-  structure GC = Zippy_Goal_Cluster_Mixin(Mixin_Base2.GCluster)
+local open Zippy; open ZLPC MU; open SC A
 in
 fun init st = st |>
   (Util.init_thm_state >>> Down1.morph >>> Z2.ZM.Unzip.morph
   >>> Init_Goal_Cluster.update_all (Library.K Util.exn)
-    (arr (GC.get_ngoals #> Base_Data.Tac_Res.GPU.F.all_upto))
+    (arr (Mixin2.GCluster.get_ngoals #> Base_Data.Tac_Res.GPU.F.all_upto))
   >>> top2 >>> Z1.ZM.Unzip.morph)
 
 val are_thm_variants = apply2 Thm.prop_of #> Term_Util.are_term_variants
@@ -86,10 +124,10 @@ fun changed_uniquesq st = Seq.filter (fn st' => not (are_thm_variants (st, st'))
     structure Z = ZLPC
     structure Ctxt = Ctxt
     structure Seq_From_Monad = Seq_From_Monad
-    type run_config = int option
+    type exec_config = int option (*fuel*)
     val init_args = {
       init = SOME init,
-      run = SOME Run.AStar.promising',
+      exec = SOME Run.AStar.promising',
       post = SOME (fn st => Ctxt.with_ctxt (fn ctxt =>
         arr (changed_uniquesq st #> Seq.maps (prune_params_tac ctxt))))}
     \<close>\<close>
@@ -109,37 +147,20 @@ local_setup \<open>
     val parse_fuel = Parse_Util.option Parse.nat
     val parse = Scan.lift parse_fuel --| Zippy_Auto.Context_Parsers.parse
       >> (Method.SIMPLE_METHOD oo tac)
-  in Method.local_setup @{binding zippy} parse "Extensible white-box prover based on Zippy" end\<close>
+  in Method.local_setup Zippy_Auto.binding parse "Extensible white-box prover based on Zippy" end\<close>
 
 paragraph \<open>Resolution\<close>
 
-local_setup\<open>Zippy_Auto.Resolves.setup_resolve_attribute NONE\<close>
-local_setup\<open>Zippy_Auto.Resolves.setup_eresolve_attribute NONE\<close>
-local_setup\<open>Zippy_Auto.Resolves.setup_dresolve_attribute NONE\<close>
-local_setup\<open>Zippy_Auto.Resolves.setup_fresolve_attribute NONE\<close>
-
-declare [[zippy_resolve config default_update: Zippy_Auto.Run.init_gpos]]
-and [[zippy_resolve (match) config default_update: Zippy_Auto.Run.init_gpos]]
-and [[zippy_eresolve config default_update: Zippy_Auto.Run.init_gpos]]
-and [[zippy_eresolve (match) config default_update: Zippy_Auto.Run.init_gpos]]
-and [[zippy_dresolve config default_update: Zippy_Auto.Run.init_gpos]]
-and [[zippy_dresolve (match) config default_update: Zippy_Auto.Run.init_gpos]]
-and [[zippy_fresolve config default_update: Zippy_Auto.Run.init_gpos]]
-and [[zippy_fresolve (match) config default_update: Zippy_Auto.Run.init_gpos]]
-
-ML\<open>
-structure Zippy =
-struct open Zippy
-structure Mixin2 =
-struct
-  structure GCluster = Zippy_Goal_Cluster_Mixin(Zippy.Mixin_Base2.GCluster)
-end
-end
-\<close>
+local_setup\<open>Zippy_Auto.Rule.setup_attribute
+  (Either.Right "(e/d/f-)resolution with higher-order unification")\<close>
+local_setup\<open>Zippy_Auto.Match.setup_attribute
+  (Either.Right "(e/d/f-)resolution with higher-order matching")\<close>
+local_setup\<open>Zippy_Auto.URule.setup_attribute
+  (Either.Right "(e/d/f-)resolution with certifying unification")\<close>
 
 declare [[zippy_init_gc \<open>
   let
-    open Zippy Zippy_Auto.Resolves.Resolve_Unif; open ZLPC MU; open SC A Mo
+    open Zippy Zippy_Auto.Rule.Resolve; open ZLPC MU; open SC A Mo
     val id = @{binding resolve_ho_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "resolution with higher-order unification on first possible goal")
@@ -165,7 +186,7 @@ declare [[zippy_init_gc \<open>
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Resolves.Resolve_Match; open ZLPC MU; open SC A Mo
+    open Zippy Zippy_Auto.Match.Resolve; open ZLPC MU; open SC A Mo
     val id = @{binding resolve_ho_match_first}
     val descr = Lazy.value "resolution with higher-order matching on first possible goal"
     val meta = Base_Data.ACMeta.metadata (id,
@@ -189,12 +210,41 @@ declare [[zippy_init_gc \<open>
       end)
     fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
       >>= AC.opt (K z) Up3.morph
+  in (id, init) end\<close>
+  \<open>let
+    open Zippy Zippy_Auto.URule.Resolve; open ZLPC MU; open SC A Mo
+    val id = @{binding resolve_e_unif_first}
+    val descr = Lazy.value "resolution with certifying unification on first possible goal"
+    val meta = Base_Data.ACMeta.metadata (id,
+      Lazy.value "resolution with cerifying unification on first possible goal")
+    val tac = Unify_Resolve_Base.unify_resolve_tac
+    fun ztac normalisers unifier mk_meta thm _ = Ctxt.with_ctxt (tac normalisers unifier thm
+      #> Tac_AAM.lift_tac mk_meta
+      #> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
+      #> arr)
+    (*Note: there is no complete, efficient retrieval other than taking all rules. In case of a
+    large rule set, one can use an incomplete retrieval returning only those rules whose
+    left-hand or right-hand side potentially higher-order unifies with a disagreement term.
+    Cf. the retrieval used in ML_Unification.ML_Unification_Hints*)
+    val retrieval = Data.TI.content
+    fun lookup_goal ctxt _ = retrieval (Data.get_index (Context.Proof ctxt))
+      |> List.map (apsnd (transfer_data (Proof_Context.theory_of ctxt)))
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt => fn z =>
+      let fun lookup_cons_goals goals = lookup_each_focused_data (lookup_goal ctxt) goals focus
+        |> map_index (fn (i, (focus, data)) =>
+          cons_nth_action Util.exn meta ztac ctxt i data focus >>> Up4.morph)
+      in
+        Up3.morph z >>= arr Mixin2.GCluster.get_stripped_goals
+        >>= (fn goals => ZB.update_zipper3 (lookup_cons_goals goals) z)
+      end)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 (*TODO: could be made more efficient: we already know the indices of possibly matching premises when
 seraching the term index but do not use that information in the subsequent (d/e)resolution*)
 declare [[zippy_init_gc
   \<open>let
-    open Zippy Zippy_Auto.Resolves.EResolve_Unif; open ZLPC MU; open SC A Mo
+    open Zippy Zippy_Auto.Rule.EResolve; open ZLPC MU; open SC A Mo
     val id = @{binding eresolve_ho_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "e-resolution with higher-order unification on first possible goal")
@@ -219,7 +269,7 @@ declare [[zippy_init_gc
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Resolves.EResolve_Match; open ZLPC MU; open SC A Mo
+    open Zippy Zippy_Auto.Match.EResolve; open ZLPC MU; open SC A Mo
     val id = @{binding eresolve_ho_match_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "e-resolution with higher-order matching on first possible goal")
@@ -242,10 +292,34 @@ declare [[zippy_init_gc
       end)
     fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
       >>= AC.opt (K z) Up3.morph
+  in (id, init) end\<close>
+  \<open>let
+    open Zippy Zippy_Auto.URule.EResolve; open ZLPC MU; open SC A Mo
+    val id = @{binding eresolve_e_unif_first}
+    val meta = Base_Data.ACMeta.metadata (id,
+      Lazy.value "e-resolution with certifying unification on first possible goal")
+    fun tac norms unify = Unify_Resolve_Base.unify_eresolve_tac norms unify norms unify
+    fun ztac normalisers unifier mk_meta thm _ = Ctxt.with_ctxt (tac normalisers unifier thm
+      #> Tac_AAM.lift_tac mk_meta
+      #> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
+      #> arr)
+    val retrieval = Data.TI.content
+    fun lookup_goal ctxt _ = retrieval (Data.get_index (Context.Proof ctxt))
+      |> List.map (apsnd (transfer_data (Proof_Context.theory_of ctxt)))
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt => fn z =>
+      let fun lookup_cons_goals goals = lookup_each_focused_data (lookup_goal ctxt) goals focus
+        |> map_index (fn (i, (focus, data)) =>
+          cons_nth_action Util.exn meta ztac ctxt i data focus >>> Up4.morph)
+      in
+        Up3.morph z >>= arr Mixin2.GCluster.get_stripped_goals
+        >>= (fn goals => ZB.update_zipper3 (lookup_cons_goals goals) z)
+      end)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 declare [[zippy_init_gc
   \<open>let
-    open Zippy Zippy_Auto.Resolves.DResolve_Unif; open ZLPC MU; open SC A Mo
+    open Zippy Zippy_Auto.Rule.DResolve; open ZLPC MU; open SC A Mo
     val id = @{binding dresolve_ho_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "d-resolution with higher-order unification on first possible goal")
@@ -277,7 +351,7 @@ declare [[zippy_init_gc
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Resolves.DResolve_Match; open ZLPC MU; open SC A Mo
+    open Zippy Zippy_Auto.Match.DResolve; open ZLPC MU; open SC A Mo
     val id = @{binding dresolve_ho_match_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "d-resolution with higher-order matching on first possible goal")
@@ -305,10 +379,34 @@ declare [[zippy_init_gc
       end)
     fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
       >>= AC.opt (K z) Up3.morph
+  in (id, init) end\<close>
+  \<open>let
+    open Zippy Zippy_Auto.URule.DResolve; open ZLPC MU; open SC A Mo
+    val id = @{binding dresolve_e_unif_first}
+    val meta = Base_Data.ACMeta.metadata (id,
+      Lazy.value "d-resolution with certifying unification on first possible goal")
+    val tac = Unify_Resolve_Base.unify_dresolve_tac
+    fun ztac normalisers unifier mk_meta thm _ = Ctxt.with_ctxt (tac normalisers unifier thm
+      #> Tac_AAM.lift_tac mk_meta
+      #> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
+      #> arr)
+    val retrieval = Data.TI.content
+    fun lookup_goal ctxt _ = retrieval (Data.get_index (Context.Proof ctxt))
+      |> List.map (apsnd (transfer_data (Proof_Context.theory_of ctxt)))
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt => fn z =>
+      let fun lookup_cons_goals goals = lookup_each_focused_data (lookup_goal ctxt) goals focus
+        |> map_index (fn (i, (focus, data)) =>
+          cons_nth_action Util.exn meta ztac ctxt i data focus >>> Up4.morph)
+      in
+        Up3.morph z >>= arr Mixin2.GCluster.get_stripped_goals
+        >>= (fn goals => ZB.update_zipper3 (lookup_cons_goals goals) z)
+      end)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 declare [[zippy_init_gc
   \<open>let
-    open Zippy Zippy_Auto.Resolves.FResolve_Unif; open ZLPC MU; open SC A Mo
+    open Zippy Zippy_Auto.Rule.FResolve; open ZLPC MU; open SC A Mo
     val id = @{binding fresolve_ho_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "f-resolution with higher-order unification on first possible goal")
@@ -334,7 +432,7 @@ declare [[zippy_init_gc
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Resolves.FResolve_Match; open ZLPC MU; open SC A Mo
+    open Zippy Zippy_Auto.Match.FResolve; open ZLPC MU; open SC A Mo
     val id = @{binding fresolve_ho_match_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "f-resolution with higher-order matching on first possible goal")
@@ -360,18 +458,41 @@ declare [[zippy_init_gc
       end)
     fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
       >>= AC.opt (K z) Up3.morph
+  in (id, init) end\<close>
+  \<open>let
+    open Zippy Zippy_Auto.URule.FResolve; open ZLPC MU; open SC A Mo
+    val id = @{binding fresolve_e_unif_first}
+    val meta = Base_Data.ACMeta.metadata (id,
+      Lazy.value "f-resolution with certifying unification on first possible goal")
+    val tac = Unify_Resolve_Base.unify_fresolve_tac
+    fun ztac normalisers unifier mk_meta thm _ = Ctxt.with_ctxt (tac normalisers unifier thm
+      #> Tac_AAM.lift_tac mk_meta
+      #> Tac_AAM.Tac.zFIRST_GOAL_FOCUS
+      #> arr)
+    val retrieval = Data.TI.content
+    fun lookup_goal ctxt _ = retrieval (Data.get_index (Context.Proof ctxt))
+      |> List.map (apsnd (transfer_data (Proof_Context.theory_of ctxt)))
+    fun cons_actions focus = Ctxt.with_ctxt (fn ctxt => fn z =>
+      let fun lookup_cons_goals goals = lookup_each_focused_data (lookup_goal ctxt) goals focus
+        |> map_index (fn (i, (focus, data)) =>
+          cons_nth_action Util.exn meta ztac ctxt i data focus >>> Up4.morph)
+      in
+        Up3.morph z >>= arr Mixin2.GCluster.get_stripped_goals
+        >>= (fn goals => ZB.update_zipper3 (lookup_cons_goals goals) z)
+      end)
+    fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
+      >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 
-declare [[zippy_parse \<open>(@{binding resolve}, Zippy_Auto.Resolves.parse_resolve_method)\<close>]]
-declare [[zippy_parse \<open>(@{binding eresolve}, Zippy_Auto.Resolves.parse_eresolve_method)\<close>]]
-declare [[zippy_parse \<open>(@{binding dresolve}, Zippy_Auto.Resolves.parse_dresolve_method)\<close>]]
-declare [[zippy_parse \<open>(@{binding fresolve}, Zippy_Auto.Resolves.parse_fresolve_method)\<close>]]
+declare [[zippy_parse \<open>(@{binding rule}, Zippy_Auto.Rule.parse_method)\<close>]]
+declare [[zippy_parse \<open>(@{binding match}, Zippy_Auto.Match.parse_method)\<close>]]
+declare [[zippy_parse \<open>(@{binding urule}, Zippy_Auto.URule.parse_method)\<close>]]
 
 paragraph \<open>Simplifier\<close>
 
 declare [[zippy_init_gc \<open>
   let
-    open Zippy; open ZLPC MU; open SC A Mo
+    open Zippy; open ZLPC MU; open A Mo
     val name = "asm_full_simp"
     val id = Zippy_Identifier.make (SOME @{here}) name
     val tacs = (safe_asm_full_simp_tac, asm_full_simp_tac)
@@ -398,18 +519,17 @@ declare [[zippy_init_gc \<open>
       #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
     val mk_cud = Result_Action.copy_update_data_empty_changed
     open Base_Data
-    val costs_progress = ((Cost.LOW, AAMeta.P.promising), (Cost.LOW1, AAMeta.P.promising))
+    val costs_progress = ((Cost.LOW, AAMeta.P.promising), (Cost.LOW3, AAMeta.P.promising))
     val madd_safe = fst
-    val madd_unsafe_every = fst
     fun mk_meta (cost, progress) = A.K (Library.K (Library.K (AAMeta.metadata
       {cost = cost, progress = progress})))
     val (mk_meta_safe, mk_meta_unsafe) = apply2 mk_meta costs_progress
     val (presultsq_safe, presultsq_unsafe) =
       apply2 (fst #> Zippy_Auto.PResults.enum_scale_presultsq_default) costs_progress
     val data = Simp.gen_data Util.exn id name safe_tac tac update mk_cud
-      madd_safe madd_unsafe_every mk_meta_safe mk_meta_unsafe mk_meta_unsafe presultsq_safe
-      presultsq_unsafe presultsq_unsafe
-    fun init _ focus z = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
+      madd_safe mk_meta_safe mk_meta_unsafe presultsq_safe presultsq_unsafe
+    fun init _ focus z =
+      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.no_descr id) [(focus, data)] z
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 

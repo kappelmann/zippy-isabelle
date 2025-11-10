@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>State\<close>
 theory ML_State_Base
   imports Gen_ML_Typeclasses_Base
 begin

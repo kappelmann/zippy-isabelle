@@ -1,14 +1,18 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
-theory Zippy_Instance_Auto_HOL
+theory Zippy_Auto_HOL
   imports
     Cases_Tactics_HOL
     Extended_Blast_Data
+    ML_Unification.ML_Unification_HOL_Setup
     Zippy_Instance_Cases
     Zippy_Instance_Classical
     Zippy_Instance_Induction
     Zippy_Instance_Subst
-    Zippy_Instance_Auto_Pure
+    Zippy_Auto_Pure
 begin
+
+paragraph \<open>Summary\<close>
+text \<open>Setup the standard Zippy Auto instance.\<close>
 
 paragraph \<open>Simplifier\<close>
 
@@ -30,7 +34,7 @@ struct open Zippy_Auto
   id: \<open>FI.prefix_id "blast"\<close>
   path: \<open>FI.long_name\<close>
   more_args: \<open>open Base
-    val init_args = {depth = SOME 4, timeout = SOME 7.0}
+    val init_args = {depth = SOME 4, timeout = SOME 10.0}
     val parent_logger = Logging.logger
     \<close>\<close>
 end
@@ -58,7 +62,7 @@ declare [[zippy_init_gc \<open>
       mk_meta_inst0 mk_meta_instp mk_meta_unsafe presultsq_safe presultsq_inst0 presultsq_instp
       presultsq_unsafe
     fun init _ focus z =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
+      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.no_descr id) [(focus, data)] z
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 declare [[zippy_init_gc \<open>
@@ -76,18 +80,18 @@ declare [[zippy_init_gc \<open>
     val data = Classical.atomize_prems_data id update mk_cud madd mk_meta
       presultsq_atomize_prems
     fun init _ focus z =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
+      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.no_descr id) [(focus, data)] z
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 declare [[zippy_parse add: \<open>(@{binding clasimp}, Clasimp.clasimp_modifiers |> Method.sections)\<close>
+  \<open>(@{binding cla}, Classical.cla_modifiers |> Method.sections)\<close>
   and default: \<open>@{binding clasimp}\<close>]]
 
 local_setup\<open>Zippy_Auto.Extended_Blast_Data.setup_attribute NONE\<close>
 declare [[zippy_init_gc \<open>
   let
-    open Zippy Zippy_Auto; open ZLPC MU; open A Mo
+    open Zippy Zippy_Auto; open ZLPC MU; open A Mo Base_Data
     val id = @{binding blast}
-    open Base_Data
     val (cost, progress, prio) = (Cost.VERY_LOW, AAMeta.P.promising, Cost.HIGH)
     val madd = fst
     val mk_meta = Library.K (Library.K (AAMeta.metadata {cost = cost, progress = progress}))
@@ -97,77 +101,16 @@ declare [[zippy_init_gc \<open>
     val presultsq = Zippy_Auto.PResults.enum_scale_presultsq_default prio
     val data = {
       empty_action = Library.K Zippy.PAction.disable_action,
-      meta = Mixin_Base4.Meta.Meta.metadata (id, Lazy.value "blast with depth and timeout limit"),
+      meta = AMeta.metadata (id, Lazy.value "blast with depth and timeout limit"),
       result_action = Result_Action.action (Library.K (C.id ())) Result_Action.copy_update_data,
       presultsq = presultsq,
       tac = ztac}
-    fun init _ focus z = Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, data)] z
+    fun init _ focus z = Tac.cons_action_cluster Util.exn (ACMeta.no_descr id) [(focus, data)] z
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 declare [[zippy_parse \<open>(@{binding blast}, Scan.depend (fn context =>
   Zippy_Auto.Extended_Blast_Data.parse_attribute
   >> (fn attr => (ML_Attribute_Util.attribute_map_context attr context, ()))))\<close>]]
-
-(* setup\<open>fn thy =>
-  let
-    open Zippy_Resolve_Data_Args Zippy
-    val context = Context.Theory thy
-    val ctxt = Context.proof_of context
-
-    val kind_filters = [
-      Bires.intro_bang_kind, Bires.elim_bang_kind, Bires.dest_bang_kind,
-      Bires.intro_kind, Bires.elim_kind, Bires.dest_kind]
-    val nkinds = length kind_filters
-    val [sintro, selim, sdest, intro, elim, dest, _] = Classical.dest_decls ctxt (K true)
-      |> partition_list (fn i => fn x =>
-          let val kind = snd x |> #kind
-          in i = nkinds orelse i = find_index (equal kind) kind_filters end)
-        0 nkinds
-      |> List.map (List.map fst)
-
-    val args = PAA.empty_entries () |> fold PAA.set_entry [PAA.updates [],
-      PAA.progress Base_Data.AAMeta.P.Promising,
-      PAA.presultsq (Tac_Util.enum_double_presultsq cost.VERY_HIGH)]
-    val context = context
-      |> fold (Zippy_Auto.Resolve_Match.insert_args_context_defaults args) sintro
-      |> fold (Zippy_Auto.EResolve_Match.insert_args_context_defaults args) selim
-      |> fold (Zippy_Auto.DResolve_Match.insert_args_context_defaults args) sdest
-
-    val args = PAA.empty_entries () |> fold PAA.set_entry [PAA.updates [],
-      PAA.progress Base_Data.AAMeta.P.Promising,
-      PAA.presultsq (Tac_Util.enum_double_presultsq cost.HIGH)]
-    val context = context
-      |> fold (Zippy_Auto.Resolve_Unif.insert_args_context_defaults args) sintro
-      |> fold (Zippy_Auto.EResolve_Unif.insert_args_context_defaults args) selim
-      |> fold (Zippy_Auto.DResolve_Unif.insert_args_context_defaults args) sdest
-
-    val args = PAA.empty_entries () |> fold PAA.set_entry [PAA.updates []]
-    val context = context
-      |> fold (Zippy_Auto.Resolve_Unif.insert_args_context_defaults args) intro
-      |> fold (Zippy_Auto.EResolve_Unif.insert_args_context_defaults args) elim
-      |> fold (Zippy_Auto.DResolve_Unif.insert_args_context_defaults args) dest
-  in Context.theory_of context end
-\<close> *)
-
-(* declare [[zippy_init_gc \<open>
-  let
-    open Zippy; open ZLPC MU; open SC A
-    val id = @{binding auto_tac}
-    fun tac ctxt = auto_tac ctxt |> CHANGED |> SELECT_GOAL
-    fun ztac ctxt = Tac_AAM.lift_tac_progress Base_Data.AAMeta.P.promising (tac ctxt)
-      |> Tac_AAM.Tac.zTRY_EVERY_FOCUS1 Tac_AAM.madd
-    val mk_cud = Result_Action.copy_update_data
-    val action_data = {
-      empty_action = PAction.disable_action,
-      meta = Mixin_Base4.Meta.Meta.empty id,
-      result_action = Result_Action.action (Library.K (C.id ())) mk_cud,
-      presultsq = PResults.enum_double_presultsq cost.HIGH,
-      tac = Ctxt.with_ctxt (ztac #> arr)
-    }
-    fun init_ac _ focus =
-      Tac.cons_action_cluster Util.exn (Base_Data.ACMeta.empty id) [(focus, action_data)]
-      >>> Up3.morph
-  in (id, init_ac) end\<close>]] *)
 
 paragraph \<open>Substitution\<close>
 
@@ -258,9 +201,10 @@ paragraph \<open>Cases and Induction\<close>
 ML\<open>
 structure Zippy_Auto =
 struct open Zippy_Auto
-local open Zippy; open Base_Data
+local open Zippy
   structure Base_Args =
   struct
+    open Base_Data
     structure Z = Zippy
     structure Ctxt = Ctxt
     fun mk_init_args cost = {

@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Lists\<close>
 theory Zippy_Lists_Base
   imports
     ML_Zipper_Instances

@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Lenses\<close>
 theory ML_Lenses
   imports
     ML_ICategories

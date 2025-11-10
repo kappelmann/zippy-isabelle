@@ -14,13 +14,7 @@ Meeting notes:
 (*
 Kevin's notes:
 -1. When inserting implicit arguments, pass all bound variables to meta variables
-0. Specify solvers for assumptions of a lemma
-1. Priority of rules
-  - maybe priorities based on shape useful with update whenever a meta variables is instantiated?
-    -> mapping from meta variables to goals
 2. Priority of assumptions
-3. Use first-order unifier (in most or all cases?)
-  - Specification of unification algorithm for rules?
 4. Postponing zero-priority rules (e.g. subtype conditions, additional assumptions)
 5. consolidate remaining assumptions for variables using unification hints
 6. Problem: guessing when applying Dep_fun_typeI
@@ -56,9 +50,7 @@ Kevin's notes:
   b. create delay rules
   c. use matching instead of unification
 15. elaborating t : {x : A} \<rightarrow> B will result in \<lambda>{x} \<rightarrow> t, where {x} binds an implicit
-argument
-  - cf https://arxiv.org/pdf/1609.09709.pdf
-
+argument - cf https://arxiv.org/pdf/1609.09709.pdf
 
 - Abstract Logic Programming language: see miller overview paper;
   based on sequent calculus proof theory whose proofs correspond to search strategies
@@ -71,6 +63,5 @@ argument
 - say something about implementing A^* with dependent morphism pairings for free.
 - diff to IsaPlanner
 *)
-
 
 end

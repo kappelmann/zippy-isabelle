@@ -1,8 +1,11 @@
 theory Deriv
   imports
     HOL.Limits
-    Zippy_Auto_Benchmarks
+    Zippy_Auto_Benchmarks_Setup
 begin
+
+text \<open>Note: this benchmark file is an adjusted copy of HOL.Deriv from the standard distribution
+(dated 07.11.2025)\<close>
 
 subsection \<open>Frechet derivative\<close>
 
@@ -79,7 +82,7 @@ lemma has_derivative_id [derivative_intros, simp]: "(id has_derivative id) F"
   by (metis eq_id_iff has_derivative_ident)
 
 lemma shift_has_derivative_id: "((+) d has_derivative (\<lambda>x. x)) F"
-  using has_derivative_def by fastforce
+  using has_derivative_def by (fastforce)
 
 lemma has_derivative_const[derivative_intros, simp]: "((\<lambda>x. c) has_derivative (\<lambda>x. 0)) F"
   by (simp add: has_derivative_def)
@@ -182,7 +185,7 @@ qed
 lemma has_derivative_iff_Ex:
   "(f has_derivative f') (at x) \<longleftrightarrow>
     bounded_linear f' \<and> (\<exists>e. (\<forall>h. f (x+h) = f x + f' h + e h) \<and> ((\<lambda>h. norm (e h) / norm h) \<longlongrightarrow> 0) (at 0))"
-  unfolding has_derivative_at by force
+  unfolding has_derivative_at by (force)
 
 lemma has_derivative_at_within_iff_Ex:
   assumes "x \<in> S" "open S"
@@ -1043,7 +1046,8 @@ lemma DERIV_cmult:
 lemma DERIV_cmult_right:
   "(f has_field_derivative D) (at x within s) \<Longrightarrow>
     ((\<lambda>x. f x * c) has_field_derivative D * c) (at x within s)"
-  using DERIV_cmult by (auto simp add: ac_simps)
+  using DERIV_cmult
+  by (force simp add: ac_simps)
 
 lemma DERIV_cmult_Id [simp]: "((*) c has_field_derivative c) (at x within s)"
   using DERIV_ident [THEN DERIV_cmult, where c = c and x = x] by simp
@@ -1517,9 +1521,11 @@ qed
 lemma lemma_interval: "a < x \<Longrightarrow> x < b \<Longrightarrow> \<exists>d. 0 < d \<and> (\<forall>y. \<bar>x - y\<bar> < d \<longrightarrow> a \<le> y \<and> y \<le> b)"
   for a b x :: real
   (*NEW*)
-  by (drule lemma_interval_lt) ((zippy where blast depth: 0)[1])+
+  (*NOTE: not a minor change and hence excluded*)
+  (* by (drule lemma_interval_lt) (force run exec: "Zippy.Run.AStar.all 10") *)
   (*ORIG*)
-  (* by (force dest: lemma_interval_lt) *)
+  (*NOTE not working with zippy*)
+  by (force 0 5 dest: lemma_interval_lt)
 
 text \<open>Rolle's Theorem.
    If \<^term>\<open>f\<close> is defined and continuous on the closed interval
@@ -1624,7 +1630,7 @@ proof -
     by (metis Rolle_deriv [OF ab])
   then show ?thesis
     using f' has_derivative_imp_has_field_derivative
-    by (zippy run run: Zippy.Run.Depth_First.all')
+    by (fastforce run exec: Zippy.Run.Depth_First.all')
     (*ORIG*)
     (* by fastforce *)
 qed
@@ -1695,7 +1701,7 @@ lemma DERIV_isconst_end:
   shows "f b = f a"
   using MVT [OF \<open>a < b\<close>] "0" DERIV_unique contf real_differentiable_def
   (*NEW*)
-  by (zippy simp: algebra_simps where run run: Zippy.Run.Depth_First.all')
+  by (fastforce simp: algebra_simps where run exec: Zippy.Run.Depth_First.all')
   (*ORIG*)
   (* by (fastforce simp: algebra_simps) *)
 
@@ -1823,7 +1829,7 @@ lemma DERIV_pos_imp_increasing_open:
 proof (rule ccontr)
   assume f: "\<not> ?thesis"
   have "\<exists>l z. a < z \<and> z < b \<and> DERIV f z :> l \<and> f b - f a = (b - a) * l"
-    by (rule MVT) (use assms real_differentiable_def in \<open>force+\<close>)
+    by (rule MVT) (use assms real_differentiable_def in \<open>force\<close>)
   then obtain l z where z: "a < z" "z < b" "DERIV f z :> l" and "f b - f a = (b - a) * l"
     by auto
   with assms f have "\<not> l > 0"
@@ -1860,7 +1866,9 @@ next
   then obtain l z where lz: "a < z" "z < b" "DERIV f z :> l" and **: "f b - f a = (b - a) * l"
     by auto
   with * have "a < b" "f b < f a" by auto
-  with ** have "\<not> l \<ge> 0" by (auto simp add: not_le algebra_simps)
+  with ** have "\<not> l \<ge> 0"
+    (*NOTE keep original non-terminal auto call for reproducibility*)
+    by (auto_orig simp add: not_le algebra_simps)
     (metis * add_le_cancel_right assms(1) less_eq_real_def mult_right_mono add_left_mono linear order_refl)
   with assms lz show False
     by (metis DERIV_unique order_less_imp_le)
@@ -1903,7 +1911,7 @@ proof -
   have "(\<lambda>x. -f x) a \<le> (\<lambda>x. -f x) b"
     using DERIV_nonneg_imp_nondecreasing [of a b "\<lambda>x. -f x"] assms DERIV_minus
       (*NEW*)
-      by (zippy where run run: Zippy.Run.Depth_First.all')
+      by (fastforce where run exec: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* by fastforce *)
   then show ?thesis
@@ -1917,7 +1925,7 @@ lemma DERIV_pos_imp_increasing_at_bot:
   shows "flim < f b"
 proof -
   have "\<exists>N. \<forall>n\<le>N. f n \<le> f (b - 1)"
-    by (rule_tac x="b - 2" in exI) (force intro: order.strict_implies_order DERIV_pos_imp_increasing assms)
+    by (rule_tac x="b - 2" in exI) (force 0 4 intro: order.strict_implies_order DERIV_pos_imp_increasing assms)
   then have "flim \<le> f (b - 1)"
      by (auto simp: eventually_at_bot_linorder tendsto_upperbound [OF lim])
   also have "\<dots> < f b"
@@ -1967,7 +1975,7 @@ proof (cases "a=b")
   proof (rule ccontr)
     assume f: "\<not> ?thesis"
     have "\<exists>l z. a < z \<and> z < b \<and> DERIV f z :> l \<and> f b - f a = (b - a) * l"
-      by (rule MVT) (use assms \<open>a<b\<close> real_differentiable_def in \<open>force+\<close>)
+      by (rule MVT) (use assms \<open>a<b\<close> real_differentiable_def in \<open>force\<close>)
     then obtain l z where z: "a < z" "z < b" "DERIV f z :> l" and "f b - f a = (b - a) * l"
       by auto
     with assms z f show False
@@ -2120,13 +2128,13 @@ proof -
       a < c \<and> c < b \<and> (f b - f a) * g'c = (g b - g a) * f'c"
     using assms by (intro GMVT)
       (*NEW*)
-      (zippy simp: real_differentiable_def where run run: Zippy.Run.Depth_First.all')
+      (force simp: real_differentiable_def where run exec: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* (force simp: real_differentiable_def)+ *)
   then obtain c where "a < c" "c < b" "(f b - f a) * g' c = (g b - g a) * f' c"
     using DERIV_f DERIV_g
       (*NEW*)
-      by (zippy dest: DERIV_unique where run run: Zippy.Run.Depth_First.all')
+      by (force dest: DERIV_unique where run exec: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* by (force dest: DERIV_unique) *)
   then show ?thesis
@@ -2339,7 +2347,7 @@ proof safe
     assume ineq: "norm (1 - g a / g t) < 2" "norm (f a - x * g a) / norm (g t) < e / 2"
 
     have "\<exists>y. t < y \<and> y < a \<and> (g a - g t) * f' y = (f a - f t) * g' y"
-      using f0 g0 t(1,2) by (intro GMVT') (force intro!: DERIV_isCont)+
+      using f0 g0 t(1,2) by (intro GMVT') (force intro!: DERIV_isCont)
     then obtain y where [arith]: "t < y" "y < a"
       and D_eq0: "(g a - g t) * f' y = (f a - f t) * g' y"
       by blast

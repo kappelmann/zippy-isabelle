@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+subsection \<open>Cases\<close>
 theory Cases_Tactics
   imports
     ML_Unification.ML_Tactic_Utils

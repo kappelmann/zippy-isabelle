@@ -2,7 +2,7 @@
 section \<open>Goal Position Updates\<close>
 theory Zippy_Goal_Pos_Updates_Base
   imports
-    ML_Typeclasses.ML_Categories
+    ML_Categories
     Zippy_Goals_Base
 begin
 

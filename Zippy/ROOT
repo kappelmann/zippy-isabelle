@@ -1,7 +1,9 @@
-session Zippy = "Pure" +
+session Zippy = HOL +
+  description
+    "Zippy - a customisable framework for tree-based searches"
+  options
+    [timeout = 300]
   sessions
-    HOL
-    ML_Typeclasses
     ML_Unification
     SpecCheck
   directories
@@ -22,6 +24,14 @@ session Zippy = "Pure" +
     "Gen_Zippers/Zippers5/Zippers/Instances"
     "Gen_Zippers/Zippers5/Zippers/Utils"
     "Generic_Data"
+    "ML_Typeclasses/Antiquotations"
+    "ML_Typeclasses/Gen_Coroutines"
+    "ML_Typeclasses/Gen_Coroutines/Coroutines_1"
+    "ML_Typeclasses/Gen_Typeclasses"
+    "ML_Typeclasses/Gen_Typeclasses/Typeclasses_1"
+    "ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/Categories"
+    "ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/Lenses"
+    "ML_Typeclasses/Gen_Typeclasses/Typeclasses_1/State"
     "Priority_Queues"
     "Tactics"
     "Tactics/Blast"
@@ -54,6 +64,7 @@ session Zippy = "Pure" +
     "Zippy/Instances/Auto"
     "Zippy/Instances/Cases"
     "Zippy/Instances/Classical"
+    "Zippy/Instances/Auto/Examples"
     "Zippy/Instances/Hom_Changed_Goals_Data"
     "Zippy/Instances/Induction"
     "Zippy/Instances/Resolves"
@@ -72,30 +83,31 @@ session Zippy = "Pure" +
     "Zippy/Tactics"
     "Zippy/Tactics/Base"
   theories
+    ML_Typeclasses
+    ML_ITypeclasses
+    Zippy_Auto_Examples
     Zippy_Paper
+  document_files
+    "root.tex"
+    "root.bib"
 
-session Zippy_Examples_Prepare in "Zippy/Instances/Auto/Examples/Prepare" = Zippy +
+session Zippy_Benchmarks in "Zippy/Instances/Auto/Examples/Benchmarks" = "HOL-Data_Structures" +
+  description
+    "Benchmarks for Zippy Auto"
+  options
+    [timeout = 600]
   sessions
-    "HOL"
-    "HOL-Data_Structures"
     "HOL-Library"
+    "Zippy"
   theories
-    "HOL.Main"
-    "HOL-Data_Structures.Tree234"
-    "HOL-Library.Type_Length"
-    "Zippy.Zippy_Instance_Auto_HOL"
-
-session Zippy_Examples in "Zippy/Instances/Auto/Examples" = Zippy_Examples_Prepare +
-  options [quick_and_dirty]
-  directories
-    "Benchmarks"
-  theories
-    (*Binomial
+    Binomial
+    Deriv
     Filter
     Finite_Set
     GCD
-    List*)
+    Limits
+    List
     Set
-    (*Streamlined_Examples
     Tree234_Set
-    Word*)
+    Word
+

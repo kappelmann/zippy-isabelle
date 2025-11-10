@@ -1,5 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
-section \<open>Zippy\<close>
+chapter \<open>Zippy\<close>
 theory Zippy_Base_Setup
   imports
     ML_Unification.ML_Logger

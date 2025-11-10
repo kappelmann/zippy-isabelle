@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+subsection \<open>Classical Reasoner\<close>
 theory Zippy_Instance_Classical
   imports
     HOL.HOL

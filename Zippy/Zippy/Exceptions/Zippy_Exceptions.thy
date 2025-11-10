@@ -1,7 +1,8 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Exceptions\<close>
 theory Zippy_Exceptions
   imports
-    ML_Typeclasses.ML_Categories
+    ML_Categories
     ML_Morphs
 begin
 

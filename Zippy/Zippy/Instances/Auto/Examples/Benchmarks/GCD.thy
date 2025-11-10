@@ -1,8 +1,11 @@
 theory GCD
   imports
     HOL.Groups_List HOL.Code_Numeral
-    Zippy_Auto_Benchmarks
+    Zippy_Auto_Benchmarks_Setup
 begin
+
+text \<open>Note: this benchmark file is an adjusted copy of HOL.GCD from the standard distribution
+(dated 07.11.2025)\<close>
 
 subsection \<open>Abstract bounded quasi semilattices as common foundation\<close>
 
@@ -1052,12 +1055,18 @@ abbreviation lcm_list :: "'a list \<Rightarrow> 'a"
 lemma Gcd_fin_dvd:
   "a \<in> A \<Longrightarrow> Gcd\<^sub>f\<^sub>i\<^sub>n A dvd a"
   by (induct A rule: infinite_finite_induct)
-    (auto intro: dvd_trans)
+  (*NEW*)
+  (auto intro: dvd_trans where run exec: "Zippy.Run.Depth_First.all 3")
+  (*ORIG*)
+  (* (auto intro: dvd_trans) *)
 
 lemma dvd_Lcm_fin:
   "a \<in> A \<Longrightarrow> a dvd Lcm\<^sub>f\<^sub>i\<^sub>n A"
   by (induct A rule: infinite_finite_induct)
-    (auto intro: dvd_trans)
+  (*NEW*)
+  (auto intro: dvd_trans where run exec: "Zippy.Run.Depth_First.all 2")
+  (*ORIG*)
+  (* (auto intro: dvd_trans) *)
 
 lemma Gcd_fin_greatest:
   "a dvd Gcd\<^sub>f\<^sub>i\<^sub>n A" if "finite A" and "\<And>b. b \<in> A \<Longrightarrow> a dvd b"
@@ -1386,7 +1395,7 @@ proof -
   have "coprime (a div gcd a b) (b div gcd a b)"
     using assms div_gcd_coprime by auto
   then show ?thesis
-    by force
+    by (force)
 qed
 
 lemma pow_divides_pow_iff [simp]:
@@ -1597,7 +1606,11 @@ next
   also have "lcm a \<dots> = lcm a (\<Prod>A)"
     by (cases "\<Prod>A = 0") (simp_all add: lcm_div_unit2)
   also from insert have "coprime a (\<Prod>A)"
-    by (subst coprime_commute, intro prod_coprime_left) auto
+    by (subst coprime_commute, intro prod_coprime_left)
+    (*NEW*)
+    (auto run exec: Zippy.Run.Depth_First.all')
+    (*ORIG*)
+    (* (auto) *)
   with insert have "lcm a (\<Prod>A) = normalize (\<Prod>(insert a A))"
     by (simp add: lcm_coprime)
   finally show ?case .
@@ -1820,7 +1833,11 @@ lemma gcd_cases_int:
     and "x \<le> 0 \<Longrightarrow> y \<ge> 0 \<Longrightarrow> P (gcd (- x) y)"
     and "x \<le> 0 \<Longrightarrow> y \<le> 0 \<Longrightarrow> P (gcd (- x) (- y))"
   shows "P (gcd x y)"
-  using assms by auto
+  using assms
+  (*NEW*)
+  by (force run exec: Zippy.Run.Depth_First.all')
+  (*ORIG*)
+  (* by (force) *)
 
 lemma gcd_ge_0_int [simp]: "gcd (x::int) y >= 0"
   for x y :: int
@@ -1841,7 +1858,7 @@ lemma lcm_cases_int:
     and "x \<le> 0 \<Longrightarrow> y \<ge> 0 \<Longrightarrow> P (lcm (- x) y)"
     and "x \<le> 0 \<Longrightarrow> y \<le> 0 \<Longrightarrow> P (lcm (- x) (- y))"
   shows "P (lcm x y)"
-  using assms by (auto simp: lcm_neg1_int lcm_neg2_int)
+  using assms by (force_orig simp: lcm_neg1_int lcm_neg2_int)
 
 lemma lcm_ge_0_int [simp]: "lcm x y \<ge> 0"
   for x y :: int
@@ -1963,9 +1980,9 @@ lemma gcd_unique_nat: "d dvd a \<and> d dvd b \<and> (\<forall>e. e dvd a \<and>
   for d a :: nat
   using gcd_unique
   (*NEW*)
-  by (zippy run run: "Zippy.Run.AStar.all 3")
+  by (fastforce where run exec: Zippy.Run.Depth_First.all')
   (*ORIG*)
-  (* by fastforce+ *)
+  (* by fastforce *)
 
 lemma gcd_unique_int:
   "d \<ge> 0 \<and> d dvd a \<and> d dvd b \<and> (\<forall>e. e dvd a \<and> e dvd b \<longrightarrow> e dvd d) \<longleftrightarrow> d = gcd a b"
@@ -2079,7 +2096,7 @@ proof -
 qed
 
 lemma Max_divisors_self_nat [simp]: "n \<noteq> 0 \<Longrightarrow> Max {d::nat. d dvd n} = n"
-  by (fastforce intro: antisym Max_le_iff[THEN iffD2] simp: dvd_imp_le)
+  by (fastforce 4 4 intro: antisym Max_le_iff[THEN iffD2] simp: dvd_imp_le)
 
 lemma Max_divisors_self_int [simp]:
   assumes "n \<noteq> 0" shows "Max {d::int. d dvd n} = \<bar>n\<bar>"
@@ -2266,10 +2283,8 @@ lemma bezout_lemma_nat:
   fixes d::nat
   shows "\<lbrakk>d dvd a; d dvd b; a * x = b * y + d \<or> b * x = a * y + d\<rbrakk>
     \<Longrightarrow> \<exists>x y. d dvd a \<and> d dvd a + b \<and> (a * x = (a + b) * y + d \<or> (a + b) * x = a * y + d)"
-  (*NEW*)
-  apply (zippy 100)
-  (*ORIG*)
-  (* apply (auto) *)
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  apply (auto_orig 100)
   apply (metis add_mult_distrib2 left_add_mult_distrib)
   apply (rule_tac x=x in exI)
   by (metis add_mult_distrib2 mult.commute add.assoc)
@@ -2283,7 +2298,10 @@ proof (induct a b rule: Euclid_induct)
 next
   case (zero a)
   then show ?case
-    by fastforce
+    (*NEW*)
+    by (fastforce 0 4 run exec: Zippy.Run.Depth_First.all')
+    (*ORIG*)
+    (* by (fastforce) *)
 next
   case (add a b)
   then show ?case

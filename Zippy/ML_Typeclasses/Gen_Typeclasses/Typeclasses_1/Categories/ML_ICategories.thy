@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Indexed Categories\<close>
 theory ML_ICategories
   imports
     ML_Categories

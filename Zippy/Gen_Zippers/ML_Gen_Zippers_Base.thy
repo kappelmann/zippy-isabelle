@@ -4,7 +4,7 @@ theory ML_Gen_Zippers_Base
   imports
     Zippy_Base_Setup
     ML_IMap_Antiquotation
-    ML_Typeclasses.Gen_ML_Typeclasses_Base
+    Gen_ML_Typeclasses_Base
 begin
 
 text\<open>The ML code is parametrised by the number of zippers \<open>nzippers\<close>, the number of type parameters

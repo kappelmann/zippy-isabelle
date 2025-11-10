@@ -28,20 +28,35 @@ structure FI =  Functor_Instance(FI)
 structure Logging =
 struct
   val logger = Logger.setup_new_logger zippy_base_logger FI.name
+  structure Rule = Zippy_Logger_Mixin_Base(val parent_logger = logger; val name = "Rule")
+  structure Match = Zippy_Logger_Mixin_Base(val parent_logger = logger; val name = "Match")
   structure Update_Goal_Cluster = Zippy_Logger_Mixin_Base(val parent_logger = logger
     val name = "Update_Goal_Cluster")
 end
 
-(* resolution *)
-\<^functor_instance>\<open>struct_name: Resolves
+val binding = Binding.make (FI.id, FI.pos)
+
+(* resolution with higher-order unification*)
+\<^functor_instance>\<open>struct_name: Rule
   functor_name: Zippy_Instance_Resolves_Data
-  id: \<open>FI.id\<close>
+  id: \<open>FI.prefix_id "rule"\<close>
   path: \<open>FI.long_name\<close>
   more_args: \<open>
     structure Z = Z
     structure TI = Discrimination_Tree
     val init_args = resolve_init_args
-    structure Log = Logging\<close>\<close>
+    structure Log = Logging.Rule\<close>\<close>
+
+(* resolution with higher-order matching*)
+\<^functor_instance>\<open>struct_name: Match
+  functor_name: Zippy_Instance_Resolves_Data
+  id: \<open>FI.prefix_id "match"\<close>
+  path: \<open>FI.long_name\<close>
+  more_args: \<open>
+    structure Z = Z
+    structure TI = Discrimination_Tree
+    val init_args = resolve_init_args
+    structure Log = Logging.Match\<close>\<close>
 
 (* simplification *)
 structure Simp =

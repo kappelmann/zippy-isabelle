@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Identifiers\<close>
 theory Zippy_Identifiers
   imports
     Pure

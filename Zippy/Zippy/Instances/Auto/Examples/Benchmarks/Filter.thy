@@ -1,8 +1,11 @@
 theory Filter
   imports
     HOL.Set_Interval HOL.Lifting_Set
-    Zippy_Auto_Benchmarks
+    Zippy_Auto_Benchmarks_Setup
 begin
+
+text \<open>Note: this benchmark file is an adjusted copy of HOL.Filter from the standard distribution
+(dated 07.11.2025)\<close>
 
 subsection \<open>Filters\<close>
 
@@ -325,7 +328,7 @@ lemma eventually_inf:
   unfolding inf_filter_def
   apply (rule eventually_Abs_filter [OF is_filter.intro])
   apply (blast intro: eventually_True)
-  apply (force intro: eventually_conj)
+  apply (auto intro: eventually_conj)
   done
 
 lemma eventually_Sup:
@@ -363,7 +366,8 @@ instance proof
   { assume "\<And>F. F \<in> S \<Longrightarrow> F \<le> F'" thus "Sup S \<le> F'"
     unfolding le_filter_def eventually_Sup by simp }
   { show "Inf {} = (top::'a filter)"
-    by (auto simp: top_filter_def Inf_filter_def Sup_filter_def)
+    (*NOTE keep original non-terminal auto call for reproducibility*)
+    by (auto_orig simp: top_filter_def Inf_filter_def Sup_filter_def)
       (metis (full_types) top_filter_def always_eventually eventually_top) }
   { show "Sup {} = (bot::'a filter)"
     by (auto simp: bot_filter_def Sup_filter_def) }
@@ -662,7 +666,9 @@ lemma filtercomap_ident: "filtercomap (\<lambda>x. x) F = F"
 
 lemma filtercomap_filtercomap: "filtercomap f (filtercomap g F) = filtercomap (\<lambda>x. g (f x)) F"
   unfolding filter_eq_iff
-  by (auto simp: eventually_filtercomap)
+  sorry
+  (* apply (auto simp: eventually_filtercomap)[1] *)
+  (* apply (auto simp: eventually_filtercomap)[1] *)
 
 lemma filtercomap_mono: "F \<le> F' \<Longrightarrow> filtercomap f F \<le> filtercomap f F'"
   by (auto simp: eventually_filtercomap le_filter_def)
@@ -727,7 +733,7 @@ lemma filtercomap_SUP:
 lemma filtermap_le_iff_le_filtercomap: "filtermap f F \<le> G \<longleftrightarrow> F \<le> filtercomap f G"
   unfolding le_filter_def eventually_filtermap eventually_filtercomap
   (*NEW*)
-  using eventually_mono by (zippy run run: "Zippy.Run.Depth_First.all 5")
+  using eventually_mono by (auto run exec: "Zippy.Run.Depth_First.all 5")
   (*ORIG*)
   (* using eventually_mono by auto *)
 
@@ -891,11 +897,8 @@ lemma eventually_at_bot_linorderI:
 
 lemma eventually_filtercomap_at_bot_linorder:
   "eventually P (filtercomap f at_bot) \<longleftrightarrow> (\<exists>N::'a::linorder. \<forall>x. f x \<le> N \<longrightarrow> P x)"
-  (*NEW*)
-  by (zippy simp: eventually_filtercomap eventually_at_bot_linorder
-    where run run: "Zippy.Run.Best_First.all 5")
-  (*ORIG*)
-  (* by (auto simp: eventually_filtercomap eventually_at_bot_linorder) *)
+  unfolding eventually_filtercomap
+  by (auto simp: eventually_at_bot_linorder where run exec: "Zippy.Run.AStar.all 7")
 
 lemma eventually_le_at_bot [simp]:
   "eventually (\<lambda>x. x \<le> (c::_::linorder)) at_bot"
@@ -913,11 +916,8 @@ qed
 
 lemma eventually_filtercomap_at_bot_dense:
   "eventually P (filtercomap f at_bot) \<longleftrightarrow> (\<exists>N::'a::{no_bot, linorder}. \<forall>x. f x < N \<longrightarrow> P x)"
-  (*NEW*)
-  by (zippy simp: eventually_filtercomap eventually_at_bot_dense
-    where run run: "Zippy.Run.Best_First.all 5")
-  (*ORIG*)
-  (* by (auto simp: eventually_filtercomap eventually_at_bot_dense) *)
+  unfolding eventually_filtercomap
+  by (auto simp: eventually_at_bot_dense where run exec: "Zippy.Run.AStar.all 7")
 
 lemma eventually_at_bot_not_equal [simp]: "eventually (\<lambda>x::'a::{no_bot, linorder}. x \<noteq> c) at_bot"
   unfolding eventually_at_bot_dense by auto
@@ -1031,7 +1031,11 @@ next
   show ?case unfolding eventually_finite_subsets_at_top eventually_filtermap
   proof (rule exI[of _ "f -` X \<inter> A"], intro conjI allI impI, goal_cases)
     case (3 Y)
-    with X(1,2) and assms show ?case by (intro X(3)) force+
+    with X(1,2) and assms show ?case by (intro X(3))
+    (*NEW*)
+    (force 0 4 run exec: "Zippy.Run.Depth_First.all 3")
+    (*ORIG*)
+    (* (force) *)
   qed (insert assms X(1), auto intro!: finite_vimage_IntI)
 qed
 
@@ -1040,7 +1044,7 @@ lemma eventually_finite_subsets_at_top_finite:
   shows   "eventually P (finite_subsets_at_top A) \<longleftrightarrow> P A"
   unfolding eventually_finite_subsets_at_top using assms
   (*NEW*)
-  by (zippy run run: Zippy.Run.Depth_First.all')
+  by (force run exec: Zippy.Run.Depth_First.all')
   (*ORIG*)
   (* by (force) *)
 
@@ -1126,7 +1130,7 @@ proof safe
   assume *: "\<forall>\<^sub>F x in A. R x" "\<forall>\<^sub>F x in B. Q x" "\<forall>x y. R x \<longrightarrow> Q y \<longrightarrow> P x"
   with \<open>B \<noteq> bot\<close> obtain y where "Q y" by (auto dest: eventually_happens)
   with * show "eventually P A"
-    by (force elim: eventually_mono)
+    by (force 4 4 elim: eventually_mono)
 next
   assume "eventually P A"
   then show "\<exists>Pf Pg. eventually Pf A \<and> eventually Pg B \<and> (\<forall>x y. Pf x \<longrightarrow> Pg y \<longrightarrow> P x)"
@@ -1214,7 +1218,7 @@ next
         then obtain k where "k \<in> I" "F k \<le> (\<Sqinter>i\<in>J. F i)" by auto
         with insert *[of i k] show ?case
           (*NEW*)
-          by (zippy run run: "Zippy.Run.Depth_First.all 5")
+          by (auto run exec: "Zippy.Run.Depth_First.all 7")
           (*ORIG*)
           (* by auto *)
       qed
@@ -1285,18 +1289,15 @@ lemma principal_prod_principal: "principal A \<times>\<^sub>F principal B = prin
   unfolding filter_eq_iff eventually_prod_filter eventually_principal
   by (fast intro: exI[of _ "\<lambda>x. x \<in> A"] exI[of _ "\<lambda>x. x \<in> B"])
 
-ML\<open>
-  Options.put_default "editor_tracing_messages" "5000"
-\<close>
-
-
 lemma le_prod_filterI:
   "filtermap fst F \<le> A \<Longrightarrow> filtermap snd F \<le> B \<Longrightarrow> F \<le> A \<times>\<^sub>F B"
   unfolding le_filter_def eventually_filtermap eventually_prod_filter
   (*NEW*)
-  by ((zippy 10 elim: eventually_elim2 where run run: "Zippy.Run.AStar.all 1")[1])+
+  (*NOTE: neither a minor nor a stable change and hence excluded*)
+  (* by ((force 10 elim: eventually_elim2 where run exec: "Zippy.Run.AStar.all 1")[1])+ *)
   (*ORIG*)
-  (* by (force elim: eventually_elim2) *)
+  (*NOTE not working with zippy*)
+  by (auto 4 4 elim: eventually_elim2)
 
 lemma filtermap_fst_prod_filter: "filtermap fst (A \<times>\<^sub>F B) \<le> A"
   unfolding le_filter_def eventually_filtermap eventually_prod_filter
@@ -1314,7 +1315,7 @@ proof (rule antisym)
   from \<open>J \<noteq> {}\<close> obtain j where "j \<in> J" by auto
 
   show "(\<Sqinter>i\<in>I. \<Sqinter>j\<in>J. A i \<times>\<^sub>F B j) \<le> (\<Sqinter>i\<in>I. A i) \<times>\<^sub>F (\<Sqinter>j\<in>J. B j)"
-    by (fast intro: le_prod_filterI INF_greatest INF_lower2
+    by (fast 0 10 intro: le_prod_filterI INF_greatest INF_lower2
       order_trans[OF filtermap_INF] \<open>i \<in> I\<close> \<open>j \<in> J\<close>
       filtermap_fst_prod_filter filtermap_snd_prod_filter)
   show "(\<Sqinter>i\<in>I. A i) \<times>\<^sub>F (\<Sqinter>j\<in>J. B j) \<le> (\<Sqinter>i\<in>I. \<Sqinter>j\<in>J. A i \<times>\<^sub>F B j)"
@@ -1352,14 +1353,14 @@ lemma prod_filter_assoc:
   apply(clarsimp simp add: filter_eq_iff eventually_filtermap eventually_prod_filter; safe)
   subgoal for P Q R S T
     (*NEW*)
-    by (zippy intro: exI[where x="\<lambda>(a, b). T a \<and> S b"] where run run: "Zippy.Run.AStar.all 4")
+    by (auto 4 4 intro: exI[where x="\<lambda>(a, b). T a \<and> S b"] where run exec: "Zippy.Run.AStar.all 4")
     (*ORIG*)
     (* by(auto 4 4 intro: exI[where x="\<lambda>(a, b). T a \<and> S b"]) *)
   subgoal for P Q R S T
     (*NEW*)
-    by(zippy intro: exI[where x="\<lambda>(a, b). Q a \<and> S b"] where run run: "Zippy.Run.AStar.all 6")
+    by(auto 4 3 intro: exI[where x="\<lambda>(a, b). Q a \<and> S b"] where run exec: "Zippy.Run.AStar.all 6")
     (*ORIG*)
-    (* by(auto_orig 4 3 intro: exI[where x="\<lambda>(a, b). Q a \<and> S b"]) *)
+    (* by(auto 4 3 intro: exI[where x="\<lambda>(a, b). Q a \<and> S b"]) *)
   done
 
 lemma prod_filter_principal_singleton: "prod_filter (principal {x}) F = filtermap (Pair x) F"
@@ -1422,7 +1423,8 @@ qed
 
 lemma filtermap_mono_strong: "inj f \<Longrightarrow> filtermap f F \<le> filtermap f G \<longleftrightarrow> F \<le> G"
   apply (safe intro!: filtermap_mono)
-  apply (auto simp: le_filter_def eventually_filtermap)
+  (*NOTE keep original non-terminal auto call for reproducibility*)
+  apply (auto_orig simp: le_filter_def eventually_filtermap)
   apply (erule_tac x="\<lambda>x. P (inv f x)" in allE)
   apply auto
   done
@@ -1576,7 +1578,7 @@ lemma filterlim_at_bot:
 lemma filterlim_at_bot_dense:
   fixes f :: "'a \<Rightarrow> ('b::{dense_linorder, no_bot})"
   shows "(LIM x F. f x :> at_bot) \<longleftrightarrow> (\<forall>Z. eventually (\<lambda>x. f x < Z) F)"
-proof (auto simp add: filterlim_at_bot[of f F])
+proof (auto_orig simp add: filterlim_at_bot[of f F])
   fix Z :: 'b
   from lt_ex [of Z] obtain Z' where 1: "Z' < Z" ..
   assume "\<forall>Z. eventually (\<lambda>x. f x \<le> Z) F"
@@ -1779,11 +1781,9 @@ proof(safe intro!: ext elim!: rel_filter.cases)
     proof
       let ?Z = "map_filter_on ?AB (\<lambda>(x, y). (x, SOME z. A x z \<and> B z y)) Z"
       show "\<forall>\<^sub>F (x, y) in ?Z. A x y" using that
-        (*TODO NEW: make it work with flexflex pairs*)
-        by (auto 10 simp add: eventually_map_filter_on split_def elim!: eventually_mono intro: someI2)
-        (auto simp add: eventually_map_filter_on split_def elim!: eventually_mono intro: someI2)
+        by (auto simp add: eventually_map_filter_on split_def elim!: eventually_mono intro: someI2)
       have [simp]: "(\<lambda>p. (fst p, SOME z. A (fst p) z \<and> B z (snd p))) ` {p. (A OO B) (fst p) (snd p)} \<subseteq> {p. A (fst p) (snd p)}"
-        by(auto 10 intro: someI2) (auto intro: someI2)
+        by (auto intro: someI2)
       show "map_filter_on {(x, y). A x y} fst ?Z = ?F" "map_filter_on {(x, y). A x y} snd ?Z = ?G"
         using that by(simp_all add: map_filter_on_comp split_def o_def)
     qed
@@ -1791,11 +1791,9 @@ proof(safe intro!: ext elim!: rel_filter.cases)
     proof
       let ?Z = "map_filter_on ?AB (\<lambda>(x, y). (SOME z. A x z \<and> B z y, y)) Z"
       show "\<forall>\<^sub>F (x, y) in ?Z. B x y" using that
-        by(auto 10 simp add: eventually_map_filter_on split_def elim!: eventually_mono intro: someI2)
-        (auto simp add: eventually_map_filter_on split_def elim!: eventually_mono intro: someI2)
+        by (auto simp add: eventually_map_filter_on split_def elim!: eventually_mono intro: someI2)
       have [simp]: "(\<lambda>p. (SOME z. A (fst p) z \<and> B z (snd p), snd p)) ` {p. (A OO B) (fst p) (snd p)} \<subseteq> {p. B (fst p) (snd p)}"
-        (*TODO NEW: make it work with flexflex pairs*)
-        by(auto 10 intro: someI2) (auto intro: someI2)
+        by (auto intro: someI2)
       show "map_filter_on {(x, y). B x y} fst ?Z = ?G" "map_filter_on {(x, y). B x y} snd ?Z = ?H"
         using that by(simp_all add: map_filter_on_comp split_def o_def)
     qed
@@ -1856,7 +1854,11 @@ proof(safe intro!: ext elim!: rel_filter.cases)
     have "?Y (\<lambda>(x, z). P x \<and> (A OO B) x z) \<longleftrightarrow> (\<forall>\<^sub>F (x, y) in F. P x \<and> A x y)" (is "?lhs = ?rhs") for P
     proof
       show ?lhs if ?rhs using G F that
-        by(auto intro: exI[where x="\<lambda>_. True"] simp add: eventually_map_filter_on split_def)
+        (*NEW*)
+        by(auto 0 4 intro: exI[where x="\<lambda>_. True"] simp add: eventually_map_filter_on split_def
+          where run exec: "Zippy.Run.Depth_First.all 5")
+        (*ORIG*)
+        (* by(auto 0 4 intro: exI[where x="\<lambda>_. True"] simp add: eventually_map_filter_on split_def) *)
       assume ?lhs
       then obtain X Z where "\<forall>\<^sub>F (x, y) in F. X x \<and> A x y"
         and "\<forall>\<^sub>F (x, y) in G. Z y \<and> B x y"
@@ -1866,9 +1868,9 @@ proof(safe intro!: ext elim!: rel_filter.cases)
       show ?rhs
         apply (clarsimp elim!: eventually_rev_mp simp add: le_fun_def)
         (*NEW*)
-        by (zippy intro: always_eventually where run run: "Zippy.Run.Depth_First.all 8")
+        by (fastforce 0 8 intro: always_eventually where run exec: "Zippy.Run.Depth_First.all 8")
         (*ORIG*)
-        (* by (fastforce_orig intro: always_eventually) *)
+        (* by (fastforce intro: always_eventually) *)
     qed
     then show "map_filter_on ?AB fst Y = ?X"
       by(simp add: filter_eq_iff YY eventually_map_filter_on)(simp add: eventually_Y eventually_map_filter_on F G; simp add: split_def)
@@ -1886,9 +1888,11 @@ proof(safe intro!: ext elim!: rel_filter.cases)
       show ?rhs
         apply (clarsimp elim!: eventually_rev_mp simp add: le_fun_def)
         (*NEW*)
-        by (zippy 15 intro!: always_eventually where run run: Zippy.Run.AStar.all')+
+        (*NOTE: not a stable change and hence excluded*)
+        (* by (zippy_orig 15 intro!: always_eventually where run exec: Zippy.Run.AStar.all')+ *)
         (*ORIG*)
-        (* by (fastforce intro: always_eventually)+ *)
+        (*NOTE not working with zippy*)
+        by (fastforce 0 15 intro: always_eventually)
     qed
     then show "map_filter_on ?AB snd Y = ?Z"
       by(simp add: filter_eq_iff YY eventually_map_filter_on)(simp add: eventually_Y eventually_map_filter_on F G; simp add: split_def)
@@ -1958,7 +1962,7 @@ by(simp add: bi_unique_alt_def left_unique_rel_filter right_unique_rel_filter)
 lemma eventually_parametric [transfer_rule]:
   "((A ===> (=)) ===> rel_filter A ===> (=)) eventually eventually"
   unfolding rel_fun_def
-  by(force elim!: rel_filter.cases eventually_rev_mp simp add: eventually_map_filter_on intro: always_eventually)
+  by(force 0 4 elim!: rel_filter.cases eventually_rev_mp simp add: eventually_map_filter_on intro: always_eventually)
 
 lemma frequently_parametric [transfer_rule]: "((A ===> (=)) ===> rel_filter A ===> (=)) frequently frequently"
   unfolding frequently_def[abs_def] by transfer_prover
@@ -1992,10 +1996,10 @@ proof(rule rel_funI rel_filter.intros)+
   have SS': "SS' \<subseteq> {(x, y). A x y}" and [simp]: "S = fst ` SS'" "S' = snd ` SS'"
     using *
     (*NEW*)
-    by - ((zippy 20 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def
-      where run run: Zippy.Run.AStar.all')[1])+
+    by (auto 4 3 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def
+      where run exec: "Zippy.Run.Depth_First.all 6")
     (*ORIG*)
-    (* by (auto_orig 4 3 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def) *)
+    (* by (auto 4 3 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def) *)
   let ?Z = "principal SS'"
   show "\<forall>\<^sub>F (x, y) in ?Z. A x y" using SS' by(auto simp add: eventually_principal)
   then show "map_filter_on {(x, y). A x y} fst ?Z = principal S"
@@ -2027,15 +2031,15 @@ proof(rule rel_funI)
   assume "rel_set (rel_filter A) S S'"
   then have SS': "SS' \<subseteq> {(F, G). rel_filter A F G}" and [simp]: "S = fst ` SS'" "S' = snd ` SS'"
     (*NEW*)
-    by - ((zippy 20 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def
-      where run run: Zippy.Run.AStar.all')[1])+
+     by (zippy 4 3 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def
+      where run exec: "Zippy.Run.Depth_First.all 6")
     (*ORIG*)
-    (* by(auto_orig 4 3 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def) *)
+    (* by (auto 4 3 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def) *)
   from SS' obtain Z where Z: "\<And>F G. (F, G) \<in> SS' \<Longrightarrow>
     (\<forall>\<^sub>F (x, y) in Z F G. A x y) \<and>
     id F = map_filter_on {(x, y). A x y} fst (Z F G) \<and>
     id G = map_filter_on {(x, y). A x y} snd (Z F G)"
-    unfolding rel_filter.simps by atomize_elim((rule choice allI)+; auto)
+    unfolding rel_filter.simps by atomize_elim((rule choice allI)+, auto)
   have id: "eventually P F = eventually P (id F)" "eventually Q G = eventually Q (id G)"
     if "(F, G) \<in> SS'" for P Q F G by simp_all
   show "rel_filter A (Sup S) (Sup S')"
@@ -2044,10 +2048,7 @@ proof(rule rel_funI)
     show *: "\<forall>\<^sub>F (x, y) in ?Z. A x y" using Z by(auto simp add: eventually_Sup)
     show "map_filter_on {(x, y). A x y} fst ?Z = Sup S" "map_filter_on {(x, y). A x y} snd ?Z = Sup S'"
       unfolding filter_eq_iff
-      (*NEW:*)
-      by(zippy simp add: id eventually_Sup eventually_map_filter_on *[simplified eventually_Sup] simp del: id_apply dest: Z)
-      (*ORIG:*)
-      (* by(auto 4 4 simp add: id eventually_Sup eventually_map_filter_on *[simplified eventually_Sup] simp del: id_apply dest: Z) *)
+      by(auto 4 4 simp add: id eventually_Sup eventually_map_filter_on *[simplified eventually_Sup] simp del: id_apply dest: Z)
   qed
 qed
 
@@ -2112,12 +2113,15 @@ proof(intro rel_funI; elim rel_filter.cases; hypsubst)
       apply(rule iffI; clarsimp)
       subgoal for P P' P''
         apply(rule exI[where x="\<lambda>a. \<exists>b. P' (a, b) \<and> R a b"]; rule conjI)
-        subgoal by(fastforce elim: eventually_rev_mp eventually_mono)
+        subgoal by(fastforce 0 4 elim: eventually_rev_mp eventually_mono)
         subgoal
-          by(rule exI[where x="\<lambda>a. \<exists>b. P'' (a, b) \<and> S a b"])(fastforce elim: eventually_rev_mp eventually_mono)
+          by(rule exI[where x="\<lambda>a. \<exists>b. P'' (a, b) \<and> S a b"])(fastforce 0 4 elim: eventually_rev_mp eventually_mono)
         done
       subgoal
-        by fastforce
+        (*NEW*)
+        by (fastforce 0 4 where run exec: "Zippy.Run.AStar.all 6")
+        (*ORIG*)
+        (* by (fastforce) *)
       done
     show "map_filter_on {(x, y). ?RS x y} snd ?Z = ?G"
       using F G
@@ -2127,11 +2131,17 @@ proof(intro rel_funI; elim rel_filter.cases; hypsubst)
       apply(rule iffI; clarsimp)
       subgoal for P P' P''
         apply(rule exI[where x="\<lambda>b. \<exists>a. P' (a, b) \<and> R a b"]; rule conjI)
-        subgoal by(fastforce elim: eventually_rev_mp eventually_mono)
         subgoal
-          by(rule exI[where x="\<lambda>b. \<exists>a. P'' (a, b) \<and> S a b"])(fastforce elim: eventually_rev_mp eventually_mono)
+          by(fastforce 0 4 elim: eventually_rev_mp eventually_mono)
+        subgoal
+          by(rule exI[where x="\<lambda>b. \<exists>a. P'' (a, b) \<and> S a b"])(fastforce 0 4 elim: eventually_rev_mp eventually_mono)
         done
-      subgoal by fastforce
+      subgoal
+        (*NEW*)
+        supply [[unify_search_bound=5]]
+        by (fastforce 0 4 where run exec: "Zippy.Run.AStar.all 6")
+        (*ORIG*)
+        (* by (fastforce) *)
       done
   qed
 qed

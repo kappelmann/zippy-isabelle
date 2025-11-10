@@ -1,8 +1,11 @@
 theory Finite_Set
   imports
     HOL.Product_Type HOL.Sum_Type HOL.Fields HOL.Relation
-    Zippy_Auto_Benchmarks
+    Zippy_Auto_Benchmarks_Setup
 begin
+
+text \<open>Note: this benchmark file is an adjusted copy of HOL.Finite_Set from the standard distribution
+(dated 07.11.2025)\<close>
 
 subsection \<open>Predicate for finite sets\<close>
 
@@ -104,7 +107,12 @@ next
   from insert.hyps obtain n f where "A = f ` {i::nat. i < n}" "inj_on f {i. i < n}"
     by blast
   then have "insert a A = f(n:=a) ` {i. i < Suc n}" and "inj_on (f(n:=a)) {i. i < Suc n}"
-    using notinA by (auto simp add: image_def Ball_def inj_on_def less_Suc_eq)
+    using notinA
+    (*NEW*)
+    by (auto simp add: image_def Ball_def inj_on_def less_Suc_eq
+      where run exec: Zippy.Run.Breadth_First.all')
+    (*ORIG*)
+    (* by (auto simp add: image_def Ball_def inj_on_def less_Suc_eq) *)
   then show ?case by blast
 qed
 
@@ -148,7 +156,7 @@ proof -
 qed
 
 lemma finite_Collect_less_nat [iff]: "finite {n::nat. n < k}"
-  by (fastforce simp: finite_conv_nat_seg_image)
+  by (fastforce 3 3 simp: finite_conv_nat_seg_image)
 
 lemma finite_Collect_le_nat [iff]: "finite {n::nat. n \<le> k}"
   by (simp add: le_eq_less_or_eq Collect_disj_eq)
@@ -560,7 +568,7 @@ proof -
   from finite_subset[OF this] assms have 1: "finite (?F ` ?S)"
     by simp
   have 2: "inj_on ?F ?S"
-    by (fastforce simp add: inj_on_def set_eq_iff fun_eq_iff)  (* somewhat slow *)
+    by (fastforce 0 4 simp add: inj_on_def set_eq_iff fun_eq_iff)
   show ?thesis
     by (rule finite_imageD [OF 1 2])
 qed
@@ -817,7 +825,10 @@ lemma fold_graph_closed_eq:
      "\<And>a b. a \<in> A \<Longrightarrow> b \<in> B \<Longrightarrow> g a b \<in> B"
      "z \<in> B"
   using fold_graph_closed_lemma[of f z A _ B g] fold_graph_closed_lemma[of g z A _ B f] that
-  by auto
+  (*NEW*)
+  by (auto run exec: Zippy.Run.Depth_First.all')
+  (*ORIG*)
+  (* by (auto) *)
 
 definition fold :: "('a \<Rightarrow> 'b \<Rightarrow> 'b) \<Rightarrow> 'b \<Rightarrow> 'a set \<Rightarrow> 'b"
   where "fold f z A = (if finite A then (THE y. fold_graph f z A y) else z)"
@@ -866,7 +877,7 @@ next
     case True
     with insertI show ?thesis
       (*NEW*)
-      by (zippy run run: Zippy.Run.Depth_First.all')
+      by (auto run exec: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* by auto *)
   next
@@ -911,11 +922,7 @@ qed
 
 lemma fold_equality: "A \<subseteq> S \<Longrightarrow> fold_graph f z A y \<Longrightarrow> fold f z A = y"
   by (cases "finite A")
-  (*NEW*)
-  (zippy simp add: fold_def intro: fold_graph_determ dest: fold_graph_finite
-    where blast depth: 2)
-  (*ORIG*)
-  (* (auto simp add: fold_def intro: fold_graph_determ dest: fold_graph_finite) *)
+  (auto simp add: fold_def intro: fold_graph_determ dest: fold_graph_finite)
 
 lemma fold_graph_fold:
   assumes "A \<subseteq> S"
@@ -1480,7 +1487,7 @@ lemma finite_Inf_in:
 proof -
   have "Inf B \<in> A" if "B \<le> A" "B\<noteq>{}" for B
     using finite_subset [OF \<open>B \<subseteq> A\<close> \<open>finite A\<close>] that
-  by (induction B) (use inf in \<open>force+\<close>)
+  by (induction B) (use inf in \<open>force\<close>)
   then show ?thesis
     by (simp add: assms)
 qed
@@ -1491,7 +1498,7 @@ lemma finite_Sup_in:
 proof -
   have "Sup B \<in> A" if "B \<le> A" "B\<noteq>{}" for B
     using finite_subset [OF \<open>B \<subseteq> A\<close> \<open>finite A\<close>] that
-  by (induction B) (use sup in \<open>force+\<close>)
+  by (induction B) (use sup in \<open>force\<close>)
   then show ?thesis
     by (simp add: assms)
 qed
@@ -1547,7 +1554,7 @@ proof -
   show ?thesis
     unfolding * using \<open>finite S\<close> by (induct S)
     (*NEW*)
-    (zippy split: prod.split where blast depth: 0)
+    (auto split: prod.split where blast depth: 0 where run exec: Zippy.Run.Breadth_First.all')
     (*ORIG*)
     (* (auto split: prod.split) *)
 qed
@@ -1731,7 +1738,7 @@ lemma card_insert_disjoint: "finite A \<Longrightarrow> x \<notin> A \<Longright
   by (fact card.insert)
 
 lemma card_insert_if: "finite A \<Longrightarrow> card (insert x A) = (if x \<in> A then card A else Suc (card A))"
-  by auto (simp add: card.insert_remove card.remove)
+  by (auto simp add: card.insert_remove card.remove)
 
 lemma card_ge_0_finite: "card A > 0 \<Longrightarrow> finite A"
   by (rule ccontr) simp
@@ -1832,7 +1839,7 @@ proof (induction arbitrary: A rule: finite_induct)
   case (insert b B)
   then have A: "finite A" "A - {b} \<subseteq> B"
     (*NEW*)
-    by (zippy where run run: Zippy.Run.Depth_First.all')
+    by (force where run exec: Zippy.Run.Depth_First.all')
     (*ORIG*)
     (* by force+ *)
   then have "card B \<le> card (A - {b})"
@@ -1990,7 +1997,11 @@ next
       by blast
     let ?g = "(\<lambda>a. if a = x then y else f a)"
     have "?g ` insert x s \<subseteq> insert y t \<and> inj_on ?g (insert x s)"
-      using * "2.prems"(2) "2.hyps"(2) unfolding inj_on_def by auto
+      using * "2.prems"(2) "2.hyps"(2) unfolding inj_on_def
+      (*NEW*)
+      by (auto run exec: Zippy.Run.Breadth_First.all')
+      (*ORIG*)
+      (* by (auto run exec: Zippy.Run.Breadth_First.all') *)
     then show ?case by (rule exI[where ?x="?g"])
   qed
 qed
@@ -2019,7 +2030,10 @@ qed
 
 lemma insert_partition:
   "x \<notin> F \<Longrightarrow> \<forall>c1 \<in> insert x F. \<forall>c2 \<in> insert x F. c1 \<noteq> c2 \<longrightarrow> c1 \<inter> c2 = {} \<Longrightarrow> x \<inter> \<Union>F = {}"
-  by auto
+  (*NEW*)
+  by (auto run exec: Zippy.Run.Depth_First.all')
+  (*ORIG*)
+  (* by (auto) *)
 
 lemma finite_psubset_induct [consumes 1, case_names psubset]:
   assumes finite: "finite A"
@@ -2163,7 +2177,7 @@ proof -
     show "b \<notin> A - {b}"
       by blast
     show "card (A - {b}) = k" and "k = 0 \<longrightarrow> A - {b} = {}"
-      using assms b fin by (fastforce dest: mk_disjoint_insert)+
+      using assms b fin by (fastforce dest: mk_disjoint_insert)
   qed
 qed
 
@@ -2176,7 +2190,7 @@ lemma card_Suc_eq_finite:
   "card A = Suc k \<longleftrightarrow> (\<exists>b B. A = insert b B \<and> b \<notin> B \<and> card B = k \<and> finite B)"
   unfolding card_Suc_eq using card_gt_0_iff
   (*NEW*)
-  by (zippy blast depth: 2 where run run: "Zippy.Run.Depth_First.all 4")
+  by (fastforce run exec: "Zippy.Run.Depth_First.all 4" where blast depth: 2)
   (*ORIG*)
   (* by fastforce *)
 
@@ -2224,8 +2238,8 @@ proof (cases "finite A")
   case True
   then show ?thesis
     (*NEW*)
-    by (zippy simp: card_Suc_eq less_eq_nat.simps split: nat.splits
-       where run run: Zippy.Run.Depth_First.all')
+    by (fastforce simp: card_Suc_eq less_eq_nat.simps split: nat.splits
+       where run exec: "Zippy.Run.Depth_First.all 10")
     (*ORIG*)
     (* by (fastforce simp: card_Suc_eq less_eq_nat.simps split: nat.splits) *)
 qed auto
@@ -2267,7 +2281,10 @@ qed
 corollary finite_arbitrarily_large_disj:
   "\<lbrakk> \<not> finite(UNIV::'a set); finite (A::'a set) \<rbrakk> \<Longrightarrow> \<exists>B. finite B \<and> card B = n \<and> A \<inter> B = {}"
 using infinite_arbitrarily_large[of "UNIV - A"]
-by fastforce
+(*NEW*)
+by (fastforce where run exec: "Zippy.Run.Depth_First.all 3")
+(*ORIG*)
+(* by (fastforce) *)
 
 text \<open>Sometimes, to prove that a set is finite, it is convenient to work with finite subsets
 and to show that their cardinalities are uniformly bounded. This possibility is formalized in
@@ -2298,14 +2315,14 @@ proof -
     case 0
     thus ?case by (cases "finite S")
       (*NEW*)
-      (zippy run run: Zippy.Run.Depth_First.all')
+      (auto run exec: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* auto *)
   next
     case Suc
     thus ?case
       (*NEW*)
-      by (zippy simp add: card_Suc_eq where run run: Zippy.Run.Depth_First.all')
+      by (auto simp add: card_Suc_eq where run exec: "Zippy.Run.Depth_First.all 8")
       (*ORIG*)
       (* by (auto simp add: card_Suc_eq) *)
   qed
@@ -2342,10 +2359,7 @@ next
     obtain B where "?A \<subseteq> B" "B \<subseteq> ?C" "card B = n" by blast
     thus ?thesis using a Suc(2-)
       by (intro exI[of _ "insert a B"])
-      (*NEW*)
-      (zippy intro!: card_insert_disjoint finite_subset[of B C] where blast depth: 0)
-      (*ORIG*)
-      (* (auto intro!: card_insert_disjoint finite_subset[of B C]) *)
+      (auto intro!: card_insert_disjoint finite_subset[of B C])
   qed
 qed
 
@@ -2421,7 +2435,7 @@ proof (rule card_inj_on_le)
 qed (use assms in auto)
 
 lemma card_vimage_inj: "inj f \<Longrightarrow> A \<subseteq> range f \<Longrightarrow> card (f -` A) = card A"
-  by (auto simp: subset_image_iff inj_vimage_image_eq
+  by (auto 4 4 simp: subset_image_iff inj_vimage_image_eq
       intro: card_image[symmetric, OF inj_on_subset])
 
 lemma card_inverse[simp]: "card (R\<inverse>) = card R"
@@ -2522,7 +2536,7 @@ proof -
     case (insert c C)
     then have "c \<inter> \<Union>C = {}"
       (*NEW*)
-      by (zippy run run: Zippy.Run.Depth_First.all')
+      by (auto run exec: Zippy.Run.Depth_First.all')
       (*ORIG*)
       (* by auto *)
     with insert show ?case
@@ -2852,7 +2866,11 @@ qed
 
 lemma finite_has_maximal2:
   "\<lbrakk> finite A; a \<in> A \<rbrakk> \<Longrightarrow> \<exists> m \<in> A. a \<le> m \<and> (\<forall> b \<in> A. m \<le> b \<longrightarrow> m = b)"
-using finite_has_maximal[of "{b \<in> A. a \<le> b}"] by fastforce
+using finite_has_maximal[of "{b \<in> A. a \<le> b}"]
+(*NEW*)
+by (fastforce run exec: "Zippy.Run.Depth_First.all 4")
+(*ORIG*)
+(* by (fastforce) *)
 
 lemma finite_has_minimal:
   assumes "finite A" and "A \<noteq> {}"
@@ -2863,12 +2881,19 @@ proof -
   moreover have "\<forall>b \<in> A. b \<le> m \<longrightarrow> m = b"
     using m_is_min by (auto simp: le_less)
   ultimately show ?thesis
-    by auto
+    (*NEW*)
+    by (auto run exec: Zippy.Run.Breadth_First.all')
+    (*ORIG*)
+    (* by (auto) *)
 qed
 
 lemma finite_has_minimal2:
   "\<lbrakk> finite A; a \<in> A \<rbrakk> \<Longrightarrow> \<exists> m \<in> A. m \<le> a \<and> (\<forall> b \<in> A. b \<le> m \<longrightarrow> m = b)"
-using finite_has_minimal[of "{b \<in> A. b \<le> a}"] by fastforce
+using finite_has_minimal[of "{b \<in> A. b \<le> a}"]
+  (*NEW*)
+  by (fastforce run exec: "Zippy.Run.Depth_First.all 5")
+  (*ORIG*)
+  (* by (fastforce) *)
 
 end
 
@@ -2920,7 +2945,11 @@ proof
          \<Longrightarrow> \<exists>x \<in> S. x \<noteq> y \<and> f z = f x" for z
           by (cases "z = y \<longrightarrow> z = x") auto
         then show "T \<subseteq> f ` (S - {y})"
-          using h xy x y f by fastforce
+          using h xy x y f
+          (*NEW*)
+          by (fastforce run exec: "Zippy.Run.Depth_First.all 5")
+          (*ORIG*)
+          (* by (fastforce) *)
       qed
       also have " \<dots> \<le> card (S - {y})"
         by (simp add: card_image_le fS)

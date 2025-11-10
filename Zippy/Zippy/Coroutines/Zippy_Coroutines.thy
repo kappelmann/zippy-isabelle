@@ -1,7 +1,8 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Coroutines\<close>
 theory Zippy_Coroutines
   imports
-    ML_Typeclasses.ML_Coroutines
+    ML_Coroutines
     Zippy_Exceptions
 begin
 

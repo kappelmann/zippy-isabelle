@@ -28,7 +28,7 @@ ML\<open>
 local open Zippy; open MU; open SC Mo A
 in
   fun cons_cheat_cluster prio focus = Tac_Util.cons_simple_single_ztactic_action_cluster
-    (Mixin3.Meta.Meta.empty @{binding cheat})
+    (Mixin3.Meta.Meta.no_descr @{binding cheat})
     (Util.copy_update_data_empty_changed #> arr)
     (Mixin4.Meta.Meta.metadata (@{binding cheat}, "cheat action solving all focused goals"))
     (Tac_Util.halve_prio_halve_prio_depth_sq_co prio)
@@ -36,7 +36,7 @@ in
     focus
 
   fun cons_assume_cluster prio focus = Tac_Util.cons_simple_single_ztactic_action_cluster
-    (Mixin3.Meta.Meta.empty @{binding assume})
+    (Mixin3.Meta.Meta.no_descr @{binding assume})
     (Util.copy_update_data_empty_changed #> arr)
     (Mixin4.Meta.Meta.metadata (@{binding assume}, "solve all focused goals by assumption"))
     (Tac_Util.halve_prio_halve_prio_depth_sq_co prio)
@@ -64,9 +64,9 @@ apply (tactic \<open>fn state =>
       (*add actions*)
       >>= Down1.morph
       (* >>= Tac_Util.cons_simple_single_ztactic_action_cluster
-        (Mixin3.Meta.Meta.empty @{binding cluster1})
+        (Mixin3.Meta.Meta.no_descr @{binding cluster1})
         (Util.copy_update_data #> arr)
-        (Mixin4.Meta.Meta.empty @{binding action1})
+        (Mixin4.Meta.Meta.no_descr @{binding action1})
         (Tac_Util.halve_prio_halve_prio_depth_sq_co Prio.HIGH)
         (with_ctxt (Tac_Util.resolve_ztac Mixin5.Meta.Meta.P.promising @{thms conjI cheat} #> arr))
         (Tac.GPU.F.Goals [1, 2]) *)
@@ -119,9 +119,9 @@ apply (tactic \<open>fn state =>
       (*add actions*)
       >>= Down1.morph
       >>= Tac_Util.cons_simple_single_ztactic_action_cluster
-        (Mixin3.Meta.Meta.empty @{binding cluster1})
+        (Mixin3.Meta.Meta.no_descr @{binding cluster1})
         (Util.copy_update_data #> arr)
-        (Mixin4.Meta.Meta.empty @{binding action1})
+        (Mixin4.Meta.Meta.no_descr @{binding action1})
         (Tac_Util.halve_prio_halve_prio_depth_sq_co Prio.HIGH)
         (with_ctxt (Tac_Util.resolve_ztac Mixin5.Meta.Meta.P.promising
           @{thms conjI impI disjI1 disjI2} #> arr))

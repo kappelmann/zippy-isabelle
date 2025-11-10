@@ -123,11 +123,11 @@ fun zTRY_EVERY_GOAL1 madd = with_rev_goals (zTRY_EVERY1 madd)
 fun zTRY_EVERY_FOCUS1 madd = gen_lift_tac_focus (zTRY_EVERY_GOAL1 madd)
 
 fun zIFIRST_GOAL tac = gen_every_arg TU.ORELSE no_ztac tac
-fun zFIRST_GOAL tac st = zIFIRST_GOAL tac (1 upto Thm.nprems_of st) st
+fun zFIRST_GOAL tac st = zIFIRST_GOAL tac (1 upto Zippy_Thm_State.nprems_of st) st
 fun zFIRST_GOAL_FOCUS x = gen_lift_tac_focus zIFIRST_GOAL x
 
 fun zISOME_GOAL tac = gen_every_arg TU.APPEND no_ztac tac
-fun zSOME_GOAL tac st = zISOME_GOAL tac (1 upto Thm.nprems_of st) st
+fun zSOME_GOAL tac st = zISOME_GOAL tac (1 upto Zippy_Thm_State.nprems_of st) st
 fun zSOME_GOAL_FOCUS x = gen_lift_tac_focus zISOME_GOAL x
 end
 end

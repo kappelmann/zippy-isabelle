@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Zippy Auto (zippy)\<close>
 theory Zippy_Instance_Auto
   imports
     Extended_Simp_Data

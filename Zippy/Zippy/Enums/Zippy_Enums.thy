@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Enums\<close>
 theory Zippy_Enums
   imports
     Zippy_Base

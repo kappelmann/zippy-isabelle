@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Term Index Data\<close>
 theory Generic_Term_Index_Data
   imports
     ML_Unification.ML_Functor_Instances

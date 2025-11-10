@@ -1,8 +1,11 @@
 theory Binomial
   imports
     HOL.Presburger HOL.Factorial
-    Zippy_Auto_Benchmarks
+    Zippy_Auto_Benchmarks_Setup
 begin
+
+text \<open>Note: this benchmark file is an adjusted copy of HOL.Binomial from the standard distribution
+(dated 07.11.2025)\<close>
 
 subsection \<open>Binomial coefficients\<close>
 
@@ -72,7 +75,8 @@ proof -
   let ?P = "\<lambda>n k. {K. K \<subseteq> {0..<n} \<and> card K = k}"
   let ?Q = "?P (Suc n) (Suc k)"
   have inj: "inj_on (insert n) (?P n k)"
-    by rule (auto 100; metis atLeastLessThan_iff insert_iff less_irrefl subsetCE)
+    (*NOTE keep original non-terminal auto call for reproducibility*)
+    by rule (auto_orig 100; metis atLeastLessThan_iff insert_iff less_irrefl subsetCE)
   have disjoint: "insert n ` ?P n k \<inter> ?P n (Suc k) = {}"
     by auto
   have "?Q = {K\<in>?Q. n \<in> K} \<union> {K\<in>?Q. n \<notin> K}"
@@ -151,7 +155,7 @@ proof (induction n arbitrary: k)
   then show ?case
   using le_less less_le_trans
   (*NEW*)
-  by (zippy where blast depth: 0)
+  by (fastforce run exec: Zippy.Run.Depth_First.all')
   (*ORIG*)
   (* by fastforce *)
 next
@@ -743,7 +747,11 @@ lemma gbinomial_absorption: "of_nat (Suc k) * (a gchoose Suc k) = a * ((a - 1) g
 
 text \<open>The absorption identity for natural number binomial coefficients:\<close>
 lemma binomial_absorption: "Suc k * (n choose Suc k) = n * ((n - 1) choose k)"
-  using times_binomial_minus1_eq by fastforce
+  using times_binomial_minus1_eq
+  (*NEW*)
+  by (fastforce run exec: Zippy.Run.Depth_First.all')
+  (*ORIG*)
+  (* by (fastforce) *)
 
 text \<open>The absorption companion identity for natural number coefficients,
   following the proof by GKP :\<close>
@@ -1075,7 +1083,11 @@ next
   also have "\<dots> = (of_nat :: (nat \<Rightarrow> 'a)) (n + 1 - k) * (\<Prod>i=0..<k. of_nat (Suc n - i))"
     by (simp only: Suc_eq_plus1)
   finally have "(\<Prod>i=0..<k. of_nat (n - i)) = (of_nat :: (nat \<Rightarrow> 'a)) (n + 1 - k) / of_nat (n + 1) * (\<Prod>i=0..<k. of_nat (Suc n - i))"
-    using of_nat_neq_0 by (auto simp: mult.commute divide_simps)
+    using of_nat_neq_0
+    (*NEW*)
+    by (auto simp: mult.commute divide_simps where run exec: Zippy.Run.Breadth_First.all')
+    (*ORIG*)
+    (* by (auto simp: mult.commute divide_simps) *)
   with assms show ?thesis
     by (simp add: binomial_altdef_of_nat prod_dividef)
 qed
@@ -1231,7 +1243,7 @@ proof -
     by metis
   then show ?thesis
     (*NEW*)
-    by (zippy simp flip: all_simps ex_simps where run run: Zippy.Run.Depth_First.all')
+    by (auto simp flip: all_simps ex_simps where run exec: Zippy.Run.Depth_First.all')
     (*ORIG*)
     (* by (auto simp flip: all_simps ex_simps) *)
 qed
@@ -1259,7 +1271,7 @@ locale Incl_Excl =
 begin
 
 lemma f_empty [simp]: "f{} = 0"
-  using disj_add empty by fastforce
+  using disj_add empty by (fastforce)
 
 lemma f_Un_Int: "\<lbrakk>P S; P T\<rbrakk> \<Longrightarrow> f(S \<union> T) + f(S \<inter> T) = f S + f T"
   by (smt (verit, ccfv_threshold) Groups.add_ac(2) Incl_Excl.Diff Incl_Excl.Int Incl_Excl_axioms Int_Diff_Un Int_Diff_disjoint Int_absorb Un_Diff Un_Int_eq(2) disj_add disjnt_def group_cancel.add2 sup_bot.right_neutral)
@@ -1315,18 +1327,23 @@ proof -
           then have "finite B"
             using \<open>finite A\<close> finite_subset by auto
           show "(- 1) ^ card (insert a B) * f (X a \<inter> \<Inter> (X ` B)) = - ((- 1) ^ card B * f (X a \<inter> \<Inter> (X ` B)))"
-            using B * by (auto simp add: card_insert_if \<open>finite B\<close>)
+            using B *
+            (*NEW*)
+            by (auto simp add: card_insert_if \<open>finite B\<close> where run exec: Zippy.Run.Breadth_First.all')
+            (*ORIG*)
+            (* by (auto simp add: card_insert_if \<open>finite B\<close>) *)
         qed
         have disj: "{B. B \<subseteq> A \<and> B \<noteq> {}} \<inter> {insert a B |B. B \<subseteq> A} = {}"
           using * by blast
         have inj: "inj_on (insert a) (Pow A)"
-          using "*" inj_on_def
-          (*NEW*)
-          by (zippy run run: Zippy.Run.Depth_First.all')
-          (*ORIG*)
-          (* by fastforce *)
+          using "*" unfolding inj_on_def
+            (*NEW*)
+            by (fastforce where run exec: Zippy.Run.Depth_First.all')
+            (*ORIG*)
+            (* by (fastforce) *)
         show ?thesis
-          apply (auto simp add: * subset_insert_lemma sum.union_disjoint disj sum_negf)
+          (*NOTE keep original non-terminal auto call for reproducibility*)
+          apply (auto_orig simp add: * subset_insert_lemma sum.union_disjoint disj sum_negf)
           apply (simp add: F G sum_negf sum.reindex [OF inj] o_def sum_diff *)
           done
       qed
@@ -1371,7 +1388,11 @@ proof -
   interpret Incl_Excl finite "int o card"
   proof qed (auto simp add: card_Un_disjnt)
   show ?thesis
-    using restricted assms by auto
+    using restricted assms
+    (*NEW*)
+    by (auto simp: Cons where run exec: Zippy.Run.Depth_First.all')
+    (*ORIG*)
+    (* by (auto simp: Cons) *)
 qed
 
 text\<open>A more conventional form\<close>
@@ -1388,7 +1409,7 @@ proof -
   have card_eq: "card ` {I. I \<subseteq> A \<and> I \<noteq> {}} = {1..card A}"
     using not_less_eq_eq card_mono
     (*NEW*)
-    by (zippy simp: image_iff where run run: Zippy.Run.Depth_First.all')
+    by (fastforce simp: image_iff where run exec: Zippy.Run.Depth_First.all')
     (*ORIG*)
     (* by (fastforce simp: image_iff) *)
   have "int(card(\<Union> A))
@@ -1436,7 +1457,11 @@ lemma card_subsets_step:
        = card {T. T \<subseteq> S \<and> U \<subseteq> T \<and> even(card T)} + card {T. T \<subseteq> S \<and> U \<subseteq> T \<and> odd(card T)}"
 proof -
   have inj: "inj_on (insert x) {T. T \<subseteq> S \<and> P T}" for P
-    using assms by (auto simp: inj_on_def)
+    using assms
+    (*NEW*)
+    by (auto simp: inj_on_def where run exec: Zippy.Run.Depth_First.all')
+    (*ORIG*)
+    (* by (auto simp: inj_on_def) *)
   have [simp]: "finite {T. T \<subseteq> S \<and> P T}"  "finite (insert x ` {T. T \<subseteq> S \<and> P T})" for P
     using \<open>finite S\<close> by auto
   have [simp]: "disjnt {T. T \<subseteq> S \<and> P T} (insert x ` {T. T \<subseteq> S \<and> Q T})" for P Q
@@ -1480,7 +1505,7 @@ lemma sum_alternating_cancels:
 proof -
   have "(\<Sum>x\<in>S. (-1) ^ f x)
       = (\<Sum>x | x \<in> S \<and> even (f x). (-1) ^ f x) + (\<Sum>x | x \<in> S \<and> odd (f x). (-1) ^ f x)"
-    by (rule sum_Un_eq [symmetric]; force simp: \<open>finite S\<close>)
+    by (rule sum_Un_eq [symmetric]) (force simp: \<open>finite S\<close>)
   also have "\<dots> = (0::'b::ring_1)"
     by (simp add: minus_one_power_iff assms cong: conj_cong)
   finally show ?thesis .

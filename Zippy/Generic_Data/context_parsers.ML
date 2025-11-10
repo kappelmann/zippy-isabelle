@@ -1,7 +1,7 @@
 (*  Title:      Zippy/context_parsers.ML
     Author:     Kevin Kappelmann
 
-Modifiable context parsers.
+Customisable context parsers.
 *)
 @{parse_entries (sig) PARSE_CONTEXT_PARSERS_ARGS [add, del, default]}
 

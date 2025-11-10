@@ -1,7 +1,8 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>States\<close>
 theory Zippy_States
   imports
-    ML_Typeclasses.ML_State
+    ML_State
     ML_Morphs
 begin
 

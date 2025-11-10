@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+subsubsection \<open>Substitution\<close>
 theory Zippy_Instance_Subst
   imports
     Zippy_Instance_Hom_Changed_Goals_Data

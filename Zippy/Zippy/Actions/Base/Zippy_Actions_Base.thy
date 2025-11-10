@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Actions\<close>
 theory Zippy_Actions_Base
   imports
     SpecCheck.SpecCheck_Show

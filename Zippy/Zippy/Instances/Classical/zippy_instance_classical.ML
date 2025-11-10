@@ -93,7 +93,7 @@ fun slow_step_data exn id update_result mk_cud madd_safe mk_meta_safe mk_meta_in
       >>= Ctxt.with_ctxt (fn ctxt => arr (fn mk_meta => Tac_AAM.Tac.zTRY_EVERY_FOCUS1 madd_safe
         (Tac_AAM.lift_tac mk_meta (safe_tac ctxt)) focus))
     val data = {
-      empty_action = Library.K (PAction.update_action inst0_step_data),
+      empty_action = PResults.orelse_update_action empty_action inst0_step_data,
       meta = Mixin_Base4.Meta.Meta.metadata (id, descr "safe_tac"),
       result_action = result_action,
       presultsq = presultsq_safe,

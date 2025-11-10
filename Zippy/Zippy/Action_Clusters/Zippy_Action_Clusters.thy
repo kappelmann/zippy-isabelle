@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Action Clusters\<close>
 theory Zippy_Action_Clusters
   imports
     Zippy_Enums

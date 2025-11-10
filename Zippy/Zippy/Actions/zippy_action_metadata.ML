@@ -8,7 +8,7 @@ sig
   type metadata
   val metadata : Zippy_Identifier.id * description -> metadata
 
-  val empty : Zippy_Identifier.id -> metadata
+  val no_descr : Zippy_Identifier.id -> metadata
 
   val pretty_metadata : metadata SpecCheck_Show.show
 
@@ -34,7 +34,7 @@ datatype metadata = Metadata of {
 }
 
 fun metadata (id, description) = Metadata {id = id, description = description}
-fun empty id = metadata (id, Lazy.value "")
+fun no_descr id = metadata (id, Lazy.value "")
 
 fun pretty_metadata (Metadata {id, description}) = Show.record [
     ("id", Zippy_Identifier.pretty id),

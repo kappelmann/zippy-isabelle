@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+subsection \<open>Induction\<close>
 theory Zippy_Instance_Induction
   imports
     Zippy_Instance_Hom_Changed_Goals_Data

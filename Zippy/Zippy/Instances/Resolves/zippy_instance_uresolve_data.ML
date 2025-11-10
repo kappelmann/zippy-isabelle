@@ -1,135 +1,98 @@
-(*  Title:      Zippy/zippy_instance_hom_changed_goals_data.ML
+(*  Title:      Zippy/zippy_instance_uresolve_data.ML
     Author:     Kevin Kappelmann
-
-Data for tactic actions creating a homogeneous number of changed goals for a given theorem.
 *)
-@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_MODE [add, del, config]}
-@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA
-  [thm, mk_meta, empty_action, updates, mk_cud, presultsq]}
-@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_ADD_ARGS
-  [thm, mk_meta, empty_action, default_update, updates, mk_cud, presultsq]}
-@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_DEL_ARGS [thm, select]}
-@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_CONFIG
-  [mk_meta, empty_action, default_update, mk_cud, presultsq, del_select]}
+@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_URESOLVE_DATA_MODE [add, del, config]}
+@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_URESOLVE_DATA
+  [rule, normalisers, unifier, mk_meta, empty_action, updates, mk_cud, presultsq]}
+@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_URESOLVE_DATA_ADD_ARGS
+  [rule, normalisers, unifier, mk_meta, empty_action, default_update, updates, mk_cud, presultsq]}
+@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_URESOLVE_DATA_DEL_ARGS [rule, select]}
+@{parse_entries (sig) PARSE_ZIPPY_INSTANCE_URESOLVE_DATA_CONFIG
+  [normalisers, unifier, mk_meta, empty_action, default_update, mk_cud, presultsq, del_select]}
 
-signature ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_ARGS =
+signature ZIPPY_INSTANCE_URESOLVE_DATA_ARGS =
 sig
-  structure PM : PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_MODE
-  structure PD : PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA
-  structure PAA : PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_ADD_ARGS
-  structure PDA : PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_DEL_ARGS
-  structure PDC : PARSE_ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_CONFIG
+  structure PM : PARSE_ZIPPY_INSTANCE_URESOLVE_DATA_MODE
+  structure PD : PARSE_ZIPPY_INSTANCE_URESOLVE_DATA
+  structure PAA : PARSE_ZIPPY_INSTANCE_URESOLVE_DATA_ADD_ARGS
+  structure PDA : PARSE_ZIPPY_INSTANCE_URESOLVE_DATA_DEL_ARGS
+  structure PDC : PARSE_ZIPPY_INSTANCE_URESOLVE_DATA_CONFIG
 
-  val PD_entries_from_PAA_entries : ('a, 'b, 'c, 'd, 'e, 'f, 'g) PAA.entries ->
-    ('a, 'b, 'c, 'e, 'f, 'g) PD.entries
-  val PDA_entries_from_PAA_entries : ('a, 'b, 'c, 'd, 'e, 'f, 'g) PAA.entries -> 'h ->
-    ('a, 'h) PDA.entries
-  val PDC_entries_from_PAA_entries : ('a, 'b, 'c, 'd, 'e, 'f, 'g) PAA.entries -> 'h ->
-    ('b, 'c, 'd, 'f, 'g, 'h) PDC.entries
-
-  val mk_updates_default : (thm -> int) -> thm -> 'a -> (int * 'a) list -> Proof.context -> 'a list
+  val PD_entries_from_PAA_entries : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) PAA.entries ->
+    ('a, 'b, 'c, 'd, 'e, 'g, 'h, 'i) PD.entries
+  val PDA_entries_from_PAA_entries : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) PAA.entries -> 'j ->
+    ('a, 'j) PDA.entries
+  val PDC_entries_from_PAA_entries : ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h, 'i) PAA.entries -> 'j ->
+    ('b, 'c, 'd, 'e, 'f, 'h, 'i, 'j) PDC.entries
 
   val add_arg_parsers : (thm context_parser, ML_Code_Util.code parser, ML_Code_Util.code parser,
-    ML_Code_Util.code parser, (int * ML_Code_Util.code) list parser, ML_Code_Util.code parser,
-    ML_Code_Util.code parser) PAA.entries
+    ML_Code_Util.code parser, ML_Code_Util.code parser, ML_Code_Util.code parser,
+    (int * ML_Code_Util.code) list parser, ML_Code_Util.code parser, ML_Code_Util.code parser)
+    PAA.entries
   val del_arg_parsers : (thm context_parser, ML_Code_Util.code parser) PDA.entries
   val config_data_parsers : (ML_Code_Util.code parser, ML_Code_Util.code parser,
     ML_Code_Util.code parser, ML_Code_Util.code parser, ML_Code_Util.code parser,
-    ML_Code_Util.code parser) PDC.entries
-
-  val code_updates : (int * ML_Code_Util.code) list -> ML_Code_Util.code
+    ML_Code_Util.code parser, ML_Code_Util.code parser, ML_Code_Util.code parser) PDC.entries
 end
 
-structure Zippy_Instance_Hom_Changed_Goals_Data_Args : ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA_ARGS =
+structure Zippy_Instance_UResolve_Data_Args : ZIPPY_INSTANCE_URESOLVE_DATA_ARGS =
 struct
 
 structure PU = Parse_Util
+structure UP = Unification_Parser
 structure MCU = ML_Code_Util
+structure HCGD = Zippy_Instance_Hom_Changed_Goals_Data_Args
 
 @{parse_entries (struct) PM [add, del, config]}
-@{parse_entries (struct) PD [thm, mk_meta, empty_action, updates, mk_cud, presultsq]}
-@{parse_entries (struct) PAA [thm, mk_meta, empty_action, default_update, updates, mk_cud, presultsq]}
-@{parse_entries (struct) PDA [thm, select]}
-@{parse_entries (struct) PDC [mk_meta, empty_action, default_update, mk_cud, presultsq, del_select]}
+@{parse_entries (struct) PD [rule, normalisers, unifier, mk_meta, empty_action, updates, mk_cud,
+  presultsq]}
+@{parse_entries (struct) PAA [rule, normalisers, unifier, mk_meta, empty_action, default_update,
+  updates, mk_cud, presultsq]}
+@{parse_entries (struct) PDA [rule, select]}
+@{parse_entries (struct) PDC [normalisers, unifier, mk_meta, empty_action, default_update, mk_cud,
+  presultsq, del_select]}
 
-fun PD_entries_from_PAA_entries {thm, mk_meta, empty_action, updates, mk_cud, presultsq,...} =
-  {thm = thm, mk_meta = mk_meta, empty_action = empty_action, updates = updates, mk_cud = mk_cud,
-  presultsq = presultsq}
-fun PDA_entries_from_PAA_entries {thm,...} select = {thm = thm, select = SOME select}
-fun PDC_entries_from_PAA_entries {mk_meta, empty_action, default_update, mk_cud, presultsq,...} select =
-  {mk_meta = mk_meta, empty_action = empty_action, default_update = default_update, mk_cud = mk_cud,
-  presultsq = presultsq, del_select = SOME select}
-
-fun mk_updates_default num_new_goals thm default_update updates ctxt =
-  let
-    val num_new_goals = num_new_goals thm
-    fun mk_updates i [] = if i <= num_new_goals + 1
-          then replicate (num_new_goals + 1 - i) default_update
-          else error (Pretty.breaks [
-              Pretty.block [Pretty.str "Too many updates ",
-                Pretty.enclose "(" ")." [SpecCheck_Show.int (i - 1)]],
-              Pretty.block [Pretty.str "Theorem ", Thm.pretty_thm ctxt thm,
-                Pretty.str " creates only ",
-                Pretty.enclose "(" ")" [SpecCheck_Show.int num_new_goals],
-                Pretty.str " new goals."]
-            ] |> Pretty.block |> Pretty.string_of)
-      | mk_updates i (ups as ((j, update) :: updates))= if i < j
-          then default_update :: mk_updates (i + 1) ups
-          else if i = j then update :: mk_updates (i + 1) updates
-          else error (Pretty.block [
-              Pretty.str "Invalid update indices (non-positive or duplicates)."
-            ] |> Pretty.string_of)
-  in sort (apply2 fst #> int_ord) updates |> mk_updates 1 end
-
-val empty_action_parser = PU.nonempty_code (K "action in case of empty results must not be empty")
-val default_update_parser = PU.nonempty_code (K "default update must not be empty")
-val update_parser = PU.nonempty_code (K "update must not be empty")
-val opt_update_parser = Parse.maybe update_parser
-val opt_updates_parser = Parse.list opt_update_parser
-val update_key_parser = PU.filter (curry (op <=) 0) (PU.fail (K "index must be greater than 0"))
-  Parse.nat
-val key_updates_parser =
-  PU.distinct_list (eq_fst (op =)) (K (K "updates must not contain duplicate keys"))
-  (Parse.list (update_key_parser --| Parse.$$$ ":" -- update_parser))
-val updates_parser = Args.bracks (
-  PU.nonempty_list (K "") key_updates_parser
-  || (opt_updates_parser
-    >> (tag_list 1 #> map_filter (fn (_, NONE) => NONE | (i, SOME x) => SOME (i, x)))))
-
-val mk_cud_parser = PU.nonempty_code (K "copy update data function must not be empty")
-val presultsq_parser = PU.nonempty_code (K "(prio * result sequence) coroutine must not be empty")
-val mk_meta_parser = PU.nonempty_code (K "function to create metadata must not be empty")
+fun PD_entries_from_PAA_entries {rule, normalisers, unifier, mk_meta, empty_action, updates, mk_cud,
+  presultsq,...} =
+  {rule = rule, normalisers = normalisers, unifier = unifier, mk_meta = mk_meta,
+  empty_action = empty_action, updates = updates, mk_cud = mk_cud, presultsq = presultsq}
+fun PDA_entries_from_PAA_entries {rule,...} select = {rule = rule, select = SOME select}
+fun PDC_entries_from_PAA_entries {mk_meta, normalisers, unifier, empty_action, default_update,
+  mk_cud, presultsq,...} select =
+  {normalisers = normalisers, unifier = unifier, mk_meta = mk_meta, empty_action = empty_action,
+  default_update = default_update, mk_cud = mk_cud, presultsq = presultsq, del_select = SOME select}
 
 val add_arg_parsers = {
-  thm = SOME PU.thm,
-  mk_meta = SOME mk_meta_parser,
-  empty_action = SOME empty_action_parser,
-  default_update = SOME default_update_parser,
-  updates = SOME updates_parser,
-  mk_cud = SOME mk_cud_parser,
-  presultsq = SOME presultsq_parser}
+  rule = SOME (HCGD.PAA.get_thm HCGD.add_arg_parsers),
+  normalisers = SOME UP.parse_normalisers,
+  unifier = SOME UP.parse_unifier,
+  mk_meta = SOME (HCGD.PAA.get_mk_meta HCGD.add_arg_parsers),
+  empty_action = SOME (HCGD.PAA.get_empty_action HCGD.add_arg_parsers),
+  default_update = SOME (HCGD.PAA.get_default_update HCGD.add_arg_parsers),
+  updates = SOME (HCGD.PAA.get_updates HCGD.add_arg_parsers),
+  mk_cud = SOME (HCGD.PAA.get_mk_cud HCGD.add_arg_parsers),
+  presultsq = SOME (HCGD.PAA.get_presultsq HCGD.add_arg_parsers)}
 
-val del_select_parser = PU.nonempty_code (K "deletion selector must not be empty")
-val del_arg_parsers = PDA_entries_from_PAA_entries add_arg_parsers del_select_parser
-
+val del_arg_parsers = PDA_entries_from_PAA_entries add_arg_parsers
+  (HCGD.PDA.get_select HCGD.del_arg_parsers)
 val config_data_parsers = PDC_entries_from_PAA_entries add_arg_parsers
   (PDA.get_select del_arg_parsers)
-
-val code_updates = map (fn (i, update) => MCU.tuple [MCU.read (string_of_int i), update]) #> MCU.list
 end
 
-signature ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA =
+signature ZIPPY_INSTANCE_URESOLVE_DATA =
 sig
   include ZIPPY_INSTANCE_TACTIC
 
-  structure Hom_Changed_Goals_Data :
+  structure UResolve_Data :
   sig
     type data = (thm,
+      Unification_Base.normalisers,
+      Unification_Base.unifier,
       Tac_AAM.mk_meta,
       int -> @{AllT_args} Base_Data.PAction.action,
       (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph) list,
       @{AllT_args} Result_Action.mk_copy_update_data,
-      @{AllT_args} PResults.presultsq) Zippy_Instance_Hom_Changed_Goals_Data_Args.PD.entries
+      @{AllT_args} PResults.presultsq) Zippy_Instance_UResolve_Data_Args.PD.entries
 
     val map_data_thms : (thm -> thm) -> data -> data
     val transfer_data : theory -> data -> data
@@ -137,18 +100,28 @@ sig
     structure Data : GENERIC_TERM_INDEX_DATA
     where type value = data
 
-    type config = (Tac_AAM.mk_meta,
+    type config = (Unification_Base.normalisers,
+      Unification_Base.unifier,
+      Tac_AAM.mk_meta,
       int -> @{AllT_args} Base_Data.PAction.action,
       Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph,
       @{AllT_args} Result_Action.mk_copy_update_data,
       @{AllT_args} PResults.presultsq,
-      thm * Data.term_value -> bool) Zippy_Instance_Hom_Changed_Goals_Data_Args.PDC.entries
+      thm * Data.term_value -> bool) Zippy_Instance_UResolve_Data_Args.PDC.entries
 
     structure Config_Data : GENERIC_DATA
     where type T = config
 
     val get_config : Context.generic -> Config_Data.T
     val map_config : (Config_Data.T -> Config_Data.T) -> Context.generic -> Context.generic
+
+    val get_normalisers : Context.generic -> Unification_Base.normalisers
+    val map_normalisers : (Unification_Base.normalisers -> Unification_Base.normalisers) ->
+      Context.generic -> Context.generic
+
+    val get_unifier : Context.generic -> Unification_Base.unifier
+    val map_unifier : (Unification_Base.unifier -> Unification_Base.unifier) ->
+      Context.generic -> Context.generic
 
     val get_mk_meta : Context.generic -> Tac_AAM.mk_meta
     val map_mk_meta : (Tac_AAM.mk_meta -> Tac_AAM.mk_meta) -> Context.generic -> Context.generic
@@ -178,12 +151,14 @@ sig
       Context.generic -> Context.generic
 
     type add_args = (thm,
+      Unification_Base.normalisers,
+      Unification_Base.unifier,
       Tac_AAM.mk_meta,
       int -> @{AllT_args} Base_Data.PAction.action,
       Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph,
       (int * (Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper) emorph)) list,
       @{AllT_args} Result_Action.mk_copy_update_data,
-      @{AllT_args} PResults.presultsq) Zippy_Instance_Hom_Changed_Goals_Data_Args.PAA.entries
+      @{AllT_args} PResults.presultsq) Zippy_Instance_UResolve_Data_Args.PAA.entries
 
     val insert : data -> Context.generic -> Context.generic
     val insert_declaration_attribute : add_args -> thm -> Context.generic -> Context.generic
@@ -191,7 +166,7 @@ sig
       Context.generic
 
     type del_args = (thm, thm * Data.term_value -> bool)
-      Zippy_Instance_Hom_Changed_Goals_Data_Args.PDA.entries
+      Zippy_Instance_UResolve_Data_Args.PDA.entries
 
     val delete : del_args -> Context.generic -> Context.generic
     val delete_declaration_attribute : del_args -> thm -> Context.generic -> Context.generic
@@ -200,23 +175,23 @@ sig
 
     val binding : Binding.binding
     val parse_add_arg_entries_attribute : (thm, ML_Code_Util.code, ML_Code_Util.code,
-      ML_Code_Util.code, (int * ML_Code_Util.code) list, ML_Code_Util.code, ML_Code_Util.code)
-      Zippy_Instance_Hom_Changed_Goals_Data_Args.PAA.entries parser
+      ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code, (int * ML_Code_Util.code) list,
+      ML_Code_Util.code, ML_Code_Util.code) Zippy_Instance_UResolve_Data_Args.PAA.entries parser
     val add_attribute : (thm, ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code,
-        (int * ML_Code_Util.code) list, ML_Code_Util.code, ML_Code_Util.code)
-        Zippy_Instance_Hom_Changed_Goals_Data_Args.PAA.entries * Position.T -> attribute
+        ML_Code_Util.code, ML_Code_Util.code, (int * ML_Code_Util.code) list, ML_Code_Util.code,
+        ML_Code_Util.code) Zippy_Instance_UResolve_Data_Args.PAA.entries * Position.T -> attribute
 
     val parse_del_arg_entries_attribute : (thm, ML_Code_Util.code)
-      Zippy_Instance_Hom_Changed_Goals_Data_Args.PDA.entries parser
-    val del_attribute : (thm, ML_Code_Util.code)
-        Zippy_Instance_Hom_Changed_Goals_Data_Args.PDA.entries * Position.T -> attribute
+      Zippy_Instance_UResolve_Data_Args.PDA.entries parser
+    val del_attribute : (thm, ML_Code_Util.code) Zippy_Instance_UResolve_Data_Args.PDA.entries
+      * Position.T -> attribute
 
     val parse_config_arg_entries : (ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code,
-      ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code)
-      Zippy_Instance_Hom_Changed_Goals_Data_Args.PDC.entries parser
+      ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code)
+      Zippy_Instance_UResolve_Data_Args.PDC.entries parser
     val config_attribute : (ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code,
-        ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code)
-        Zippy_Instance_Hom_Changed_Goals_Data_Args.PDC.entries * Position.T -> attribute
+        ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code,
+        ML_Code_Util.code) Zippy_Instance_UResolve_Data_Args.PDC.entries * Position.T -> attribute
 
     val parse_attribute : attribute parser
     val setup_attribute : (string, string) Either.either -> local_theory -> local_theory
@@ -232,82 +207,94 @@ sig
       Base_Data.GFocus.focus -> (Base_Data.GFocus.focus * Data.value) list
 
     val tac_data_from_data : Base_Data.AMeta.metadata ->
-      (Tac_AAM.mk_meta -> thm -> @{AllT_args} ZLPC.Z4.zipper ->
-        (@{ParaT_args} Base_Data.GFocus.focus, Tac_AAM.ztactic) morph) ->
+      (Unification_Base.normalisers -> Unification_Base.unifier -> Tac_AAM.mk_meta -> thm ->
+        @{AllT_args} ZLPC.Z4.zipper -> (@{ParaT_args} Base_Data.GFocus.focus,
+        Tac_AAM.ztactic) morph) ->
       data -> @{AllT_args} Tac.data
 
     val paction_data_from_data : @{ParaT_args encl: "(" ")"} Exn.ME.exn ->
       Base_Data.AMeta.metadata ->
-      (Tac_AAM.mk_meta -> thm -> @{AllT_args} ZLPC.Z4.zipper ->
-        (@{ParaT_args} Base_Data.GFocus.focus, Tac_AAM.ztactic) morph) ->
+      (Unification_Base.normalisers -> Unification_Base.unifier -> Tac_AAM.mk_meta -> thm ->
+        @{AllT_args} ZLPC.Z4.zipper -> (@{ParaT_args} Base_Data.GFocus.focus,
+        Tac_AAM.ztactic) morph) ->
       data -> @{AllT_args} PAction.data
 
     val cons_action : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.AMeta.metadata ->
-      (Tac_AAM.mk_meta -> thm -> @{AllT_args} ZLPC.Z4.zipper ->
-        (@{ParaT_args} Base_Data.GFocus.focus, Tac_AAM.ztactic) morph) ->
+      (Unification_Base.normalisers -> Unification_Base.unifier -> Tac_AAM.mk_meta -> thm ->
+        @{AllT_args} ZLPC.Z4.zipper -> (@{ParaT_args} Base_Data.GFocus.focus,
+        Tac_AAM.ztactic) morph) ->
       data -> Base_Data.GFocus.focus -> (@{ParaT_args} @{AllT_args} ZLPC.Z3.zipper,
         @{AllT_args} ZLPC.Z4.zipper) morph
     val cons_nth_action : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
-      (Tac_AAM.mk_meta -> thm -> @{AllT_args} ZLPC.Z4.zipper ->
-        (@{ParaT_args} Base_Data.GFocus.focus, Tac_AAM.ztactic) morph) ->
+      (Unification_Base.normalisers -> Unification_Base.unifier -> Tac_AAM.mk_meta -> thm ->
+        @{AllT_args} ZLPC.Z4.zipper -> (@{ParaT_args} Base_Data.GFocus.focus,
+        Tac_AAM.ztactic) morph) ->
       Proof.context -> int -> data -> Base_Data.GFocus.focus ->
       (@{ParaT_args} @{AllT_args} ZLPC.Z3.zipper, @{AllT_args} ZLPC.Z4.zipper) morph
 
     val cons_action_cluster : @{ParaT_args encl: "(" ")"} Exn.ME.exn -> Base_Data.ACMeta.metadata ->
-      (Tac_AAM.mk_meta -> thm -> @{AllT_args} ZLPC.Z4.zipper ->
-        (@{ParaT_args} Base_Data.GFocus.focus, Tac_AAM.ztactic) morph) ->
+      (Unification_Base.normalisers -> Unification_Base.unifier -> Tac_AAM.mk_meta -> thm ->
+        @{AllT_args} ZLPC.Z4.zipper -> (@{ParaT_args} Base_Data.GFocus.focus,
+        Tac_AAM.ztactic) morph) ->
       Proof.context -> (Base_Data.GFocus.focus * data) list ->
       (@{ParaT_args} @{AllT_args} ZLPC.Z2.zipper, @{AllT_args} ZLPC.Z3.zipper option) morph
   end
 end
 
 
-functor Zippy_Instance_Hom_Changed_Goals_Data(
-    structure FI_Hom_Changed_Goals_Data : FUNCTOR_INSTANCE_BASE (*target path for Hom_Changed_Goals_Data*)
+functor Zippy_Instance_UResolve_Data(
+    structure FI_UResolve_Data : FUNCTOR_INSTANCE_BASE (*target path for UResolve_Data*)
     structure Z : ZIPPY_INSTANCE_TACTIC
     structure TI : TERM_INDEX
     val key_of_thm : thm -> term
     val num_new_goals : thm -> int
-    val init_args : (Z.Tac_AAM.mk_meta,
+    val init_args : (Unification_Base.normalisers,
+      Unification_Base.unifier,
+      Z.Tac_AAM.mk_meta,
       int -> @{AllT_args} Z.Base_Data.PAction.action,
       Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLPC.Z2.zipper) Z.emorph,
       @{AllT_args} Z.Result_Action.mk_copy_update_data,
       @{AllT_args} Z.PResults.presultsq,
       thm * (term * (thm,
+        Unification_Base.normalisers,
+        Unification_Base.unifier,
         Z.Tac_AAM.mk_meta,
         int -> @{AllT_args} Z.Base_Data.PAction.action,
         (Z.Base_Data.GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z.ZLPC.Z2.zipper) Z.emorph) list,
         @{AllT_args} Z.Result_Action.mk_copy_update_data,
         @{AllT_args} Z.PResults.presultsq)
-        Zippy_Instance_Hom_Changed_Goals_Data_Args.PD.entries) -> bool)
-        Zippy_Instance_Hom_Changed_Goals_Data_Args.PDC.entries
+        Zippy_Instance_UResolve_Data_Args.PD.entries) -> bool)
+        Zippy_Instance_UResolve_Data_Args.PDC.entries
     structure Log : ZIPPY_LOGGER_MIXIN_BASE
-  ) : ZIPPY_INSTANCE_HOM_CHANGED_GOALS_DATA =
+  ) : ZIPPY_INSTANCE_URESOLVE_DATA =
 struct
 open Z
 structure AU = ML_Attribute_Util
 structure MCU = ML_Code_Util
 structure PU = Parse_Util
 structure SShow = SpecCheck_Show
+structure HCGD = Zippy_Instance_Hom_Changed_Goals_Data_Args
 
-structure Hom_Changed_Goals_Data =
+structure UResolve_Data =
 struct
-structure FI = Functor_Instance(FI_Hom_Changed_Goals_Data)
+structure FI = Functor_Instance(FI_UResolve_Data)
 
-local open Zippy_Instance_Hom_Changed_Goals_Data_Args ZLPC Base_Data
+local open Zippy_Instance_UResolve_Data_Args ZLPC Base_Data
 in
 type data = (thm,
+  Unification_Base.normalisers,
+  Unification_Base.unifier,
   Tac_AAM.mk_meta,
   int -> @{AllT_args} PAction.action,
   (GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z2.zipper) emorph) list,
   @{AllT_args} Result_Action.mk_copy_update_data,
   @{AllT_args} PResults.presultsq) PD.entries
 
-fun eq_data data = Thm.eq_thm (apply2 PD.get_thm data)
+fun eq_data data = Thm.eq_thm (apply2 PD.get_rule data)
 fun pretty_data ctxt data = SShow.record [
-    ("thm", Thm.pretty_thm ctxt (PD.get_thm data))
+    ("thm", Thm.pretty_thm ctxt (PD.get_rule data))
   ]
-fun map_data_thms f = PD.map_thm f
+fun map_data_thms f = PD.map_rule f
 fun transfer_data thy = map_data_thms (Thm.transfer thy)
 
 \<^functor_instance>\<open>struct_name: Data
@@ -321,7 +308,9 @@ fun transfer_data thy = map_data_thms (Thm.transfer thy)
     val eq_value = eq_data
     val pretty_value = pretty_data\<close>\<close>
 
-type config = (Tac_AAM.mk_meta,
+type config = (Unification_Base.normalisers,
+  Unification_Base.unifier,
+  Tac_AAM.mk_meta,
   int -> @{AllT_args} PAction.action,
   GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z2.zipper) emorph,
   @{AllT_args} Result_Action.mk_copy_update_data,
@@ -335,6 +324,12 @@ structure Config_Data = Generic_Data(
 
 val get_config = Config_Data.get
 val map_config = Config_Data.map
+
+val get_normalisers = PDC.get_normalisers o get_config
+val map_normalisers = map_config o PDC.map_normalisers
+
+val get_unifier = PDC.get_unifier o get_config
+val map_unifier = map_config o PDC.map_unifier
 
 val get_mk_meta = PDC.get_mk_meta o get_config
 val map_mk_meta = map_config o PDC.map_mk_meta
@@ -355,6 +350,8 @@ val get_del_select = PDC.get_del_select o get_config
 val map_del_select = map_config o PDC.map_del_select
 
 type add_args = (thm,
+  Unification_Base.normalisers,
+  Unification_Base.unifier,
   Tac_AAM.mk_meta,
   int -> @{AllT_args} PAction.action,
   GCS.goal_pos -> (@{ParaT_args} @{AllT_args} Z2.zipper) emorph,
@@ -365,7 +362,7 @@ type add_args = (thm,
 fun insert data context =
   let
     val data = map_data_thms Thm.trim_context data
-    val thm = PD.get_thm data
+    val thm = PD.get_rule data
     val num_new_goals = num_new_goals thm
     val nupdates = length (PD.get_updates data)
   in
@@ -381,15 +378,17 @@ fun insert data context =
   end
 
 fun insert_declaration_attribute args thm context =
-  let val updates = mk_updates_default num_new_goals thm (PAA.get_default_update args)
+  let val updates = HCGD.mk_updates_default num_new_goals thm (PAA.get_default_update args)
     (PAA.get_updates args) (Context.proof_of context)
   in
-    PAA.map_updates (K updates) args |> PAA.map_thm_safe (K (SOME thm))
+    PAA.map_updates (K updates) args |> PAA.map_rule_safe (K (SOME thm))
     |> PD_entries_from_PAA_entries |> (fn data => insert data context)
   end
 
 fun add_args_context_defaults args = get_config
-  #> (fn cargs => [PAA.mk_meta (PDC.get_mk_meta cargs),
+  #> (fn cargs => [PAA.normalisers (PDC.get_normalisers cargs),
+    PAA.unifier (PDC.get_unifier cargs),
+    PAA.mk_meta (PDC.get_mk_meta cargs),
     PAA.empty_action (PDC.get_empty_action cargs),
     PAA.default_update (PDC.get_default_update cargs),
     PAA.mk_cud (PDC.get_mk_cud cargs),
@@ -402,10 +401,10 @@ fun insert_declaration_attribute_context_defaults args thm context =
 
 type del_args = (thm, thm * Data.term_value -> bool) PDA.entries
 
-fun delete args = let val thm = PDA.get_thm args
+fun delete args = let val thm = PDA.get_rule args
   in Data.delete (key_of_thm thm, curry (PDA.get_select args) thm) end
 
-fun delete_declaration_attribute args thm = PDA.map_thm_safe (K (SOME thm)) args |> delete
+fun delete_declaration_attribute args thm = PDA.map_rule_safe (K (SOME thm)) args |> delete
 
 fun del_args_context_defaults args = get_config
   #> (fn cargs => [PDA.select (PDC.get_del_select cargs)])
@@ -424,11 +423,12 @@ fun gen_parse_key keys key_to_string key_from_string except = Parse_Key_Value.pa
 val parse_add_arg_entry_attribute =
   let
     val parsers = add_arg_parsers
-    val parse_value = PAA.parse_entry Scan.fail (PAA.get_mk_meta parsers) (PAA.get_empty_action parsers)
+    val parse_value = PAA.parse_entry Scan.fail (PAA.get_normalisers parsers)
+      (PAA.get_unifier parsers) (PAA.get_mk_meta parsers) (PAA.get_empty_action parsers)
       (PAA.get_default_update parsers) (PAA.get_updates parsers) (PAA.get_mk_cud parsers)
       (PAA.get_presultsq parsers)
     val parse_key = gen_parse_key PAA.keys PAA.key_to_string PAA.key_from_string
-      (map PAA.key [PAA.thm])
+      (map PAA.key [PAA.rule])
   in Parse_Key_Value.parse_entry parse_key (K (Parse.$$$ ":")) parse_value end
 
 fun gen_parse_add_arg_entries_attribute repeat =
@@ -438,19 +438,21 @@ fun gen_parse_add_arg_entries_attribute repeat =
 val parse_add_arg_entries_attribute = gen_parse_add_arg_entries_attribute Scan.repeat
 
 fun Args_substructure_op substructure operation =
-  MCU.flat_read ["Zippy_Instance_Hom_Changed_Goals_Data_Args.", substructure, ".", operation]
+  MCU.flat_read ["Zippy_Instance_UResolve_Data_Args.", substructure, ".", operation]
 
 fun add_attribute (entries, pos) =
   let
     val code_PAA_op = Args_substructure_op "PAA"
     val code_from_key = code_PAA_op o PAA.key_to_string
-    fun code_from_entry (PAA.mk_meta c) = c
+    fun code_from_entry (PAA.normalisers c) = c
+      | code_from_entry (PAA.unifier c) = c
+      | code_from_entry (PAA.mk_meta c) = c
       | code_from_entry (PAA.empty_action c) = c
       | code_from_entry (PAA.default_update c) = c
-      | code_from_entry (PAA.updates updates) = code_updates updates
+      | code_from_entry (PAA.updates updates) = HCGD.code_updates updates
       | code_from_entry (PAA.mk_cud c) = c
       | code_from_entry (PAA.presultsq c) = c
-      | code_from_entry (PAA.thm _) = error "theorem may not be passed to add attribute"
+      | code_from_entry (PAA.rule _) = error "rule may not be passed to add attribute"
     val code_entries = PAA.key_entry_entries_from_entries entries
       |> map (fn (k, v) => code_from_key k @ MCU.atomic (code_from_entry v))
       |> MCU.list
@@ -462,7 +464,7 @@ val parse_del_arg_entry_attribute =
   let
     val parsers = del_arg_parsers
     val parse_value = PDA.parse_entry Scan.fail (PDA.get_select parsers)
-    val parse_key = gen_parse_key PDA.keys PDA.key_to_string PDA.key_from_string (map PDA.key [PDA.thm])
+    val parse_key = gen_parse_key PDA.keys PDA.key_to_string PDA.key_from_string (map PDA.key [PDA.rule])
   in Parse_Key_Value.parse_entry parse_key (K (Parse.$$$ ":")) parse_value end
 
 fun gen_parse_del_arg_entries_attribute repeat =
@@ -475,7 +477,7 @@ fun del_attribute (entries, pos) =
     val code_PDA_op = Args_substructure_op "PDA"
     val code_from_key = code_PDA_op o PDA.key_to_string
     fun code_from_entry (PDA.select c) = c
-      | code_from_entry (PDA.thm _) = error "theorem may not be passed to del attribute"
+      | code_from_entry (PDA.rule _) = error "rule may not be passed to del attribute"
     val code_entries = PDA.key_entry_entries_from_entries entries
       |> map (fn (k, v) => code_from_key k @ MCU.atomic (code_from_entry v))
       |> MCU.list
@@ -486,9 +488,9 @@ fun del_attribute (entries, pos) =
 val parse_config_arg_entries =
   let
     val parsers = config_data_parsers
-    val parse_value = PDC.parse_entry (PDC.get_mk_meta parsers) (PDC.get_empty_action parsers)
-      (PDC.get_default_update parsers) (PDC.get_mk_cud parsers) (PDC.get_presultsq parsers)
-      (PDC.get_del_select parsers)
+    val parse_value = PDC.parse_entry (PDC.get_normalisers parsers) (PDC.get_unifier parsers)
+      (PDC.get_mk_meta parsers) (PDC.get_empty_action parsers) (PDC.get_default_update parsers)
+      (PDC.get_mk_cud parsers) (PDC.get_presultsq parsers) (PDC.get_del_select parsers)
     val parse_entry = Parse_Key_Value.parse_entry PDC.parse_key (K (Parse.$$$ ":")) parse_value
     val default_entries = PDC.empty_entries ()
   in PDC.parse_entries_required Scan.repeat1 true [] parse_entry default_entries end
@@ -497,7 +499,9 @@ fun config_attribute (entries, pos) =
   let
     val code_PDC_op = Args_substructure_op "PDC"
     val code_from_key = code_PDC_op o PDC.key_to_string
-    fun code_from_entry (PDC.mk_meta c) = c
+    fun code_from_entry (PDC.normalisers c) = c
+      | code_from_entry (PDC.unifier c) = c
+      | code_from_entry (PDC.mk_meta c) = c
       | code_from_entry (PDC.empty_action c) = c
       | code_from_entry (PDC.default_update c) = c
       | code_from_entry (PDC.mk_cud c) = c
@@ -536,7 +540,7 @@ val setup_attribute = Attrib.local_setup binding
   (Parse.!!! parse_attribute |> Scan.lift) o
   (Either.cases I (fn what => "configure " ^ what ^ " data " ^ enclose "(" ")" FI.long_name))
 
-fun parse_thms unless = Scan.repeats (Scan.unless unless Parse_Util.multi_thm)
+fun parse_rules unless = Scan.repeats (Scan.unless unless Parse_Util.multi_thm)
   |> PU.nonempty_list (K "List of theorems must not be empty.")
 val parse_thms_opt_args_sep = Scan.lift (Args.$$$ "use")
 
@@ -545,7 +549,7 @@ local
   fun gen_add_del_attr_context_update parse_entries_required parse_entry attr =
     let val unless = (parse_thms_opt_args_sep >> K ()) || (parse_entry >> K ())
     in
-      PU.position' (parse_thms unless)
+      PU.position' (parse_rules unless)
       -- (Scan.option parse_thms_opt_args_sep
       :|-- (fn use => parse_entries_required (if is_some use then Scan.repeat1 else Scan.repeat)))
       :|-- (fn ((thms, pos), entries) => Scan.depend (fn context =>
@@ -579,7 +583,7 @@ fun tac_data_from_data meta tac data = {
   empty_action = PD.get_empty_action data,
   result_action = Result_Action.hom_changed_goals_action (PD.get_updates data) (PD.get_mk_cud data),
   presultsq = PD.get_presultsq data,
-  tac = tac (PD.get_mk_meta data) (PD.get_thm data)}
+  tac = tac (PD.get_normalisers data) (PD.get_unifier data) (PD.get_mk_meta data) (PD.get_rule data)}
 
 fun paction_data_from_data exn meta tac = tac_data_from_data meta tac
   #> Tac.paction_data_from_data exn
@@ -591,7 +595,7 @@ fun cons_nth_action exn meta tac ctxt i data =
     Zippy_Identifier.suffix_name NONE (string_of_int i) (ACMeta.Id.getter meta),
     Lazy.lazy (fn _ => Pretty.breaks [
         Pretty.str (ACMeta.Descr.getter meta |> Lazy.force),
-        Pretty.block [Pretty.str "Theorem: ", Thm.pretty_thm ctxt (PD.get_thm data)]
+        Pretty.block [Pretty.str "Rule: ", Thm.pretty_thm ctxt (PD.get_rule data)]
       ] |> Pretty.block |> Pretty.string_of))
   in cons_action exn meta tac data end
 

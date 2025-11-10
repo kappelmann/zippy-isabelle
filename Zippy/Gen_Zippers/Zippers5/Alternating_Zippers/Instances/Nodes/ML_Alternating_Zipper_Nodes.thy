@@ -1,5 +1,4 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
-section \<open>Alternating Zippers\<close>
 theory ML_Alternating_Zipper_Nodes
   imports
     ML_Alternating_Zippers

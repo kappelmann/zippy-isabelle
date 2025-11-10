@@ -1,5 +1,6 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
-section \<open>Generic Typeclasses\<close>
+chapter \<open>ML Typeclasses\<close>
+section \<open>Basic Setup for Generic Typeclasses\<close>
 theory Gen_ML_Typeclasses_Base
   imports ML_Args_Antiquotations
     keywords "ML_gen_file" :: thy_decl

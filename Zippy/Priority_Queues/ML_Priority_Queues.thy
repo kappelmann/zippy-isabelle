@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Priority Queues\<close>
 theory ML_Priority_Queues
   imports
     Pure

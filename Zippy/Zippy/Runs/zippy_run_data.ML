@@ -1,7 +1,7 @@
 (*  Title:      Zippy/zippy_run_data.ML
     Author:     Kevin Kappelmann
 *)
-@{parse_entries (sig) PARSE_ZIPPY_RUN_DATA_ARGS [init, run, post]}
+@{parse_entries (sig) PARSE_ZIPPY_RUN_DATA_ARGS [init, exec, post]}
 
 signature ZIPPY_RUN_DATA_ARGS =
 sig
@@ -14,11 +14,11 @@ structure Zippy_Run_Data_Args : ZIPPY_RUN_DATA_ARGS =
 struct
 structure MCU = ML_Code_Util
 
-@{parse_entries (struct) PA [init, run, post]}
+@{parse_entries (struct) PA [init, exec, post]}
 
 val parsers = {
   init = SOME MCU.parse_code,
-  run = SOME MCU.parse_code,
+  exec = SOME MCU.parse_code,
   post = SOME MCU.parse_code}
 end
 
@@ -26,9 +26,9 @@ signature ZIPPY_RUN_DATA =
 sig
   include \<^eval>\<open>sfx_ParaT_nargs "MORPH_BASE"\<close>
   type container1
-  type run_config
+  type exec_config
   type data = ((@{ParaT_args} Zippy_Thm_State.state, container1) morph,
-    run_config -> (@{ParaT_args} container1, Zippy_Thm_State.state Seq.seq) morph,
+    exec_config -> (@{ParaT_args} container1, Zippy_Thm_State.state Seq.seq) morph,
     Zippy_Thm_State.state -> (@{ParaT_args} Zippy_Thm_State.state Seq.seq) emorph)
     Zippy_Run_Data_Args.PA.entries
 
@@ -42,10 +42,10 @@ sig
   val map_init : ((@{ParaT_args} Zippy_Thm_State.state, container1) morph ->
       (@{ParaT_args} Zippy_Thm_State.state, container1) morph) ->
     Context.generic -> Context.generic
-  val get_run : Context.generic -> run_config -> (@{ParaT_args} container1,
+  val get_exec : Context.generic -> exec_config -> (@{ParaT_args} container1,
       Zippy_Thm_State.state Seq.seq) morph
-  val map_run : ((run_config -> (@{ParaT_args} container1,
-      Zippy_Thm_State.state Seq.seq) morph) -> run_config ->
+  val map_exec : ((exec_config -> (@{ParaT_args} container1,
+      Zippy_Thm_State.state Seq.seq) morph) -> exec_config ->
       (@{ParaT_args} container1, Zippy_Thm_State.state Seq.seq) morph) ->
     Context.generic -> Context.generic
   val get_post : Context.generic -> Zippy_Thm_State.state ->
@@ -54,9 +54,9 @@ sig
       Zippy_Thm_State.state -> (@{ParaT_args} Zippy_Thm_State.state Seq.seq) emorph) ->
     Context.generic -> Context.generic
 
-  val run : run_config -> (@{ParaT_args} Zippy_Thm_State.state, Zippy_Thm_State.state Seq.seq) morph
+  val exec : exec_config -> (@{ParaT_args} Zippy_Thm_State.state, Zippy_Thm_State.state Seq.seq) morph
   type state
-  val tac : run_config -> state -> tactic
+  val tac : exec_config -> state -> tactic
 
   val binding : Binding.binding
   val parse_arg_entries : (ML_Code_Util.code, ML_Code_Util.code, ML_Code_Util.code)
@@ -75,10 +75,10 @@ functor Zippy_Run_Data(
     sharing type Ctxt.M.t = Z.M.t
     structure Seq_From_Monad : ZIPPY_SEQ_FROM_MONAD_MIXIN_BASE
     sharing type Seq_From_Monad.M.t = Z.M.t
-    type run_config
+    type exec_config
     val init_args : (
       (@{ParaT_args} Zippy_Thm_State.state, @{AllT_args} Z.Z1.ZM.container) Z.morph,
-      run_config -> (@{ParaT_args} @{AllT_args} Z.Z1.ZM.container,
+      exec_config -> (@{ParaT_args} @{AllT_args} Z.Z1.ZM.container,
         Zippy_Thm_State.state Seq.seq) Z.morph,
       Zippy_Thm_State.state -> (@{ParaT_args} Zippy_Thm_State.state Seq.seq) Z.emorph)
       Zippy_Run_Data_Args.PA.entries
@@ -92,9 +92,9 @@ structure PA = ZRDA.PA
 structure MCU = ML_Code_Util
 
 type container1 = @{AllT_args} Z.Z1.ZM.container
-type run_config = run_config
+type exec_config = exec_config
 type data = ((@{ParaT_args} Zippy_Thm_State.state, container1) morph,
-  run_config -> (@{ParaT_args} container1, Zippy_Thm_State.state Seq.seq) morph,
+  exec_config -> (@{ParaT_args} container1, Zippy_Thm_State.state Seq.seq) morph,
   Zippy_Thm_State.state -> (@{ParaT_args} Zippy_Thm_State.state Seq.seq) emorph)
   Zippy_Run_Data_Args.PA.entries
 
@@ -109,27 +109,27 @@ val map_data = Data.map
 val get_init = PA.get_init o get_data
 val map_init = map_data o PA.map_init
 
-val get_run = PA.get_run o get_data
-val map_run = map_data o PA.map_run
+val get_exec = PA.get_exec o get_data
+val map_exec = map_data o PA.map_exec
 
 val get_post = PA.get_post o get_data
 val map_post = map_data o PA.map_post
 
 local structure M = \<^eval>\<open>sfx_ParaT_nargs "Monad"\<close>(M); open M
 in
-fun run run_config st = Ctxt.with_context get_init st
-  >>= Ctxt.with_context (fn context => get_run context run_config)
+fun exec exec_config st = Ctxt.with_context get_init st
+  >>= Ctxt.with_context (fn context => get_exec context exec_config)
   >>= Ctxt.with_context (fn context => get_post context st)
 end
 type state = @{AllT_args} Seq_From_Monad.state
-fun tac run_config s = run run_config #> Seq_From_Monad.seq_from_monad s
+fun tac exec_config s = exec exec_config #> Seq_From_Monad.seq_from_monad s
 
 val binding = Binding.make (FI.id, FI.pos)
 
 val parse_arg_entries =
   let
     val parsers = ZRDA.parsers
-    val parse_value = PA.parse_entry (PA.get_init parsers) (PA.get_run parsers) (PA.get_post parsers)
+    val parse_value = PA.parse_entry (PA.get_init parsers) (PA.get_exec parsers) (PA.get_post parsers)
     val parse_entry = Parse_Key_Value.parse_entry PA.parse_key (K (Parse.$$$ ":")) parse_value
   in PA.parse_entries_required Scan.repeat1 true [] parse_entry (PA.empty_entries ()) end
 
@@ -139,7 +139,7 @@ fun attribute (entries, pos) =
     fun code_PA_op operation = MCU.read ("Zippy_Run_Data_Args.PA." ^ operation)
     val code_from_key = code_PA_op o PA.key_to_string
     fun code_from_entry (PA.init c) = c
-      | code_from_entry (PA.run c) = c
+      | code_from_entry (PA.exec c) = c
       | code_from_entry (PA.post c) = c
     val code_entries = PA.key_entry_entries_from_entries entries
       |> List.map (fn (k, v) => code_from_key k @ MCU.atomic (code_from_entry v))
@@ -153,7 +153,7 @@ val parse_attribute = Parse_Util.position parse_arg_entries >> attribute
 
 val setup_attribute = Attrib.local_setup binding
   (Parse.!!! parse_attribute |> Scan.lift) o
-  the_default ("configure run data " ^ enclose "(" ")" FI.long_name)
+  the_default ("configure exec data " ^ enclose "(" ")" FI.long_name)
 
 val parse_context_update = Scan.lift parse_attribute
   :|-- (fn attr => Scan.depend (fn context =>

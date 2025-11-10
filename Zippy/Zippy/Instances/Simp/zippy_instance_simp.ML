@@ -13,12 +13,9 @@ sig
         (@{ParaT_args} @{AllT_args} ZLPC.Z1.zipper) emorph) ->
       @{AllT_args} Result_Action.mk_copy_update_data ->
       (Tac_AAM.Meta.Meta.metadata * Tac_AAM.Meta.Meta.metadata -> Tac_AAM.Meta.Meta.metadata) ->
-      (Tac_AAM.Meta.Meta.metadata * Tac_AAM.Meta.Meta.metadata -> Tac_AAM.Meta.Meta.metadata) ->
       (@{ParaT_args} @{AllT_args} ZLPC.Z4.zipper, Tac_AAM.mk_meta) morph ->
       (@{ParaT_args} @{AllT_args} ZLPC.Z4.zipper, Tac_AAM.mk_meta) morph ->
-      (@{ParaT_args} @{AllT_args} ZLPC.Z4.zipper, Tac_AAM.mk_meta) morph ->
-      @{AllT_args} PResults.presultsq -> @{AllT_args} PResults.presultsq ->
-      @{AllT_args} PResults.presultsq -> @{AllT_args} Tac.data
+      @{AllT_args} PResults.presultsq -> @{AllT_args} PResults.presultsq -> @{AllT_args} Tac.data
   end
 end
 
@@ -36,8 +33,8 @@ structure Simp =
 struct
 local open MU; open Mo A
 in
-fun gen_data exn id tac_name safe_tac unsafe_tac update_result mk_cud madd_safe madd_unsafe_every
-  mk_meta_safe mk_meta_unsafe_every mk_meta_unsafe presultsq_safe presultsq_unsafe_every
+fun gen_data exn id tac_name safe_tac unsafe_tac update_result mk_cud madd_safe mk_meta_safe
+  mk_meta_unsafe presultsq_safe
   presultsq_unsafe =
   let
     val safe_tac_name = "safe " ^ tac_name
@@ -58,22 +55,11 @@ fun gen_data exn id tac_name safe_tac unsafe_tac update_result mk_cud madd_safe 
       tac = unsafe_ztac}
       |> Tac.paction_data_from_data exn
 
-    fun unsafe_every_ztac z focus = mk_meta_unsafe_every z
-      >>= Ctxt.with_ctxt (fn ctxt => arr (fn mk_meta => Tac_AAM.Tac.zTRY_EVERY_FOCUS1 madd_unsafe_every
-        (Tac_AAM.lift_tac mk_meta (unsafe_tac ctxt #> CHANGED)) focus))
-    val unsafe_every_data = {
-      empty_action = Library.K (PAction.update_action unsafe_data),
-      meta = Base_Data.AMeta.metadata (id, descr ("TRY_EVERY_FOCUS1 " ^ tac_name)),
-      result_action = result_action,
-      presultsq = presultsq_unsafe_every,
-      tac = unsafe_every_ztac}
-      |> Tac.paction_data_from_data exn
-
     fun safe_ztac z focus = mk_meta_safe z
       >>= Ctxt.with_ctxt (fn ctxt => arr (fn mk_meta => Tac_AAM.Tac.zTRY_EVERY_FOCUS1 madd_safe
         (Tac_AAM.lift_tac mk_meta (safe_tac ctxt #> CHANGED)) focus))
     val data = {
-      empty_action = PResults.orelse_update_action empty_action unsafe_every_data,
+      empty_action = PResults.orelse_update_action empty_action unsafe_data,
       meta = Mixin_Base4.Meta.Meta.metadata (id, descr safe_tac_name),
       result_action = result_action,
       presultsq = presultsq_safe,

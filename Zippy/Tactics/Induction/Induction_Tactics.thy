@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+subsection \<open>Induction\<close>
 theory Induction_Tactics
   imports
     Cases_Tactics

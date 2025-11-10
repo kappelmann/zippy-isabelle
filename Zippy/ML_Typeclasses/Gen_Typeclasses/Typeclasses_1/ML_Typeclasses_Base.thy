@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Typeclasses\<close>
 theory ML_Typeclasses_Base
   imports
     Gen_ML_Typeclasses_Base

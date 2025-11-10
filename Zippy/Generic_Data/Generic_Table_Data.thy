@@ -1,4 +1,5 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
+section \<open>Table Data\<close>
 theory Generic_Table_Data
   imports
     ML_Unification.ML_Functor_Instances
