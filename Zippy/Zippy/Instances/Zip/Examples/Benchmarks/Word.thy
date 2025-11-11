@@ -1,7 +1,7 @@
 theory Word
   imports
     "HOL-Library.Type_Length"
-    Zippy_Auto_Benchmarks_Setup
+    Zip_Benchmarks_Setup
 begin
 
 text \<open>Note: this benchmark file is an adjusted copy of HOL-Library.Word from the standard
@@ -747,7 +747,7 @@ instance word :: (len) semiring_parity
   by (standard; transfer)
   (*NEW*)
   (auto simp: mod_2_eq_odd take_bit_Suc elim: evenE dest: le_Suc_ex
-    where run exec: Zippy.Run.Depth_First.all')
+    where run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* (auto simp: mod_2_eq_odd take_bit_Suc elim: evenE dest: le_Suc_ex) *)
 
@@ -940,9 +940,9 @@ lemma bit_word_eqI:
   for a b :: \<open>'a::len word\<close>
   using that by transfer
   (*NEW*)
-  (auto simp: nat_less_le bit_eq_iff bit_take_bit_iff where run exec: Zippy.Run.Depth_First.all')
+  (auto simp: nat_less_le bit_eq_iff bit_take_bit_iff where run exec: Zip.Depth_First.all')
   (*ORIG*)
-  (* (auto simp: nat_less_le bit_eq_iff bit_take_bit_iff where run exec: Zippy.Run.Depth_First.all') *)
+  (* (auto simp: nat_less_le bit_eq_iff bit_take_bit_iff where run exec: Zip.Depth_First.all') *)
 
 lemma bit_imp_le_length: \<open>n < LENGTH('a)\<close> if \<open>bit w n\<close> for w :: \<open>'a::len word\<close>
   by (meson bit_word.rep_eq that)
@@ -1602,7 +1602,7 @@ lemma mod_word_by_minus_1_eq [simp]:
   \<open>w mod - 1 = w * of_bool (w < - 1)\<close> for w :: \<open>'a::len word\<close>
   using mod_word_less word_order.not_eq_extremum
   (*NEW*)
-  by (fastforce run exec: Zippy.Run.Depth_First.all')
+  by (fastforce run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by (fastforce) *)
 
@@ -2002,7 +2002,7 @@ lift_definition word_rotr :: \<open>nat \<Rightarrow> 'a::len word \<Rightarrow>
     (take_bit (n mod LENGTH('a)) k)\<close>
   using take_bit_tightened
   (*NEW*)
-  by (fastforce run exec: Zippy.Run.Depth_First.all')
+  by (fastforce run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by fastforce *)
 
@@ -2012,7 +2012,7 @@ lift_definition word_rotl :: \<open>nat \<Rightarrow> 'a::len word \<Rightarrow>
     (take_bit (LENGTH('a) - n mod LENGTH('a)) k)\<close>
   using take_bit_tightened
   (*NEW*)
-  by (fastforce run exec: Zippy.Run.Depth_First.all')
+  by (fastforce run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by fastforce *)
 
@@ -2073,7 +2073,7 @@ proof transfer
     by (cases \<open>q + n \<ge> LENGTH('a)\<close>)
      (*NEW*)
      (auto simp: bit_concat_bit_iff bit_drop_bit_eq bit_take_bit_iff le_mod_geq ac_simps
-      where run exec: Zippy.Run.Depth_First.all')
+      where run exec: Zip.Depth_First.all')
      (*ORIG*)
      (* (auto simp: bit_concat_bit_iff bit_drop_bit_eq bit_take_bit_iff le_mod_geq ac_simps) *)
   ultimately show \<open>n < LENGTH('a) \<and>
@@ -3365,7 +3365,7 @@ lemma word_half_less_imp_less_eq:
   \<open>v \<le> w\<close> if \<open>v div 2 < w div 2\<close> for v w :: \<open>'a::len word\<close>
   using that linorder_linear word_less_eq_imp_half_less_eq
   (*NEW*)
-  by (fastforce run exec: Zippy.Run.Depth_First.all')
+  by (fastforce run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by fastforce *)
 
@@ -4152,7 +4152,7 @@ proof (intro conjI)
       using assms bit_imp_le_length
       unfolding word_split_def bit_slice_iff
       by (fastforce simp: \<section> ac_simps word_size bit_ucast_iff bit_drop_bit_eq
-        where run exec: Zippy.Run.Depth_First.all')
+        where run exec: Zip.Depth_First.all')
   qed
   show "v = slice 0 w"
     by (metis Pair_inject assms ucast_slice word_split_bin')
@@ -4543,7 +4543,7 @@ next
     with False have "m \<le> n"
       using inc_le linorder_not_le suc.prems word_le_minus_mono_left
       (*NEW*)
-      by (fastforce run exec: Zippy.Run.Depth_First.all')
+      by (fastforce run exec: Zip.Depth_First.all')
       (*ORIG*)
       (* by fastforce *)
     with False "suc.hyps" show ?thesis
@@ -4819,7 +4819,7 @@ qualified lemma exists_greaterThan_iff [code_unfold]:
   \<open>(\<exists>n\<in>{a<..}. P n) \<longleftrightarrow> a \<noteq> - 1 \<and> (\<not> all_range (Not \<circ> P) (a + 1) (- 1) \<or> P (- 1))\<close>
   using forall_greaterThan_iff [of a \<open>Not \<circ> P\<close>]
   (*NEW*)
-  by (auto run exec: Zippy.Run.Depth_First.all')
+  by (auto run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by (auto) *)
 
@@ -4839,7 +4839,7 @@ qualified lemma exists_atMost_iff [code_unfold]:
   \<open>(\<exists>n\<in>{..b}. P n) \<longleftrightarrow> P b \<or> \<not> all_range (Not \<circ> P) 0 b\<close>
   using forall_atMost_iff [of b \<open>Not \<circ> P\<close>]
   (*ORIG*)
-  by (auto run exec: Zippy.Run.Depth_First.all')
+  by (auto run exec: Zip.Depth_First.all')
   (*NEW*)
   (* by (auto) *)
 

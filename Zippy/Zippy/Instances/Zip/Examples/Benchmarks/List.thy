@@ -3,7 +3,7 @@ theory List
 imports
   HOL.Sledgehammer
   HOL.Lifting_Set
-  Zippy_Auto_Benchmarks_Setup
+  Zip_Benchmarks_Setup
 begin
 
 text \<open>Note: this benchmark file is an adjusted copy of HOL.List from the standard distribution
@@ -1408,7 +1408,7 @@ next
   next
     assume "x \<noteq> a" thus ?case using Cons
       (*NEW*)
-      by (fastforce intro!: Cons_eq_appendI where run exec: "Zippy.Run.Depth_First.all 10")
+      by (fastforce intro!: Cons_eq_appendI where run exec: "Zip.Depth_First.all 10")
       (*ORIG*)
       (* by(fastforce intro!: Cons_eq_appendI) *)
   qed
@@ -1492,7 +1492,7 @@ next
     hence "\<exists>x\<in>set xs. P x" using snoc(2) by simp
     thus ?thesis using \<open>\<not> P x\<close> snoc(1)
       (*NEW*)
-      by (fastforce 0 8 run exec: "Zippy.Run.Depth_First.all'")
+      by (fastforce 0 8 run exec: "Zip.Depth_First.all'")
       (*ORIG*)
       (* by fastforce *)
   qed
@@ -1690,7 +1690,7 @@ next
   case (Cons x xs) thus ?case
     using Suc_le_eq
     (*NEW*)
-    by (fastforce run exec: Zippy.Run.Depth_First.all')
+    by (fastforce run exec: Zip.Depth_First.all')
     (*ORIG*)
     (* by (fastforce) *)
 qed
@@ -1874,7 +1874,7 @@ proof (induct xs arbitrary: ys)
     case (Cons y ys)
     with Cons.hyps show ?thesis
       (*NEW*)
-      by (fastforce run exec: Zippy.Run.Depth_First.all')
+      by (fastforce run exec: Zip.Depth_First.all')
       (*ORIG*)
       (* by fastforce *)
   qed simp
@@ -4219,7 +4219,7 @@ next
         have "f' ` {0 ..< length (x2 # xs)} = (\<lambda>x. f x - 1) ` {0 ..< length (x1 # x2 #xs)}"
           (*NEW*)
           by (auto simp: f'_def \<open>f 0 = 0\<close> \<open>f (Suc 0) = Suc 0\<close> image_def Bex_def less_Suc_eq_0_disj
-            where run exec: Zippy.Run.Depth_First.all')
+            where run exec: Zip.Depth_First.all')
           (*ORIG*)
           (* by (auto simp: f'_def \<open>f 0 = 0\<close> \<open>f (Suc 0) = Suc 0\<close> image_def Bex_def less_Suc_eq_0_disj) *)
         also have "\<dots> = (\<lambda>x. x - 1) ` f ` {0 ..< length (x1 # x2 #xs)}"
@@ -4520,7 +4520,7 @@ next
     apply (auto_orig simp: nth_Cons' split: if_splits)
     using diff_Suc_1 less_Suc_eq_0_disj
     (*NEW*)
-    by (fastforce 4 4 run exec: "Zippy.Run.Depth_First.all 10")
+    by (fastforce 4 4 run exec: "Zip.Depth_First.all 10")
     (*ORIG*)
     (* by fastforce *)
 qed
@@ -4780,7 +4780,7 @@ next
     by (metis Int_iff UN_I empty_iff equals0I set_empty)
   then show ?case
     (*NEW*)
-    by (auto simp: Cons where run exec: "Zippy.Run.Best_First.all 3")
+    by (auto simp: Cons where run exec: "Zip.Best_First.all 3")
     (*ORIG*)
     (* by (auto simp: Cons) *)
 qed
@@ -5438,7 +5438,7 @@ lemma subseqs_powset: "set ` set (subseqs xs) = Pow (set xs)"
 proof -
   have aux: "\<And>x A. set ` Cons x ` A = insert x ` set ` A"
     (*NEW*)
-    by (auto simp add: image_def where run exec: Zippy.Run.Best_First.all')
+    by (auto simp add: image_def where run exec: Zip.Best_First.all')
     (*ORIG*)
     (* by (auto simp add: image_def) *)
   have "set (map set (subseqs xs)) = Pow (set xs)"
@@ -5531,7 +5531,7 @@ lemma Cons_in_shuffles_iff:
      ys \<noteq> [] \<and> hd ys = z \<and> zs \<in> shuffles xs (tl ys))"
   by (induct xs ys rule: shuffles.induct)
   (*NEW*)
-  (auto run exec: Zippy.Run.Best_First.all')
+  (auto run exec: Zip.Best_First.all')
   (*ORIG*)
   (* (auto) *)
 
@@ -6158,7 +6158,7 @@ lemma map_sorted_distinct_set_unique:
   using assms
   (*NEW*)
   by (fastforce 4 4 dest: map_inj_on sorted_distinct_set_unique
-    where run exec: Zippy.Run.Breadth_First.all')
+    where run exec: Zip.Breadth_First.all')
   (*ORIG*)
   (* by (fastforce 4 4 dest: map_inj_on sorted_distinct_set_unique) *)
 
@@ -7132,7 +7132,7 @@ proof (induction n)
       using r' Suc
       by (cases xys)
       (*NEW*)
-      (fastforce 4 4 simp: lex_prod_def image_Collect where run exec: Zippy.Run.Depth_First.all')
+      (fastforce 4 4 simp: lex_prod_def image_Collect where run exec: Zip.Depth_First.all')
       (*ORIG*)
       (* (fastforce simp: lex_prod_def image_Collect) *)
   qed
@@ -7556,7 +7556,7 @@ next
   case (Cons u us)
   with lex_append_rightI show ?case
     (*NEW*)
-    by (fastforce simp add: lenlex_def eq where run exec: Zippy.Run.Depth_First.all')
+    by (fastforce simp add: lenlex_def eq where run exec: Zip.Depth_First.all')
     (*ORIG*)
     (* by (fastforce simp add: lenlex_def eq) *)
 qed
@@ -8308,7 +8308,7 @@ proof (cases \<open>a < b\<close>)
   then show ?thesis
     (*NEW*)
     by (auto simp add: range_eq finite_atLeastLessThan intro!: insort_is_Cons
-      where run exec: Zippy.Run.Depth_First.all')
+      where run exec: Zip.Depth_First.all')
     (*ORIG*)
     (* by (auto simp add: range_eq finite_atLeastLessThan intro!: insort_is_Cons) *)
 next
@@ -8610,7 +8610,7 @@ lemma Image_code [code]:
   "R `` S = Option.image_filter (\<lambda>(x, y). if x \<in> S then Some y else None) R"
   apply (simp add: Option.image_filter_eq case_prod_unfold Option.these_eq)
   (*NEW*)
-  apply (force run exec: "Zippy.Run.Depth_First.all 20")
+  apply (force run exec: "Zip.Depth_First.all 20")
   (*ORIG*)
   (* apply (force) *)
   done
@@ -8918,7 +8918,7 @@ lemma set_Cons_transfer [transfer_rule]:
     set_Cons set_Cons"
   unfolding rel_fun_def rel_set_def set_Cons_def
   (*NEW*)
-  by (fastforce simp add: list_all2_Cons1 list_all2_Cons2 where run exec: Zippy.Run.Depth_First.all')
+  by (fastforce simp add: list_all2_Cons1 list_all2_Cons2 where run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by (fastforce simp add: list_all2_Cons1 list_all2_Cons2) *)
 

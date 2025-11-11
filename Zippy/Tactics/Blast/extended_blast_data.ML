@@ -83,7 +83,7 @@ val map_depth = map_args o PA.map_depth
 
 val get_timeout = PA.get_timeout o get_args
 val map_timeout = map_args o PA.map_timeout
-structure A = Thm
+
 fun f_timeout ctxt i state n time = (@{log Logger.WARN} ctxt (fn _ => Pretty.breaks [
     Pretty.block [Pretty.str "blast timeout at pull number ", SpecCheck_Show.int n,
       Pretty.str " after ", Pretty.str (Time.print time), Pretty.str " seconds."],

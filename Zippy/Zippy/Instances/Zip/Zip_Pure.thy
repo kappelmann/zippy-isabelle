@@ -1,13 +1,15 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
-theory Zippy_Auto_Pure
+subsection \<open>Zip - Extensible White-Box Prover\<close>
+theory Zip_Pure
   imports
     Context_Parsers
-    Zippy_Instance_Auto
+    Zippy_Instance_Resolves_Simp
     Zippy_Instance_Pure
     Zippy_Instance_Simp
 begin
 
-text \<open>Setup the standard zippy auto instance with short name \<open>zippy\<close>.\<close>
+paragraph \<open>Summary\<close>
+text \<open>Setup the the extensible white-box prover called "zip" based on Zippy.\<close>
 
 ML\<open>
 local structure Zippy_Simp = Zippy_Instance_Simp(structure Z = Zippy; structure Ctxt = Z.Ctxt)
@@ -31,16 +33,15 @@ local open Zippy
       del_select = SOME (apsnd (snd #> get_thm) #> Thm.eq_thm)}
   end
 in
-\<^functor_instance>\<open>struct_name: Zippy_Auto
-  functor_name: Zippy_Instance_Auto
-  id: \<open>"zippy"\<close>
+\<^functor_instance>\<open>struct_name: Zip
+  functor_name: Zippy_Instance_Resolves_Simp
+  id: \<open>"zip"\<close>
   more_args: \<open>open Resolve_Base; open Z
     val resolve_init_args = init_args Zippy_Instance_Hom_Changed_Goals_Data_Args.PD.get_thm
     val simp_init_args = {timeout = SOME 10.0, depth = NONE}
     structure Log_Base = Z.Logging.Base\<close>\<close>
-structure Zippy_Auto =
-struct open Zippy_Auto
-
+structure Zip =
+struct open Zip
 (*add resolution with certifying unification*)
 structure Logging =
 struct open Logging
@@ -49,6 +50,16 @@ end
 
 local val default_update = Run.init_gpos
 in
+val _ = Theory.setup (Rule.Resolve.map_default_update (K default_update)
+  #> Rule.EResolve.map_default_update (K default_update)
+  #> Rule.DResolve.map_default_update (K default_update)
+  #> Rule.FResolve.map_default_update (K default_update)
+  #> Match.Resolve.map_default_update (K default_update)
+  #> Match.EResolve.map_default_update (K default_update)
+  #> Match.DResolve.map_default_update (K default_update)
+  #> Match.FResolve.map_default_update (K default_update)
+  |> Context.theory_map)
+
 \<^functor_instance>\<open>struct_name: URule
   functor_name: Zippy_Instance_UResolves_Data
   id: \<open>FI.prefix_id "urule"\<close>
@@ -65,16 +76,6 @@ in
       presultsq = SOME (PDC.get_presultsq args),
       del_select = SOME (PDC.get_del_select args)})
     structure Log = Logging.URule\<close>\<close>
-
-val _ = Theory.setup (Rule.Resolve.map_default_update (K default_update)
-  #> Rule.EResolve.map_default_update (K default_update)
-  #> Rule.DResolve.map_default_update (K default_update)
-  #> Rule.FResolve.map_default_update (K default_update)
-  #> Match.Resolve.map_default_update (K default_update)
-  #> Match.EResolve.map_default_update (K default_update)
-  #> Match.DResolve.map_default_update (K default_update)
-  #> Match.FResolve.map_default_update (K default_update)
-  |> Context.theory_map)
 end
 
 structure PResults =
@@ -85,14 +86,13 @@ end
 end
 end
 \<close>
-local_setup\<open>Zippy_Auto.Run.Init_Goal_Cluster.Data.setup_attribute
+local_setup\<open>Zip.Run.Init_Goal_Cluster.Data.setup_attribute
   (Either.Right "goal cluster initialisation")\<close>
-local_setup\<open>Zippy_Auto.Simp.Extended_Data.setup_attribute (Either.Right "extended simp")\<close>
+local_setup\<open>Zip.Simp.Extended_Data.setup_attribute (Either.Right "extended simp")\<close>
 
 ML\<open>
-structure Zippy_Auto =
-struct open Zippy_Auto
-(* add parsers *)
+structure Zip =
+struct open Zip(* add parsers *)
 \<^functor_instance>\<open>struct_name: Context_Parsers
   functor_name: Context_Parsers
   id: \<open>FI.prefix_id "parse"\<close>
@@ -129,38 +129,43 @@ fun changed_uniquesq st = Seq.filter (fn st' => not (are_thm_variants (st, st'))
       init = SOME init,
       exec = SOME Run.AStar.promising',
       post = SOME (fn st => Ctxt.with_ctxt (fn ctxt =>
-        arr (changed_uniquesq st #> Seq.maps (prune_params_tac ctxt))))}
-    \<close>\<close>
+        arr (changed_uniquesq st #> Seq.maps (prune_params_tac ctxt))))}\<close>\<close>
 fun tac fuel ctxt = Data.tac fuel {ctxt = ctxt}
 end
 end
+
+(** some convenience abbreviations **)
+structure AStar = Zippy.Run.AStar
+structure Depth_First = Zippy.Run.Depth_First
+structure Breadth_First = Zippy.Run.Breadth_First
+structure Best_First = Zippy.Run.Best_First
 end
 \<close>
-local_setup\<open>Zippy_Auto.Context_Parsers.setup_attribute NONE\<close>
-local_setup\<open>Zippy_Auto.Run.Data.setup_attribute NONE\<close>
-declare [[zippy_parse add: \<open>(@{binding run}, Zippy_Auto.Run.Data.parse_context_update)\<close>]]
+local_setup\<open>Zip.Context_Parsers.setup_attribute NONE\<close>
+local_setup\<open>Zip.Run.Data.setup_attribute NONE\<close>
+declare [[zip_parse add: \<open>(@{binding run}, Zip.Run.Data.parse_context_update)\<close>]]
 
-paragraph \<open>Method\<close>
+subsubsection \<open>Method\<close>
 
 local_setup \<open>
-  let open Zippy Zippy_Auto.Run
+  let open Zippy Zip.Run
     val parse_fuel = Parse_Util.option Parse.nat
-    val parse = Scan.lift parse_fuel --| Zippy_Auto.Context_Parsers.parse
+    val parse = Scan.lift parse_fuel --| Zip.Context_Parsers.parse
       >> (Method.SIMPLE_METHOD oo tac)
-  in Method.local_setup Zippy_Auto.binding parse "Extensible white-box prover based on Zippy" end\<close>
+  in Method.local_setup Zip.binding parse "Extensible white-box prover based on Zippy" end\<close>
 
-paragraph \<open>Resolution\<close>
+subsubsection \<open>Resolution\<close>
 
-local_setup\<open>Zippy_Auto.Rule.setup_attribute
+local_setup\<open>Zip.Rule.setup_attribute
   (Either.Right "(e/d/f-)resolution with higher-order unification")\<close>
-local_setup\<open>Zippy_Auto.Match.setup_attribute
+local_setup\<open>Zip.Match.setup_attribute
   (Either.Right "(e/d/f-)resolution with higher-order matching")\<close>
-local_setup\<open>Zippy_Auto.URule.setup_attribute
+local_setup\<open>Zip.URule.setup_attribute
   (Either.Right "(e/d/f-)resolution with certifying unification")\<close>
 
-declare [[zippy_init_gc \<open>
+declare [[zip_init_gc \<open>
   let
-    open Zippy Zippy_Auto.Rule.Resolve; open ZLPC MU; open SC A Mo
+    open Zippy Zip.Rule.Resolve; open ZLPC MU; open SC A Mo
     val id = @{binding resolve_ho_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "resolution with higher-order unification on first possible goal")
@@ -186,7 +191,7 @@ declare [[zippy_init_gc \<open>
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Match.Resolve; open ZLPC MU; open SC A Mo
+    open Zippy Zip.Match.Resolve; open ZLPC MU; open SC A Mo
     val id = @{binding resolve_ho_match_first}
     val descr = Lazy.value "resolution with higher-order matching on first possible goal"
     val meta = Base_Data.ACMeta.metadata (id,
@@ -212,8 +217,8 @@ declare [[zippy_init_gc \<open>
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.URule.Resolve; open ZLPC MU; open SC A Mo
-    val id = @{binding resolve_e_unif_first}
+    open Zippy Zip.URule.Resolve; open ZLPC MU; open SC A Mo
+    val id = @{binding resolve_cert_unif_first}
     val descr = Lazy.value "resolution with certifying unification on first possible goal"
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "resolution with cerifying unification on first possible goal")
@@ -242,9 +247,9 @@ declare [[zippy_init_gc \<open>
   in (id, init) end\<close>]]
 (*TODO: could be made more efficient: we already know the indices of possibly matching premises when
 seraching the term index but do not use that information in the subsequent (d/e)resolution*)
-declare [[zippy_init_gc
+declare [[zip_init_gc
   \<open>let
-    open Zippy Zippy_Auto.Rule.EResolve; open ZLPC MU; open SC A Mo
+    open Zippy Zip.Rule.EResolve; open ZLPC MU; open SC A Mo
     val id = @{binding eresolve_ho_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "e-resolution with higher-order unification on first possible goal")
@@ -269,7 +274,7 @@ declare [[zippy_init_gc
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Match.EResolve; open ZLPC MU; open SC A Mo
+    open Zippy Zip.Match.EResolve; open ZLPC MU; open SC A Mo
     val id = @{binding eresolve_ho_match_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "e-resolution with higher-order matching on first possible goal")
@@ -294,8 +299,8 @@ declare [[zippy_init_gc
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.URule.EResolve; open ZLPC MU; open SC A Mo
-    val id = @{binding eresolve_e_unif_first}
+    open Zippy Zip.URule.EResolve; open ZLPC MU; open SC A Mo
+    val id = @{binding eresolve_cert_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "e-resolution with certifying unification on first possible goal")
     fun tac norms unify = Unify_Resolve_Base.unify_eresolve_tac norms unify norms unify
@@ -317,9 +322,9 @@ declare [[zippy_init_gc
     fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
-declare [[zippy_init_gc
+declare [[zip_init_gc
   \<open>let
-    open Zippy Zippy_Auto.Rule.DResolve; open ZLPC MU; open SC A Mo
+    open Zippy Zip.Rule.DResolve; open ZLPC MU; open SC A Mo
     val id = @{binding dresolve_ho_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "d-resolution with higher-order unification on first possible goal")
@@ -351,7 +356,7 @@ declare [[zippy_init_gc
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Match.DResolve; open ZLPC MU; open SC A Mo
+    open Zippy Zip.Match.DResolve; open ZLPC MU; open SC A Mo
     val id = @{binding dresolve_ho_match_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "d-resolution with higher-order matching on first possible goal")
@@ -381,8 +386,8 @@ declare [[zippy_init_gc
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.URule.DResolve; open ZLPC MU; open SC A Mo
-    val id = @{binding dresolve_e_unif_first}
+    open Zippy Zip.URule.DResolve; open ZLPC MU; open SC A Mo
+    val id = @{binding dresolve_cert_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "d-resolution with certifying unification on first possible goal")
     val tac = Unify_Resolve_Base.unify_dresolve_tac
@@ -404,9 +409,9 @@ declare [[zippy_init_gc
     fun init _ focus z = Node.cons3 Util.exn meta [(focus, cons_actions)] z
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
-declare [[zippy_init_gc
+declare [[zip_init_gc
   \<open>let
-    open Zippy Zippy_Auto.Rule.FResolve; open ZLPC MU; open SC A Mo
+    open Zippy Zip.Rule.FResolve; open ZLPC MU; open SC A Mo
     val id = @{binding fresolve_ho_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "f-resolution with higher-order unification on first possible goal")
@@ -432,7 +437,7 @@ declare [[zippy_init_gc
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.Match.FResolve; open ZLPC MU; open SC A Mo
+    open Zippy Zip.Match.FResolve; open ZLPC MU; open SC A Mo
     val id = @{binding fresolve_ho_match_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "f-resolution with higher-order matching on first possible goal")
@@ -460,8 +465,8 @@ declare [[zippy_init_gc
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>
   \<open>let
-    open Zippy Zippy_Auto.URule.FResolve; open ZLPC MU; open SC A Mo
-    val id = @{binding fresolve_e_unif_first}
+    open Zippy Zip.URule.FResolve; open ZLPC MU; open SC A Mo
+    val id = @{binding fresolve_cert_unif_first}
     val meta = Base_Data.ACMeta.metadata (id,
       Lazy.value "f-resolution with certifying unification on first possible goal")
     val tac = Unify_Resolve_Base.unify_fresolve_tac
@@ -484,19 +489,19 @@ declare [[zippy_init_gc
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 
-declare [[zippy_parse \<open>(@{binding rule}, Zippy_Auto.Rule.parse_method)\<close>]]
-declare [[zippy_parse \<open>(@{binding match}, Zippy_Auto.Match.parse_method)\<close>]]
-declare [[zippy_parse \<open>(@{binding urule}, Zippy_Auto.URule.parse_method)\<close>]]
+declare [[zip_parse \<open>(@{binding rule}, Zip.Rule.parse_method)\<close>]]
+declare [[zip_parse \<open>(@{binding match}, Zip.Match.parse_method)\<close>]]
+declare [[zip_parse \<open>(@{binding urule}, Zip.URule.parse_method)\<close>]]
 
-paragraph \<open>Simplifier\<close>
+subsubsection \<open>Simplifier\<close>
 
-declare [[zippy_init_gc \<open>
+declare [[zip_init_gc \<open>
   let
     open Zippy; open ZLPC MU; open A Mo
     val name = "asm_full_simp"
     val id = Zippy_Identifier.make (SOME @{here}) name
     val tacs = (safe_asm_full_simp_tac, asm_full_simp_tac)
-    fun f_timeout ctxt i state n time = (@{log Logger.WARN Zippy_Auto.Simp.logger} ctxt
+    fun f_timeout ctxt i state n time = (@{log Logger.WARN Zip.Simp.logger} ctxt
       (fn _ => Pretty.breaks [
           Pretty.block [Pretty.str (name ^ " timeout at pull number "), SpecCheck_Show.int n,
             Pretty.str " after ", Pretty.str (Time.print time), Pretty.str " seconds."],
@@ -506,17 +511,17 @@ declare [[zippy_init_gc \<open>
         ] |> Pretty.block0 |> Pretty.string_of);
       NONE)
     (*FIXME: why is the simplifier raising Option.Option and ERROR exceptions in some cases?*)
-    fun handle_exn ctxt exn = (@{log Logger.WARN Zippy_Auto.Simp.logger} ctxt
+    fun handle_exn ctxt exn = (@{log Logger.WARN Zip.Simp.logger} ctxt
       (fn _ => "Simplifier raised unexpected " ^ exn ^ "exception. Returning NONE instead.");
       NONE)
     fun handle_exns_sq ctxt sq = Seq.make (fn _ =>
       sq |> Seq.pull |> Option.map (apsnd (handle_exns_sq ctxt))
       handle Option.Option => handle_exn ctxt "Option.Option" | ERROR _ => handle_exn ctxt "ERROR")
-    fun wrap_tac tac ctxt i state = Zippy_Auto.Simp.Extended_Data.wrap_simp_tac
+    fun wrap_tac tac ctxt i state = Zip.Simp.Extended_Data.wrap_simp_tac
       (f_timeout ctxt i state) (fn ctxt => handle_exns_sq ctxt oo tac ctxt) ctxt i state
     val (safe_tac, tac) = apply2 wrap_tac (safe_asm_full_simp_tac, asm_full_simp_tac)
     val update = Library.maps snd
-      #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zippy_Auto.Run.init_gposs true)
+      #> LGoals_Pos_Copy.partition_update_gcposs_gclusters_gclusters (Zip.Run.init_gposs true)
     val mk_cud = Result_Action.copy_update_data_empty_changed
     open Base_Data
     val costs_progress = ((Cost.LOW, AAMeta.P.promising), (Cost.LOW3, AAMeta.P.promising))
@@ -525,7 +530,7 @@ declare [[zippy_init_gc \<open>
       {cost = cost, progress = progress})))
     val (mk_meta_safe, mk_meta_unsafe) = apply2 mk_meta costs_progress
     val (presultsq_safe, presultsq_unsafe) =
-      apply2 (fst #> Zippy_Auto.PResults.enum_scale_presultsq_default) costs_progress
+      apply2 (fst #> Zip.PResults.enum_scale_presultsq_default) costs_progress
     val data = Simp.gen_data Util.exn id name safe_tac tac update mk_cud
       madd_safe mk_meta_safe mk_meta_unsafe presultsq_safe presultsq_unsafe
     fun init _ focus z =
@@ -533,7 +538,7 @@ declare [[zippy_init_gc \<open>
       >>= AC.opt (K z) Up3.morph
   in (id, init) end\<close>]]
 
-declare [[zippy_parse add: \<open>(@{binding simp}, Zippy_Auto.Simp.parse_extended [])\<close>
+declare [[zip_parse add: \<open>(@{binding simp}, Zip.Simp.parse_extended [])\<close>
   and default: \<open>@{binding simp}\<close>]]
 
 end

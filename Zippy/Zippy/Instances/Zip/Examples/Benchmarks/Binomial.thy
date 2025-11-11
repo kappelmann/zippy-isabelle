@@ -1,7 +1,7 @@
 theory Binomial
   imports
     HOL.Presburger HOL.Factorial
-    Zippy_Auto_Benchmarks_Setup
+    Zip_Benchmarks_Setup
 begin
 
 text \<open>Note: this benchmark file is an adjusted copy of HOL.Binomial from the standard distribution
@@ -155,7 +155,7 @@ proof (induction n arbitrary: k)
   then show ?case
   using le_less less_le_trans
   (*NEW*)
-  by (fastforce run exec: Zippy.Run.Depth_First.all')
+  by (fastforce run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by fastforce *)
 next
@@ -749,7 +749,7 @@ text \<open>The absorption identity for natural number binomial coefficients:\<c
 lemma binomial_absorption: "Suc k * (n choose Suc k) = n * ((n - 1) choose k)"
   using times_binomial_minus1_eq
   (*NEW*)
-  by (fastforce run exec: Zippy.Run.Depth_First.all')
+  by (fastforce run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by (fastforce) *)
 
@@ -1085,7 +1085,7 @@ next
   finally have "(\<Prod>i=0..<k. of_nat (n - i)) = (of_nat :: (nat \<Rightarrow> 'a)) (n + 1 - k) / of_nat (n + 1) * (\<Prod>i=0..<k. of_nat (Suc n - i))"
     using of_nat_neq_0
     (*NEW*)
-    by (auto simp: mult.commute divide_simps where run exec: Zippy.Run.Breadth_First.all')
+    by (auto simp: mult.commute divide_simps where run exec: Zip.Breadth_First.all')
     (*ORIG*)
     (* by (auto simp: mult.commute divide_simps) *)
   with assms show ?thesis
@@ -1243,7 +1243,7 @@ proof -
     by metis
   then show ?thesis
     (*NEW*)
-    by (auto simp flip: all_simps ex_simps where run exec: Zippy.Run.Depth_First.all')
+    by (auto simp flip: all_simps ex_simps where run exec: Zip.Depth_First.all')
     (*ORIG*)
     (* by (auto simp flip: all_simps ex_simps) *)
 qed
@@ -1329,7 +1329,7 @@ proof -
           show "(- 1) ^ card (insert a B) * f (X a \<inter> \<Inter> (X ` B)) = - ((- 1) ^ card B * f (X a \<inter> \<Inter> (X ` B)))"
             using B *
             (*NEW*)
-            by (auto simp add: card_insert_if \<open>finite B\<close> where run exec: Zippy.Run.Breadth_First.all')
+            by (auto simp add: card_insert_if \<open>finite B\<close> where run exec: Zip.Breadth_First.all')
             (*ORIG*)
             (* by (auto simp add: card_insert_if \<open>finite B\<close>) *)
         qed
@@ -1338,7 +1338,7 @@ proof -
         have inj: "inj_on (insert a) (Pow A)"
           using "*" unfolding inj_on_def
             (*NEW*)
-            by (fastforce where run exec: Zippy.Run.Depth_First.all')
+            by (fastforce where run exec: Zip.Depth_First.all')
             (*ORIG*)
             (* by (fastforce) *)
         show ?thesis
@@ -1390,7 +1390,7 @@ proof -
   show ?thesis
     using restricted assms
     (*NEW*)
-    by (auto simp: Cons where run exec: Zippy.Run.Depth_First.all')
+    by (auto simp: Cons where run exec: Zip.Depth_First.all')
     (*ORIG*)
     (* by (auto simp: Cons) *)
 qed
@@ -1409,7 +1409,7 @@ proof -
   have card_eq: "card ` {I. I \<subseteq> A \<and> I \<noteq> {}} = {1..card A}"
     using not_less_eq_eq card_mono
     (*NEW*)
-    by (fastforce simp: image_iff where run exec: Zippy.Run.Depth_First.all')
+    by (fastforce simp: image_iff where run exec: Zip.Depth_First.all')
     (*ORIG*)
     (* by (fastforce simp: image_iff) *)
   have "int(card(\<Union> A))
@@ -1459,7 +1459,7 @@ proof -
   have inj: "inj_on (insert x) {T. T \<subseteq> S \<and> P T}" for P
     using assms
     (*NEW*)
-    by (auto simp: inj_on_def where run exec: Zippy.Run.Depth_First.all')
+    by (auto simp: inj_on_def where run exec: Zip.Depth_First.all')
     (*ORIG*)
     (* by (auto simp: inj_on_def) *)
   have [simp]: "finite {T. T \<subseteq> S \<and> P T}"  "finite (insert x ` {T. T \<subseteq> S \<and> P T})" for P

@@ -1,8 +1,8 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
-section \<open>Benchmarks for Zippy Auto\<close>
-theory Zippy_Auto_Benchmarks_Setup
+section \<open>Benchmarks for Zip\<close>
+theory Zip_Benchmarks_Setup
   imports
-    Zippy.Zippy_Auto_HOL
+    Zippy.Zip_HOL
 begin
 
 paragraph \<open>Summary\<close>
@@ -14,10 +14,10 @@ For identification purposes, the export functionality requires unique positional
 each tactic invocation. As such, repeating method combinators (";", "+", etc.) are not supported.\<close>
 
 ML\<open>
-structure Zippy_Auto_Benchmark =
+structure Zip_Benchmark =
 struct
 
-val id = "zippy_auto_benchmark"
+val id = "zip_benchmark"
 
 structure Export =
 struct
@@ -64,7 +64,7 @@ fun parse method = let val parse_fuel = Parse_Util.option Parse.nat
   in
     Parse_Util.position' (Scan.lift (Scan.option (Parse.nat -- Parse.nat)) (*for auto*)
     -- Scan.lift parse_fuel (*for zippy*)
-    --| Zippy_Auto.Context_Parsers.parse) (*for all*)
+    --| Zip.Context_Parsers.parse) (*for all*)
     >> (fn (args, pos) => method args pos)
   end
 fun setup_method method descr binding = Method.local_setup binding (parse method) descr
@@ -83,14 +83,14 @@ fun all_existing_tac opt_fuel ctxt = let val HEADGOAL_SOLVED = HEADGOAL o SOLVED
       HEADGOAL_SOLVED (best_tac ctxt),
       HEADGOAL_SOLVED (asm_full_simp_tac ctxt)]))
     (*keep non-terminal calls are since they cannot be solved directly*)
-    else Zippy_Auto.Run.tac opt_fuel ctxt
+    else Zip.Run.tac opt_fuel ctxt
   end
 
-val setups as [setup_zippy, setup_auto, setup_force,
+val setups as [setup_zip, setup_auto, setup_force,
   setup_fastforce, setup_slowsimp, setup_bestsimp,
   setup_fast, setup_slow, setup_best,
   setup_all_existing] = [
-    (@{binding zippy}, (Zippy_Auto.Run.tac o snd, "White-box prover based on Zippy")),
+    (@{binding zip}, (Zip.Run.tac o snd, "White-box prover based on Zippy")),
     (@{binding auto}, (
       fn (NONE, _) => CHANGED_PROP o auto_tac
         | (SOME (m, n), _) => fn ctxt => CHANGED_PROP (mk_auto_tac ctxt m n),
@@ -135,11 +135,11 @@ end
 
 text \<open>Setup alternative names for original methods and override.\<close>
 
-local_setup \<open>Zippy_Auto_Benchmark.setup_origs\<close>
+local_setup \<open>Zip_Benchmark.setup_origs\<close>
 
 (*Select the method to use as an override here...*)
-local_setup \<open>Zippy_Auto_Benchmark.setup_override Zippy_Auto_Benchmark.setup_zippy\<close>
+local_setup \<open>Zip_Benchmark.setup_override Zip_Benchmark.setup_zip\<close>
 (*...or uncomment below line to use standard tactics for benchmarks instead*)
-(* local_setup \<open>Zippy_Auto_Benchmark.setup_overrides\<close> *)
+(* local_setup \<open>Zip_Benchmark.setup_overrides\<close> *)
 
 end

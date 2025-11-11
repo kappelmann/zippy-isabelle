@@ -6,7 +6,7 @@ theory Zippy_Instance_Pure
 begin
 
 paragraph \<open>Summary\<close>
-text \<open>Setup the standard instance of Zippy for proof search.\<close>
+text \<open>Setup the standard instance of Zippy for proof search with short name "zippy".\<close>
 
 ML\<open>
 (* create monad *)

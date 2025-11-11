@@ -1,6 +1,6 @@
 session Zippy = HOL +
   description
-    "Zippy - a customisable framework for tree-based searches"
+    "Zippy - a Customisable Framework for Tree-Based Searches"
   options
     [timeout = 300]
   sessions
@@ -37,6 +37,7 @@ session Zippy = HOL +
     "Tactics/Blast"
     "Tactics/Cases"
     "Tactics/Induction"
+    "Tactics/Metis"
     "Tactics/Simp"
     "Union_Find"
     "Zippy"
@@ -61,15 +62,16 @@ session Zippy = HOL +
     "Zippy/Goals/Lists"
     "Zippy/Identifiers"
     "Zippy/Instances"
-    "Zippy/Instances/Auto"
     "Zippy/Instances/Cases"
     "Zippy/Instances/Classical"
-    "Zippy/Instances/Auto/Examples"
     "Zippy/Instances/Hom_Changed_Goals_Data"
     "Zippy/Instances/Induction"
     "Zippy/Instances/Resolves"
+    "Zippy/Instances/Resolves_Simp"
     "Zippy/Instances/Simp"
     "Zippy/Instances/Subst"
+    "Zippy/Instances/Zip"
+    "Zippy/Instances/Zip/Examples"
     "Zippy/Lists"
     "Zippy/Loggers"
     "Zippy/Nodes"
@@ -85,15 +87,15 @@ session Zippy = HOL +
   theories
     ML_Typeclasses
     ML_ITypeclasses
-    Zippy_Auto_Examples
+    Zip_Examples
     Zippy_Paper
   document_files
     "root.tex"
     "root.bib"
 
-session Zippy_Benchmarks in "Zippy/Instances/Auto/Examples/Benchmarks" = "HOL-Data_Structures" +
+session Zip_Benchmarks in "Zippy/Instances/Zip/Examples/Benchmarks" = "HOL-Data_Structures" +
   description
-    "Benchmarks for Zippy Auto"
+    "Benchmarks for zip"
   options
     [timeout = 600]
   sessions

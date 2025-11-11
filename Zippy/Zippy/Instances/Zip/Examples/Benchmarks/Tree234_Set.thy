@@ -3,7 +3,7 @@ theory Tree234_Set
     "HOL-Data_Structures.Tree234"
     "HOL-Data_Structures.Cmp"
     "HOL-Data_Structures.Set_Specs"
-    Zippy_Auto_Benchmarks_Setup
+    Zip_Benchmarks_Setup
 begin
 
 text \<open>Note: this benchmark file is an adjusted copy of HOL-Data_Structures.Tree234_Set from the standard
@@ -11,7 +11,7 @@ distribution (dated 07.11.2025)\<close>
 
 text \<open>Note: this theory contains slow proofs with many case distinctions. We hence increase the timeout for the benchmark.\<close>
 
-declare[[zippy_auto_benchmark_timeout=90]]
+declare[[zip_benchmark_timeout=90]]
 
 declare sorted_wrt.simps(2)[simp del]
 
@@ -214,7 +214,7 @@ subsubsection \<open>Functional correctness of isin:\<close>
 lemma isin_set: "sorted(inorder t) \<Longrightarrow> isin t x = (x \<in> set (inorder t))"
 by (induction t)
 (*NEW*)
-(auto simp: isin_simps where run exec: "Zippy.Run.Depth_First.all 3")
+(auto simp: isin_simps where run exec: "Zip.Depth_First.all 3")
 (*ORIG*)
 (* (auto simp: isin_simps) *)
 
@@ -282,7 +282,7 @@ lemma inorder_del: "\<lbrakk> bal t ; sorted(inorder t) \<rbrakk> \<Longrightarr
 by (induction t rule: del.induct)
 (*NEW*)
 (auto simp: inorder_nodes del_list_simps split_minD split!: if_split prod.splits
-  where run exec: "Zippy.Run.Depth_First.all 2")
+  where run exec: "Zip.Depth_First.all 2")
 (*ORIG*)
 (* 30 secs (2016) *)
 (* (auto simp: inorder_nodes del_list_simps split_minD split!: if_split prod.splits) *)
@@ -494,7 +494,7 @@ lemma height_split_min:
   "split_min t = (x, t') \<Longrightarrow> height t > 0 \<Longrightarrow> bal t \<Longrightarrow> height t' = height t"
 by(induct t arbitrary: x t' rule: split_min.induct)
   (*NEW*)
-  (auto simp: heights split: prod.splits where run exec: "Zippy.Run.Depth_First.all 2")
+  (auto simp: heights split: prod.splits where run exec: "Zip.Depth_First.all 2")
   (*ORIG*)
   (* (auto simp: heights split: prod.splits) *)
 

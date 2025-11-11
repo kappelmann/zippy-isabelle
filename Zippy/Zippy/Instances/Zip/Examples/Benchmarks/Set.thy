@@ -1,7 +1,7 @@
 theory Set
   imports
     HOL.Lattices HOL.Boolean_Algebras
-    Zippy_Auto_Benchmarks_Setup
+    Zip_Benchmarks_Setup
 begin
 
 text \<open>Note: this benchmark file is an adjusted copy of HOL.Set from the standard distribution
@@ -777,7 +777,7 @@ lemma insertCI [intro!]: "(a \<notin> B \<Longrightarrow> a = b) \<Longrightarro
   by auto
 
 lemma subset_insert_iff: "A \<subseteq> insert x B \<longleftrightarrow> (if x \<in> A then A - {x} \<subseteq> B else A \<subseteq> B)"
-  by (auto run exec: Zippy.Run.Breadth_First.all')
+  by (auto run exec: Zip.Breadth_First.all')
 
 lemma set_insert:
   assumes "x \<in> A"
@@ -808,7 +808,7 @@ proof
       using assms \<open>?L\<close> \<open>a \<noteq> b\<close> by auto
     then show ?R using \<open>a \<noteq> b\<close>
     (*NEW*)
-    by (auto run exec: "Zippy.Run.Depth_First.all 2")
+    by (auto run exec: "Zip.Depth_First.all 2")
     (*ORIG*)
     (* by auto *)
   qed
@@ -869,13 +869,13 @@ lemma doubleton_eq_iff: "{a, b} = {c, d} \<longleftrightarrow> a = c \<and> b = 
 
 lemma Un_singleton_iff: "A \<union> B = {x} \<longleftrightarrow> A = {} \<and> B = {x} \<or> A = {x} \<and> B = {} \<or> A = {x} \<and> B = {x}"
   (*NEW*)
-  by (auto run exec: Zippy.Run.Breadth_First.all')
+  by (auto run exec: Zip.Breadth_First.all')
   (*ORIG*)
   (* by (auto) *)
 
 lemma singleton_Un_iff: "{x} = A \<union> B \<longleftrightarrow> A = {} \<and> B = {x} \<or> A = {x} \<and> B = {} \<or> A = {x} \<and> B = {x}"
   (*NEW*)
-  by (auto run exec: Zippy.Run.Breadth_First.all')
+  by (auto run exec: Zip.Breadth_First.all')
   (*ORIG*)
   (* by (auto) *)
 
@@ -1094,7 +1094,7 @@ lemma psubsetE [elim!]: "A \<subset> B \<Longrightarrow> (A \<subseteq> B \<Long
 lemma psubset_insert_iff:
   "A \<subset> insert x B \<longleftrightarrow> (if x \<in> B then A \<subset> B else if x \<in> A then A - {x} \<subset> B else A \<subseteq> B)"
   (*NEW*)
-  by (auto simp add: less_le subset_insert_iff where run exec: Zippy.Run.Breadth_First.all')
+  by (auto simp add: less_le subset_insert_iff where run exec: Zip.Breadth_First.all')
   (*ORIG*)
   (* by (auto simp add: less_le subset_insert_iff) *)
 
@@ -1968,7 +1968,7 @@ lemma pairwise_subset: "pairwise P S \<Longrightarrow> T \<subseteq> S \<Longrig
 
 lemma pairwise_mono: "\<lbrakk>pairwise P A; \<And>x y. P x y \<Longrightarrow> Q x y; B \<subseteq> A\<rbrakk> \<Longrightarrow> pairwise Q B"
   (*NEW*)
-  by (fastforce 0 4 simp: pairwise_def where run exec: "Zippy.Run.Depth_First.all 3")
+  by (fastforce 0 4 simp: pairwise_def where run exec: "Zip.Depth_First.all 3")
   (*ORIG*)
   (* by (fastforce simp: pairwise_def) *)
 
@@ -2022,7 +2022,7 @@ lemma disjnt_Diff1: "disjnt (X-Y) (U-V)" and disjnt_Diff2: "disjnt (U-V) (X-Y)" 
 lemma disjoint_image_subset: "\<lbrakk>pairwise disjnt \<A>; \<And>X. X \<in> \<A> \<Longrightarrow> f X \<subseteq> X\<rbrakk> \<Longrightarrow> pairwise disjnt (f `\<A>)"
   unfolding disjnt_def pairwise_def
   (*NEW*)
-  by (fast run exec: "Zippy.Run.Depth_First.all 4")
+  by (fast run exec: "Zip.Depth_First.all 4")
   (*ORIG*)
   (* by fast *)
 

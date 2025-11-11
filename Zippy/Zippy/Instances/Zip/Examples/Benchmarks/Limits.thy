@@ -1,7 +1,7 @@
 theory Limits
   imports
     HOL.Real_Vector_Spaces
-    Zippy_Auto_Benchmarks_Setup
+    Zip_Benchmarks_Setup
 begin
 
 text \<open>Note: this benchmark file is an adjusted copy of HOL.Limits from the standard distribution
@@ -1074,7 +1074,7 @@ proof (subst tendsto_cong)
   show "\<forall>\<^sub>F n in sequentially. prod f {..n} = 0"
     using assms eventually_at_top_linorder
     (*NEW*)
-    by (auto run exec: Zippy.Run.Depth_First.all')
+    by (auto run exec: Zip.Depth_First.all')
     (*ORIG*)
     (* by (auto) *)
 qed auto
@@ -1649,7 +1649,7 @@ proof (rule filtermap_fun_inverse[symmetric])
   show "filterlim uminus at_top (at_bot::'a filter)"
     using eventually_at_bot_linorder filterlim_at_top le_minus_iff
     (*NEW*)
-    by (force run exec: "Zippy.Run.Depth_First.all 5")
+    by (force run exec: "Zip.Depth_First.all 5")
     (*ORIG*)
     (* by force+ *)
   show "filterlim uminus (at_bot::'a filter) at_top"
@@ -1948,7 +1948,7 @@ proof (rule antisym)
   then show "filtermap inverse at_infinity \<le> at (0::'a)"
     using filterlim_def filterlim_ident filterlim_inverse_at_iff
     (*NEW*)
-    by (fastforce run exec: Zippy.Run.Depth_First.all')
+    by (fastforce run exec: Zip.Depth_First.all')
     (*ORIG*)
     (* by (fastforce) *)
 next
@@ -2108,7 +2108,7 @@ proof
   ultimately show "filterlim g at_top F"
     using filterlim_tendsto_add_at_top
     (*NEW*)
-    by (fastforce where run exec: Zippy.Run.Depth_First.all')
+    by (fastforce where run exec: Zip.Depth_First.all')
     (*ORIG*)
     (* by (fastforce) *)
 qed (auto simp: filterlim_tendsto_add_at_top[OF f])
@@ -2312,7 +2312,7 @@ lemma Lim_transform_eventually:
   "\<lbrakk>(f \<longlongrightarrow> l) F; eventually (\<lambda>x. f x = g x) F\<rbrakk> \<Longrightarrow> (g \<longlongrightarrow> l) F"
   using eventually_elim2
   (*NEW*)
-  by (fastforce simp add: tendsto_def where run exec: Zippy.Run.Depth_First.all')
+  by (fastforce simp add: tendsto_def where run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by (fastforce simp add: tendsto_def) *)
 
@@ -2750,7 +2750,7 @@ proof
   then have "LIM x F. inverse (f x) * (f x / g x) :> at_infinity"
     using assms tendsto_inverse tendsto_mult_filterlim_at_infinity
       (*NEW*)
-      by (fastforce run exec: Zippy.Run.Depth_First.all')
+      by (fastforce run exec: Zip.Depth_First.all')
       (*ORIG*)
       (* by fastforce+ *)
   then have "LIM x F. inverse (g x) :> at_infinity"
@@ -3051,7 +3051,7 @@ lemma uniformly_continuous_on_def:
     uniformity_dist filterlim_INF filterlim_principal eventually_inf_principal
   (*NEW*)
   by (force 4 3 simp: Ball_def uniformity_dist[symmetric] eventually_uniformity_metric
-    where run exec: "Zippy.Run.Depth_First.all 5")
+    where run exec: "Zip.Depth_First.all 5")
   (*ORIG*)
   (* by (force 4 3 simp: Ball_def uniformity_dist[symmetric] eventually_uniformity_metric) *)
 
@@ -3215,7 +3215,7 @@ proof (cases "a \<le> b", rule compactI)
       unfolding *
         apply (intro exI[of _ "C1 \<union> C2"])
         (*NEW*)
-        by (auto run exec: Zippy.Run.Breadth_First.all')
+        by (auto run exec: Zip.Breadth_First.all')
         (*ORIG*)
         (* auto *)
   next
@@ -3257,7 +3257,7 @@ lemma open_Collect_positive:
   shows "\<exists>A. open A \<and> A \<inter> s = {x\<in>s. 0 < f x}"
   using continuous_on_open_invariant[THEN iffD1, OF f, rule_format, of "{0 <..}"]
   (*NEW*)
-  by (auto simp: Int_def field_simps where run exec: "Zippy.Run.Depth_First.all 1")
+  by (auto simp: Int_def field_simps where run exec: "Zip.Depth_First.all 1")
   (*ORIG*)
   (* by (auto simp: Int_def field_simps) *)
 
@@ -3377,7 +3377,7 @@ lemma LIM_fun_gt_zero: "f \<midarrow>c\<rightarrow> l \<Longrightarrow> 0 < l \<
     (*NOTE: not a minor change and hence excluded*)
     (* by (force dest: LIM_D[where r=l]) *)
     (*ORIG*)
-    (*NOTE not working with zippy*)
+    (*NOTE not working with zip*)
     by (force 4 4 dest: LIM_D)
 
 lemma LIM_fun_less_zero: "f \<midarrow>c\<rightarrow> l \<Longrightarrow> l < 0 \<Longrightarrow> \<exists>r. 0 < r \<and> (\<forall>x. x \<noteq> c \<and> \<bar>c - x\<bar> < r \<longrightarrow> f x < 0)"

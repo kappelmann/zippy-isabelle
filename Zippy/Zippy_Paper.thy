@@ -125,7 +125,7 @@ text \<open>
     @{file "Zippy/Goals/Lists/zippy_lists_goals_results_top_meta_vars_mixin.ML"}
 
   \<^item> Final example usages can be found here
-    @{file "Zippy/Instances/Auto/Examples/Zippy_Auto_Examples.thy"}.
+    @{file "Zippy/Instances/Zip/Examples/Zip_Examples.thy"}.
 \<close>
 
 end

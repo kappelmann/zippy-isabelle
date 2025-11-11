@@ -1,7 +1,7 @@
 theory Finite_Set
   imports
     HOL.Product_Type HOL.Sum_Type HOL.Fields HOL.Relation
-    Zippy_Auto_Benchmarks_Setup
+    Zip_Benchmarks_Setup
 begin
 
 text \<open>Note: this benchmark file is an adjusted copy of HOL.Finite_Set from the standard distribution
@@ -110,7 +110,7 @@ next
     using notinA
     (*NEW*)
     by (auto simp add: image_def Ball_def inj_on_def less_Suc_eq
-      where run exec: Zippy.Run.Breadth_First.all')
+      where run exec: Zip.Breadth_First.all')
     (*ORIG*)
     (* by (auto simp add: image_def Ball_def inj_on_def less_Suc_eq) *)
   then show ?case by blast
@@ -826,7 +826,7 @@ lemma fold_graph_closed_eq:
      "z \<in> B"
   using fold_graph_closed_lemma[of f z A _ B g] fold_graph_closed_lemma[of g z A _ B f] that
   (*NEW*)
-  by (auto run exec: Zippy.Run.Depth_First.all')
+  by (auto run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by (auto) *)
 
@@ -877,7 +877,7 @@ next
     case True
     with insertI show ?thesis
       (*NEW*)
-      by (auto run exec: Zippy.Run.Depth_First.all')
+      by (auto run exec: Zip.Depth_First.all')
       (*ORIG*)
       (* by auto *)
   next
@@ -1554,7 +1554,7 @@ proof -
   show ?thesis
     unfolding * using \<open>finite S\<close> by (induct S)
     (*NEW*)
-    (auto split: prod.split where blast depth: 0 where run exec: Zippy.Run.Breadth_First.all')
+    (auto split: prod.split where blast depth: 0 where run exec: Zip.Breadth_First.all')
     (*ORIG*)
     (* (auto split: prod.split) *)
 qed
@@ -1839,7 +1839,7 @@ proof (induction arbitrary: A rule: finite_induct)
   case (insert b B)
   then have A: "finite A" "A - {b} \<subseteq> B"
     (*NEW*)
-    by (force where run exec: Zippy.Run.Depth_First.all')
+    by (force where run exec: Zip.Depth_First.all')
     (*ORIG*)
     (* by force+ *)
   then have "card B \<le> card (A - {b})"
@@ -1999,9 +1999,9 @@ next
     have "?g ` insert x s \<subseteq> insert y t \<and> inj_on ?g (insert x s)"
       using * "2.prems"(2) "2.hyps"(2) unfolding inj_on_def
       (*NEW*)
-      by (auto run exec: Zippy.Run.Breadth_First.all')
+      by (auto run exec: Zip.Breadth_First.all')
       (*ORIG*)
-      (* by (auto run exec: Zippy.Run.Breadth_First.all') *)
+      (* by (auto run exec: Zip.Breadth_First.all') *)
     then show ?case by (rule exI[where ?x="?g"])
   qed
 qed
@@ -2031,7 +2031,7 @@ qed
 lemma insert_partition:
   "x \<notin> F \<Longrightarrow> \<forall>c1 \<in> insert x F. \<forall>c2 \<in> insert x F. c1 \<noteq> c2 \<longrightarrow> c1 \<inter> c2 = {} \<Longrightarrow> x \<inter> \<Union>F = {}"
   (*NEW*)
-  by (auto run exec: Zippy.Run.Depth_First.all')
+  by (auto run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by (auto) *)
 
@@ -2190,7 +2190,7 @@ lemma card_Suc_eq_finite:
   "card A = Suc k \<longleftrightarrow> (\<exists>b B. A = insert b B \<and> b \<notin> B \<and> card B = k \<and> finite B)"
   unfolding card_Suc_eq using card_gt_0_iff
   (*NEW*)
-  by (fastforce run exec: "Zippy.Run.Depth_First.all 4" where blast depth: 2)
+  by (fastforce run exec: "Zip.Depth_First.all 4" where blast depth: 2)
   (*ORIG*)
   (* by fastforce *)
 
@@ -2239,7 +2239,7 @@ proof (cases "finite A")
   then show ?thesis
     (*NEW*)
     by (fastforce simp: card_Suc_eq less_eq_nat.simps split: nat.splits
-       where run exec: "Zippy.Run.Depth_First.all 10")
+       where run exec: "Zip.Depth_First.all 10")
     (*ORIG*)
     (* by (fastforce simp: card_Suc_eq less_eq_nat.simps split: nat.splits) *)
 qed auto
@@ -2282,7 +2282,7 @@ corollary finite_arbitrarily_large_disj:
   "\<lbrakk> \<not> finite(UNIV::'a set); finite (A::'a set) \<rbrakk> \<Longrightarrow> \<exists>B. finite B \<and> card B = n \<and> A \<inter> B = {}"
 using infinite_arbitrarily_large[of "UNIV - A"]
 (*NEW*)
-by (fastforce where run exec: "Zippy.Run.Depth_First.all 3")
+by (fastforce where run exec: "Zip.Depth_First.all 3")
 (*ORIG*)
 (* by (fastforce) *)
 
@@ -2315,14 +2315,14 @@ proof -
     case 0
     thus ?case by (cases "finite S")
       (*NEW*)
-      (auto run exec: Zippy.Run.Depth_First.all')
+      (auto run exec: Zip.Depth_First.all')
       (*ORIG*)
       (* auto *)
   next
     case Suc
     thus ?case
       (*NEW*)
-      by (auto simp add: card_Suc_eq where run exec: "Zippy.Run.Depth_First.all 8")
+      by (auto simp add: card_Suc_eq where run exec: "Zip.Depth_First.all 8")
       (*ORIG*)
       (* by (auto simp add: card_Suc_eq) *)
   qed
@@ -2536,7 +2536,7 @@ proof -
     case (insert c C)
     then have "c \<inter> \<Union>C = {}"
       (*NEW*)
-      by (auto run exec: Zippy.Run.Depth_First.all')
+      by (auto run exec: Zip.Depth_First.all')
       (*ORIG*)
       (* by auto *)
     with insert show ?case
@@ -2868,7 +2868,7 @@ lemma finite_has_maximal2:
   "\<lbrakk> finite A; a \<in> A \<rbrakk> \<Longrightarrow> \<exists> m \<in> A. a \<le> m \<and> (\<forall> b \<in> A. m \<le> b \<longrightarrow> m = b)"
 using finite_has_maximal[of "{b \<in> A. a \<le> b}"]
 (*NEW*)
-by (fastforce run exec: "Zippy.Run.Depth_First.all 4")
+by (fastforce run exec: "Zip.Depth_First.all 4")
 (*ORIG*)
 (* by (fastforce) *)
 
@@ -2882,7 +2882,7 @@ proof -
     using m_is_min by (auto simp: le_less)
   ultimately show ?thesis
     (*NEW*)
-    by (auto run exec: Zippy.Run.Breadth_First.all')
+    by (auto run exec: Zip.Breadth_First.all')
     (*ORIG*)
     (* by (auto) *)
 qed
@@ -2891,7 +2891,7 @@ lemma finite_has_minimal2:
   "\<lbrakk> finite A; a \<in> A \<rbrakk> \<Longrightarrow> \<exists> m \<in> A. m \<le> a \<and> (\<forall> b \<in> A. b \<le> m \<longrightarrow> m = b)"
 using finite_has_minimal[of "{b \<in> A. b \<le> a}"]
   (*NEW*)
-  by (fastforce run exec: "Zippy.Run.Depth_First.all 5")
+  by (fastforce run exec: "Zip.Depth_First.all 5")
   (*ORIG*)
   (* by (fastforce) *)
 
@@ -2947,7 +2947,7 @@ proof
         then show "T \<subseteq> f ` (S - {y})"
           using h xy x y f
           (*NEW*)
-          by (fastforce run exec: "Zippy.Run.Depth_First.all 5")
+          by (fastforce run exec: "Zip.Depth_First.all 5")
           (*ORIG*)
           (* by (fastforce) *)
       qed

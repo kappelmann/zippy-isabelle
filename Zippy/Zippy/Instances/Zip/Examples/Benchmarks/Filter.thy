@@ -1,7 +1,7 @@
 theory Filter
   imports
     HOL.Set_Interval HOL.Lifting_Set
-    Zippy_Auto_Benchmarks_Setup
+    Zip_Benchmarks_Setup
 begin
 
 text \<open>Note: this benchmark file is an adjusted copy of HOL.Filter from the standard distribution
@@ -733,7 +733,7 @@ lemma filtercomap_SUP:
 lemma filtermap_le_iff_le_filtercomap: "filtermap f F \<le> G \<longleftrightarrow> F \<le> filtercomap f G"
   unfolding le_filter_def eventually_filtermap eventually_filtercomap
   (*NEW*)
-  using eventually_mono by (auto run exec: "Zippy.Run.Depth_First.all 5")
+  using eventually_mono by (auto run exec: "Zip.Depth_First.all 5")
   (*ORIG*)
   (* using eventually_mono by auto *)
 
@@ -898,7 +898,7 @@ lemma eventually_at_bot_linorderI:
 lemma eventually_filtercomap_at_bot_linorder:
   "eventually P (filtercomap f at_bot) \<longleftrightarrow> (\<exists>N::'a::linorder. \<forall>x. f x \<le> N \<longrightarrow> P x)"
   unfolding eventually_filtercomap
-  by (auto simp: eventually_at_bot_linorder where run exec: "Zippy.Run.AStar.all 7")
+  by (auto simp: eventually_at_bot_linorder where run exec: "Zip.AStar.all 7")
 
 lemma eventually_le_at_bot [simp]:
   "eventually (\<lambda>x. x \<le> (c::_::linorder)) at_bot"
@@ -917,7 +917,7 @@ qed
 lemma eventually_filtercomap_at_bot_dense:
   "eventually P (filtercomap f at_bot) \<longleftrightarrow> (\<exists>N::'a::{no_bot, linorder}. \<forall>x. f x < N \<longrightarrow> P x)"
   unfolding eventually_filtercomap
-  by (auto simp: eventually_at_bot_dense where run exec: "Zippy.Run.AStar.all 7")
+  by (auto simp: eventually_at_bot_dense where run exec: "Zip.AStar.all 7")
 
 lemma eventually_at_bot_not_equal [simp]: "eventually (\<lambda>x::'a::{no_bot, linorder}. x \<noteq> c) at_bot"
   unfolding eventually_at_bot_dense by auto
@@ -1033,7 +1033,7 @@ next
     case (3 Y)
     with X(1,2) and assms show ?case by (intro X(3))
     (*NEW*)
-    (force 0 4 run exec: "Zippy.Run.Depth_First.all 3")
+    (force 0 4 run exec: "Zip.Depth_First.all 3")
     (*ORIG*)
     (* (force) *)
   qed (insert assms X(1), auto intro!: finite_vimage_IntI)
@@ -1044,7 +1044,7 @@ lemma eventually_finite_subsets_at_top_finite:
   shows   "eventually P (finite_subsets_at_top A) \<longleftrightarrow> P A"
   unfolding eventually_finite_subsets_at_top using assms
   (*NEW*)
-  by (force run exec: Zippy.Run.Depth_First.all')
+  by (force run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by (force) *)
 
@@ -1218,7 +1218,7 @@ next
         then obtain k where "k \<in> I" "F k \<le> (\<Sqinter>i\<in>J. F i)" by auto
         with insert *[of i k] show ?case
           (*NEW*)
-          by (auto run exec: "Zippy.Run.Depth_First.all 7")
+          by (auto run exec: "Zip.Depth_First.all 7")
           (*ORIG*)
           (* by auto *)
       qed
@@ -1294,9 +1294,9 @@ lemma le_prod_filterI:
   unfolding le_filter_def eventually_filtermap eventually_prod_filter
   (*NEW*)
   (*NOTE: neither a minor nor a stable change and hence excluded*)
-  (* by ((force 10 elim: eventually_elim2 where run exec: "Zippy.Run.AStar.all 1")[1])+ *)
+  (* by ((force 10 elim: eventually_elim2 where run exec: "Zip.AStar.all 1")[1])+ *)
   (*ORIG*)
-  (*NOTE not working with zippy*)
+  (*NOTE not working with zip*)
   by (auto 4 4 elim: eventually_elim2)
 
 lemma filtermap_fst_prod_filter: "filtermap fst (A \<times>\<^sub>F B) \<le> A"
@@ -1353,12 +1353,12 @@ lemma prod_filter_assoc:
   apply(clarsimp simp add: filter_eq_iff eventually_filtermap eventually_prod_filter; safe)
   subgoal for P Q R S T
     (*NEW*)
-    by (auto 4 4 intro: exI[where x="\<lambda>(a, b). T a \<and> S b"] where run exec: "Zippy.Run.AStar.all 4")
+    by (auto 4 4 intro: exI[where x="\<lambda>(a, b). T a \<and> S b"] where run exec: "Zip.AStar.all 4")
     (*ORIG*)
     (* by(auto 4 4 intro: exI[where x="\<lambda>(a, b). T a \<and> S b"]) *)
   subgoal for P Q R S T
     (*NEW*)
-    by(auto 4 3 intro: exI[where x="\<lambda>(a, b). Q a \<and> S b"] where run exec: "Zippy.Run.AStar.all 6")
+    by(auto 4 3 intro: exI[where x="\<lambda>(a, b). Q a \<and> S b"] where run exec: "Zip.AStar.all 6")
     (*ORIG*)
     (* by(auto 4 3 intro: exI[where x="\<lambda>(a, b). Q a \<and> S b"]) *)
   done
@@ -1856,7 +1856,7 @@ proof(safe intro!: ext elim!: rel_filter.cases)
       show ?lhs if ?rhs using G F that
         (*NEW*)
         by(auto 0 4 intro: exI[where x="\<lambda>_. True"] simp add: eventually_map_filter_on split_def
-          where run exec: "Zippy.Run.Depth_First.all 5")
+          where run exec: "Zip.Depth_First.all 5")
         (*ORIG*)
         (* by(auto 0 4 intro: exI[where x="\<lambda>_. True"] simp add: eventually_map_filter_on split_def) *)
       assume ?lhs
@@ -1868,7 +1868,7 @@ proof(safe intro!: ext elim!: rel_filter.cases)
       show ?rhs
         apply (clarsimp elim!: eventually_rev_mp simp add: le_fun_def)
         (*NEW*)
-        by (fastforce 0 8 intro: always_eventually where run exec: "Zippy.Run.Depth_First.all 8")
+        by (fastforce 0 8 intro: always_eventually where run exec: "Zip.Depth_First.all 8")
         (*ORIG*)
         (* by (fastforce intro: always_eventually) *)
     qed
@@ -1889,9 +1889,9 @@ proof(safe intro!: ext elim!: rel_filter.cases)
         apply (clarsimp elim!: eventually_rev_mp simp add: le_fun_def)
         (*NEW*)
         (*NOTE: not a stable change and hence excluded*)
-        (* by (zippy_orig 15 intro!: always_eventually where run exec: Zippy.Run.AStar.all')+ *)
+        (* by (zip_orig 15 intro!: always_eventually where run exec: Zip.AStar.all')+ *)
         (*ORIG*)
-        (*NOTE not working with zippy*)
+        (*NOTE not working with zip*)
         by (fastforce 0 15 intro: always_eventually)
     qed
     then show "map_filter_on ?AB snd Y = ?Z"
@@ -1997,7 +1997,7 @@ proof(rule rel_funI rel_filter.intros)+
     using *
     (*NEW*)
     by (auto 4 3 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def
-      where run exec: "Zippy.Run.Depth_First.all 6")
+      where run exec: "Zip.Depth_First.all 6")
     (*ORIG*)
     (* by (auto 4 3 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def) *)
   let ?Z = "principal SS'"
@@ -2031,8 +2031,8 @@ proof(rule rel_funI)
   assume "rel_set (rel_filter A) S S'"
   then have SS': "SS' \<subseteq> {(F, G). rel_filter A F G}" and [simp]: "S = fst ` SS'" "S' = snd ` SS'"
     (*NEW*)
-     by (zippy 4 3 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def
-      where run exec: "Zippy.Run.Depth_First.all 6")
+     by (auto 4 3 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def
+      where run exec: "Zip.Depth_First.all 6")
     (*ORIG*)
     (* by (auto 4 3 dest: rel_setD1 rel_setD2 intro: rev_image_eqI simp add: SS'_def) *)
   from SS' obtain Z where Z: "\<And>F G. (F, G) \<in> SS' \<Longrightarrow>
@@ -2119,7 +2119,7 @@ proof(intro rel_funI; elim rel_filter.cases; hypsubst)
         done
       subgoal
         (*NEW*)
-        by (fastforce 0 4 where run exec: "Zippy.Run.AStar.all 6")
+        by (fastforce 0 4 where run exec: "Zip.AStar.all 6")
         (*ORIG*)
         (* by (fastforce) *)
       done
@@ -2139,7 +2139,7 @@ proof(intro rel_funI; elim rel_filter.cases; hypsubst)
       subgoal
         (*NEW*)
         supply [[unify_search_bound=5]]
-        by (fastforce 0 4 where run exec: "Zippy.Run.AStar.all 6")
+        by (fastforce 0 4 where run exec: "Zip.AStar.all 6")
         (*ORIG*)
         (* by (fastforce) *)
       done

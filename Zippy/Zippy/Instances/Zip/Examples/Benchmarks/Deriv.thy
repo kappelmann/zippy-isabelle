@@ -1,7 +1,7 @@
 theory Deriv
   imports
     HOL.Limits
-    Zippy_Auto_Benchmarks_Setup
+    Zip_Benchmarks_Setup
 begin
 
 text \<open>Note: this benchmark file is an adjusted copy of HOL.Deriv from the standard distribution
@@ -1522,9 +1522,9 @@ lemma lemma_interval: "a < x \<Longrightarrow> x < b \<Longrightarrow> \<exists>
   for a b x :: real
   (*NEW*)
   (*NOTE: not a minor change and hence excluded*)
-  (* by (drule lemma_interval_lt) (force run exec: "Zippy.Run.AStar.all 10") *)
+  (* by (drule lemma_interval_lt) (force run exec: "Zip.AStar.all 10") *)
   (*ORIG*)
-  (*NOTE not working with zippy*)
+  (*NOTE not working with zip*)
   by (force 0 5 dest: lemma_interval_lt)
 
 text \<open>Rolle's Theorem.
@@ -1630,7 +1630,7 @@ proof -
     by (metis Rolle_deriv [OF ab])
   then show ?thesis
     using f' has_derivative_imp_has_field_derivative
-    by (fastforce run exec: Zippy.Run.Depth_First.all')
+    by (fastforce run exec: Zip.Depth_First.all')
     (*ORIG*)
     (* by fastforce *)
 qed
@@ -1701,7 +1701,7 @@ lemma DERIV_isconst_end:
   shows "f b = f a"
   using MVT [OF \<open>a < b\<close>] "0" DERIV_unique contf real_differentiable_def
   (*NEW*)
-  by (fastforce simp: algebra_simps where run exec: Zippy.Run.Depth_First.all')
+  by (fastforce simp: algebra_simps where run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by (fastforce simp: algebra_simps) *)
 
@@ -1911,7 +1911,7 @@ proof -
   have "(\<lambda>x. -f x) a \<le> (\<lambda>x. -f x) b"
     using DERIV_nonneg_imp_nondecreasing [of a b "\<lambda>x. -f x"] assms DERIV_minus
       (*NEW*)
-      by (fastforce where run exec: Zippy.Run.Depth_First.all')
+      by (fastforce where run exec: Zip.Depth_First.all')
       (*ORIG*)
       (* by fastforce *)
   then show ?thesis
@@ -2128,13 +2128,13 @@ proof -
       a < c \<and> c < b \<and> (f b - f a) * g'c = (g b - g a) * f'c"
     using assms by (intro GMVT)
       (*NEW*)
-      (force simp: real_differentiable_def where run exec: Zippy.Run.Depth_First.all')
+      (force simp: real_differentiable_def where run exec: Zip.Depth_First.all')
       (*ORIG*)
       (* (force simp: real_differentiable_def)+ *)
   then obtain c where "a < c" "c < b" "(f b - f a) * g' c = (g b - g a) * f' c"
     using DERIV_f DERIV_g
       (*NEW*)
-      by (force dest: DERIV_unique where run exec: Zippy.Run.Depth_First.all')
+      by (force dest: DERIV_unique where run exec: Zip.Depth_First.all')
       (*ORIG*)
       (* by (force dest: DERIV_unique) *)
   then show ?thesis

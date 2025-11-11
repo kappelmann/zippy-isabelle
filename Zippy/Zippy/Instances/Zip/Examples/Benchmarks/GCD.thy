@@ -1,7 +1,7 @@
 theory GCD
   imports
     HOL.Groups_List HOL.Code_Numeral
-    Zippy_Auto_Benchmarks_Setup
+    Zip_Benchmarks_Setup
 begin
 
 text \<open>Note: this benchmark file is an adjusted copy of HOL.GCD from the standard distribution
@@ -1056,7 +1056,7 @@ lemma Gcd_fin_dvd:
   "a \<in> A \<Longrightarrow> Gcd\<^sub>f\<^sub>i\<^sub>n A dvd a"
   by (induct A rule: infinite_finite_induct)
   (*NEW*)
-  (auto intro: dvd_trans where run exec: "Zippy.Run.Depth_First.all 3")
+  (auto intro: dvd_trans where run exec: "Zip.Depth_First.all 3")
   (*ORIG*)
   (* (auto intro: dvd_trans) *)
 
@@ -1064,7 +1064,7 @@ lemma dvd_Lcm_fin:
   "a \<in> A \<Longrightarrow> a dvd Lcm\<^sub>f\<^sub>i\<^sub>n A"
   by (induct A rule: infinite_finite_induct)
   (*NEW*)
-  (auto intro: dvd_trans where run exec: "Zippy.Run.Depth_First.all 2")
+  (auto intro: dvd_trans where run exec: "Zip.Depth_First.all 2")
   (*ORIG*)
   (* (auto intro: dvd_trans) *)
 
@@ -1608,7 +1608,7 @@ next
   also from insert have "coprime a (\<Prod>A)"
     by (subst coprime_commute, intro prod_coprime_left)
     (*NEW*)
-    (auto run exec: Zippy.Run.Depth_First.all')
+    (auto run exec: Zip.Depth_First.all')
     (*ORIG*)
     (* (auto) *)
   with insert have "lcm a (\<Prod>A) = normalize (\<Prod>(insert a A))"
@@ -1835,7 +1835,7 @@ lemma gcd_cases_int:
   shows "P (gcd x y)"
   using assms
   (*NEW*)
-  by (force run exec: Zippy.Run.Depth_First.all')
+  by (force run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by (force) *)
 
@@ -1980,7 +1980,7 @@ lemma gcd_unique_nat: "d dvd a \<and> d dvd b \<and> (\<forall>e. e dvd a \<and>
   for d a :: nat
   using gcd_unique
   (*NEW*)
-  by (fastforce where run exec: Zippy.Run.Depth_First.all')
+  by (fastforce where run exec: Zip.Depth_First.all')
   (*ORIG*)
   (* by fastforce *)
 
@@ -2299,7 +2299,7 @@ next
   case (zero a)
   then show ?case
     (*NEW*)
-    by (fastforce 0 4 run exec: Zippy.Run.Depth_First.all')
+    by (fastforce 0 4 run exec: Zip.Depth_First.all')
     (*ORIG*)
     (* by (fastforce) *)
 next

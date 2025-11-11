@@ -1,12 +1,12 @@
 \<^marker>\<open>creator "Kevin Kappelmann"\<close>
-theory Zippy_Auto_Benchmarks_Evaluation
+theory Zip_Benchmarks_Evaluation
   imports
-    Zippy_Auto_Benchmarks_Setup
+    Zip_Benchmarks_Setup
 begin
 
 declare[[ML_print_depth=20000]]
 ML_command\<open>
-local open Zippy_Auto_Benchmark.Export
+local open Zip_Benchmark.Export
 in
 val export_dir = \<^path>\<open>export\<close>
 val export = mk_export export_dir

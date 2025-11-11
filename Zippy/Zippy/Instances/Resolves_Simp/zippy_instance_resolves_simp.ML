@@ -1,7 +1,9 @@
-(*  Title:      Zippy/zippy_instance_auto.ML
+(*  Title:      Zippy/zippy_instance_resolves_simp.ML
     Author:     Kevin Kappelmann
+
+Basic setup for a prover supporting resolution and simplification.
 *)
-functor Zippy_Instance_Auto(
+functor Zippy_Instance_Resolves_Simp(
     structure FI : FUNCTOR_INSTANCE_BASE
     structure Z : ZIPPY_INSTANCE_TACTIC
     structure TI : TERM_INDEX
