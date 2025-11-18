@@ -1,5 +1,6 @@
 .history/
 workspace.code-workspace
+Scratch.thy
 
 *.swp
 *.thy~
